@@ -54,7 +54,7 @@ export default function GridPage() {
                 dark: { bgImage: 'bg-stripes-dark' },
               }}
               gridTemplateColumns={4}
-              style={{ backgroundSize: '7.07px 7.07px' }}
+              css={{ backgroundSize: '7.07px 7.07px' }}
               color="white"
             >
               <Box bgColor="violet-400" borderRadius={1} p={6} px={4}>

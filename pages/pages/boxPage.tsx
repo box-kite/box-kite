@@ -48,7 +48,8 @@ function DemoCard({ title, description, children, code }: { title: string; descr
             {description}
           </Box>
         </Flex>
-        <Box p={4} minHeight={32}>
+        {/* The rendered demo, so the markdown mirror leaves it out and keeps the caption below it. */}
+        <Box p={4} minHeight={32} props={{ 'data-md': 'skip' }}>
           {children}
         </Box>
         <Flex
@@ -67,7 +68,7 @@ function DemoCard({ title, description, children, code }: { title: string; descr
             cursor="pointer"
             theme={{ dark: { color: 'violet-400' }, light: { color: 'violet-600' } }}
             hover={{ textDecoration: 'underline' }}
-            props={{ onClick: () => setShowCode(!showCode) }}
+            props={{ onClick: () => setShowCode(!showCode), 'data-md': 'skip' }}
           >
             {showCode ? 'Hide' : 'Show'} code
           </Box>
@@ -1154,8 +1155,9 @@ export default function BoxPage() {
         <Flex d="column" gap={8}>
           <Code label="Import" language="jsx" code="import Box from '@box-kite/react';" />
 
-          {/* Category Navigation */}
-          <Box>
+          {/* Category Navigation — a control, so the markdown mirror leaves it out: the page it
+              mirrors shows one category at a time and the full list of props is /props.md. */}
+          <Box props={{ 'data-md': 'skip' }}>
             <Box fontSize={14} fontWeight={600} theme={{ dark: { color: 'slate-300' }, light: { color: 'slate-700' } }} mb={4}>
               Property Categories
             </Box>

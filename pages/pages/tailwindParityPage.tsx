@@ -121,13 +121,15 @@ function Row({ row }: { row: ParityRow }) {
     // which is one of the rows in the table below.
     <Box tag="tr" display="table-row" nth={{ odd: { bgColor: 'slate-500/8' } }}>
       <Cell>{row.tailwind}</Cell>
+      {/* The gap between the chips is the separator on the page; `data-md` is what puts one back in
+          the markdown copy, where the two elements would otherwise run together. */}
       <Cell>
         {row.props.length === 0 ? (
           <Box display="inline" theme={{ dark: { color: 'slate-600' }, light: { color: 'slate-400' } }}>
             —
           </Box>
         ) : (
-          <Flex gap={1} flexWrap="wrap">
+          <Flex gap={1} flexWrap="wrap" props={{ 'data-md': 'inline' }}>
             {row.props.map((prop) => (
               <Mono key={prop}>{prop}</Mono>
             ))}
@@ -135,7 +137,7 @@ function Row({ row }: { row: ParityRow }) {
         )}
       </Cell>
       <Cell>
-        <Flex ai="center" gap={2} flexWrap="wrap">
+        <Flex ai="center" gap={2} flexWrap="wrap" props={{ 'data-md': 'inline' }}>
           <Status status={row.status} />
           {row.note && (
             <Box display="inline" fontSize={13} theme={{ dark: { color: 'slate-500' }, light: { color: 'slate-500' } }}>

@@ -4,6 +4,7 @@ import Flex from '../../src/components/flex';
 import Code from '../components/code';
 import PageHeader from '../components/pageHeader';
 import Reveal from '../components/reveal';
+import { SITE_URL } from '../site/site';
 
 export default function AiContextPage() {
   return (
@@ -180,6 +181,28 @@ export default function AiContextPage() {
         </Box>
       </Reveal>
 
+      {/* The docs, as markdown */}
+      <Reveal delay={0.375}>
+        <Box mb={12}>
+          <Box tag="h3" fontSize={20} fontWeight={600} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }} mb={3}>
+            And the docs site answers in markdown
+          </Box>
+          <Box fontSize={14} lineHeight={22} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }} mb={5}>
+            An agent that fetches a documentation page gets an HTML shell and a JavaScript bundle it has no reason to parse. Every page here
+            is also served as markdown at its own address with <Mono>.md</Mono> appended, and <Mono>llms.txt</Mono> is the index of all of
+            them — one line per page, with the block of facts to read before writing any props. The files are converted from the pages
+            themselves during the build, so nothing here is a second copy that can fall behind.
+          </Box>
+          <Code
+            language="shell"
+            code={`curl ${SITE_URL}/llms.txt      # the index: every page, and what each one covers
+curl ${SITE_URL}/box.md        # any page, as markdown — append .md to the address
+curl ${SITE_URL}/props.md      # every prop, the CSS it writes, one measured example
+curl ${SITE_URL}/llms-full.txt # all of it in one file, for a tool that indexes a site`}
+          />
+        </Box>
+      </Reveal>
+
       {/* What's Inside */}
       <Reveal delay={0.4}>
         <Box mb={12}>
@@ -270,6 +293,21 @@ export default function AiContextPage() {
           </Box>
         </Flex>
       </Reveal>
+    </Box>
+  );
+}
+
+function Mono({ children }: { children: React.ReactNode }) {
+  return (
+    <Box
+      tag="code"
+      display="inline"
+      px={1}
+      borderRadius={1}
+      fontSize={13}
+      theme={{ dark: { bgColor: 'slate-800', color: 'slate-200' }, light: { bgColor: 'slate-100', color: 'slate-800' } }}
+    >
+      {children}
     </Box>
   );
 }

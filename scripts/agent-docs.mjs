@@ -58,6 +58,15 @@ function accepts(prop) {
   return parts.join(', ');
 }
 
+/**
+ * The prop reference: the tarball's `docs/props.md` and the docs site's `/props.md` are the same
+ * file from the same extraction, because an agent that fetched one and greps the other has to read
+ * the same measurements either way.
+ */
+export function propsMarkdown() {
+  return propsFile(JSON.parse(read(API_FILE)));
+}
+
 function propsFile({ propCount, props }) {
   const sorted = [...props].sort((a, b) => a.name.localeCompare(b.name));
 
@@ -221,7 +230,7 @@ export function writeAgentDocs() {
   const files = [
     ['AGENTS.md', agentsFile(api.propCount)],
     ['docs/index.md', indexFile()],
-    ['docs/props.md', propsFile(api)],
+    ['docs/props.md', propsMarkdown()],
     ['docs/components.md', componentsFile(componentExports())],
     ['docs/a11y.md', read(A11Y_FILE)],
   ];

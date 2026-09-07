@@ -7,6 +7,7 @@ import Flex from '../../src/components/flex';
 import Icon from '../../src/components/icon';
 import Presence from '../../src/components/presence';
 import IconSwap from '../components/iconSwap';
+import PageFooter from '../components/pageFooter';
 import Reveal from '../components/reveal';
 import TableOfContents from '../components/tableOfContents';
 import PageContext, { TocEntry } from '../pageContext';
@@ -128,7 +129,9 @@ export default function Layout({ children }: LayoutProps) {
         {/* Main Content + Right Sidebar */}
         <PageContext.Provider value={{ tocEntries, setTocEntries }}>
           <Box flex1 minWidth={0} minHeight="fit-screen">
-            <Box maxWidth={300} mx="auto" px={4} sm={{ px: 8 }} py={8} lg={{ py: 12 }}>
+            {/* The landmark, and the root the markdown mirror converts: everything outside it is
+                chrome that repeats on every page (`scripts/prerender-pages.mjs`). */}
+            <Box tag="main" maxWidth={300} mx="auto" px={4} sm={{ px: 8 }} py={8} lg={{ py: 12 }}>
               {/* Keyed on the route, so a navigation is a fresh mount and `Reveal` has something to
                   reveal. The page under this is prerendered, which is why the entrance is gated on
                   hydration rather than running on the first paint. */}
@@ -136,6 +139,7 @@ export default function Layout({ children }: LayoutProps) {
                 {children}
               </Reveal>
             </Box>
+            <PageFooter />
           </Box>
           {tocEntries.length > 0 && (
             <Box width={50} flexShrink={0} display="none" xl={{ display: 'block' }}>
