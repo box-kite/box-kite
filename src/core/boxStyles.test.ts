@@ -253,7 +253,7 @@ describe('every declared prop value produces a rule', () => {
   // A file that stops quoting the figure fails too, so a rewording is noticed rather than silently exempt.
   const quotingFiles = [
     'README.md',
-    'CLAUDE.md',
+    'AGENTS.md',
     'CONTRIBUTING.md',
     'ARTICLE.md',
     'package.json',

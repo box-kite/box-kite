@@ -11,7 +11,7 @@ export default function AiContextPage() {
       <PageHeader
         icon={Bot}
         title="AI Assistant Context"
-        description="One file that teaches an AI assistant the whole prop surface, the formatter rules and the patterns that trip it up."
+        description="The instructions the package ships for whatever writes the code: the rules, the formatter traps, and every prop with the CSS it emits."
       />
 
       {/* Hero Message */}
@@ -39,11 +39,11 @@ export default function AiContextPage() {
             theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }}
             mb={4}
           >
-            One file. Infinite possibilities.
+            The instructions ship with the library.
           </Box>
           <Box fontSize={16} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }} maxWidth={140} lineHeight={26}>
-            The BOX_KITE_AI_CONTEXT.md file contains everything an AI assistant needs to write perfect Box Kite code. No more guessing, no
-            more mistakes.
+            AGENTS.md and a docs folder are inside the package, generated from the prop registry itself — so the file an agent finds is
+            never a version behind the library it describes.
           </Box>
         </Flex>
       </Reveal>
@@ -103,24 +103,24 @@ export default function AiContextPage() {
           <Flex d="column" gap={6}>
             <StepCard
               step={1}
-              title="Get the context file"
-              description="The BOX_KITE_AI_CONTEXT.md file is included in the package. Find it in node_modules/@box-kite/react/BOX_KITE_AI_CONTEXT.md or copy it to your project root."
+              title="Copy AGENTS.md to your repo root"
+              description="Every file below is already in the package. AGENTS.md is the one an agent reads on its own: Codex, Cursor, Copilot, VS Code, Windsurf, Cline and Zed read a root AGENTS.md natively, and Claude Code reads CLAUDE.md — one line saying @AGENTS.md points it at the same file."
             >
-              <Code language="shell" code="cp node_modules/@box-kite/react/BOX_KITE_AI_CONTEXT.md ./BOX_KITE_AI_CONTEXT.md" />
+              <Code language="shell" code="cp node_modules/@box-kite/react/AGENTS.md ./AGENTS.md" />
             </StepCard>
 
             <StepCard
               step={2}
-              title="Share it with your AI assistant"
-              description="Simply reference the file in your conversation. Most AI coding tools support file references."
+              title="Point your assistant at the rest"
+              description="AGENTS.md carries the rules and the traps; the reference is what it reads for a prop it has not seen. Most tools take a file reference in the prompt."
             >
               <Flex d="column" gap={4}>
                 <ToolExample
                   tool="Claude Code / Cursor"
-                  example='Just type @BOX_KITE_AI_CONTEXT.md in your prompt or say "Read the BOX_KITE_AI_CONTEXT.md file"'
+                  example="Type @AGENTS.md, or @node_modules/@box-kite/react/docs/props.md for the whole prop surface"
                 />
-                <ToolExample tool="GitHub Copilot Chat" example="Attach the file to your conversation or paste the content" />
-                <ToolExample tool="ChatGPT / Claude Web" example="Copy and paste the file content into your first message" />
+                <ToolExample tool="GitHub Copilot Chat" example="Attach AGENTS.md to your conversation or paste the content" />
+                <ToolExample tool="ChatGPT / Claude Web" example="Copy and paste BOX_KITE_AI_CONTEXT.md into your first message" />
               </Flex>
             </StepCard>
 
@@ -153,6 +153,30 @@ export default function AiContextPage() {
               </Box>
             </StepCard>
           </Flex>
+        </Box>
+      </Reveal>
+
+      {/* What ships in the package */}
+      <Reveal delay={0.35}>
+        <Box mb={12}>
+          <Box tag="h3" fontSize={20} fontWeight={600} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }} mb={3}>
+            What ships in the package
+          </Box>
+          <Box fontSize={14} lineHeight={22} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }} mb={5}>
+            All of it generated from this repository during the build — the prop reference from the registry itself, the component table
+            from the built chunks' own exports — because a stale instruction file is worse than none: an agent trusts it over its own
+            priors.
+          </Box>
+          <Code
+            language="shell"
+            code={`node_modules/@box-kite/react/
+  AGENTS.md                the rules, and the block that argues with the model's priors
+  docs/props.md            every prop, the CSS it writes and one measured example
+  docs/components.md       every component, its import, and whether it renders on a server
+  docs/a11y.md             the behaviour hooks, for a pattern this library does not ship
+  BOX_KITE_AI_CONTEXT.md   the long-form reference
+  .claude/                 the same rules again, as a skill and as a rules file`}
+          />
         </Box>
       </Reveal>
 
@@ -217,8 +241,8 @@ export default function AiContextPage() {
               Pro tip: Keep it in your project root
             </Box>
             <Box fontSize={14} lineHeight={22} theme={{ dark: { color: 'indigo-300' }, light: { color: 'indigo-700' } }}>
-              Copy BOX_KITE_AI_CONTEXT.md to your project root. This way, AI tools like Cursor and Claude Code will automatically include it
-              in their context when you work on your project. No need to reference it every time!
+              A file in the root is read on every run; one referenced by hand is read when somebody remembers. AGENTS.md is the one to copy
+              there — it is the file agents look for — and BOX_KITE_AI_CONTEXT.md beside it for the depth.
             </Box>
           </Box>
         </Flex>
