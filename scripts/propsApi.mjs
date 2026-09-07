@@ -252,8 +252,12 @@ function writeLiteral(value) {
   return String(value);
 }
 
-/** The attribute a reader writes: a string in quotes, `true` on its own, everything else in braces. */
-function writeAttribute(name, value) {
+/**
+ * The attribute a reader writes: a string in quotes, `true` on its own, everything else in braces.
+ * Exported because the tarball's `docs/props.md` writes the same example, and one of the two drifting
+ * would mean the published docs and the published `.d.ts` disagree about how to write a prop.
+ */
+export function writeAttribute(name, value) {
   if (typeof value === 'string') return `${name}="${value}"`;
   if (value === true) return name;
 

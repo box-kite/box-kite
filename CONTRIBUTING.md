@@ -995,7 +995,7 @@ namespace Variables {
 
 ### Step 5: Update the Prop Count
 
-The registry's size is quoted in ten hand-written places — this file, the README, CLAUDE.md, ARTICLE.md, the npm
+The registry's size is quoted in ten hand-written places — this file, the README, AGENTS.md, ARTICLE.md, the npm
 description, `src/BOX_KITE_AI_CONTEXT.md`, both skill files, and two on the docs site. `src/core/boxStyles.test.ts` reads all
 ten and fails until they agree with the registry, so a new prop means bumping `PROP_COUNT` there and the ten copies. It
 is checked because it drifted twice on its own: once to `~144` against a registry of 117 (bug #71), and once with the

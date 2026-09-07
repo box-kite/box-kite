@@ -1,10 +1,12 @@
-// Copy publish metadata, docs, and Claude skill/rules into dist/ after the library build, then
+// Copy publish metadata, docs, and Claude skill/rules into dist/ after the library build, write the
+// generated agent files beside them (agent-docs.mjs), then
 // check the one property of the output that no test can see: the `react-server` entry must not
 // reach a client hook through any chunk it imports.
 // Uses Node's fs (not shell cp/mkdir) so it runs identically on macOS, Linux, and Windows.
 import { spawnSync } from 'node:child_process';
 import { cpSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { writeAgentDocs } from './agent-docs.mjs';
 import { CLIENT_ONLY_COMPONENTS, CLIENT_ONLY_ENTRIES, CORE_PACKAGE, PACKAGE_NAME, SERVER_SAFE_COMPONENTS } from './moduleGraph.mjs';
 
 // Ensure target directories exist (recursive = cross-platform `mkdir -p`).
@@ -36,6 +38,13 @@ manifest.dependencies = Object.fromEntries(
   Object.entries({ ...manifest.dependencies, [CORE_PACKAGE]: manifest.version }).sort(([a], [b]) => a.localeCompare(b)),
 );
 writeFileSync('dist/package.json', `${JSON.stringify(manifest, null, 2)}\n`);
+
+// The generated half of the copies above: `AGENTS.md` and `docs/`, written from the rules file, the prop
+// reference and the built chunks' own exports rather than from a file somebody has to remember to edit.
+// After the manifest, not before: reading a component's exports means importing it, and a server-safe one
+// imports the package by name — with no `dist/package.json` yet that self-reference resolves against the
+// *repo* root instead, and asks for a `box.mjs` that is not there.
+writeAgentDocs();
 
 // Load the built package the way a Server Component's bundler resolves it: `check:boundaries` proves the
 // *sources* call no client hook, and this proves the bundler did not undo that. Node applies

@@ -714,3 +714,21 @@ code.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md#the-core-boundary) for the boundary rules and where new code
 belongs.
+
+## AI editors and agents
+
+The package ships its own instructions, because an agent has priors about a library this new and they
+are wrong. `AGENTS.md` at the package root is the file agents look for — the rules, the dividers, one
+worked example — and `docs/` sits beside it: every prop with the CSS it writes (`docs/props.md`),
+every component with its import and whether it renders on a server (`docs/components.md`), and the
+behaviour hooks (`docs/a11y.md`). All of it is generated during the build from the prop registry, the
+rules file and the built chunks' own exports, so none of it can drift from the library it describes.
+
+```shell
+cp node_modules/@box-kite/react/AGENTS.md ./AGENTS.md
+```
+
+Codex, Cursor, Copilot, VS Code, Windsurf, Cline and Zed read a root `AGENTS.md` natively; Claude
+Code reads `CLAUDE.md`, so a file holding the one line `@AGENTS.md` points it at the same place. The
+long-form [BOX_KITE_AI_CONTEXT.md](src/BOX_KITE_AI_CONTEXT.md) and a ready-made skill
+(`.claude/skills/box-kite/`) ship in the tarball too.
