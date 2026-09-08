@@ -66,7 +66,7 @@ export const siteRoutes = [
   {
     path: '/box',
     name: 'Box',
-    description: 'The foundational component: 212 CSS properties as type-safe props, with the numeric formatters explained.',
+    description: 'The foundational component: 215 CSS properties as type-safe props, with the numeric formatters explained.',
   },
   {
     path: '/svg',

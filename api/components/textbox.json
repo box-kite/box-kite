@@ -1,0 +1,107 @@
+{
+  "name": "Textbox",
+  "route": "/textbox",
+  "import": "import Textbox from '@box-kite/react/components/textbox';",
+  "description": "A single-line text field: a real `<input>`, styled by Box props, whose `type` decides its validation, its mobile keyboard and its spinner.",
+  "pattern": null,
+  "props": [
+    {
+      "name": "name",
+      "type": "string",
+      "required": false,
+      "default": null,
+      "description": "What the field submits under, and what a `<label htmlFor>` of your own would point at."
+    },
+    {
+      "name": "props",
+      "type": "TextboxTagProps",
+      "required": false,
+      "default": null,
+      "description": "Attributes for the `<input>` itself — an `id`, an `aria-label`, `inputMode`, `autoComplete`."
+    },
+    {
+      "name": "onInput",
+      "type": "(e: React.ChangeEvent<HTMLInputElement>) => void",
+      "required": false,
+      "default": null,
+      "description": "Fires on every keystroke. `onChange` is React's alias for the same event."
+    },
+    {
+      "name": "onChange",
+      "type": "(e: React.ChangeEvent<HTMLInputElement>) => void",
+      "required": false,
+      "default": null,
+      "description": "Fires on every keystroke too — React's `onChange` is the DOM's `input`, not its `change`."
+    },
+    {
+      "name": "type",
+      "type": "TextboxType",
+      "required": false,
+      "default": null,
+      "description": "Which text input this is. It decides the validation, the mobile keyboard and the spinner."
+    },
+    {
+      "name": "placeholder",
+      "type": "PlaceholderProp",
+      "required": false,
+      "default": null,
+      "description": "A string is the attribute; an object is `::placeholder` styles. Neither one names the field."
+    },
+    {
+      "name": "value",
+      "type": "string | number",
+      "required": false,
+      "default": null,
+      "description": "Controlled value. Pair it with `onChange`, or the field cannot be typed into."
+    },
+    {
+      "name": "defaultValue",
+      "type": "string | number",
+      "required": false,
+      "default": null,
+      "description": "The value it starts with when the field owns its own state."
+    },
+    {
+      "name": "pattern",
+      "type": "string",
+      "required": false,
+      "default": null,
+      "description": "A regular expression the value has to match for the form to be valid."
+    },
+    {
+      "name": "autoFocus",
+      "type": "boolean",
+      "required": false,
+      "default": null,
+      "description": "Focus it on mount. One per page at most — a stolen focus is a lost place in the document."
+    },
+    {
+      "name": "readOnly",
+      "type": "boolean",
+      "required": false,
+      "default": null,
+      "description": "Editable to nobody, but still focusable, still read out and still submitted."
+    },
+    {
+      "name": "step",
+      "type": "number | string",
+      "required": false,
+      "default": null,
+      "description": "How far a `number` field's spinner and arrow keys move."
+    }
+  ],
+  "parts": [],
+  "keyboard": [
+    {
+      "mode": null,
+      "keys": "Tab",
+      "action": "Focuses the field, and Tab again leaves it. Nothing else is intercepted: the caret keys, selection, undo and the clipboard stay the platform's."
+    }
+  ],
+  "a11y": [
+    "Nothing here names the field. A `placeholder` is not a name — it disappears on the first keystroke — so pair it with a `<label htmlFor>` of your own, or pass `props={{ 'aria-label': … }}`.",
+    "`required`, `pattern` and `type` are the platform's own validation, which is announced and translated for free where a check of ours would be neither."
+  ],
+  "axe": { "fixtures": ["Textbox"], "knownViolations": [] },
+  "styleTree": [{ "path": "textbox", "depth": 0, "extends": null, "variants": ["compact"] }]
+}

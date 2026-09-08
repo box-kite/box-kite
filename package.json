@@ -68,6 +68,8 @@
     "check:docs": "node scripts/check-docs-snippets.mjs",
     "check:props": "node scripts/check-props-api.mjs",
     "docs:props": "node scripts/check-props-api.mjs --fix",
+    "check:components": "node scripts/check-components-api.mjs",
+    "docs:components": "node scripts/check-components-api.mjs --fix",
     "check:agents": "node scripts/check-agent-files.mjs",
     "docs:agents": "node scripts/check-agent-files.mjs --fix",
     "check:package": "publint dist && attw --pack dist --ignore-rules false-esm cjs-resolves-to-esm internal-resolution-error && publint dist-core && attw --pack dist-core --ignore-rules false-esm cjs-resolves-to-esm internal-resolution-error",
@@ -83,7 +85,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "26.20 KB"
+      "limit": "26.25 KB"
     },
     {
       "name": "Box in a Server Component (react-server entry)",
@@ -93,7 +95,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "24.70 KB"
+      "limit": "24.77 KB"
     },
     {
       "name": "Behavior primitives (a11y entry)",
@@ -119,7 +121,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "54.55 KB"
+      "limit": "54.63 KB"
     },
     {
       "name": "Full library (Box + ssg + every component)",
@@ -129,7 +131,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "60.85 KB"
+      "limit": "60.88 KB"
     }
   ],
   "repository": {
@@ -157,7 +159,7 @@
     "url": "https://github.com/box-kite/box-kite/issues"
   },
   "homepage": "https://www.box-kite.dev",
-  "description": "One React component with 212 typed CSS props that generates atomic CSS at runtime — no CSS files, no build step, renders in a Server Component.",
+  "description": "One React component with 215 typed CSS props that generates atomic CSS at runtime — no CSS files, no build step, renders in a Server Component.",
   "peerDependencies": {
     "react": "^16.14.0 || ^17.0.0 || ^18.0.0 || ^19.0.0",
     "react-dom": "^16.14.0 || ^17.0.0 || ^18.0.0 || ^19.0.0"

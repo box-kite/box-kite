@@ -1,14 +1,18 @@
 import { Keyboard, MessageSquare, MousePointerClick, ShieldCheck } from 'lucide-react';
 import { ReactNode, useState } from 'react';
+import tooltipApi from '../../api/components/tooltip.json';
 import Box from '../../src/box';
 import Button from '../../src/components/button';
 import Flex from '../../src/components/flex';
 import { H2, Span } from '../../src/components/semantics';
 import Tooltip, { TooltipReason } from '../../src/components/tooltip';
+import ApiReference from '../components/apiReference';
 import Code from '../components/code';
+import Mono from '../components/mono';
 import PageHeader from '../components/pageHeader';
 import Reveal from '../components/reveal';
 import useTableOfContents from '../hooks/useTableOfContents';
+import { apiSections } from '../site/componentApi';
 
 export default function TooltipPage() {
   useTableOfContents(sidebarLinks);
@@ -65,10 +69,6 @@ export default function TooltipPage() {
 <Tooltip content="Save the draft">{(trigger) => <button ref={trigger.ref} {...trigger.props}>Save</button>}</Tooltip>`}
               />
             </Box>
-          </Section>
-
-          <Section id="keyboard" title="Keyboard and pointer">
-            <KeyTable />
           </Section>
 
           <Section id="wcag" title="What the component guarantees">
@@ -148,6 +148,7 @@ export default function TooltipPage() {
               />
             </Box>
           </Section>
+          <ApiReference api={tooltipApi} />
         </Flex>
       </Reveal>
     </Box>
@@ -162,72 +163,8 @@ const sidebarLinks = [
   { id: 'controlled', label: 'Controlled' },
   { id: 'styling', label: 'Styling' },
   { id: 'overlay', label: 'Only the positioning' },
-] as const;
-
-const interactions: { input: string; result: string }[] = [
-  { input: 'Pointer rests on the trigger', result: 'Shows under the trigger after openDelay (300 ms by default).' },
-  { input: 'Pointer leaves the trigger', result: 'Hides after closeDelay (150 ms) — unless it lands on the tooltip.' },
-  { input: 'Pointer moves onto the tooltip', result: 'Stays open for as long as it is there.' },
-  { input: 'Tab to the trigger', result: 'Shows immediately: focus ignores openDelay.' },
-  { input: 'Tab away', result: 'Hides, unless the pointer is still on the trigger.' },
-  { input: 'Escape', result: 'Hides. Focus stays on the trigger, and it does not come back until the pointer leaves and returns.' },
-  { input: 'Tab, again', result: 'Reaches the next control — the tooltip is never in the tab order.' },
+  ...apiSections(tooltipApi),
 ];
-
-function KeyTable() {
-  return (
-    <Box tag="table" width="fit" css={{ borderCollapse: 'collapse' }}>
-      <Box tag="thead">
-        <Box tag="tr">
-          <HeadCell>Input</HeadCell>
-          <HeadCell>Result</HeadCell>
-        </Box>
-      </Box>
-      <Box tag="tbody">
-        {interactions.map((row) => (
-          <Box tag="tr" key={row.input}>
-            <Cell>
-              <Mono>{row.input}</Mono>
-            </Cell>
-            <Cell>{row.result}</Cell>
-          </Box>
-        ))}
-      </Box>
-    </Box>
-  );
-}
-
-function HeadCell({ children }: { children: ReactNode }) {
-  return (
-    <Box
-      tag="th"
-      textAlign="left"
-      fontSize={13}
-      fontWeight={600}
-      py={2}
-      pr={6}
-      bb={1}
-      theme={{ dark: { color: 'slate-300', borderColor: 'slate-700' }, light: { color: 'slate-700', borderColor: 'slate-200' } }}
-    >
-      {children}
-    </Box>
-  );
-}
-
-function Cell({ children }: { children: ReactNode }) {
-  return (
-    <Box
-      tag="td"
-      fontSize={14}
-      py={2}
-      pr={6}
-      bb={1}
-      theme={{ dark: { color: 'slate-400', borderColor: 'slate-800' }, light: { color: 'slate-600', borderColor: 'slate-100' } }}
-    >
-      {children}
-    </Box>
-  );
-}
 
 function Section({ id, title, children }: { id: string; title: string; children: ReactNode }) {
   return (
@@ -264,20 +201,5 @@ function Note({ icon: Icon, title, children }: { icon: typeof ShieldCheck; title
         <Box fontSize={14}>{children}</Box>
       </Box>
     </Flex>
-  );
-}
-
-function Mono({ children }: { children: ReactNode }) {
-  return (
-    <Box
-      tag="code"
-      display="inline"
-      px={1}
-      borderRadius={1}
-      fontSize={13}
-      theme={{ dark: { bgColor: 'slate-800', color: 'slate-200' }, light: { bgColor: 'slate-100', color: 'slate-800' } }}
-    >
-      {children}
-    </Box>
   );
 }

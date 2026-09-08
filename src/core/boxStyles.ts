@@ -867,6 +867,7 @@ export const cssStyles = {
         'grid',
         'inline-grid',
         'contents',
+        'list-item',
         'table',
         'table-header-group',
         'table-row-group',
@@ -884,6 +885,42 @@ export const cssStyles = {
       values: [true] as const,
       styleName: 'display',
       valueFormat: () => 'inline-block',
+    },
+  ],
+  /**
+   * Whether a table's cell borders are shared or every cell keeps its own. `collapse` is what makes a
+   * bordered table read as one grid rather than as a row of boxes, and it is the value `borderSpacing`
+   * has nothing to space.
+   * @example borderCollapse="collapse" → border-collapse: collapse
+   */
+  borderCollapse: [
+    {
+      values: ['collapse', 'separate'] as const,
+      styleName: 'border-collapse',
+    },
+  ],
+  /**
+   * The gap between the cells of a `separate` table, on the spacing scale. It is a property of the
+   * table, not of a cell: a cell's own `p` is inside its border, this is the space outside it.
+   * @example borderSpacing={2} → border-spacing: 0.5rem
+   */
+  borderSpacing: [
+    {
+      values: 0,
+      styleName: 'border-spacing',
+      valueFormat: BoxStylesFormatters.Value.rem,
+    },
+  ],
+  /**
+   * `fixed` sizes a table from its own width and its first row rather than from every cell in it, so one
+   * long cell cannot widen the column it sits in — and the table lays out in one pass instead of after
+   * measuring all of it.
+   * @example tableLayout="fixed" → table-layout: fixed
+   */
+  tableLayout: [
+    {
+      values: ['auto', 'fixed'] as const,
+      styleName: 'table-layout',
     },
   ],
   /**
@@ -1472,12 +1509,12 @@ export const cssStyles = {
   ],
   /**
    * The list-style CSS shorthand property allows you to set all the list style properties at once.
-   * @example listStyle="square" → list-style: square
+   * @example listStyle="disc" → list-style: disc
    */
   listStyle: [
     {
       styleName: 'list-style',
-      values: ['square', 'inside', 'outside', 'none'] as const,
+      values: ['disc', 'circle', 'square', 'decimal', 'inside', 'outside', 'none'] as const,
     },
   ],
   /**

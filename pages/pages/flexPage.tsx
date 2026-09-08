@@ -1,10 +1,13 @@
 import { Rows3 } from 'lucide-react';
+import flexApi from '../../api/components/flex.json';
 import Box from '../../src/box';
 import Flex from '../../src/components/flex';
+import ApiReference from '../components/apiReference';
 import Code from '../components/code';
 import PageHeader from '../components/pageHeader';
 import Reveal from '../components/reveal';
 import useTableOfContents from '../hooks/useTableOfContents';
+import { apiSections } from '../site/componentApi';
 
 export default function FlexPage() {
   useTableOfContents(sidebarLinks);
@@ -106,6 +109,7 @@ export default function FlexPage() {
               ))}
             </Flex>
           </Code>
+          <ApiReference api={flexApi} />
         </Flex>
       </Reveal>
     </Box>
@@ -117,4 +121,5 @@ const sidebarLinks = [
   { id: 'column', label: 'Column Direction' },
   { id: 'justify', label: 'Justify Content' },
   { id: 'wrap', label: 'Flex Wrap' },
-] as const;
+  ...apiSections(flexApi),
+];

@@ -1,5 +1,10 @@
 import { ChartSpline } from 'lucide-react';
 import { lazy, ReactNode, Suspense, useMemo, useState } from 'react';
+import chartContainerApi from '../../api/components/chartcontainer.json';
+import gaugeApi from '../../api/components/gauge.json';
+import miniDonutApi from '../../api/components/minidonut.json';
+import progressRingApi from '../../api/components/progressring.json';
+import sparklineApi from '../../api/components/sparkline.json';
 import Box from '../../src/box';
 import Button from '../../src/components/button';
 import { Gauge, MiniDonut, ProgressRing, Sparkline } from '../../src/components/chart';
@@ -8,10 +13,13 @@ import CellModel from '../../src/components/dataGrid/models/cellModel';
 import Flex from '../../src/components/flex';
 import { H2 } from '../../src/components/semantics';
 import { Defs, LinearGradient, Stop, SvgText } from '../../src/components/svg';
+import ApiReference from '../components/apiReference';
 import Code from '../components/code';
+import Mono from '../components/mono';
 import PageHeader from '../components/pageHeader';
 import Reveal from '../components/reveal';
 import useTableOfContents from '../hooks/useTableOfContents';
+import { apiSections } from '../site/componentApi';
 
 // Recharts and its d3 packages are ~95 KB gzipped: the one demo that needs them is a chunk of its
 // own, so only a reader who opens this page downloads them.
@@ -345,6 +353,15 @@ function TrendCell({ cell }: { cell: { row: { data: Row } } }) {
             sparkline that is the only thing in a cell is the data, so give it a label that says what a sighted reader gets from the shape:{' '}
             <Mono>label="Revenue, rising 12% over six months"</Mono>, not <Mono>label="Chart"</Mono>.
           </Section>
+          <ApiReference api={sparklineApi} />
+
+          <ApiReference api={progressRingApi} />
+
+          <ApiReference api={gaugeApi} />
+
+          <ApiReference api={miniDonutApi} />
+
+          <ApiReference api={chartContainerApi} />
         </Flex>
       </Reveal>
     </Box>
@@ -364,21 +381,6 @@ function Section({ id, title, children }: { id: string; title: string; children:
   );
 }
 
-function Mono({ children }: { children: ReactNode }) {
-  return (
-    <Box
-      tag="code"
-      display="inline"
-      px={1}
-      borderRadius={1}
-      fontSize={13}
-      theme={{ dark: { bgColor: 'slate-800', color: 'slate-200' }, light: { bgColor: 'slate-100', color: 'slate-800' } }}
-    >
-      {children}
-    </Box>
-  );
-}
-
 const sidebarLinks = [
   { id: 'what', label: 'Not a chart library' },
   { id: 'sparkline', label: 'Sparkline' },
@@ -394,4 +396,9 @@ const sidebarLinks = [
   { id: 'vars', label: 'A variable is a prop' },
   { id: 'recharts', label: 'Themed Recharts' },
   { id: 'a11y', label: 'Naming a chart' },
+  ...apiSections(sparklineApi),
+  ...apiSections(progressRingApi),
+  ...apiSections(gaugeApi),
+  ...apiSections(miniDonutApi),
+  ...apiSections(chartContainerApi),
 ];

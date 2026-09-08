@@ -32,7 +32,8 @@ export interface IconProps extends BoxClassNameProps {
   label?: string;
   /** Attributes forwarded to the icon's element, over anything the icon writes for itself. */
   props?: TagPropsType<'svg'>;
-  /** CSSProperties */
+  /** Inline styles forwarded to the icon's element. Box props are the way to style it; this is for a
+   * value that has to be computed per render, which no class can hold. */
   style?: React.CSSProperties;
 }
 
@@ -46,6 +47,16 @@ interface IconChildProps {
   [attribute: string]: unknown;
 }
 
+/**
+ * Box props on an icon somebody else drew — lucide, Tabler, react-icons, an Iconify set, a raw `<svg>`.
+ * It clones the one element it is given and puts the engine's class on it, so it knows no icon set's API
+ * and the class beats the `width`/`height` the set writes for itself.
+ *
+ * @a11y An icon with no `label` is `aria-hidden`, which is right for the common case: the icon repeats
+ * a label that is already there, and reading it twice is noise.
+ * @a11y A `label` makes it `role="img"` with that text as its name — for an icon that is the only thing
+ * saying what a control does.
+ */
 function IconImpl(props: IconProps, ref: Ref<SVGSVGElement>) {
   const { children, label, size, props: tagProps, style, ...styleProps } = props;
   const sized = size !== undefined ? { width: size, height: size } : undefined;

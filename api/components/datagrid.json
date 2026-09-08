@@ -1,0 +1,263 @@
+{
+  "name": "DataGrid",
+  "route": "/datagrid",
+  "import": "import DataGrid from '@box-kite/react/components/dataGrid';",
+  "description": "The data grid: sorting, filtering, grouping, pinned columns, row selection, detail rows, pagination and virtualization, with every part of it styled through the `datagrid` component tree rather than a stylesheet of its own.",
+  "pattern": "https://www.w3.org/WAI/ARIA/apg/patterns/grid/",
+  "props": [
+    {
+      "name": "component",
+      "type": "keyof ComponentsAndVariants",
+      "required": false,
+      "default": null,
+      "description": "Component name for style resolution. Default: 'datagrid'. Set to a custom name to use a different component style tree."
+    },
+    {
+      "name": "data",
+      "type": "TRow[]",
+      "required": true,
+      "default": null,
+      "description": "The rows. Virtualization means the length is not what is rendered — ten thousand is fine."
+    },
+    {
+      "name": "def",
+      "type": "GridDefinition<TRow>",
+      "required": true,
+      "default": null,
+      "description": "Everything about the grid that is not the rows: the columns, the bars, the title, the row height."
+    },
+    {
+      "name": "loading",
+      "type": "boolean",
+      "required": false,
+      "default": null,
+      "description": "Show the loading sweep over the rows. The grid keeps whatever it is already showing underneath."
+    },
+    {
+      "name": "onSelectionChange",
+      "type": "(event: SelectionChangeEvent<TRow>) => void",
+      "required": false,
+      "default": null,
+      "description": "Fires when rows are selected or deselected, with the keys affected and whether all are now selected."
+    },
+    { "name": "globalFilterValue", "type": "string", "required": false, "default": null, "description": "Controlled global filter value" },
+    {
+      "name": "onGlobalFilterChange",
+      "type": "(value: string) => void",
+      "required": false,
+      "default": null,
+      "description": "Callback when global filter changes"
+    },
+    {
+      "name": "columnFilters",
+      "type": "ColumnFilters<TRow>",
+      "required": false,
+      "default": null,
+      "description": "Controlled column filters"
+    },
+    {
+      "name": "onColumnFiltersChange",
+      "type": "(filters: ColumnFilters<TRow>) => void",
+      "required": false,
+      "default": null,
+      "description": "Callback when column filters change"
+    },
+    {
+      "name": "filters",
+      "type": "((row: TRow) => boolean)[]",
+      "required": false,
+      "default": null,
+      "description": "External predicate filters applied before global/column filters. Memoize with useMemo for performance."
+    },
+    {
+      "name": "expandedRowKeys",
+      "type": "Key[]",
+      "required": false,
+      "default": null,
+      "description": "Controlled expanded detail row keys"
+    },
+    {
+      "name": "onExpandedRowKeysChange",
+      "type": "(keys: Key[]) => void",
+      "required": false,
+      "default": null,
+      "description": "Callback when expanded detail rows change"
+    },
+    {
+      "name": "page",
+      "type": "number",
+      "required": false,
+      "default": null,
+      "description": "Controlled current page (1-indexed). Used with pagination."
+    },
+    {
+      "name": "onPageChange",
+      "type": "(page: number, pageSize: number) => void",
+      "required": false,
+      "default": null,
+      "description": "Callback when page changes. Receives page (1-indexed) and pageSize."
+    },
+    {
+      "name": "pageSize",
+      "type": "number",
+      "required": false,
+      "default": null,
+      "description": "Controlled page size. Used with pagination and pageSizeOptions."
+    },
+    {
+      "name": "onPageSizeChange",
+      "type": "(pageSize: number) => void",
+      "required": false,
+      "default": null,
+      "description": "Callback when the user changes the page size."
+    },
+    {
+      "name": "onSortChange",
+      "type": "(columnKey: Key | undefined, direction: SortDirection | undefined) => void",
+      "required": false,
+      "default": null,
+      "description": "Callback when sort changes. For server-side sorting with pagination."
+    },
+    {
+      "name": "onServerStateChange",
+      "type": "(state: ServerState<TRow>) => void",
+      "required": false,
+      "default": null,
+      "description": "Fires on any server-relevant state change (page, sort, filter). Provides full state snapshot for API calls."
+    }
+  ],
+  "parts": [],
+  "keyboard": [
+    { "mode": null, "keys": "Tab", "action": "Enters the grid at one cell, not at every cell. Shift+Tab leaves it." },
+    { "mode": null, "keys": "Right / Left", "action": "One cell along the row. At either end focus stays where it is." },
+    {
+      "mode": null,
+      "keys": "Down / Up",
+      "action": "One row, keeping the column: through a group row or a detail panel with fewer cells, and through a grouped header whose cells cover several columns each."
+    },
+    { "mode": null, "keys": "Home / End", "action": "The first or last cell of the row." },
+    {
+      "mode": null,
+      "keys": "Ctrl + Home / End",
+      "action": "The first or last cell of the whole grid, scrolling there if it has not been rendered yet."
+    },
+    { "mode": null, "keys": "PageDown / PageUp", "action": "A screenful of rows at a time." },
+    {
+      "mode": null,
+      "keys": "Enter / Space",
+      "action": "Sorts, on a sortable column header. Anywhere else, steps into the cell's own control."
+    },
+    { "mode": null, "keys": "F2", "action": "Steps into the cell's control even on a header, where Enter is spoken for by the sort." },
+    { "mode": null, "keys": "Escape", "action": "Hands the keyboard back from that control to the cell." },
+    {
+      "mode": "On a column resizer",
+      "keys": "Tab / F2",
+      "action": "Reaches the resizer of the header cell focus is on. Escape hands the keyboard back to the cell."
+    },
+    {
+      "mode": "On a column resizer",
+      "keys": "Right / Left",
+      "action": "Moves the separator 16px, which widens or narrows the column exactly as dragging it would."
+    },
+    { "mode": "On a column resizer", "keys": "Home / End", "action": "The narrowest the grid allows, or as wide as the grid itself." }
+  ],
+  "a11y": [
+    "`role=\"grid\"` with `aria-rowcount`/`aria-colcount` over the whole data set and `aria-rowindex`/`aria-colindex` on what is rendered, so virtualization does not renumber the grid.",
+    "One cell is the tab stop, as APG's grid pattern specifies: the grid is entered once and the arrow keys move inside it, rather than every cell being a stop of its own.",
+    "A grid is not named by the rows in it — pass `def.title` and the grid points `aria-labelledby` at it. Everything the grid draws for itself is named after what it acts on (\"Select row 4\", \"Filter Country\"), and a selection change is announced through a `role=\"status\"` region.",
+    "Each column resizer is a `role=\"separator\"` — APG's window splitter — carrying the column's width on `aria-valuenow`, so the new width is read out as it changes."
+  ],
+  "axe": { "fixtures": ["DataGrid", "DataGrid (virtualized, grouped, selectable)"], "knownViolations": [] },
+  "styleTree": [
+    { "path": "datagrid", "depth": 0, "extends": null, "variants": [] },
+    { "path": "datagrid.content", "depth": 1, "extends": null, "variants": [] },
+    { "path": "datagrid.loader", "depth": 1, "extends": null, "variants": [] },
+    { "path": "datagrid.loader.track", "depth": 2, "extends": null, "variants": [] },
+    { "path": "datagrid.loader.track.bar", "depth": 3, "extends": null, "variants": [] },
+    { "path": "datagrid.topBar", "depth": 1, "extends": null, "variants": [] },
+    { "path": "datagrid.topBar.globalFilter", "depth": 2, "extends": null, "variants": [] },
+    { "path": "datagrid.topBar.globalFilter.stats", "depth": 3, "extends": null, "variants": [] },
+    { "path": "datagrid.topBar.columnGroups", "depth": 2, "extends": null, "variants": [] },
+    { "path": "datagrid.topBar.columnGroups.icon", "depth": 3, "extends": null, "variants": [] },
+    { "path": "datagrid.topBar.columnGroups.separator", "depth": 3, "extends": null, "variants": [] },
+    { "path": "datagrid.topBar.columnGroups.item", "depth": 3, "extends": null, "variants": [] },
+    { "path": "datagrid.topBar.columnGroups.item.icon", "depth": 4, "extends": null, "variants": [] },
+    { "path": "datagrid.topBar.columnVisibility", "depth": 2, "extends": null, "variants": [] },
+    { "path": "datagrid.topBar.columnVisibility.badge", "depth": 3, "extends": null, "variants": [] },
+    { "path": "datagrid.filter", "depth": 1, "extends": null, "variants": [] },
+    { "path": "datagrid.filter.row", "depth": 2, "extends": null, "variants": [] },
+    {
+      "path": "datagrid.filter.cell",
+      "depth": 2,
+      "extends": null,
+      "variants": ["isPinned", "isFirstStartPinned", "isLastStartPinned", "isFirstEndPinned", "isLastEndPinned"]
+    },
+    { "path": "datagrid.filter.cell.input", "depth": 3, "extends": null, "variants": [] },
+    { "path": "datagrid.header", "depth": 1, "extends": null, "variants": [] },
+    {
+      "path": "datagrid.header.cell",
+      "depth": 2,
+      "extends": null,
+      "variants": [
+        "isPinned",
+        "isFirstStartPinned",
+        "isLastStartPinned",
+        "isFirstEndPinned",
+        "isLastEndPinned",
+        "isSortable",
+        "isRowSelected",
+        "isRowSelection",
+        "isRowNumber",
+        "isFirstLeaf",
+        "isLastLeaf",
+        "isEmptyCell"
+      ]
+    },
+    { "path": "datagrid.header.cell.contextMenu", "depth": 3, "extends": null, "variants": [] },
+    { "path": "datagrid.header.cell.contextMenu.icon", "depth": 4, "extends": null, "variants": [] },
+    { "path": "datagrid.header.cell.contextMenu.tooltip", "depth": 4, "extends": null, "variants": ["closed"] },
+    { "path": "datagrid.header.cell.contextMenu.tooltip.item", "depth": 5, "extends": null, "variants": [] },
+    { "path": "datagrid.header.cell.contextMenu.tooltip.item.icon", "depth": 6, "extends": null, "variants": [] },
+    { "path": "datagrid.header.cell.contextMenu.tooltip.item.separator", "depth": 6, "extends": null, "variants": [] },
+    { "path": "datagrid.header.cell.resizer", "depth": 3, "extends": null, "variants": [] },
+    { "path": "datagrid.body", "depth": 1, "extends": null, "variants": [] },
+    {
+      "path": "datagrid.body.cell",
+      "depth": 2,
+      "extends": null,
+      "variants": [
+        "isPinned",
+        "isFirstStartPinned",
+        "isLastStartPinned",
+        "isFirstEndPinned",
+        "isLastEndPinned",
+        "isRowNumber",
+        "isRowSelection",
+        "isRowSelected",
+        "isFirstLeaf",
+        "isLastLeaf",
+        "isEmptyCell",
+        "isRowDetail",
+        "isExpanded",
+        "isExpandedFirstLeaf",
+        "isExpandedLastLeaf"
+      ]
+    },
+    { "path": "datagrid.body.cell.text", "depth": 3, "extends": null, "variants": [] },
+    { "path": "datagrid.body.cell.rowDetail", "depth": 3, "extends": null, "variants": ["isExpanded"] },
+    { "path": "datagrid.body.detailRow", "depth": 2, "extends": null, "variants": [] },
+    { "path": "datagrid.body.detailRow.content", "depth": 3, "extends": null, "variants": [] },
+    { "path": "datagrid.body.row", "depth": 2, "extends": null, "variants": [] },
+    { "path": "datagrid.body.groupRow", "depth": 2, "extends": null, "variants": [] },
+    { "path": "datagrid.body.groupRow.expandButton", "depth": 3, "extends": null, "variants": [] },
+    { "path": "datagrid.body.empty", "depth": 2, "extends": null, "variants": [] },
+    { "path": "datagrid.emptyColumns", "depth": 1, "extends": null, "variants": [] },
+    { "path": "datagrid.bottomBar", "depth": 1, "extends": null, "variants": [] },
+    { "path": "datagrid.bottomBar.info", "depth": 2, "extends": null, "variants": [] },
+    { "path": "datagrid.bottomBar.clearFilters", "depth": 2, "extends": null, "variants": [] },
+    { "path": "datagrid.bottomBar.pagination", "depth": 2, "extends": null, "variants": [] },
+    { "path": "datagrid.bottomBar.pagination.button", "depth": 3, "extends": null, "variants": [] },
+    { "path": "datagrid.bottomBar.pagination.info", "depth": 3, "extends": null, "variants": [] },
+    { "path": "datagrid.bottomBar.pagination.pageSize", "depth": 3, "extends": null, "variants": [] }
+  ]
+}

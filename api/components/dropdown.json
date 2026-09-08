@@ -1,0 +1,186 @@
+{
+  "name": "Dropdown",
+  "route": "/dropdown",
+  "import": "import Dropdown from '@box-kite/react/components/dropdown';",
+  "description": "The APG combobox, in both shapes: https://www.w3.org/WAI/ARIA/apg/patterns/combobox/",
+  "pattern": "https://www.w3.org/WAI/ARIA/apg/patterns/combobox/",
+  "props": [
+    {
+      "name": "name",
+      "type": "string",
+      "required": false,
+      "default": null,
+      "description": "What the selection submits under: the component renders a hidden input carrying it."
+    },
+    {
+      "name": "defaultValue",
+      "type": "TVal | TVal[]",
+      "required": false,
+      "default": null,
+      "description": "What is selected to begin with, when the dropdown owns its own value. An array in `multiple` mode."
+    },
+    {
+      "name": "value",
+      "type": "TVal | TVal[]",
+      "required": false,
+      "default": null,
+      "description": "Controlled selection. Pair it with `onChange`, or nothing the user picks sticks."
+    },
+    {
+      "name": "multiple",
+      "type": "boolean",
+      "required": false,
+      "default": "false",
+      "description": "Let more than one option be chosen. Enter and Space then toggle without closing the listbox."
+    },
+    {
+      "name": "isSearchable",
+      "type": "boolean",
+      "required": false,
+      "default": null,
+      "description": "Turn the control into the APG *editable* combobox: a text field that filters the listbox, and a different pattern rather than a decoration — the field carries the role, the ARIA and your `props`. Printable keys type instead of jumping, Home/End and left/right move the caret, and Escape closes the listbox before it clears the field."
+    },
+    {
+      "name": "searchPlaceholder",
+      "type": "string",
+      "required": false,
+      "default": null,
+      "description": "The placeholder for the `isSearchable` field. Not a name — see `label`."
+    },
+    {
+      "name": "hideIcon",
+      "type": "boolean",
+      "required": false,
+      "default": null,
+      "description": "Drop the chevron. It is decoration either way: it is `aria-hidden` and never focusable."
+    },
+    {
+      "name": "showCheckbox",
+      "type": "boolean",
+      "required": false,
+      "default": "false",
+      "description": "Show checkbox for each item in multiple selection mode"
+    },
+    {
+      "name": "label",
+      "type": "React.ReactNode",
+      "required": false,
+      "default": null,
+      "description": "The dropdown's name, rendered above it and pointed at by `aria-labelledby`. A combobox is not named by what it contains — accname does not read a combobox at all, and the trigger text is its *value* — so without this (or your own `aria-label`) it has no accessible name."
+    },
+    {
+      "name": "labelProps",
+      "type": "BoxProps<'div'>",
+      "required": false,
+      "default": null,
+      "description": "Styles for the wrapper the label and the trigger share. Only rendered when there is a label."
+    },
+    {
+      "name": "itemsProps",
+      "type": "BoxStyleProps",
+      "required": false,
+      "default": null,
+      "description": "BoxProps applied to the opened items container (dropdown.items)"
+    },
+    {
+      "name": "iconProps",
+      "type": "BoxStyleProps",
+      "required": false,
+      "default": null,
+      "description": "BoxProps applied to the chevron icon container (dropdown.icon)"
+    },
+    {
+      "name": "onChange",
+      "type": "(value: TVal | undefined, values: TVal[]) => void",
+      "required": false,
+      "default": null,
+      "description": "Fires with the value chosen (`undefined` when it was unselected) and the full selection beside it."
+    }
+  ],
+  "parts": [
+    {
+      "name": "Dropdown.Display",
+      "description": "",
+      "props": [
+        {
+          "name": "children",
+          "type": "((selectedValues: TVal[], isOpen: boolean) => React.ReactNode) | React.ReactNode",
+          "required": true,
+          "default": null,
+          "description": "What the trigger shows: a node, or a function given the selected values and whether it is open."
+        }
+      ]
+    }
+  ],
+  "keyboard": [
+    {
+      "mode": null,
+      "keys": "Down / Up (closed)",
+      "action": "Opens, with the highlight on the selected option — or on the first or last when nothing is chosen."
+    },
+    { "mode": null, "keys": "Alt + Down (closed)", "action": "Opens without moving the highlight." },
+    {
+      "mode": null,
+      "keys": "Enter / Space (closed)",
+      "action": "Opens. The browser's own activation is suppressed, so it does not shut again."
+    },
+    { "mode": null, "keys": "Home / End (closed)", "action": "Opens at the first or the last option." },
+    { "mode": null, "keys": "A printable character", "action": "Opens with the first option starting with it already highlighted." },
+    { "mode": null, "keys": "Down / Up (open)", "action": "Moves the highlight, wrapping at the ends and skipping disabled options." },
+    { "mode": null, "keys": "Home / End (open)", "action": "Jumps to the first or last option." },
+    {
+      "mode": null,
+      "keys": "Typing (open)",
+      "action": "Typeahead. A longer buffer narrows; the same letter twice cycles through the options sharing it."
+    },
+    {
+      "mode": null,
+      "keys": "Enter / Space (open)",
+      "action": "Chooses the highlighted option and closes. In `multiple` mode it toggles and stays open."
+    },
+    { "mode": null, "keys": "Alt + Up (open)", "action": "Chooses the highlighted option and closes." },
+    { "mode": null, "keys": "Escape", "action": "Closes, changing nothing. Focus never left the trigger, so nothing is restored." },
+    { "mode": null, "keys": "Tab (open)", "action": "Chooses the highlighted option, then moves on to the next control." },
+    {
+      "mode": "With isSearchable",
+      "keys": "A printable character",
+      "action": "Types into the field, which opens the listbox and filters it. No typeahead — the field owns the keys."
+    },
+    {
+      "mode": "With isSearchable",
+      "keys": "Down / Up",
+      "action": "Opens, or moves the highlight through what the filter left, wrapping and skipping disabled options."
+    },
+    {
+      "mode": "With isSearchable",
+      "keys": "Home / End, Left / Right",
+      "action": "Move the caret, and hand the highlight back to the field: no option is where you are any more."
+    },
+    { "mode": "With isSearchable", "keys": "Space", "action": "Types a space. Only Enter chooses in this mode." },
+    {
+      "mode": "With isSearchable",
+      "keys": "Enter",
+      "action": "Chooses the highlighted option and puts its text in the field. With nothing highlighted it does nothing."
+    },
+    {
+      "mode": "With isSearchable",
+      "keys": "Escape",
+      "action": "Closes the listbox, keeping what was typed. Pressed again on a closed one, it clears the field."
+    }
+  ],
+  "a11y": [
+    "`role=\"combobox\"` with `aria-expanded`, `aria-controls` and `aria-activedescendant` on the trigger, and `role=\"listbox\"`/`role=\"option\"` with `aria-selected` on the popup.",
+    "Nothing names a combobox for you — accname does not read its contents, and the trigger text is its *value* — so pass `label`, or an `aria-label` of your own in `props`.",
+    "DOM focus never leaves the trigger (or, when searchable, the field), so no option is a tab stop and the popup can be portalled without stranding the keyboard inside it."
+  ],
+  "axe": { "fixtures": ["Dropdown (closed)", "Dropdown (open)", "Dropdown (searchable, open)"], "knownViolations": [] },
+  "styleTree": [
+    { "path": "dropdown", "depth": 0, "extends": null, "variants": ["compact"] },
+    { "path": "dropdown.items", "depth": 1, "extends": null, "variants": ["up", "closed", "closedUp"] },
+    { "path": "dropdown.item", "depth": 1, "extends": null, "variants": ["highlighted", "compact", "multiple"] },
+    { "path": "dropdown.unselect", "depth": 1, "extends": null, "variants": ["highlighted", "compact"] },
+    { "path": "dropdown.selectAll", "depth": 1, "extends": null, "variants": ["highlighted", "compact"] },
+    { "path": "dropdown.emptyItem", "depth": 1, "extends": null, "variants": ["compact"] },
+    { "path": "dropdown.icon", "depth": 1, "extends": null, "variants": [] }
+  ]
+}

@@ -1,6 +1,6 @@
 # @box-kite/react - AI Assistant Context
 
-Runtime CSS-in-JS library. `Box` component accepts 212 CSS props and generates CSS classes at runtime. Same prop values share a single class.
+Runtime CSS-in-JS library. `Box` component accepts 215 CSS props and generates CSS classes at runtime. Same prop values share a single class.
 
 ---
 

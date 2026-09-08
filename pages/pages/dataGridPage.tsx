@@ -1,15 +1,19 @@
 import { Filter, Table, X } from 'lucide-react';
 import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
+import dataGridApi from '../../api/components/datagrid.json';
 import Box from '../../src/box';
 import Button from '../../src/components/button';
 import DataGrid from '../../src/components/dataGrid';
 import Flex from '../../src/components/flex';
 import { H2 } from '../../src/components/semantics';
+import ApiReference from '../components/apiReference';
 import Code from '../components/code';
+import Mono from '../components/mono';
 import PageHeader from '../components/pageHeader';
 import Reveal from '../components/reveal';
 import Data from '../data/MOCK_DATA.json';
 import useTableOfContents from '../hooks/useTableOfContents';
+import { apiSections } from '../site/componentApi';
 
 // One file, not eight. Nothing on this page is about the row count — every demo here shows five to
 // eight rows of a scrolling, filtering, grouping grid — and the eight files were 3.9 MB of JSON in the
@@ -291,12 +295,6 @@ export default function DataGridPage() {
                 <Mono>aria-valuenow</Mono>, so a screen reader reads the new width out as it changes.
               </Note>
             </Flex>
-            <Box mt={6}>
-              <KeyTable rows={interactions} />
-            </Box>
-            <Box mt={6}>
-              <KeyTable rows={resizerInteractions} />
-            </Box>
           </Section>
 
           <Code
@@ -970,6 +968,7 @@ Box.components({
           >
             <ResizeModeDemo />
           </Code>
+          <ApiReference api={dataGridApi} />
         </Flex>
       </Reveal>
     </Box>
@@ -1165,29 +1164,6 @@ useEffect(() => { fetchData({ page: 1, pageSize }); }, []);
   );
 }
 
-function KeyTable({ rows }: { rows: { input: string; result: string }[] }) {
-  return (
-    <Box tag="table" width="fit" css={{ borderCollapse: 'collapse' }}>
-      <Box tag="thead">
-        <Box tag="tr">
-          <HeadCell>Key</HeadCell>
-          <HeadCell>What happens</HeadCell>
-        </Box>
-      </Box>
-      <Box tag="tbody">
-        {rows.map((row) => (
-          <Box tag="tr" key={row.input}>
-            <Cell>
-              <Mono>{row.input}</Mono>
-            </Cell>
-            <Cell>{row.result}</Cell>
-          </Box>
-        ))}
-      </Box>
-    </Box>
-  );
-}
-
 function Section({ id, title, children }: { id: string; title: string; children: ReactNode }) {
   return (
     <Box id={id}>
@@ -1223,75 +1199,6 @@ function Note({ icon: Icon, title, children }: { icon: typeof Table; title: stri
   );
 }
 
-function HeadCell({ children }: { children: ReactNode }) {
-  return (
-    <Box
-      tag="th"
-      textAlign="left"
-      fontSize={13}
-      fontWeight={600}
-      py={2}
-      pr={6}
-      bb={1}
-      theme={{ dark: { color: 'slate-300', borderColor: 'slate-700' }, light: { color: 'slate-700', borderColor: 'slate-200' } }}
-    >
-      {children}
-    </Box>
-  );
-}
-
-function Cell({ children }: { children: ReactNode }) {
-  return (
-    <Box
-      tag="td"
-      fontSize={14}
-      py={2}
-      pr={6}
-      bb={1}
-      theme={{ dark: { color: 'slate-400', borderColor: 'slate-800' }, light: { color: 'slate-600', borderColor: 'slate-100' } }}
-    >
-      {children}
-    </Box>
-  );
-}
-
-function Mono({ children }: { children: ReactNode }) {
-  return (
-    <Box
-      tag="code"
-      display="inline"
-      px={1}
-      borderRadius={1}
-      fontSize={13}
-      theme={{ dark: { bgColor: 'slate-800', color: 'slate-200' }, light: { bgColor: 'slate-100', color: 'slate-800' } }}
-    >
-      {children}
-    </Box>
-  );
-}
-
-const interactions: { input: string; result: string }[] = [
-  { input: 'Tab', result: 'Enters the grid at one cell — not at every cell. Shift+Tab leaves it.' },
-  { input: '→ / ←', result: 'One cell along the row. At either end, focus stays where it is.' },
-  {
-    input: '↓ / ↑',
-    result:
-      'One row, keeping the column — through a group row or a detail panel with fewer cells, and through a grouped header whose cells cover several columns each.',
-  },
-  { input: 'Home / End', result: 'The first or last cell of the row.' },
-  { input: 'Ctrl + Home / End', result: 'The first or last cell of the whole grid, scrolling there if it has not been rendered yet.' },
-  { input: 'PageDown / PageUp', result: 'A screenful of rows at a time.' },
-  { input: 'Enter / Space', result: 'Sorts, on a sortable column header. Anywhere else, steps into the cell’s own control.' },
-  { input: 'F2', result: 'Steps into the cell’s control even on a header, where Enter is spoken for by the sort.' },
-  { input: 'Escape', result: 'Hands the keyboard back from that control to the cell.' },
-];
-
-const resizerInteractions: { input: string; result: string }[] = [
-  { input: 'Tab / F2', result: 'Reaches the resizer of the header cell focus is on. Escape hands the keyboard back to the cell.' },
-  { input: '→ / ←', result: 'Moves the separator 16px, which widens or narrows the column exactly as dragging it would.' },
-  { input: 'Home / End', result: 'The narrowest the grid allows, or as wide as the grid itself.' },
-];
-
 const sidebarLinks = [
   { id: 'a11y', label: 'Keyboard and roles' },
   { id: 'full-featured', label: 'Full Featured' },
@@ -1304,4 +1211,5 @@ const sidebarLinks = [
   { id: 'context-menu', label: 'Context Menu' },
   { id: 'resizer-style', label: 'Resizer Style' },
   { id: 'resize-mode', label: 'Resize Mode' },
-] as const;
+  ...apiSections(dataGridApi),
+];

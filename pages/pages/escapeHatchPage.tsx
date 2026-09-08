@@ -4,6 +4,7 @@ import Box from '../../src/box';
 import Flex from '../../src/components/flex';
 import { H2 } from '../../src/components/semantics';
 import Code from '../components/code';
+import Mono from '../components/mono';
 import PageHeader from '../components/pageHeader';
 import Reveal from '../components/reveal';
 import useTableOfContents from '../hooks/useTableOfContents';
@@ -219,21 +220,6 @@ function Bullet({ children }: { children: ReactNode }) {
       <Box flexShrink={0} width={1.5} height={1.5} mt={2.5} borderRadius={1} bgColor="indigo-500" />
       <Box>{children}</Box>
     </Flex>
-  );
-}
-
-function Mono({ children }: { children: ReactNode }) {
-  return (
-    <Box
-      tag="code"
-      display="inline"
-      px={1}
-      borderRadius={1}
-      fontSize={13}
-      theme={{ dark: { bgColor: 'slate-800', color: 'slate-200' }, light: { bgColor: 'slate-100', color: 'slate-800' } }}
-    >
-      {children}
-    </Box>
   );
 }
 

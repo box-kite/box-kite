@@ -1,0 +1,52 @@
+{
+  "name": "Icon",
+  "route": "/icon",
+  "import": "import Icon from '@box-kite/react/components/icon';",
+  "description": "Box props on an icon somebody else drew — lucide, Tabler, react-icons, an Iconify set, a raw `<svg>`. It clones the one element it is given and puts the engine's class on it, so it knows no icon set's API and the class beats the `width`/`height` the set writes for itself.",
+  "pattern": null,
+  "props": [
+    {
+      "name": "children",
+      "type": "React.ReactElement",
+      "required": true,
+      "default": null,
+      "description": "The icon: exactly one element, whose `<svg>` these props are styling."
+    },
+    {
+      "name": "size",
+      "type": "BoxStyleProps['width'] & BoxStyleProps['height']",
+      "required": false,
+      "default": null,
+      "description": "Width and height at once, on the ÷4 scale: `size={6}` is the 24px an icon set defaults to, and is the default here too. It wins over `width`/`height`. Careful when porting — a set's own `size` is in pixels."
+    },
+    {
+      "name": "label",
+      "type": "string",
+      "required": false,
+      "default": null,
+      "description": "Names the icon — `role=\"img\"` and this text. Without one the icon is `aria-hidden`."
+    },
+    {
+      "name": "props",
+      "type": "TagPropsType<'svg'>",
+      "required": false,
+      "default": null,
+      "description": "Attributes forwarded to the icon's element, over anything the icon writes for itself."
+    },
+    {
+      "name": "style",
+      "type": "React.CSSProperties",
+      "required": false,
+      "default": null,
+      "description": "Inline styles forwarded to the icon's element. Box props are the way to style it; this is for a value that has to be computed per render, which no class can hold."
+    }
+  ],
+  "parts": [],
+  "keyboard": [],
+  "a11y": [
+    "An icon with no `label` is `aria-hidden`, which is right for the common case: the icon repeats a label that is already there, and reading it twice is noise.",
+    "A `label` makes it `role=\"img\"` with that text as its name — for an icon that is the only thing saying what a control does."
+  ],
+  "axe": { "fixtures": ["Icon"], "knownViolations": [] },
+  "styleTree": []
+}

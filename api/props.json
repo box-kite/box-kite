@@ -1,5 +1,5 @@
 {
-  "propCount": 212,
+  "propCount": 215,
   "props": [
     {
       "name": "appearance",
@@ -508,6 +508,7 @@
         "grid",
         "inline-grid",
         "contents",
+        "list-item",
         "table",
         "table-header-group",
         "table-row-group",
@@ -523,6 +524,33 @@
       "numeric": false,
       "open": false,
       "values": [true]
+    },
+    {
+      "name": "borderCollapse",
+      "description": "Whether a table's cell borders are shared or every cell keeps its own. `collapse` is what makes a bordered table read as one grid rather than as a row of boxes, and it is the value `borderSpacing` has nothing to space.",
+      "properties": ["border-collapse"],
+      "example": { "value": "collapse", "css": "border-collapse: collapse" },
+      "numeric": false,
+      "open": false,
+      "values": ["collapse", "separate"]
+    },
+    {
+      "name": "borderSpacing",
+      "description": "The gap between the cells of a `separate` table, on the spacing scale. It is a property of the table, not of a cell: a cell's own `p` is inside its border, this is the space outside it.",
+      "properties": ["border-spacing"],
+      "example": { "value": 2, "css": "border-spacing: 0.5rem" },
+      "numeric": true,
+      "open": false,
+      "values": []
+    },
+    {
+      "name": "tableLayout",
+      "description": "`fixed` sizes a table from its own width and its first row rather than from every cell in it, so one long cell cannot widen the column it sits in — and the table lays out in one pass instead of after measuring all of it.",
+      "properties": ["table-layout"],
+      "example": { "value": "fixed", "css": "table-layout: fixed" },
+      "numeric": false,
+      "open": false,
+      "values": ["auto", "fixed"]
     },
     {
       "name": "container",
@@ -1166,10 +1194,10 @@
       "name": "listStyle",
       "description": "The list-style CSS shorthand property allows you to set all the list style properties at once.",
       "properties": ["list-style"],
-      "example": { "value": "square", "css": "list-style: square" },
+      "example": { "value": "disc", "css": "list-style: disc" },
       "numeric": false,
       "open": false,
-      "values": ["square", "inside", "outside", "none"]
+      "values": ["disc", "circle", "square", "decimal", "inside", "outside", "none"]
     },
     {
       "name": "m",

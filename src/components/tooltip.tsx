@@ -48,7 +48,10 @@ interface Props<TKey extends keyof ComponentsAndVariants> extends TooltipBoxProp
   children: (trigger: TooltipTrigger) => React.ReactNode;
   /** Controlled open state. Leave it out and the tooltip owns it. */
   open?: boolean;
+  /** Whether it starts open, when the tooltip owns its own state. */
   defaultOpen?: boolean;
+  /** Fires with the new state and why it changed — `'hover'`, `'focus'`, `'pointer-leave'`, `'blur'`
+   * or `'escape'`. */
   onOpenChange?: ChangeHandler<boolean, TooltipReason>;
   /**
    * How long the pointer has to rest on the trigger, in ms. Default 300 — sweeping across a toolbar should
@@ -57,13 +60,15 @@ interface Props<TKey extends keyof ComponentsAndVariants> extends TooltipBoxProp
   openDelay?: number;
   /** The grace period after the pointer leaves, in ms. Default 150, so the pointer can reach the tooltip (WCAG 1.4.13). */
   closeDelay?: number;
+  /** Nudge the bubble along the inline axis, as a CSS length. */
   adjustTranslateX?: string;
+  /** Nudge the bubble along the block axis, as a CSS length. */
   adjustTranslateY?: string;
 }
 
 /**
  * The APG tooltip: a description that appears on hover *and* on focus and stays until the user is done
- * with it. Pattern: https://www.w3.org/WAI/ARIA/apg/patterns/tooltip/
+ * with it.
  *
  * ```tsx
  * <Tooltip content="Deletes the row for good">{(trigger) => <Button {...trigger}>Delete</Button>}</Tooltip>
@@ -74,6 +79,25 @@ interface Props<TKey extends keyof ComponentsAndVariants> extends TooltipBoxProp
  * on `aria-describedby` costs the thing the pattern is for. The component owns `role="tooltip"`, the
  * `aria-describedby`, and WCAG 1.4.13's three obligations — dismissible with Escape without moving focus,
  * hoverable, and never closed on a timer. Focus never enters it: a focusable tooltip is a mislabelled dialog.
+ *
+ * @pattern https://www.w3.org/WAI/ARIA/apg/patterns/tooltip/
+ * @a11y `role="tooltip"` on the bubble and `aria-describedby` on the trigger, so the description is read
+ * as part of the control rather than as text that happens to be nearby.
+ * @a11y WCAG 1.4.13, all three parts: Escape dismisses it without moving focus, the pointer can travel
+ * onto the bubble and read it, and nothing hides it on a timer.
+ * @a11y The bubble is never in the tab order — a focusable tooltip is a dialog with the wrong role — and
+ * it renders nothing at all while `content` is empty.
+ * @keyboard Tab — Shows it as soon as the trigger has focus, ignoring `openDelay`: a keyboard user asked
+ * for it by arriving.
+ * @keyboard Escape — Hides it, leaving focus on the trigger. It stays hidden until the pointer or focus
+ * leaves and comes back.
+ * @keyboard Tab, again — Reaches the next control, and the tooltip closes behind it.
+ * @keyboard (Pointer) Resting on the trigger — Shows it after `openDelay`, 300 ms by default: sweeping
+ * across a toolbar should not light every control up.
+ * @keyboard (Pointer) Leaving the trigger — Hides it after `closeDelay`, 150 ms — unless the pointer
+ * lands on the tooltip itself.
+ * @keyboard (Pointer) Moving onto the tooltip — Keeps it open for as long as the pointer is there, so a
+ * long description can be read or selected.
  */
 function Tooltip<TKey extends keyof ComponentsAndVariants = 'tooltip'>(props: Props<TKey>) {
   const {

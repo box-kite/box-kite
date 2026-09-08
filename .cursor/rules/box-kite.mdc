@@ -1,5 +1,5 @@
 ---
-description: @box-kite/react (Box Kite): the runtime CSS-in-JS library whose Box component takes 212 typed CSS props. Read before writing Box props, a component, a theme or an extension — the prop names collide with Tailwind and Chakra while the numbers mean different things.
+description: @box-kite/react (Box Kite): the runtime CSS-in-JS library whose Box component takes 215 typed CSS props. Read before writing Box props, a component, a theme or an extension — the prop names collide with Tailwind and Chakra while the numbers mean different things.
 globs: **/*.tsx,**/*.jsx,**/*.ts
 alwaysApply: false
 ---

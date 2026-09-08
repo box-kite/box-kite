@@ -1,14 +1,18 @@
 import { Bell, ChartLine, Compass, Download, Heart, Search, Shapes, Star, Sun, Trash2 } from 'lucide-react';
 import { ReactNode } from 'react';
+import iconApi from '../../api/components/icon.json';
 import Box from '../../src/box';
 import Flex from '../../src/components/flex';
 import Icon from '../../src/components/icon';
 import { H2, Span } from '../../src/components/semantics';
 import { Circle, Path, Svg } from '../../src/components/svg';
+import ApiReference from '../components/apiReference';
 import Code from '../components/code';
+import Mono from '../components/mono';
 import PageHeader from '../components/pageHeader';
 import Reveal from '../components/reveal';
 import useTableOfContents from '../hooks/useTableOfContents';
+import { apiSections } from '../site/componentApi';
 import SiGithub from '~icons/simple-icons/github';
 import SiReact from '~icons/simple-icons/react';
 import SiTypescript from '~icons/simple-icons/typescript';
@@ -439,6 +443,7 @@ function ActiveLink({ to, children }: { to: string; children: React.ReactNode })
             </Box>
             <PropTable />
           </Section>
+          <ApiReference api={iconApi} />
         </Flex>
       </Reveal>
     </Box>
@@ -479,12 +484,13 @@ const sidebarLinks = [
   { id: 'own-svg', label: 'Your own SVG' },
   { id: 'use-class-names', label: 'useClassNames' },
   { id: 'props', label: 'Props' },
+  ...apiSections(iconApi),
 ];
 
 function PropTable() {
   return (
     <Box overflow="auto">
-      <Box tag="table" display="table" width="fit" css={{ borderCollapse: 'collapse' }}>
+      <Box tag="table" display="table" borderCollapse="collapse" width="fit">
         <Box tag="thead" display="table-header-group">
           <Box tag="tr" display="table-row">
             <HeadCell>Prop</HeadCell>
@@ -553,21 +559,6 @@ function Section({ id, title, children }: { id: string; title: string; children:
       <Box fontSize={15} lineHeight={26} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
         {children}
       </Box>
-    </Box>
-  );
-}
-
-function Mono({ children }: { children: ReactNode }) {
-  return (
-    <Box
-      tag="code"
-      display="inline"
-      px={1}
-      borderRadius={1}
-      fontSize={13}
-      theme={{ dark: { bgColor: 'slate-800', color: 'slate-200' }, light: { bgColor: 'slate-100', color: 'slate-800' } }}
-    >
-      {children}
     </Box>
   );
 }

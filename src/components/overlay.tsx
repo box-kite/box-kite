@@ -8,16 +8,12 @@ import { ElementLike, htmlElementOf, isRtl } from '../utils/dom/domUtils';
 
 const positionDigitsAfterComma = 2;
 
-/**
- * A floating layer, rendered into the portal container at the place it is declared: it measures where it
- * sits, then renders its children into `#box-kite-portal` translated to that spot, so they escape
- * `overflow: hidden` and every clipped ancestor. It owns no open state, no ARIA and no dismissal — a
- * layer is not a pattern, and `Tooltip`, `Dropdown` and the DataGrid menu each need a different one.
- * (This was called `Tooltip` until A3, which is the one thing it is not.)
- */
 interface OverlayProps {
+  /** Fires whenever the layer is repositioned, with the page coordinates it was moved to. */
   onPositionChange?(position: { top: number; left: number; windowScrollX: number; windowScrollY: number }): void;
+  /** Nudge the layer along the inline axis, as a CSS length. */
   adjustTranslateX?: string;
+  /** Nudge the layer along the block axis, as a CSS length. */
   adjustTranslateY?: string;
   /**
    * Measure this element instead of the layer's own placeholder — right when the layer belongs to an element
@@ -42,6 +38,20 @@ interface OverlayProps {
 
 type Props = OverlayProps & BoxProps;
 
+/**
+ * A floating layer, rendered into the portal container at the place it is declared: it measures where it
+ * sits, then renders its children into `#box-kite-portal` translated to that spot, so they escape
+ * `overflow: hidden` and every clipped ancestor. It owns no open state, no ARIA and no dismissal — a
+ * layer is not a pattern, and `Tooltip`, `Dropdown` and the DataGrid menu each need a different one.
+ * (This was called `Tooltip` until A3, which is the one thing it is not.)
+ *
+ * @a11y No role, no `aria-*` and no focus handling: whatever renders a layer owns the pattern, and a
+ * layer given a role it does not implement is worse than one with none.
+ * @a11y The layer is portalled out of the subtree it was declared in, so it carries the direction it was
+ * measured in as a `dir` of its own — a container hanging off the body inherits nothing.
+ * @a11y It renders where it is declared in the React tree, so the DOM order a screen reader reads and
+ * the tab order both follow the markup rather than the portal.
+ */
 function OverlayImpl(props: Props, ref: Ref<HTMLDivElement>) {
   const {
     onPositionChange,
