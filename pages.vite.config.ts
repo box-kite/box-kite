@@ -83,7 +83,9 @@ function markdownMirror(): Plugin {
       server.middlewares.use(async (request, response, next) => {
         const url = (request.url ?? '').split('?')[0];
 
-        if (!url.endsWith('.md') && url !== '/llms.txt' && url !== '/llms-full.txt') return next();
+        const mirrored = url.endsWith('.md') || ['/llms.txt', '/llms-full.txt', '/box-kite.mdc'].includes(url);
+
+        if (!mirrored) return next();
 
         // The corpus is every page, so it renders all of them: about half a minute, and silence
         // looks like a hung request.
@@ -98,7 +100,10 @@ function markdownMirror(): Plugin {
 
           if (content === null) return next();
 
-          response.setHeader('Content-Type', `${url.endsWith('.md') ? 'text/markdown' : 'text/plain'}; charset=utf-8`);
+          // `.mdc` is markdown too, but it is a file to save rather than one to read in a browser.
+          const type = url.endsWith('.md') ? 'text/markdown' : 'text/plain';
+
+          response.setHeader('Content-Type', `${type}; charset=utf-8`);
           response.end(content);
         } catch (error) {
           next(error);

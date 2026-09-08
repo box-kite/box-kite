@@ -176,8 +176,44 @@ export default function AiContextPage() {
   docs/components.md       every component, its import, and whether it renders on a server
   docs/a11y.md             the behaviour hooks, for a pattern this library does not ship
   BOX_KITE_AI_CONTEXT.md   the long-form reference
-  .claude/                 the same rules again, as a skill and as a rules file`}
+  .claude/skills/box-kite/ the same rules as a skill, with four references beside it
+  .cursor/rules/           and as a Cursor rule, to copy into .cursor/rules/`}
           />
+        </Box>
+      </Reveal>
+
+      {/* Install it instead of copying it */}
+      <Reveal delay={0.36}>
+        <Box mb={12}>
+          <Box tag="h3" fontSize={20} fontWeight={600} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }} mb={3}>
+            Or install the rules as a skill
+          </Box>
+          <Box fontSize={14} lineHeight={22} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }} mb={5}>
+            Agent Skills are an open standard about forty-five coding agents read, so one <Mono>SKILL.md</Mono> reaches nearly all of them —
+            and unlike a file you copy, an install command keeps it current. It is the same rules file as <Mono>AGENTS.md</Mono>, with a
+            measured table of the dividers and four references it loads only when the question needs them.
+          </Box>
+          <Flex d="column" gap={4}>
+            <Code
+              language="shell"
+              label="Any agent — Claude Code, Cursor, Codex, Copilot, Gemini CLI, Zed…"
+              code={`npx skills add box-kite/box-kite
+npx skills add box-kite/box-kite -a cursor -g   # one agent, and globally`}
+            />
+            <Code
+              language="shell"
+              label="Claude Code, as a plugin"
+              code={`/plugin marketplace add box-kite/box-kite
+/plugin install box-kite@box-kite`}
+            />
+            <Code
+              language="shell"
+              label="Cursor, as a rule file"
+              code={`mkdir -p .cursor/rules
+cp node_modules/@box-kite/react/.cursor/rules/box-kite.mdc .cursor/rules/
+curl -O ${SITE_URL}/box-kite.mdc   # or without the package installed`}
+            />
+          </Flex>
         </Box>
       </Reveal>
 
@@ -198,6 +234,8 @@ export default function AiContextPage() {
             code={`curl ${SITE_URL}/llms.txt      # the index: every page, and what each one covers
 curl ${SITE_URL}/box.md        # any page, as markdown — append .md to the address
 curl ${SITE_URL}/props.md      # every prop, the CSS it writes, one measured example
+curl ${SITE_URL}/skill.md      # the skill itself, for an agent with no install command
+curl ${SITE_URL}/box-kite.mdc  # and the Cursor rule
 curl ${SITE_URL}/llms-full.txt # all of it in one file, for a tool that indexes a site`}
           />
         </Box>

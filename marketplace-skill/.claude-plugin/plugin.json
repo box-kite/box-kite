@@ -1,8 +1,0 @@
-{
-  "name": "box-kite",
-  "version": "1.0.0",
-  "description": "@box-kite/react expert — runtime CSS-in-JS library with ~144 CSS props, component system, themes, Dropdown, Select, DataGrid",
-  "author": "Maxim Procopenco",
-  "homepage": "https://github.com/box-kite/box-kite",
-  "skills": ["skills/box-kite"]
-}

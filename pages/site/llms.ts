@@ -59,8 +59,13 @@ export function buildLlmsTxt({ packageName, version, routes, facts, deprecated, 
     '## Docs',
     pages.map((route) => link(route, siteUrl)).join('\n'),
     '## Reference',
-    `- [Every prop](${siteUrl}/props.md): all of them, the CSS each writes, and one example measured from the engine` +
-      ` rather than quoted from a doc.`,
+    [
+      `- [Every prop](${siteUrl}/props.md): all of them, the CSS each writes, and one example measured from the engine` +
+        ` rather than quoted from a doc.`,
+      `- [The skill](${siteUrl}/skill.md): the rules, the measured dividers and what to read next, as an Agent Skill —` +
+        ` \`npx skills add box-kite/box-kite\` installs it, and this address is the same file.`,
+      `- [The Cursor rule](${siteUrl}/box-kite.mdc): the same rules as a \`.mdc\` for \`.cursor/rules/\`.`,
+    ].join('\n'),
     '## Optional',
     [
       `- [llms-full.txt](${siteUrl}/llms-full.txt): every page above in one file. Fetch the page you need instead —` +

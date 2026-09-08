@@ -35,6 +35,8 @@ Read `.claude/rules/box-kite-rules.md` — the shortest complete answer — befo
 | `npm run check:boundaries`                 | Fail if the core engine imports React or the RSC entry reaches a client hook (also prints the adapter ratio)      |
 | `npm run docs:props`                       | Write every prop's `@example` (measured from the engine) and `api/props.json`                                     |
 | `npm run check:props`                      | Fail if a prop has no JSDoc, an example no longer matches the CSS, or the reference is stale                      |
+| `npm run docs:agents`                      | Write the committed agent files: the skill, the Cursor rule and the plugin marketplace entry                      |
+| `npm run check:agents`                     | Fail if one of those three has been edited by hand instead of its source                                          |
 | `npm run release -- minor`                 | Turn `releases/next.md` into the versioned notes, bump the manifest and open the release PR — merging it releases |
 
 Node version: v24 (pinned in .nvmrc).
@@ -173,6 +175,7 @@ After any code change, all of the following must pass before considering the wor
 4. `npm run build` — Library build
 5. `npm test` — All tests (or `npm run test:coverage` when touching `src/core/` or `src/react/`, which is what CI runs)
 6. `npm run check:props` — the prop reference, when `src/core/boxStyles.ts` or a formatter changed
+7. `npm run check:agents` — the committed skill, Cursor rule and marketplace entry, when the rules file, the lead block above or the prop count changed
 
 CI runs the test suite against React 18 and React 19 — both are in the supported peer range and the engine leans on layout effects, hydration and server rendering, which is exactly what changed between them.
 
@@ -181,7 +184,7 @@ CI runs the test suite against React 18 and React 19 — both are in the support
 1. Define in `src/core/boxStyles.ts` with JSDoc comment — the prose, not the example
 2. Add formatter in `src/core/boxStylesFormatters.ts` if needed
 3. Types auto-generate — no manual type changes needed
-4. Bump `PROP_COUNT` in `src/core/boxStyles.test.ts` and the ten hand-written copies it checks
+4. Bump `PROP_COUNT` in `src/core/boxStyles.test.ts` and the hand-written copies it checks (the generated ones follow `npm run docs:agents`)
 5. `npm run docs:props` — writes the prop's `@example` from the CSS the engine actually emits, and `api/props.json` with it.
    **Never write or edit an `@example` by hand**: it is generated, `npm run check:props` fails when it drifts, and a changed
    divider changes forty-five of them at once
@@ -203,13 +206,23 @@ CI runs the test suite against React 18 and React 19 — both are in the support
 
 An agent in a consumer repo never sees this file, so the tarball carries its own. `scripts/agent-docs.mjs` writes them during `npm run build` (from `postbuild.mjs`), and every one of them is generated or copied from a source of truth in this repo — a stale agent file is worse than none, because an agent trusts it over its priors:
 
-| In the tarball                                                         | Written from                                                            |
-| ---------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| `AGENTS.md`                                                            | the script's own prose, `.claude/rules/box-kite-rules.md`, `props.json` |
-| `docs/index.md`                                                        | the file list, so it cannot omit one                                    |
-| `docs/props.md`                                                        | `api/props.json` — F3's extraction, so every example is measured        |
-| `docs/components.md`                                                   | the built component chunks' own exports, read by importing them         |
-| `docs/a11y.md`                                                         | `docs/a11y-primitives.md`                                               |
-| `BOX_KITE_AI_CONTEXT.md`, `.claude/skills/box-kite/`, `.claude/rules/` | copied by `postbuild.mjs`, as they were before                          |
+| In the tarball                                                                           | Written from                                                               |
+| ---------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| `AGENTS.md`                                                                              | the script's own prose, `.claude/rules/box-kite-rules.md`, `props.json`    |
+| `docs/index.md`                                                                          | the file list, so it cannot omit one                                       |
+| `docs/props.md`                                                                          | `api/props.json` — F3's extraction, so every example is measured           |
+| `docs/components.md`                                                                     | the built component chunks' own exports, read by importing them            |
+| `docs/a11y.md`                                                                           | `docs/a11y-primitives.md`                                                  |
+| `BOX_KITE_AI_CONTEXT.md`, `.claude/skills/box-kite/`, `.claude/rules/`, `.cursor/rules/` | copied by `postbuild.mjs` — the whole skill directory, references included |
 
 The rule when editing them: change the source, never the output. `npm run build` fails if a generated file comes out empty, if a component no longer loads, or if `api/props.json` disagrees with itself about the prop count.
+
+Three more are generated but **committed**, because an install command reads them out of the repository rather than out of the tarball — `scripts/skill-docs.mjs` writes them and `npm run check:agents` fails when one has been edited by hand:
+
+| Committed                          | Installed by                                    | Written from                                                                   |
+| ---------------------------------- | ----------------------------------------------- | ------------------------------------------------------------------------------ |
+| `.claude/skills/box-kite/SKILL.md` | `npx skills add box-kite/box-kite` (~45 agents) | the rules file, `props.json`, `AGENTS.md`'s lead block, the `@deprecated` tags |
+| `.cursor/rules/box-kite.mdc`       | copied into a project's `.cursor/rules/`        | the same, with Cursor's three frontmatter fields                               |
+| `.claude-plugin/marketplace.json`  | `/plugin marketplace add box-kite/box-kite`     | `package.json`, and it names the skill above                                   |
+
+The four files under `.claude/skills/box-kite/references/` are the exception: they are prose, so they are sources, and `SKILL.md` is a table of contents over them. The docs site serves the first two at `/skill.md` and `/box-kite.mdc`, generated the same way rather than read off disk.

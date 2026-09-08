@@ -36,6 +36,11 @@ jobs:
       # formatter or a value list changes and the reference beside it did not.
       - name: Check the prop reference is current 🔧
         run: npm run check:props
+      # The skill, the Cursor rule and the marketplace entry are generated from the rules file and the
+      # prop reference, and an install command reads them out of this repository — so a hand-edit of one
+      # is a claim nothing holds up.
+      - name: Check the committed agent files are current 🔧
+        run: npm run check:agents
       - name: Check build 🔧
         run: npm run build
       # The existence proof for the core boundary: a page with no framework, built against the

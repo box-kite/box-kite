@@ -245,9 +245,9 @@ const definitions = Object.entries(cssStyles).flatMap(([prop, defs]) =>
 );
 
 describe('every declared prop value produces a rule', () => {
-  // This number used to be the eleventh hand-written copy of the figure, which is how C5 raised it here
-  // and left the npm description claiming 165 (bug #114) — the first drift being bug #71's '~144' against
-  // a registry of 117. The ten copies are read out of the files now, so adding a prop fails until they agree.
+  // This number used to be one more hand-written copy of the figure, which is how C5 raised it here and
+  // left the npm description claiming 165 (bug #114) — the first drift being bug #71's '~144' against a
+  // registry of 117. The copies are read out of the files now, so adding a prop fails until they agree.
   const PROP_COUNT = 212;
 
   // A file that stops quoting the figure fails too, so a rewording is noticed rather than silently exempt.
@@ -259,7 +259,10 @@ describe('every declared prop value produces a rule', () => {
     'package.json',
     'src/BOX_KITE_AI_CONTEXT.md',
     '.claude/skills/box-kite/SKILL.md',
-    'marketplace-skill/skills/box-kite/SKILL.md',
+    // Generated (from `api/props.json` and from the manifest's own description), so neither can drift
+    // by hand — they are here to fail if a generator stops stating the figure at all.
+    '.cursor/rules/box-kite.mdc',
+    '.claude-plugin/marketplace.json',
     'pages/site/site.ts',
     'pages/pages/aiContextPage.tsx',
   ];

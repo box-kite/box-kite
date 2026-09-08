@@ -29,17 +29,6 @@ const ALLOWED = [
     strings: ['a repo called `react-box`'],
   },
   {
-    file: 'marketplace-skill/README.md',
-    reason: 'the skill marketplace repo has not moved yet (R3); an installed plugin resolves to the entry it came from',
-    strings: [
-      'cronocodesolutions/react-box-skill',
-      // The marketplace *id* form: the repo path with its slash flattened to a dash.
-      'cronocodesolutions-react-box-skill',
-      'cronocode-react-box',
-      'react-box-skill/skills/box-kite',
-    ],
-  },
-  {
     file: '.claude/skills/release/SKILL.md',
     reason: 'the one-time rename release runbook: the bridge publish and the deprecation both name the old package',
     strings: ['@cronocode/react-box'],

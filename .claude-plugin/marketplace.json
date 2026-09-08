@@ -1,0 +1,35 @@
+{
+  "name": "box-kite",
+  "owner": { "name": "Maxim Procopenco", "url": "https://github.com/box-kite/box-kite" },
+  "description": "The Box Kite skill: how to write @box-kite/react correctly, generated from the library it describes.",
+  "plugins": [
+    {
+      "name": "box-kite",
+      "source": "./",
+      "displayName": "Box Kite",
+      "description": "One React component with 212 typed CSS props that generates atomic CSS at runtime — no CSS files, no build step, renders in a Server Component.",
+      "author": { "name": "Maxim Procopenco" },
+      "homepage": "https://www.box-kite.dev/ai-context",
+      "repository": "https://github.com/box-kite/box-kite",
+      "license": "MIT",
+      "keywords": [
+        "box-kite",
+        "boxkite",
+        "react",
+        "box",
+        "css-in-js",
+        "atomic-css",
+        "runtime-css",
+        "styling",
+        "design-system",
+        "react-server-components",
+        "rsc",
+        "accessibility",
+        "typescript"
+      ],
+      "category": "development",
+      "skills": ["./.claude/skills/box-kite"],
+      "strict": false
+    }
+  ]
+}

@@ -1,74 +1,17 @@
 ---
-name: box-kite
-description: "@box-kite/react (Box Kite) expert — the runtime CSS-in-JS library whose Box component takes 212 typed CSS props and writes the CSS itself. Use for any work with Box props, the Flex/Grid/Button/Textbox/Dropdown/DataGrid components, themes, Box.extend() or Box.components() — and read it before writing props, because the prop names collide with Tailwind's and Chakra's while the numbers mean different things. Also covers installing and updating the package."
-license: MIT
+description: @box-kite/react (Box Kite): the runtime CSS-in-JS library whose Box component takes 212 typed CSS props. Read before writing Box props, a component, a theme or an extension — the prop names collide with Tailwind and Chakra while the numbers mean different things.
+globs: **/*.tsx,**/*.jsx,**/*.ts
+alwaysApply: false
 ---
 
-# @box-kite/react
+# @box-kite/react rules
 
-Runtime CSS-in-JS. `Box` takes 212 typed CSS props and generates the CSS for them at runtime — no stylesheet, no class name to invent, and two elements written with the same value share one class.
-
-## This library is not in your training data
-
-It was renamed at 1.0.0 (September 2026) and its prop surface nearly doubled on the way, so a plausible-looking memory of it is a memory of a different library. Four facts first, because each one is silently wrong in the APIs this most resembles:
+This library is not in your training data: it was renamed at 1.0.0 (September 2026) and its prop surface nearly doubled on the way. Four facts before the rules, because each one is silently wrong in the APIs this most resembles:
 
 - **The dividers are per prop.** Spacing is ÷4 (`p={4}` is 1rem), `fontSize` is ÷16 (`fontSize={14}` is 14px), `borderRadius` is ÷4, and border width and `lineHeight` are direct px (`b={1}` is 1px).
 - **There is no `style` attribute.** Every visual value is a prop; the one-off nothing has a prop for is `css={{ … }}`, which still compiles to a shared class.
 - **The element comes from the component, not from `tag`.** `<Flex>`, `<Button>`, `<H1>`, `<Ul>`, `<Path>` — `<Box tag="…">` is the fallback, not the idiom.
 - **HTML attributes go in `props`.** `<Link props={{ href: '/about' }}>`; an `href` written at the top level typechecks and is then dropped.
-
-## The numbers, measured
-
-The divider is per prop, so the same number is a different length depending on which prop it is written on — `p={4}` is 16px and `b={4}` is 4px. Every row here is what the engine emitted for that example, not what a doc claims about it:
-
-| Prop                | Which props                                                | Written                    | Emitted                      |
-| ------------------- | ---------------------------------------------------------- | -------------------------- | ---------------------------- |
-| `p`                 | spacing — `p`/`m`/`gap`/`px`/`py`/`pt`… all of them        | `p={4}`                    | `padding: 1rem`              |
-| `width`             | sizing — `width`/`height` and the four `min`/`max` props   | `width={4}`                | `width: 1rem`                |
-| `borderRadius`      | the corner radius, on the spacing scale                    | `borderRadius={4}`         | `border-radius: 1rem`        |
-| `b`                 | border width — `b`/`bx`/`by`/`bt`/`bs`…                    | `b={4}`                    | `border-width: 4px`          |
-| `fontSize`          | the one that is ÷16                                        | `fontSize={14}`            | `font-size: 0.875rem`        |
-| `lineHeight`        | and `letterSpacing`                                        | `lineHeight={24}`          | `line-height: 24px`          |
-| `strokeWidth`       | SVG lengths — and the geometry props `cx`/`cy`/`r`/`x`/`y` | `strokeWidth={4}`          | `stroke-width: 4`            |
-| `animationDuration` | every animation and transition time                        | `animationDuration={1100}` | `animation-duration: 1100ms` |
-
-## Read this next
-
-| Read                                                                                      | When the question is                                                       |
-| ----------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| [`references/styling.md`](references/styling.md) — Styling reference                      | writing props: the categories, the six kinds of nesting, the theme         |
-| [`references/components.md`](references/components.md) — Components reference             | choosing a component, or wiring a Dropdown, a Select or a DataGrid         |
-| [`references/extending.md`](references/extending.md) — Extending Box                      | a value used twice, or a prop that does not exist yet                      |
-| [`references/patterns.md`](references/patterns.md) — Patterns and the rest of the surface | server rendering, the behaviour hooks, portals, form controls, the tooltip |
-| `node_modules/@box-kite/react/docs/props.md`                                              | one prop exactly: all 212, the CSS each writes, one measured example       |
-| `node_modules/@box-kite/react/BOX_KITE_AI_CONTEXT.md`                                     | the long-form reference, when a reference above is not enough              |
-
-With the package not installed, the prop reference is https://www.box-kite.dev/props.md, and https://www.box-kite.dev/llms.txt indexes every documentation page as markdown beside it.
-
-## Installing and updating
-
-Detect the package manager from the lock file rather than asking:
-
-| Lock file           | Manager | Install                       | Update                         |
-| ------------------- | ------- | ----------------------------- | ------------------------------ |
-| `package-lock.json` | npm     | `npm install @box-kite/react` | `npm update @box-kite/react`   |
-| `yarn.lock`         | yarn    | `yarn add @box-kite/react`    | `yarn upgrade @box-kite/react` |
-| `pnpm-lock.yaml`    | pnpm    | `pnpm add @box-kite/react`    | `pnpm update @box-kite/react`  |
-| `bun.lockb`         | bun     | `bun add @box-kite/react`     | `bun update @box-kite/react`   |
-
-`@box-kite/react` needs React 18 or 19 as a peer, and installs `@box-kite/core` (the engine) with itself.
-
-## Still working, but no longer the spelling to write
-
-- `placeholderStyles` — The name is `placeholder` now — this spelling still works and means the same thing.
-- `hoverGroup` — `group={{ 'card/hover': … }}` — the same rule, and every other state beside it.
-- `focusGroup` — `group={{ 'card/focus': … }}`.
-- `activeGroup` — `group={{ 'card/active': … }}`.
-- `disabledGroup` — `group={{ 'card/disabled': … }}`.
-- `selectedGroup` — `group={{ 'card/selected': … }}`.
-- `@box-kite/react/components/baseSvg` — Since SV3 every SVG element has a component, and `Svg` is this one without the presets: `<Svg viewBox="0 0 24 24" width="1.5rem">`.
-
-## The rules
 
 1. **NEVER use `style={{ }}`** — always use Box props. Missing prop? Create with `Box.extend()`
 2. **NEVER `<Box tag="...">`** for common elements — use `<Button>`, `<Link>`, `<H1>`, `<P>`, `<Ul>`/`<Li>`, `<Nav>`, `<Flex>`, `<Grid>`, and for SVG `<Svg>`, `<Path>`, `<Circle>`, `<Rect>`, `<SvgText>`… from `components/svg`
@@ -105,4 +48,4 @@ Detect the package manager from the lock file rather than asking:
 
 26. **The 5% is `css`, and it is still a class.** `css={{ mixBlendMode: 'multiply', WebkitLineClamp: 2 }}` takes a style object for the properties this library has no prop for and compiles it through the same pipeline as every other prop — one shared class, nested anywhere a prop nests (`hover={{ css: … }}`, `md`, `theme`, `dataAttr`, `before`, `startingStyle`, a keyframes step), rendered on a server — so it is never `style={{ }}`. Names are camelCase and typed by csstype (a misspelt property is a compile error, `WebkitLineClamp` → `-webkit-line-clamp`); values are CSS written as they stand, a number included, so a length wants its unit (`width: '100px'`, the type refuses `100`) and a colour token resolves the way a `vars` value does (`outlineColor: 'sky-500'`). It is sorted **last**, so on one element it wins the property a typed prop also names. A value carrying `;` or a brace is dropped, that entry only. Reach for a typed prop first, `Box.extend()` for anything used twice, `css` for the one-off.
 
-Full reference: `references/` beside this file, and `docs/props.md` inside the package.
+Full reference: `node_modules/@box-kite/react/docs/props.md` in the project, or https://www.box-kite.dev/props.md — every prop, the CSS it writes and one measured example.

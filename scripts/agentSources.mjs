@@ -1,7 +1,8 @@
-// What the sources say about themselves, for the agent-facing files the docs site publishes (AI2):
-// the facts `AGENTS.md` leads with, and every API that still works under a name its own doc comment
-// says not to write. Both are read rather than restated — a second copy of either would be wrong
-// within a release, and `llms.txt` is exactly the file an agent believes.
+// What the sources say about themselves, for every agent-facing file generated from them — `llms.txt`
+// and the markdown mirror (AI2), the skill and the Cursor rule (AI3): the facts `AGENTS.md` leads
+// with, the rules themselves, and every API that still works under a name its own doc comment says
+// not to write. All read rather than restated — a second copy would be wrong within a release, and
+// these are exactly the files an agent believes.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { PACKAGE_NAME, componentEntries } from './moduleGraph.mjs';
@@ -38,6 +39,30 @@ export function priorFacts() {
   }
 
   return facts;
+}
+
+const RULES_FILE = '.claude/rules/box-kite-rules.md';
+
+/** The rules file's own closing line, which every file quoting the rules replaces with its own. */
+const RULES_REFERENCE = /^Full reference:.*$/m;
+
+/**
+ * The rules, ready to inline somewhere else: the frontmatter and the H1 go, because they belong to
+ * the file rather than to a section quoting it, and the closing "Full reference" line becomes the one
+ * a reader of *that* file can actually open. There are three of those files now (the tarball's
+ * `AGENTS.md`, the skill, the Cursor rule), so a strip that silently matched nothing would put the
+ * repository's own paths in front of a consumer.
+ */
+export function rulesBody(reference) {
+  const body = read(RULES_FILE)
+    .replace(/^---\n[\s\S]*?\n---\n/, '')
+    .replace(/^#\s+.*\n/m, '');
+
+  if (!RULES_REFERENCE.test(body)) {
+    throw new Error(`${RULES_FILE} no longer ends with a "Full reference:" line: every file quoting the rules rewrites it.`);
+  }
+
+  return body.replace(RULES_REFERENCE, reference).trim();
 }
 
 /** A `@deprecated` tag's text, as one sentence of prose. */

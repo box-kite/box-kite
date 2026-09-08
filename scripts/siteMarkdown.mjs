@@ -8,6 +8,7 @@ import { join } from 'node:path';
 import { Window } from 'happy-dom';
 import { propsMarkdown } from './agent-docs.mjs';
 import { deprecations, priorFacts } from './agentSources.mjs';
+import { CURSOR_FILE, SKILL_FILE, agentFile } from './skill-docs.mjs';
 
 const root = join(import.meta.dirname, '..');
 
@@ -70,6 +71,14 @@ export function siteMarkdown(entry) {
     props: () => `${propsMarkdown().trimEnd()}\n`,
 
     /**
+     * The skill and the Cursor rule, for an agent that can fetch a URL but cannot run
+     * `npx skills add` — the same two files the repository commits and the package ships (AI3),
+     * generated here so the address cannot answer with a hand-edit of either.
+     */
+    skill: () => agentFile(SKILL_FILE),
+    cursor: () => agentFile(CURSOR_FILE),
+
+    /**
      * What a mirror address answers with, or `null` for an address that is not one — the dev server's
      * entry point, where nothing is on disk to serve.
      */
@@ -77,6 +86,8 @@ export function siteMarkdown(entry) {
       if (url === '/llms.txt') return this.llms();
       if (url === '/llms-full.txt') return this.llmsFull(await everyPage());
       if (url === '/props.md') return this.props();
+      if (url === '/skill.md') return this.skill();
+      if (url === '/box-kite.mdc') return this.cursor();
 
       const route = routeFor(url);
 

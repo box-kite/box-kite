@@ -10,8 +10,8 @@ import { writeAgentDocs } from './agent-docs.mjs';
 import { CLIENT_ONLY_COMPONENTS, CLIENT_ONLY_ENTRIES, CORE_PACKAGE, PACKAGE_NAME, SERVER_SAFE_COMPONENTS } from './moduleGraph.mjs';
 
 // Ensure target directories exist (recursive = cross-platform `mkdir -p`).
-mkdirSync('dist/.claude/skills/box-kite', { recursive: true });
 mkdirSync('dist/.claude/rules', { recursive: true });
+mkdirSync('dist/.cursor/rules', { recursive: true });
 
 const copies = [
   ['LICENSE', 'dist/LICENSE'],
@@ -20,12 +20,15 @@ const copies = [
   // The old filename ships beside it for one minor cycle: assistants, posts and the docs page's own
   // `cp` line reference it verbatim, and a file an AI was told to read is not a path to break quietly.
   ['src/BOX_KITE_AI_CONTEXT.md', 'dist/BOX_AI_CONTEXT.md'],
-  ['.claude/skills/box-kite/SKILL.md', 'dist/.claude/skills/box-kite/SKILL.md'],
+  // The whole skill directory, references included: `SKILL.md` is a table of contents now, so copying
+  // the file alone would ship one pointing at four that are not there (AI3).
+  ['.claude/skills/box-kite', 'dist/.claude/skills/box-kite'],
   ['.claude/rules/box-kite-rules.md', 'dist/.claude/rules/box-kite-rules.md'],
+  ['.cursor/rules/box-kite.mdc', 'dist/.cursor/rules/box-kite.mdc'],
 ];
 
 for (const [from, to] of copies) {
-  cpSync(from, to);
+  cpSync(from, to, { recursive: true });
 }
 
 // The published manifest is the root one plus the core dependency, which is deliberately *not* a root
