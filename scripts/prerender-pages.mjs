@@ -15,10 +15,8 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { Window } from 'happy-dom';
 import { build } from 'vite';
-import { propsMarkdown } from './agent-docs.mjs';
-import { deprecations, priorFacts } from './agentSources.mjs';
+import { siteMarkdown } from './siteMarkdown.mjs';
 
 const ROOT = resolve(import.meta.dirname, '..');
 const CLIENT_OUT = join(ROOT, 'dist-pages');
@@ -78,43 +76,13 @@ async function serverBundle() {
   return import(pathToFileURL(join(SSR_OUT, 'entry-server.mjs')).href);
 }
 
-const {
-  renderRoute,
-  prerenderPaths,
-  NOT_FOUND_PATH,
-  PRERENDERED_STYLE_ID,
-  routes,
-  releases,
-  routeFor,
-  elementMarkdown,
-  markdownPath,
-  pageMarkdown,
-  buildLlmsTxt,
-  buildLlmsFull,
-} = await serverBundle();
+const bundle = await serverBundle();
+const { renderRoute, prerenderPaths, NOT_FOUND_PATH, PRERENDERED_STYLE_ID, routes, routeFor, markdownPath } = bundle;
 
-const { name: packageName, version } = JSON.parse(await readFile(join(ROOT, 'package.json'), 'utf8'));
+// The same builder the dev server serves from, so the two can only ever produce the same files.
+const mirror = siteMarkdown(bundle);
 
 const shellFor = (path) => join(CLIENT_OUT, path === '/' ? '' : path.slice(1), 'index.html');
-
-// One window for the whole pass: the conversion only ever reads a tree that was just parsed into it.
-const window = new Window();
-
-/**
- * The markdown a page's own markup produced. `<main>` is the root because everything outside it is
- * chrome — the sidebar's forty links would open every file. A release page is rendered *from*
- * markdown, so its mirror is the file it was written in rather than a round trip back out of HTML.
- */
-function bodyMarkdown(path, html) {
-  const release = releases.find((entry) => entry.path === path);
-
-  if (release) return release.markdown;
-
-  window.document.body.innerHTML = html;
-  const main = window.document.querySelector('main');
-
-  return main ? elementMarkdown(main) : '';
-}
 
 /**
  * Both addresses a page's markdown answers on: `/box.md`, which is the append-`.md` convention every
@@ -167,7 +135,7 @@ for (const { path, file } of targets) {
 
   // The 404 shell is a page nobody links to and no index lists, so it gets no markdown copy.
   const route = path === NOT_FOUND_PATH ? undefined : routeFor(path, routes);
-  const markdown = route ? pageMarkdown({ route, body: bodyMarkdown(path, html), version }) : '';
+  const markdown = route ? mirror.pageFrom(route, html) : '';
 
   if (route) {
     if (markdown.length < MIN_MARKDOWN) failures.push(`${path}: ${markdown.length} bytes of markdown, expected at least ${MIN_MARKDOWN}`);
@@ -181,11 +149,10 @@ for (const { path, file } of targets) {
 
 // The files an agent reads instead of the site: the index, the whole corpus behind it, and the prop
 // reference — the same generator the tarball's `docs/props.md` uses, so the two cannot disagree.
-const llmsInput = { packageName, version, routes, facts: priorFacts(), deprecated: deprecations() };
 const generated = [
-  ['llms.txt', buildLlmsTxt(llmsInput), MIN_LLMS],
-  ['llms-full.txt', buildLlmsFull(pages, llmsInput), MIN_CORPUS],
-  ['props.md', `${propsMarkdown().trimEnd()}\n`, MIN_PROPS],
+  ['llms.txt', mirror.llms(), MIN_LLMS],
+  ['llms-full.txt', mirror.llmsFull(pages), MIN_CORPUS],
+  ['props.md', mirror.props(), MIN_PROPS],
 ];
 
 for (const [file, content, floor] of generated) {

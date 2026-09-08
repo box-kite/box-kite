@@ -162,6 +162,13 @@ Where the markup alone does not say what the markdown should be, the component s
 between the elements, so concatenating them gives `` `display``inline` `` — 103 cells of the parity
 table read that way before the hint.
 
+**The dev server answers the same addresses**, rendering the page on demand
+([pages.vite.config.ts](pages.vite.config.ts), the `markdown-mirror` plugin) — without it the SPA
+fallback returns `index.html` for `/box.md` and the router shows its 404, so every page's footer link
+is dead in `npm run dev`. Both callers go through `siteMarkdown()`
+([scripts/siteMarkdown.mjs](scripts/siteMarkdown.mjs)), so what dev serves is byte for byte what the
+build writes; `/llms-full.txt` renders every route, which takes about half a minute and says so.
+
 The floors match the prerender's: every page's markdown clears `MIN_MARKDOWN`, the corpus clears
 `MIN_CORPUS`, and `llms.txt`/`props.md` clear their own — a renamed landmark or a lost hint shows up as
 a failed build rather than as a mirror full of nothing. `pageMarkdown.test.ts` and `llms.test.ts` cover
