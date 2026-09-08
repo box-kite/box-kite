@@ -484,7 +484,7 @@ const sidebarLinks = [
 function PropTable() {
   return (
     <Box overflow="auto">
-      <Box tag="table" display="table" width="fit" style={{ borderCollapse: 'collapse' }}>
+      <Box tag="table" display="table" width="fit" css={{ borderCollapse: 'collapse' }}>
         <Box tag="thead" display="table-header-group">
           <Box tag="tr" display="table-row">
             <HeadCell>Prop</HeadCell>

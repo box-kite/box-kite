@@ -89,7 +89,13 @@ export default function Code(props: Props) {
   return (
     <Box {...restProps}>
       {label && (
-        <Box fontSize={15} fontWeight={600} theme={{ dark: { color: 'slate-200' }, light: { color: 'slate-700' } }} mb={3}>
+        <Box
+          fontSize={15}
+          fontWeight={600}
+          theme={{ dark: { color: 'slate-200' }, light: { color: 'slate-700' } }}
+          mb={3}
+          props={{ 'data-md': 'label' }}
+        >
           {label}
         </Box>
       )}
@@ -100,10 +106,12 @@ export default function Code(props: Props) {
         b={1}
         theme={{ dark: { borderColor: 'slate-700' }, light: { borderColor: 'slate-200' } }}
       >
-        {/* Demo Area */}
+        {/* Demo Area — `data-md` because the markdown mirror wants the snippet, not the rendered
+            markup it produces: a grid demo is four hundred rows of mock data as text. */}
         {children && !codeOnly && (
           <Box
             ref={demoRef}
+            props={{ 'data-md': 'skip' }}
             p={6}
             // Reserved while the demo is held back, so the page does not jump as it fills in.
             minHeight={demoReady ? undefined : 100}
@@ -117,7 +125,16 @@ export default function Code(props: Props) {
         {/* Code Block */}
         <Box position="relative" bgColor="code-bg">
           {/* Header */}
-          <Flex ai="center" jc="space-between" px={4} py={3} bb={1} borderColor="slate-700" bgColor="code-bg-light">
+          <Flex
+            ai="center"
+            jc="space-between"
+            px={4}
+            py={3}
+            bb={1}
+            borderColor="slate-700"
+            bgColor="code-bg-light"
+            props={{ 'data-md': 'skip' }}
+          >
             <Flex ai="center" gap={2} color="slate-400" fontSize={12}>
               {isShell ? <Terminal size={14} /> : <Box width={3} height={3} borderRadius={10} bgColor="emerald-500" />}
               <Box>{isShell ? 'Terminal' : language.toUpperCase()}</Box>

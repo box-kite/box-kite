@@ -69,6 +69,45 @@ function siteMetadata(): Plugin {
   };
 }
 
+/**
+ * The markdown mirror, in the dev server. The build writes these files into `dist-pages/`
+ * (`scripts/prerender-pages.mjs`); with nothing on disk in dev, the SPA fallback answered `/box.md`
+ * with `index.html` and the router rendered its 404 — so the footer link on every page was dead
+ * exactly where the site is edited. Rendered on demand here, from the same builder the build uses.
+ */
+function markdownMirror(): Plugin {
+  return {
+    name: 'markdown-mirror',
+    apply: 'serve',
+    configureServer(server) {
+      server.middlewares.use(async (request, response, next) => {
+        const url = (request.url ?? '').split('?')[0];
+
+        if (!url.endsWith('.md') && url !== '/llms.txt' && url !== '/llms-full.txt') return next();
+
+        // The corpus is every page, so it renders all of them: about half a minute, and silence
+        // looks like a hung request.
+        if (url === '/llms-full.txt') server.config.logger.info('  markdown mirror: rendering every page for llms-full.txt…');
+
+        try {
+          // Resolved from this file rather than by specifier: the config is bundled into a temporary
+          // module before it runs, and a bare relative import would resolve from wherever that lands.
+          const { siteMarkdown } = await import(new URL('./scripts/siteMarkdown.mjs', import.meta.url).href);
+          const entry = await server.ssrLoadModule('/entry-server.tsx');
+          const content = await siteMarkdown(entry).fileFor(url);
+
+          if (content === null) return next();
+
+          response.setHeader('Content-Type', `${url.endsWith('.md') ? 'text/markdown' : 'text/plain'}; charset=utf-8`);
+          response.end(content);
+        } catch (error) {
+          next(error);
+        }
+      });
+    },
+  };
+}
+
 export default defineConfig(({ mode, isSsrBuild }) => {
   return {
     // `unplugin-icons` is the Iconify bridge the /icon page documents, and this site is where it is
@@ -79,7 +118,7 @@ export default defineConfig(({ mode, isSsrBuild }) => {
     // The prerender pass builds `entry-server.tsx` through this same config (see
     // `scripts/prerender-pages.mjs`), and the metadata plugin has nothing to do there: an SSR bundle
     // has no `index.html` for it to read.
-    plugins: [reactPlugin(), iconsPlugin({ compiler: 'jsx', jsx: 'react' }), ...(isSsrBuild ? [] : [siteMetadata()])],
+    plugins: [reactPlugin(), iconsPlugin({ compiler: 'jsx', jsx: 'react' }), ...(isSsrBuild ? [] : [siteMetadata(), markdownMirror()])],
     build: {
       emptyOutDir: true,
       minify: mode !== 'dev' && !isSsrBuild,

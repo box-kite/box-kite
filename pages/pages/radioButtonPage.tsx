@@ -197,7 +197,7 @@ const interactions: { input: string; result: string }[] = [
 
 function KeyTable() {
   return (
-    <Box tag="table" width="fit" style={{ borderCollapse: 'collapse' }}>
+    <Box tag="table" width="fit" css={{ borderCollapse: 'collapse' }}>
       <Box tag="thead">
         <Box tag="tr">
           <HeadCell>Key</HeadCell>
@@ -267,6 +267,7 @@ function Mono({ children }: { children: ReactNode }) {
   return (
     <Box
       tag="code"
+      display="inline"
       px={1}
       borderRadius={1}
       fontSize={13}

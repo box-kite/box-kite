@@ -36,6 +36,7 @@ export default function PageHeader({ icon: PageIcon, title, description, badge }
               </Box>
               {badge && (
                 <Box
+                  props={{ 'data-md': 'skip' }}
                   px={3}
                   py={1}
                   borderRadius={10}

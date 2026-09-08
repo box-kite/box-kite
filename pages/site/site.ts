@@ -212,7 +212,8 @@ export const siteRoutes = [
   {
     path: '/ai-context',
     name: 'AI Assistant Context',
-    description: 'One file that teaches an AI assistant the whole prop surface, the formatter rules and the patterns that trip it up.',
+    description:
+      'What the package ships for the agent writing the code, and what the site serves for one reading it: AGENTS.md, llms.txt, and a markdown copy of every page.',
   },
 ] as const satisfies readonly SiteRoute[];
 

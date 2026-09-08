@@ -6,7 +6,7 @@ import { getStyles, resetStyles } from '../src/ssg';
 import Root from './app/root';
 import { preloadPage } from './app/routePages';
 import { PRERENDERED_STYLE_ID } from './site/prerender';
-import { routes } from './site/routes';
+import { releases, routes } from './site/routes';
 import './extends';
 
 /**
@@ -24,7 +24,12 @@ export const NOT_FOUND_PATH = '/404';
 
 export const prerenderPaths = routes.map((route) => route.path);
 
-export { PRERENDERED_STYLE_ID };
+export { PRERENDERED_STYLE_ID, releases, routes };
+// The markdown mirror is written from the same render, so its builders come through this entry too:
+// `scripts/prerender-pages.mjs` is a plain script and these are TypeScript.
+export { elementMarkdown, markdownPath, pageMarkdown } from './site/pageMarkdown';
+export { buildLlmsFull, buildLlmsTxt } from './site/llms';
+export { routeFor } from './site/siteMeta';
 
 export async function renderRoute(path: string): Promise<{ html: string; styles: string }> {
   // React.lazy suspends on its first render and `renderToString` cannot wait for it, so the route's

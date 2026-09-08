@@ -232,6 +232,7 @@ function Mono({ children }: { children: ReactNode }) {
   return (
     <Box
       tag="code"
+      display="inline"
       px={1}
       borderRadius={1}
       fontSize={13}

@@ -78,7 +78,9 @@ export default function ColorPage() {
                 >
                   {family}
                 </Box>
-                <Flex gap={2} flexWrap="wrap">
+                {/* A family is one line in the markdown mirror — `50 · 100 · … · 950` under its
+                    heading, rather than eleven paragraphs of a number each. */}
+                <Flex gap={2} flexWrap="wrap" props={{ 'data-md': 'inline' }}>
                   {tokens.map((token) => (
                     <Box key={token} textAlign="center" props={{ title: `${token} — ${Palette.colors[token as Palette.Token]}` }}>
                       <Box

@@ -9,7 +9,8 @@ Purpose: help AI contributors extend the docs/demo site under `pages/**`.
   which holds the library build the package is published from). It is two passes: the Vite build,
   which writes a static shell per route plus `404.html`, `sitemap.xml`, `robots.txt` and `CNAME`
   (see "The site's address"), then `npm run prerender:pages`, which fills each shell with that
-  route's HTML and CSS (see "Prerendering").
+  route's HTML and CSS and writes the markdown copy of each page beside it (see "Prerendering" and
+  "The markdown mirror, and llms.txt").
 
 ## Architecture
 
@@ -129,6 +130,52 @@ Two build-level traps it exposed, both fixed and both worth remembering:
   that `<link>`, so code blocks painted unstyled until the JavaScript arrived. Site-wide CSS (the Prism
   theme) is imported from `main.tsx`, which puts it in the entry stylesheet.
 
+## The markdown mirror, and llms.txt
+
+The same pass writes a markdown copy of every page (AI2): an agent asking for documentation gets
+markdown at `<route>.md` — and at `<route>/index.md`, which is what appending `.md` to the canonical
+trailing-slash form asks for — plus `/llms.txt` as the index, `/llms-full.txt` as the whole corpus and
+`/props.md`, which is the tarball's `docs/props.md` from the same generator.
+
+The copies are **converted from the rendered page**, never written a second time
+([pages/site/pageMarkdown.ts](pages/site/pageMarkdown.ts)): a mirror that can fall behind the page is
+worse than no mirror, because it is the one an agent trusts. Three consequences to know:
+
+- **`<main>` is the root.** Everything outside it is chrome that repeats on every page, which is why
+  the layout has the landmark and why the agent footer sits below it rather than inside it.
+- **What the page renders is what the mirror gets.** A page whose content is behind client state
+  mirrors the server's view of it — `/box` shows the spacing category, because that is what its HTML
+  has. The trailer on every file points at `/props.md` for what a page cannot show.
+- **A release page is not converted at all.** It is rendered _from_ `releases/<version>.md`, so its
+  mirror is that file: a round trip back out of HTML could only lose.
+
+Where the markup alone does not say what the markdown should be, the component says so with a
+`data-md` hint — the vocabulary is `MarkdownHint`, and there are three:
+
+| Hint     | Means                                                      | Used by                                                         |
+| -------- | ---------------------------------------------------------- | --------------------------------------------------------------- |
+| `skip`   | a control, or a rendered demo whose snippet is the content | `Code`'s demo area and toolbar, the `NEW` badge, `/box`'s cards |
+| `label`  | a line titling the block under it, emitted bold            | `Code`'s label                                                  |
+| `inline` | children that belong on one line, joined with `·`          | the colour families, `/tailwind-parity`'s prop and status cells |
+
+`inline` is the one worth remembering: a row of chips laid out with a `gap` carries no whitespace
+between the elements, so concatenating them gives `` `display``inline` `` — 103 cells of the parity
+table read that way before the hint.
+
+**The dev server answers the same addresses**, rendering the page on demand
+([pages.vite.config.ts](pages.vite.config.ts), the `markdown-mirror` plugin) — without it the SPA
+fallback returns `index.html` for `/box.md` and the router shows its 404, so every page's footer link
+is dead in `npm run dev`. Both callers go through `siteMarkdown()`
+([scripts/siteMarkdown.mjs](scripts/siteMarkdown.mjs)), so what dev serves is byte for byte what the
+build writes; `/llms-full.txt` renders every route, which takes about half a minute and says so.
+
+The floors match the prerender's: every page's markdown clears `MIN_MARKDOWN`, the corpus clears
+`MIN_CORPUS`, and `llms.txt`/`props.md` clear their own — a renamed landmark or a lost hint shows up as
+a failed build rather than as a mirror full of nothing. `pageMarkdown.test.ts` and `llms.test.ts` cover
+the conversion itself; the facts in `llms.txt` are read from `AGENTS.md`'s lead block and the
+deprecations from the `@deprecated` tags in `src/`, both by
+[scripts/agentSources.mjs](scripts/agentSources.mjs), which throws if either source moves.
+
 ## Route chunks
 
 Every page is a dynamic import in [pages/app/routePages.ts](pages/app/routePages.ts), keyed by the
@@ -185,6 +232,9 @@ choice — bug #15 shipped a `colSpan` prop that has never existed, next to a de
 - Ensure new demos render under both light/dark themes (toggle in header or via `Box.Theme`).
 - Keep bundle-safe imports: use relative `../../src/...` paths, not package names, to avoid build/export issues in docs build.
 - [pages/site/siteMeta.test.ts](pages/site/siteMeta.test.ts) and [pages/site/documentHead.test.tsx](pages/site/documentHead.test.tsx) cover the metadata; `npm test` runs them with the rest.
+- A new page needs nothing for its markdown copy — the mirror converts whatever it renders — but read
+  the `data-md` table above before adding a demo that is not inside a `Code` block, and check the
+  page's `.md` in `dist-pages/` after `npm run build:pages`.
 - `npm run check:docs` compiles every hand-written code block. CI runs it in the `checks` job, so a broken example fails the build rather than the reader's editor.
 
 If you need deeper architectural details, see [CONTRIBUTING.md](CONTRIBUTING.md) for the library and reuse its patterns when writing demos.
