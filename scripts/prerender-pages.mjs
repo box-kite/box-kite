@@ -41,6 +41,8 @@ const MIN_CORPUS = 150_000;
 /** The generated reference and the index: each is a file an agent reads instead of the site. */
 const MIN_PROPS = 50_000;
 const MIN_LLMS = 2000;
+/** The skill and the Cursor rule are the rules plus a page of navigation — half of that is a failure. */
+const MIN_SKILL = 8000;
 /**
  * React's marker for a Suspense boundary whose content did not survive the server: it either threw or
  * suspended, and the browser has to render it. The HTML then ships the frame with a hole in it — which
@@ -153,6 +155,9 @@ const generated = [
   ['llms.txt', mirror.llms(), MIN_LLMS],
   ['llms-full.txt', mirror.llmsFull(pages), MIN_CORPUS],
   ['props.md', mirror.props(), MIN_PROPS],
+  // The two the repository also commits, so an agent with a URL and no CLI gets the same bytes (AI3).
+  ['skill.md', await mirror.skill(), MIN_SKILL],
+  ['box-kite.mdc', await mirror.cursor(), MIN_SKILL],
 ];
 
 for (const [file, content, floor] of generated) {

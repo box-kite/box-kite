@@ -730,5 +730,21 @@ cp node_modules/@box-kite/react/AGENTS.md ./AGENTS.md
 
 Codex, Cursor, Copilot, VS Code, Windsurf, Cline and Zed read a root `AGENTS.md` natively; Claude
 Code reads `CLAUDE.md`, so a file holding the one line `@AGENTS.md` points it at the same place. The
-long-form [BOX_KITE_AI_CONTEXT.md](src/BOX_KITE_AI_CONTEXT.md) and a ready-made skill
-(`.claude/skills/box-kite/`) ship in the tarball too.
+long-form [BOX_KITE_AI_CONTEXT.md](src/BOX_KITE_AI_CONTEXT.md) ships in the tarball too.
+
+The same rules are also a skill, which roughly forty-five coding agents install with one command:
+
+```shell
+npx skills add box-kite/box-kite            # Claude Code, Cursor, Codex, Copilot, Gemini CLI, Zed…
+```
+
+In Claude Code this repository is also a plugin marketplace — `/plugin marketplace add box-kite/box-kite`
+then `/plugin install box-kite@box-kite` — and Cursor takes the rules as a rule file of its own:
+
+```shell
+mkdir -p .cursor/rules && cp node_modules/@box-kite/react/.cursor/rules/box-kite.mdc .cursor/rules/
+```
+
+Both are generated from the same rules file as `AGENTS.md`, and both are served by the docs site
+([skill.md](https://www.box-kite.dev/skill.md), [box-kite.mdc](https://www.box-kite.dev/box-kite.mdc))
+for an agent that can fetch a URL but not run a command.

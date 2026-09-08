@@ -6,12 +6,11 @@
 import { spawnSync } from 'node:child_process';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { rulesBody } from './agentSources.mjs';
 import { CLIENT_ONLY_COMPONENTS, PACKAGE_NAME, SERVER_SAFE_COMPONENTS, componentEntries } from './moduleGraph.mjs';
 import { writeAttribute } from './propsApi.mjs';
 
 const root = join(import.meta.dirname, '..');
-
-const RULES_FILE = '.claude/rules/box-kite-rules.md';
 
 const API_FILE = 'api/props.json';
 
@@ -25,21 +24,6 @@ const DOCS = [
 ];
 
 const read = (file) => readFileSync(join(root, file), 'utf8');
-
-/**
- * The rules, ready to inline: the Cursor frontmatter and the H1 go (they belong to the file, not to
- * this section), and the last line's repo path becomes the one a consumer can actually open.
- */
-function rulesBody() {
-  return read(RULES_FILE)
-    .replace(/^---\n[\s\S]*?\n---\n/, '')
-    .replace(/^#\s+.*\n/m, '')
-    .replace(
-      /Full reference: `src\/BOX_KITE_AI_CONTEXT\.md`[^\n]*/,
-      `Full reference: \`docs/props.md\` and \`BOX_KITE_AI_CONTEXT.md\`, in this package.`,
-    )
-    .trim();
-}
 
 /** The example a reader writes, and the declarations the engine measured for it. */
 function example({ name, example: { value, css } }) {
@@ -168,9 +152,10 @@ function indexFile() {
     `The markdown \`${PACKAGE_NAME}\` ships for whatever is reading its source tree. No formal discovery` +
       ' standard exists for a package that carries its own docs — these files are here to be found.',
     rows.map(([file, what]) => `- [\`${file}\`](${file}) — ${what}`).join('\n'),
-    `Two more sit at the package root: \`BOX_KITE_AI_CONTEXT.md\`, the long-form reference (prop tables, the DataGrid` +
-      ` API, debugging), and \`.claude/\`, which holds the same rules as a skill and a rules file to copy into a` +
-      ` project that reads them.`,
+    `The rest sits at the package root: \`BOX_KITE_AI_CONTEXT.md\`, the long-form reference (prop tables, the DataGrid` +
+      ` API, debugging); \`.claude/skills/box-kite/\`, the same rules as an installable skill with four references` +
+      ` beside it; and \`.cursor/rules/box-kite.mdc\`, which is that skill as a Cursor rule — copy either into the` +
+      ` project rather than reading it from here, so it is loaded without anyone asking.`,
   ].join('\n\n');
 }
 
@@ -190,7 +175,9 @@ function agentsFile(propCount) {
         ['docs/index.md', 'what else is here'],
         ...DOCS.map(([file, what]) => [`docs/${file}`, what]),
         ['BOX_KITE_AI_CONTEXT.md', 'the long-form reference'],
-      ].map(([file, what]) => `${file.padEnd(24)}  ${what}`),
+        ['.claude/skills/box-kite/', 'the rules as an installable skill, with four references'],
+        ['.cursor/rules/box-kite.mdc', 'the rules as a Cursor rule'],
+      ].map(([file, what]) => `${file.padEnd(26)}  ${what}`),
       '```',
     ].join('\n'),
     `Inside a consumer's tree they are under \`node_modules/${PACKAGE_NAME}/\`. Copy this file to the repo root as` +
@@ -220,7 +207,7 @@ function agentsFile(propCount) {
       ' writing `p={6}` share it. There is no CSS file to write, no class name to invent and no `style` attribute:' +
       ' a breakpoint (`md`), a state (`hover`), a theme and a pseudo-element are all props that nest.',
     '## The rules',
-    rulesBody(),
+    rulesBody('Full reference: `docs/props.md` and `BOX_KITE_AI_CONTEXT.md`, in this package.'),
   ].join('\n\n');
 }
 
