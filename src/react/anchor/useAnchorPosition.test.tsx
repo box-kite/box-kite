@@ -1,5 +1,6 @@
 import { cleanup, render, renderHook, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { withUsedPositionArea } from '../../../dev/tests';
 import useAnchorPosition, { AnchorPositionOptions } from './useAnchorPosition';
 
 /** The support check is asked once per mount, so a test can answer for the browser. */
@@ -11,6 +12,7 @@ describe('useAnchorPosition', () => {
   afterEach(() => {
     cleanup();
     vi.unstubAllGlobals();
+    vi.restoreAllMocks();
   });
 
   const positionOf = (options: AnchorPositionOptions = {}) => renderHook(() => useAnchorPosition(options)).result.current;
@@ -27,7 +29,7 @@ describe('useAnchorPosition', () => {
       expect(layerProps).toMatchObject({
         position: 'fixed',
         positionArea: 'block-end span-inline-end',
-        positionTryFallbacks: 'flip-block',
+        positionTryFallbacks: 'flip-block, flip-inline, flip-block flip-inline',
         minWidth: 'anchor-size(width)',
         mt: 2,
       });
@@ -70,6 +72,35 @@ describe('useAnchorPosition', () => {
       expect(layerProps.positionTryFallbacks).toBeUndefined();
       expect(layerProps.minWidth).toBeUndefined();
       expect(layerProps.mt).toBeUndefined();
+    });
+
+    it('writes the name onto an anchor it was handed, and takes it off again with the layer', () => {
+      withAnchorSupport(true);
+      const anchor = document.createElement('div');
+
+      const { result, unmount } = renderHook(() => useAnchorPosition({ anchor }));
+
+      expect(anchor.style.getPropertyValue('anchor-name')).toBe(result.current.anchorProps.style.anchorName);
+
+      // An anchor still named after an unmounted layer is one another layer could flip to.
+      unmount();
+      expect(anchor.style.getPropertyValue('anchor-name')).toBe('');
+    });
+
+    it('says which side it was asked for until somebody asks which side it got', () => {
+      withAnchorSupport(true);
+      withUsedPositionArea('start span-end');
+
+      // Nothing to measure the layer for, so nothing reads the used value either.
+      const untracked = positionOf({ side: 'bottom', align: 'start' });
+      expect(untracked.side).toBe('bottom');
+      expect(untracked.layerProps.ref).toBeUndefined();
+
+      const tracked = renderHook(() => useAnchorPosition({ side: 'bottom', align: 'start', trackSide: true }));
+      render(<div ref={tracked.result.current.layerProps.ref} />);
+      tracked.rerender();
+
+      expect(tracked.result.current.side).toBe('top');
     });
   });
 

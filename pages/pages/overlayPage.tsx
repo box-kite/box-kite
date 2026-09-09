@@ -24,7 +24,7 @@ export default function OverlayPage() {
       <PageHeader
         icon={Layers}
         title="Overlay"
-        description="Renders its children into a portal, positioned where it is declared — so they escape overflow: hidden, clipped ancestors and stacking contexts."
+        description="A floating layer anchored by the browser and portalled for the stacking order — so it escapes overflow: hidden, clipped ancestors and the z-index wars, and flips when there is no room."
       />
 
       <Reveal delay={0.1}>
@@ -33,15 +33,17 @@ export default function OverlayPage() {
 
           <Section title="A layer, not a pattern">
             <Box>
-              Overlay owns no open state, no ARIA and no dismissal: it measures where it sits in the layout and renders its children at that
-              spot, in the portal container. That is all every popup in this library shares — <Mono>Tooltip</Mono>, <Mono>Dropdown</Mono>{' '}
-              and the DataGrid menu each add a different pattern on top. If what you are rendering describes a control, reach for{' '}
-              <Mono>Tooltip</Mono> instead: it adds <Mono>role="tooltip"</Mono>, the <Mono>aria-describedby</Mono> wiring, hover-and-focus
-              open and Escape.
+              Overlay owns no open state, no ARIA and no dismissal: it names an anchor, asks the browser to put the layer on a side of it,
+              and renders it in the portal container. That is all every popup in this library shares — <Mono>Tooltip</Mono>,{' '}
+              <Mono>Dropdown</Mono> and the DataGrid menu each add a different pattern on top. If what you are rendering describes a
+              control, reach for <Mono>Tooltip</Mono> instead: it adds <Mono>role="tooltip"</Mono>, the <Mono>aria-describedby</Mono>{' '}
+              wiring, hover-and-focus open and Escape.
             </Box>
             <Box mt={4}>
-              This component was called <Mono>Tooltip</Mono> before the accessibility work; code that used it purely to escape an overflow
-              is this component, unchanged.
+              The placement is CSS anchor positioning — <Mono>useAnchorPosition</Mono> under the hood, so on a browser that has it nothing
+              runs at all: no measurement, no scroll listener, no state. The portal is still here for the other half of the problem.{' '}
+              <Mono>position: fixed</Mono> escapes every <Mono>overflow: hidden</Mono> ancestor but neither a <em>transformed</em> one nor
+              the page's stacking order, and a layer has to come out on top of both.
             </Box>
           </Section>
 
@@ -76,7 +78,7 @@ export default function OverlayPage() {
               Click me!
             </Button>
             {openOverlay && (
-              <Overlay height={50} borderRadius={2} p={3} mt={0.5} b={1}>
+              <Overlay height={50} borderRadius={2} p={3} offset={0.5} b={1}>
                 overlay box
               </Overlay>
             )}
@@ -141,7 +143,7 @@ export default function OverlayPage() {
                         height={50}
                         borderRadius={2}
                         p={3}
-                        mt={0.5}
+                        offset={0.5}
                         b={1}
                         theme={{
                           light: { bgColor: 'slate-300' },
@@ -157,17 +159,31 @@ export default function OverlayPage() {
             </Flex>
           </Code>
 
-          <Section title="Props">
+          <Section title="Where it goes">
             <Flex tag="ul" d="column" gap={2}>
               <Bullet>
-                <Mono>onPositionChange</Mono> — called with the measured page position, so a caller can decide to open upwards instead.
+                <Mono>anchor</Mono> — the element to hang off. A trigger is almost always the right answer; with none, the layer anchors to
+                the spot it was declared in, which is a real box with no size, so <Mono>align</Mono> and <Mono>matchWidth</Mono> have
+                nothing to work from.
               </Bullet>
               <Bullet>
-                <Mono>adjustTranslateX</Mono> / <Mono>adjustTranslateY</Mono> — CSS lengths added to that position.
+                <Mono>side</Mono> / <Mono>align</Mono> / <Mono>offset</Mono> — the placement vocabulary <Mono>Tooltip</Mono> and{' '}
+                <Mono>useAnchorPosition</Mono> share. <Mono>side</Mono> is <Mono>top</Mono>/<Mono>bottom</Mono> on the block axis or{' '}
+                <Mono>start</Mono>/<Mono>end</Mono> on the inline one, so a layer beside its anchor mirrors in a right-to-left page;{' '}
+                <Mono>offset</Mono> is the ÷4 scale.
               </Bullet>
               <Bullet>
-                <Mono>matchWidth</Mono> — on by default: the layer takes the measured width of the space it was declared in, which is what
-                lines a dropdown popup up with its trigger. Turn it off for content that should size to itself.
+                <Mono>flip</Mono> — on by default, so a side with no room is swapped for its opposite by the browser. It shadows the CSS
+                prop of that name.
+              </Bullet>
+              <Bullet>
+                <Mono>onSideChange</Mono> — the side it ended up on, which is how the dropdown popup knows to animate upwards instead.
+                Asking for it turns on the one read the CSS path otherwise never does.
+              </Bullet>
+              <Bullet>
+                <Mono>matchWidth</Mono> — on by default: the layer is at least as wide as its anchor (<Mono>anchor-size(width)</Mono>,
+                measured nowhere), which is what lines a dropdown popup up with its trigger. Turn it off for content that should size to
+                itself.
               </Bullet>
               <Bullet>Every Box prop, applied to the layer's content.</Bullet>
             </Flex>

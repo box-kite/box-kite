@@ -83,9 +83,50 @@ export function areaFor(side: AnchorSide, align: AnchorAlign): AnchorArea {
   return (block ? `${primary} ${cross}` : `${cross} ${primary}`) as AnchorArea;
 }
 
-/** The flip that keeps the layer on its own axis: the block one for a side above or below, the inline one beside. */
-export function flipFor(side: AnchorSide): 'flip-block' | 'flip-inline' {
-  return isBlock(side) ? 'flip-block' : 'flip-inline';
+/**
+ * The side a used `position-area` names — the browser's own answer to "did you flip?", since
+ * `getComputedStyle` reports the position it settled on rather than the one that was specified.
+ *
+ * It is not the value that went in: measured in Chrome 152, a used value is normalised twice over. A
+ * `span-all` half is dropped (`block-end span-all` reads back `block-end`), and a value naming both axes
+ * comes back in the `start`/`end` shorthand family, where **position** names the axis rather than a
+ * keyword — `block-end span-inline-end` reads back `end span-end`, and `start span-end` once it has
+ * flipped. So the block axis is the first keyword and the inline axis the second, and the side is
+ * whichever of them is not a span.
+ */
+export function sideOfArea(area: string): AnchorSide | null {
+  const [first, second] = area.trim().split(' ');
+
+  // One keyword left: a side that spans the whole of the other axis, still carrying its own axis name.
+  if (second === undefined) {
+    if (first === 'block-start') return 'top';
+    if (first === 'block-end') return 'bottom';
+    if (first === 'inline-start') return 'start';
+    if (first === 'inline-end') return 'end';
+
+    return null;
+  }
+
+  if (first === 'start') return 'top';
+  if (first === 'end') return 'bottom';
+  if (second === 'start') return 'start';
+  if (second === 'end') return 'end';
+
+  return null;
+}
+
+/** The two candidate lists, spelled out so the compiler can see each is a value `positionTryFallbacks` takes. */
+export type AnchorFallbacks = 'flip-block, flip-inline, flip-block flip-inline' | 'flip-inline, flip-block, flip-inline flip-block';
+
+/**
+ * The `position-try-fallbacks` for a side: its own axis first, then the alignment's, then both. Three
+ * candidates rather than one because a candidate has to fit on **both** axes — so a single `flip-block`
+ * does nothing at all for a layer that overflows the *cross* axis, and the browser leaves it against the
+ * edge of the viewport (measured in Chrome 152, hand-written CSS). With the list, a menu aligned to its
+ * trigger's end mirrors to the other end rather than running off the page.
+ */
+export function fallbacksFor(side: AnchorSide): AnchorFallbacks {
+  return isBlock(side) ? 'flip-block, flip-inline, flip-block flip-inline' : 'flip-inline, flip-block, flip-inline flip-block';
 }
 
 /** How much room a side has between the anchor and the edge of the viewport. */

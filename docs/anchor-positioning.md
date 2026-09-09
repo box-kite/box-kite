@@ -42,13 +42,21 @@ placement and the flip a positioning library ships JavaScript for.
 | `side`       | `'bottom'` | `'top'`/`'bottom'` are the block axis, `'start'`/`'end'` the inline one — so a side mirrors in a right-to-left page |
 | `align`      | `'center'` | which of the anchor's edges to line the layer up with on the other axis                                             |
 | `offset`     | `0`        | the gap, on the ÷4 spacing scale, emitted as the margin on the side facing the anchor                               |
-| `flip`       | `true`     | `positionTryFallbacks` on the side's own axis                                                                       |
+| `flip`       | `true`     | `positionTryFallbacks`: the side's own axis, then the alignment's, then both                                         |
 | `matchWidth` | `false`    | `minWidth="anchor-size(width)"` — the anchor's width, with nothing measured                                         |
 | `name`       | generated  | the anchor's name; one per instance unless you pass one                                                             |
+| `anchor`     | —          | an anchor handed to the hook rather than one it spreads props onto (a ref or an element)                            |
+| `trackSide`  | `false`    | whether `side` in the result says where the layer ended up — one read after layout, so it is opt-in                 |
 
 `css` says which path ran: `true` is the browser placing the layer, `false` is the measured
-fallback. There is no `strategy` option — the layer is always `position: fixed`, because that is
+fallback. `side` is where the layer actually is: the requested side, unless `trackSide` is on and a
+flip moved it. There is no `strategy` option — the layer is always `position: fixed`, because that is
 what makes both paths agree about what the coordinates mean.
+
+A caller that was handed its trigger rather than rendering it passes `anchor` instead of spreading
+`anchorProps`: the name is written onto the element in a layout effect, which is the one thing an
+element somebody else rendered can be reached by. That is what `Overlay` does, and a ref is read when
+the layer mounts — so an element in state is the robust form when the layer is open from the start.
 
 ### The fallback
 
@@ -89,15 +97,30 @@ what makes a floating layer possible in a Server Component.
 
 ---
 
-## Three things worth knowing
+## Five things worth knowing
 
-All three were measured in Chrome 152 rather than read off the spec.
+All five were measured in Chrome 152 rather than read off the spec.
 
 **The layer is `position: fixed`, so it escapes `overflow: hidden` without a portal.** Every clipped
 ancestor, no portal, no `z-index` juggling to get out of one — but *not* a transformed ancestor,
 which is a fixed element's containing block in either path, and not the page's stacking order, which
-is still the page's. `Overlay` (`@box-kite/react/components/overlay`) portals, and is still the
-answer when the layer has to come out on top of everything.
+is still the page's. `Overlay` (`@box-kite/react/components/overlay`) is this hook plus a portal, and
+is still the answer when the layer has to come out on top of everything.
+
+**A flip needs three candidates, not one.** A candidate position has to fit on *both* axes to be
+taken, so a lone `flip-block` does nothing at all for a layer that overflows the *cross* axis — the
+browser leaves it pressed against the edge of the viewport. `flip` therefore offers the side's own
+axis, the alignment's, and both, in that order, and the both-axes rule is what makes the order work:
+a menu with no room on the side its alignment reaches mirrors to the other end instead of running off
+the page.
+
+**Knowing which side the browser chose costs the entrance.** `trackSide` reads the *used*
+`position-area`, and that read is the style resolution `@starting-style` computes its before-change
+style from — so a class that depends on the answer arrives after the entrance has been decided, every
+time. An exit runs long afterwards and can use it, which is why `dropdown.items` has a `closedUp`
+variant and no `up` one. A used value is also not the value that went in: a `span-all` half is
+dropped, and a value naming both axes comes back in the `start`/`end` shorthand, where position names
+the axis (`block-end span-inline-end` reads back `end span-end`, and `start span-end` once flipped).
 
 **A flip is sticky.** Once the browser takes a `position-try` fallback it keeps it until the layer is
 laid out afresh, which is what stops the layer oscillating as the page scrolls. Hiding the layer and

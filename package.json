@@ -120,7 +120,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "2.02 KB"
+      "limit": "2.25 KB"
     },
     {
       "name": "Core engine (@box-kite/core, no React)",
@@ -136,7 +136,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "55.80 KB"
+      "limit": "56.73 KB"
     },
     {
       "name": "Full library (Box + ssg + every component)",
@@ -146,7 +146,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "63.13 KB"
+      "limit": "62.98 KB"
     }
   ],
   "repository": {

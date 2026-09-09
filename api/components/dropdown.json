@@ -176,7 +176,7 @@
   "axe": { "fixtures": ["Dropdown (closed)", "Dropdown (open)", "Dropdown (searchable, open)"], "knownViolations": [] },
   "styleTree": [
     { "path": "dropdown", "depth": 0, "extends": null, "variants": ["compact"] },
-    { "path": "dropdown.items", "depth": 1, "extends": null, "variants": ["up", "closed", "closedUp"] },
+    { "path": "dropdown.items", "depth": 1, "extends": null, "variants": ["closed", "closedUp"] },
     { "path": "dropdown.item", "depth": 1, "extends": null, "variants": ["highlighted", "compact", "multiple"] },
     { "path": "dropdown.unselect", "depth": 1, "extends": null, "variants": ["highlighted", "compact"] },
     { "path": "dropdown.selectAll", "depth": 1, "extends": null, "variants": ["highlighted", "compact"] },

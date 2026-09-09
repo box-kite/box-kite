@@ -245,8 +245,11 @@ export default defineConfig(({ mode }) => {
                   // `useDismiss` alone would bundle the engine with it.
                   if (module.startsWith('src/react/a11y/')) return 'behavior';
 
-                  // The anchor hook and the placement model behind it: one entry reaches them, so they belong in it.
-                  if (module.startsWith('src/react/anchor/') || module.startsWith('src/utils/anchor/')) return null;
+                  // The anchor hook and the placement model behind it. Its own chunk since B1 stage 3: the `/anchor`
+                  // entry and `Overlay` both reach it, and left ungrouped every component standing on a layer would
+                  // carry a copy of the placement model. Named for what it does rather than for the entry, which
+                  // already owns `anchor` — a group sharing an entry's name comes out as `anchor2`.
+                  if (module.startsWith('src/react/anchor/') || module.startsWith('src/utils/anchor/')) return 'placement';
 
                   return serverSafe.has(module) ? 'react-shared' : 'client';
                 },

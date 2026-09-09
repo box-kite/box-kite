@@ -131,8 +131,8 @@ Every axis prop was already logical — `mx` is `margin-inline`, `px` is `paddin
 
 - **The arrow keys follow the reading order.** `useRovingFocus` reads the element's _resolved_ direction when a sideways arrow arrives, so in a right-to-left list or grid `ArrowLeft` moves to the **next** item — which is what APG asks for. Nothing is configured; a `dir` anywhere above the list is enough, and a vertical list pays nothing. Tab, Home and End never flip.
 - **A DataGrid column pins to `'START'` or `'END'`** of the inline axis rather than to a screen side, so it stays where the reading begins under either direction; `'LEFT'`/`'RIGHT'` are the older spelling of those two. `align` gained `'start'`/`'end'`, the resize handle grows a column towards the reading end, and the column menu's _Pin Left_ reads _Pin Right_ when that is the side it would pin to.
-- **A popup carries the direction out of the tree with it.** `Overlay` portals into a container that is a child of the body, where nothing of the declaration site is inherited, so it measures the direction it was declared in and writes it back on as `dir` — `Tooltip`, the `Dropdown` popup and the grid's column menu all get that.
-- **What stays physical, on purpose**: `Overlay` positions its layer with a transform in page coordinates, so its box is anchored at the page's own origin either way, and the grid's loading bar sweeps the same way in both. A measured pixel has no reading order.
+- **A popup carries the direction out of the tree with it.** `Overlay` portals into a container that is a child of the body, where nothing of the declaration site is inherited, so it reads the direction off its anchor and writes it back on as `dir` — `Tooltip`, the `Dropdown` popup and the grid's column menu all get that.
+- **What stays physical, on purpose**: the grid's loading bar sweeps the same way in both. (`Overlay` no longer positions in page coordinates at all — a `side` is logical, so a layer beside its anchor mirrors with the reading order.)
 
 ### Layout
 
@@ -219,7 +219,7 @@ The keyword families do not mix: physical (`top`/`bottom` × `left`/`right`), lo
 - **A candidate position has to fit on _both_ axes to be taken**, so an overflow the flips cannot fix disqualifies every one of them and the layer silently stays where it started. `positionArea="block-end center"` with a layer wider than its anchor overflows the centre column, and `flip-block` then does nothing at all. Span the axis being kept — `"block-end span-all"` — and it flips.
 - **`positionVisibility` hides at paint time**, so the layer keeps its box and its computed `visibility` still reads `visible` (`checkVisibility()` agrees). Only painting and hit-testing stop, so a test asserting it needs a screenshot.
 
-Chrome 125+, Firefox 147+, Safari 26+. Where it is missing the layer renders unpositioned, so `Overlay` (`components/overlay`), which measures, is still the portable path.
+Chrome 125+, Firefox 147+, Safari 26+. Where it is missing the layer renders unpositioned, so the portable path is `useAnchorPosition` (which measures instead) or `Overlay`, which is that hook plus a portal.
 
 A length can also come off the anchor. Every sizing prop takes an `anchor-size()` value and every single-side inset prop an `anchor()` one, so a layer sizes and places itself against its anchor with nothing measured:
 
@@ -256,15 +256,20 @@ const { css, anchorProps, layerProps } = useAnchorPosition({ side: 'bottom', ali
 | `side`       | `'bottom'` | `'top'`/`'bottom'` are the block axis, `'start'`/`'end'` the inline one — so a side mirrors in a right-to-left page |
 | `align`      | `'center'` | which of the anchor's edges to line up with on the other axis                                                       |
 | `offset`     | `0`        | the gap, on the ÷4 spacing scale — emitted as the margin on the side facing the anchor, and a flip flips it too     |
-| `flip`       | `true`     | `positionTryFallbacks` on the side's own axis                                                                       |
+| `flip`       | `true`     | `positionTryFallbacks`: the side's own axis, then the alignment's, then both                                         |
 | `matchWidth` | `false`    | `minWidth="anchor-size(width)"`                                                                                     |
 | `name`       | generated  | the anchor's name; one per instance unless you pass one                                                             |
+| `anchor`     | —          | an anchor handed to the hook rather than one it spreads props onto — the name is written on in an effect            |
+| `trackSide`  | `false`    | whether `side` in the result reports where the layer ended up, which costs one read after layout                    |
 
-`css` in the result says which path ran: `true` is the browser placing the layer with no JavaScript at all, `false` is the measured fallback (flip to the opposite side, then shift along the other axis to stay in the viewport).
+`css` in the result says which path ran: `true` is the browser placing the layer with no JavaScript at all, `false` is the measured fallback (flip to the opposite side, then shift along the other axis to stay in the viewport). `side` is where the layer actually is — the requested side unless `trackSide` is on and a flip moved it.
 
 **Three more things worth knowing, all measured:**
 
-- **The layer is `position: fixed`**, so it escapes every `overflow: hidden` ancestor without a portal — but not a _transformed_ ancestor, which is a fixed element's containing block, and not the page's stacking order. `Overlay` is still the answer when the layer has to come out on top of everything.
+- **The layer is `position: fixed`**, so it escapes every `overflow: hidden` ancestor without a portal — but not a _transformed_ ancestor, which is a fixed element's containing block, and not the page's stacking order. `Overlay` is this hook plus a portal, and is still the answer when the layer has to come out on top of everything.
+- **Three fallbacks, not one.** A candidate has to fit on _both_ axes, so a lone `flip-block` does nothing at all for a layer that overflows the _cross_ axis — the browser leaves it pressed against the edge of the viewport. `flip` therefore offers the side's axis, the alignment's, and both, and a menu aligned to its trigger's end mirrors to the other end rather than running off the page.
+- **Which side the browser chose costs the entrance.** `trackSide` reads the _used_ `position-area`, and that read is the style resolution `@starting-style` computes its before-change style from — so a class that depends on the answer lands after the entrance has already been decided. The exit runs long afterwards and can use it (`dropdown.items` has `closedUp` and no `up`).
+- **A used `position-area` is not the value that went in.** Chrome 152 drops a `span-all` half (`block-end span-all` reads back `block-end`) and collapses a value naming both axes into the `start`/`end` shorthand, where position names the axis: `block-end span-inline-end` reads back `end span-end`, and `start span-end` once it has flipped.
 - **A flip is sticky.** Once the browser takes one it keeps it until the layer is laid out afresh, which is what stops it oscillating as the page scrolls: hiding the layer and showing it again re-evaluates. So a popup that mounts when it opens always picks the side that fits, while one that stays mounted keeps the side it first chose.
 - **The anchor's name is an inline style, not a prop.** An identity is per instance, so a class for it would be a rule per instance that is never freed — the same reason a sparkline's `d` is an attribute while its stroke is a class. Everything shared — the area, the flip, the margin, the width — is an ordinary prop.
 
@@ -1059,10 +1064,11 @@ import Textbox from '@box-kite/react/components/textbox';
 <Box position="fixed" top={0} left={0} right={0} bottom={0} bgColor="black" opacity={0.5} zIndex={50} />
 ```
 
-**Portals**: `Overlay` (`components/overlay`) renders its children into `#box-kite-portal` at the place it
-is declared, so they escape `overflow: hidden` and clipped ancestors. No ARIA, no open state — it is
-positioning only. For a _description of a control_, use `Tooltip` instead (below): it is the same
-layer with the APG pattern on it.
+**Portals**: `Overlay` (`components/overlay`) anchors a layer to a trigger (`anchor`, `side`, `align`,
+`offset`, `flip`, `matchWidth` — the vocabulary `useAnchorPosition` and `Tooltip` share) and renders it
+into `#box-kite-portal`, so it escapes `overflow: hidden`, clipped ancestors and the stacking order. No
+ARIA, no open state — it is positioning only. For a _description of a control_, use `Tooltip` instead
+(below): it is the same layer with the APG pattern on it.
 
 ### Styling an element Box cannot render (`useClassNames`)
 
@@ -1313,7 +1319,9 @@ so the tooltip sits under the trigger and adds nothing to the layout.
 | `onOpenChange`            | —       | `(open, { reason, event })` — `hover`, `focus`, `pointer-leave`, `blur`, `escape`. |
 | `openDelay`               | `300`   | Hover dwell before it appears. Focus ignores it and shows immediately.             |
 | `closeDelay`              | `150`   | Grace period after the pointer leaves, so it can travel onto the tooltip.          |
-| `adjustTranslateX` / `…Y` | `0px`   | Nudge where the bubble lands.                                                      |
+| `side` / `align`          | `bottom` / `center` | Which side of the trigger the bubble sits on, and how it lines up. |
+| `offset`                  | `1`     | The gap, on the ÷4 scale — 4px, near enough for the pointer to cross.              |
+| `flip`                    | `true`  | Whether a side with no room is swapped for its opposite.                           |
 
 Every other Box prop styles the bubble, over the built-in `tooltip` component style. What the
 component guarantees, so you do not wire it: `role="tooltip"`, `aria-describedby` on the trigger only
