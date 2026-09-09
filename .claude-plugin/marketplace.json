@@ -7,7 +7,7 @@
       "name": "box-kite",
       "source": "./",
       "displayName": "Box Kite",
-      "description": "One React component with 215 typed CSS props that generates atomic CSS at runtime — no CSS files, no build step, renders in a Server Component.",
+      "description": "One React component with 221 typed CSS props that generates atomic CSS at runtime — no CSS files, no build step, renders in a Server Component.",
       "author": { "name": "Maxim Procopenco" },
       "homepage": "https://www.box-kite.dev/ai-context",
       "repository": "https://github.com/box-kite/box-kite",

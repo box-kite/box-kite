@@ -1,3 +1,4 @@
+import Anchors from './anchors';
 import Animations from './animations';
 import { BoxStylesFormatters } from './boxStylesFormatters';
 import Containers from './containers';
@@ -536,6 +537,106 @@ export const cssStyles = {
   position: [
     {
       values: ['static', 'relative', 'absolute', 'fixed', 'sticky'] as const,
+    },
+  ],
+  /**
+   * Names this element as an anchor, so a floating layer can hang off it by name. The `--` is optional
+   * here and added on the way out, the way a `vars` key's is, so `anchorName="trigger"` and
+   * `anchorName="--trigger"` are one class. A name is global to the document, so a component rendering
+   * many of them needs one per instance.
+   * @example anchorName="trigger" → anchor-name: --trigger
+   */
+  anchorName: [
+    {
+      values: '' as Anchors.Name,
+      match: Anchors.isName,
+      styleName: 'anchor-name',
+      valueFormat: (value: string) => Anchors.dashedName(value),
+    },
+    {
+      values: ['none'] as const,
+      styleName: 'anchor-name',
+    },
+  ],
+  /**
+   * Which anchor this element is positioned against, by the name `anchorName` gave it. Needs
+   * `position="absolute"` or `"fixed"` beside it — an anchored element is an absolutely positioned one
+   * whose containing block comes from the anchor. `auto` picks up the anchor an `anchor()` value names.
+   * @example positionAnchor="trigger" → position-anchor: --trigger
+   */
+  positionAnchor: [
+    {
+      values: '' as Anchors.Name,
+      match: Anchors.isName,
+      styleName: 'position-anchor',
+      valueFormat: (value: string) => Anchors.dashedName(value),
+    },
+    {
+      values: ['auto', 'none'] as const,
+      styleName: 'position-anchor',
+    },
+  ],
+  /**
+   * Which cell of the 3x3 grid around the anchor to sit in, and the whole of what a side and an
+   * alignment used to take JS to work out. **Block axis first, inline axis second** — the order
+   * `borderRadiusStartStart` reads in — and the two keywords have to come from one family: `top left`
+   * and `block-start inline-start` are values, `top inline-start` is not. `center` and `span-all` join
+   * whichever family the other half names. Offset the layer from its anchor with a margin.
+   * @example positionArea="block-end center" → position-area: block-end center
+   */
+  positionArea: [
+    {
+      values: '' as Anchors.Area,
+      match: Anchors.isArea,
+      styleName: 'position-area',
+    },
+  ],
+  /**
+   * Where to put the layer when it does not fit: `flip-block` tries the opposite side of the block axis,
+   * `flip-inline` the inline one, `flip-start` swaps the two axes, and space-separated flips are one
+   * position tried together. A comma-separated list is tried in order until one fits, which is the
+   * browser doing what a positioning library measures for.
+   *
+   * **A position has to fit on _both_ axes to be taken**, so an overflow the flips cannot fix disqualifies
+   * every candidate and the layer silently stays where it started. Measured in Chrome 152: with
+   * `positionArea="block-end center"` a layer wider than its anchor overflows the centre column, and
+   * `flip-block` then does nothing at all. Span the axis being kept — `"block-end span-all"` — and it flips.
+   * @example positionTryFallbacks="flip-block" → position-try-fallbacks: flip-block
+   */
+  positionTryFallbacks: [
+    {
+      values: '' as Anchors.TryFallbacks,
+      match: Anchors.isTryFallbacks,
+      styleName: 'position-try-fallbacks',
+    },
+  ],
+  /**
+   * How to choose among the fallbacks rather than taking the first that fits: `most-width`,
+   * `most-height`, `most-block-size` and `most-inline-size` each pick the position that leaves the layer
+   * most room on that axis. `normal` is first-fit.
+   * @example positionTryOrder="normal" → position-try-order: normal
+   */
+  positionTryOrder: [
+    {
+      values: ['normal', 'most-width', 'most-height', 'most-block-size', 'most-inline-size'] as const,
+      styleName: 'position-try-order',
+    },
+  ],
+  /**
+   * When to hide the layer instead of positioning it: `anchors-visible` hides it once the anchor is
+   * scrolled out of sight, `no-overflow` once the layer itself would overflow, and the two combine.
+   * `always` is the default and shows it wherever it lands.
+   *
+   * **It hides at paint time**, so the layer keeps its box and its computed `visibility` still reads
+   * `visible` — `checkVisibility()` agrees. Both were measured in Chrome 152 by sampling the pixel: the
+   * only thing that changes is that nothing is painted and nothing hit-tests. A test asserting this needs
+   * a screenshot, not a computed style.
+   * @example positionVisibility="always" → position-visibility: always
+   */
+  positionVisibility: [
+    {
+      values: ['always', 'anchors-visible', 'no-overflow', 'anchors-visible no-overflow'] as const,
+      styleName: 'position-visibility',
     },
   ],
   /**
@@ -1170,6 +1271,7 @@ export const cssStyles = {
         'end',
         'self-start',
         'self-end',
+        'anchor-center',
         ...safeAlignments,
       ] as const,
     },
@@ -1194,6 +1296,7 @@ export const cssStyles = {
         'right',
         'self-start',
         'self-end',
+        'anchor-center',
         ...safeAlignments,
       ] as const,
     },

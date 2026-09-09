@@ -15,7 +15,7 @@ Read `.claude/rules/box-kite-rules.md` — the shortest complete answer — befo
 
 ## Project Overview
 
-@box-kite/react is a React runtime CSS-in-JS library. The core `Box` component accepts 215 CSS props and generates CSS classes at runtime — no CSS files needed. Same prop values across components share a single CSS class.
+@box-kite/react is a React runtime CSS-in-JS library. The core `Box` component accepts 221 CSS props and generates CSS classes at runtime — no CSS files needed. Same prop values across components share a single CSS class.
 
 ## Commands
 
@@ -52,7 +52,7 @@ Node version: v24 (pinned in .nvmrc).
 - `src/a11y.ts` — The behaviour primitives (`@box-kite/react/a11y`): `useControllableState` (change reasons), `useDismiss` (Escape + outside pointer, layered), `useFocusReturn`, `useRovingFocus` (arrows/Home/End/typeahead, DOM focus or `aria-activedescendant`), `useIdentifier`. Sources in `src/react/a11y/**`, their own `behavior` chunk so the entry pulls in no engine; client-only, so the entry gets a `'use client'` banner. See `docs/a11y-primitives.md`
 - `src/core.ts` — The engine with no React at all, **published as its own package, `@box-kite/core`** (built by `vite.core.config.ts` into `dist-core/`): `createStyleEngine()`, `engine.classNames(props)`, `createThemeController()`, `getDefaultEngine()`, `BoxExtends`, `mergeDeep`. `examples/vanilla` is a whole page built on it. It is also the **only** module the React side may cross the boundary through — the build rewrites `./core` and `./types` to package specifiers, so a deep import into `src/core/**` from `src/react/**` would inline a second engine. Both the sources it reaches and the chunks it imports are checked for React
 - `src/types.ts` — Ships with the engine as `@box-kite/core/types`, and is the **`Box.extend()` augmentation target**: `declare module` merges into whichever package owns the file, and a re-export cannot forward it, so the types live with the prop registry they are derived from
-- `src/core/boxStyles.ts` — All CSS property definitions (215 props). Types auto-generate from these definitions
+- `src/core/boxStyles.ts` — All CSS property definitions (221 props). Types auto-generate from these definitions
 - `src/core/boxStylesFormatters.ts` — Value formatters that convert prop values to CSS (rem, px, fractions, etc.)
 - `src/core/engine/styleEngine.ts` — `createStyleEngine()`: all engine state (class-name cache, rule registry, identity factory, variables, prop and component registries) on an instance; generates class names and rules
 - `src/core/engine/styleSink.ts` — Where the CSS goes: `cssom` (`insertRule`), `textContent`, `string` (server rendering, no DOM), or `element` (nowhere — the rules come back as `<style href precedence>` descriptors for the adapter to render). Every sink places a rule by its sort key, so they all produce the same cascade
@@ -176,6 +176,9 @@ After any code change, all of the following must pass before considering the wor
 5. `npm test` — All tests (or `npm run test:coverage` when touching `src/core/` or `src/react/`, which is what CI runs)
 6. `npm run check:props` — the prop reference, when `src/core/boxStyles.ts` or a formatter changed
 7. `npm run check:agents` — the committed skill, Cursor rule and marketplace entry, when the rules file, the lead block above or the prop count changed
+8. `npm run check:docs` — when anything under `pages/` changed. It **compiles** every code block the docs site shows, each one wrapped as `<Box ${code}>content</Box>`, so a demo caption has to be one valid set of props: prose or an ellipsis joining two elements is a syntax error, and a block that is deliberately not compilable says `check={false}`
+
+Those eight are the ones a change usually reaches. **The authority is the workflows, not this list** — `grep -h "run: npm run" .github/workflows/*.yml | sort -u` prints all sixteen, and the rest (`check:brand`, `check:components`, `check:package`, `size`, `build:pages`, `build:vanilla`, `build:next-app`, `smoke:next-app`) are the ones a green local suite has shipped a red CI on.
 
 CI runs the test suite against React 18 and React 19 — both are in the supported peer range and the engine leans on layout effects, hydration and server rendering, which is exactly what changed between them.
 
