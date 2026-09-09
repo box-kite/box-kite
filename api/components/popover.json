@@ -1,0 +1,113 @@
+{
+  "name": "Popover",
+  "route": "/popover",
+  "import": "import Popover from '@box-kite/react/components/popover';",
+  "description": "A panel anchored to a trigger, on the platform's own Popover API: the top layer, light dismiss and focus return are the browser's, and the position is CSS anchor positioning.",
+  "pattern": null,
+  "props": [
+    {
+      "name": "trigger",
+      "type": "(trigger: PopoverTrigger) => React.ReactNode",
+      "required": true,
+      "default": null,
+      "description": "The trigger, handed the ref and props that wire it to the popover. It has to be a button."
+    },
+    {
+      "name": "children",
+      "type": "React.ReactNode",
+      "required": false,
+      "default": null,
+      "description": "The panel's content. Rendered whether or not the popover is open — see the note on mounting."
+    },
+    {
+      "name": "open",
+      "type": "boolean",
+      "required": false,
+      "default": null,
+      "description": "Controlled open state. Leave it out and the popover owns it."
+    },
+    {
+      "name": "defaultOpen",
+      "type": "boolean",
+      "required": false,
+      "default": "false",
+      "description": "Whether it starts open, when the popover owns its own state."
+    },
+    {
+      "name": "onOpenChange",
+      "type": "ChangeHandler<boolean, PopoverReason>",
+      "required": false,
+      "default": null,
+      "description": "Fires with the new state and why it changed — `'trigger'`, `'escape'`, `'outside-pointer'` or `'imperative'`. A close cannot be refused: the browser has already done it by the time this runs."
+    },
+    {
+      "name": "label",
+      "type": "string",
+      "required": false,
+      "default": null,
+      "description": "The panel's accessible name. `role=\"dialog\"` has none of its own, and a dialog without one is unusable."
+    },
+    {
+      "name": "labelledBy",
+      "type": "string",
+      "required": false,
+      "default": null,
+      "description": "Names the panel after an element already on the page, instead of `label`."
+    },
+    {
+      "name": "side",
+      "type": "AnchorSide",
+      "required": false,
+      "default": "'bottom'",
+      "description": "Which side of the trigger the panel sits on — `top`/`bottom` are the block axis, `start`/`end` the inline one, so a panel beside its trigger mirrors in a right-to-left page. Default `'bottom'`."
+    },
+    {
+      "name": "align",
+      "type": "AnchorAlign",
+      "required": false,
+      "default": "'center'",
+      "description": "Which of the trigger's edges to line the panel up with along the other axis. Default `'center'`."
+    },
+    {
+      "name": "offset",
+      "type": "number",
+      "required": false,
+      "default": "2",
+      "description": "The gap between trigger and panel, on the ÷4 spacing scale. Default 2 — 8px."
+    },
+    {
+      "name": "flip",
+      "type": "boolean",
+      "required": false,
+      "default": "true",
+      "description": "Whether a side with no room may be swapped for its opposite. Default `true`."
+    },
+    {
+      "name": "matchWidth",
+      "type": "boolean",
+      "required": false,
+      "default": "false",
+      "description": "Whether the panel is at least as wide as its trigger. Default `false` — a panel sizes to its content."
+    },
+    {
+      "name": "autoFocus",
+      "type": "boolean",
+      "required": false,
+      "default": "true",
+      "description": "Whether opening moves focus into the panel. Default `true`, which is what APG asks of a dialog. An `autofocus` attribute inside wins: the browser applies it first and this only acts on what is left."
+    }
+  ],
+  "parts": [],
+  "keyboard": [
+    { "mode": null, "keys": "Enter, Space", "action": "On the trigger, toggles the panel." },
+    { "mode": null, "keys": "Escape", "action": "Closes it and returns focus to the trigger, from anywhere inside." },
+    { "mode": null, "keys": "Tab", "action": "Moves into the panel from the trigger, and out of the panel to whatever follows it." }
+  ],
+  "a11y": [
+    "`role=\"dialog\"` on the panel, named by `label` or `labelledBy`; the popover attribute supplies no role at all, and a panel with none is announced as a group of orphaned content.",
+    "The trigger carries `aria-expanded`, `aria-haspopup=\"dialog\"` and `aria-controls`, so the control says what it operates and what state it is in.",
+    "Focus moves into the panel on open and back to the trigger on close. Nothing is trapped: this is a non-modal dialog, so Tab leaves it, and the panel follows the trigger in the DOM either way."
+  ],
+  "axe": { "fixtures": ["Popover (open)"], "knownViolations": [] },
+  "styleTree": [{ "path": "popover", "depth": 0, "extends": null, "variants": ["topLayer"] }]
+}

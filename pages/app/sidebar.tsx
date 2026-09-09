@@ -22,6 +22,7 @@ import {
   Package as PackageIcon,
   Paintbrush,
   Palette,
+  PanelTop,
   Proportions,
   Rocket,
   Rows3,
@@ -244,6 +245,9 @@ export default function Sidebar({ toggleTheme, onClose }: SidebarProps) {
           </MenuItem>
           <MenuItem to="/tooltip" icon={<MessageSquare />}>
             Tooltip
+          </MenuItem>
+          <MenuItem to="/popover" icon={<PanelTop />}>
+            Popover
           </MenuItem>
           <MenuItem to="/overlay" icon={<Layers />}>
             Overlay

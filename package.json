@@ -90,7 +90,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "27.38 KB"
+      "limit": "27.44 KB"
     },
     {
       "name": "Box in a Server Component (react-server entry)",
@@ -100,7 +100,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "25.90 KB"
+      "limit": "25.95 KB"
     },
     {
       "name": "Behavior primitives (a11y entry)",
@@ -129,6 +129,16 @@
       "limit": "25.16 KB"
     },
     {
+      "name": "Popover",
+      "path": "dist/components/popover.mjs",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "gzip": true,
+      "limit": "30.90 KB"
+    },
+    {
       "name": "DataGrid",
       "path": "dist/components/dataGrid.mjs",
       "ignore": [
@@ -136,7 +146,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "56.73 KB"
+      "limit": "56.80 KB"
     },
     {
       "name": "Full library (Box + ssg + every component)",
@@ -146,7 +156,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "62.98 KB"
+      "limit": "64.02 KB"
     }
   ],
   "repository": {

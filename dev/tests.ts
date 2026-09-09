@@ -19,6 +19,62 @@ export function withUsedPositionArea(area: string) {
   });
 }
 
+/**
+ * Enough of the Popover API for the glue around it to be testable: happy-dom reflects the `popover`
+ * attribute and implements none of the methods, so `<Popover>` takes its fallback path in every test
+ * unless this is installed. It stands in for the *platform contract* — the two methods, `:popover-open`,
+ * and a `beforetoggle` that is cancelable opening and not closing (all measured in Chrome 152) — and for
+ * nothing the platform actually does: there is no top layer here, no light dismiss and no focus return,
+ * so those stay browser-verified. Returns its own teardown.
+ */
+export function installPopoverApi(): () => void {
+  const open = new WeakSet<Element>();
+  const prototype = HTMLElement.prototype as unknown as Record<string, unknown>;
+  const elementPrototype = Element.prototype as unknown as Record<string, unknown>;
+  const realMatches = Element.prototype.matches;
+
+  const toggle = (element: HTMLElement, next: boolean) => {
+    if (open.has(element) === next) return;
+
+    const before = new Event('beforetoggle', { cancelable: next }) as Event & { oldState: string; newState: string };
+    before.oldState = next ? 'closed' : 'open';
+    before.newState = next ? 'open' : 'closed';
+
+    if (!element.dispatchEvent(before)) return;
+
+    if (next) open.add(element);
+    else open.delete(element);
+
+    // The `open` *attribute*, because no test environment resolves `:popover-open` in a stylesheet — and
+    // the engine's `open` key is `:is([open],:popover-open,:open)`, so this reaches the same rules and
+    // the panel stops being `display: none` when it is shown.
+    element.toggleAttribute('open', next);
+
+    const after = new Event('toggle') as Event & { oldState: string; newState: string };
+    after.oldState = before.oldState;
+    after.newState = before.newState;
+    element.dispatchEvent(after);
+  };
+
+  prototype.showPopover = function showPopover(this: HTMLElement) {
+    toggle(this, true);
+  };
+  prototype.hidePopover = function hidePopover(this: HTMLElement) {
+    toggle(this, false);
+  };
+  elementPrototype.matches = function matches(this: Element, selector: string) {
+    if (selector === ':popover-open') return open.has(this);
+
+    return realMatches.call(this, selector);
+  };
+
+  return () => {
+    delete prototype.showPopover;
+    delete prototype.hidePopover;
+    elementPrototype.matches = realMatches;
+  };
+}
+
 // Mock console.log to prevent noise in test output
 export function ignoreLogs() {
   const originalConsoleLog = console.log;

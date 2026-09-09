@@ -256,7 +256,7 @@ const { css, anchorProps, layerProps } = useAnchorPosition({ side: 'bottom', ali
 | `side`       | `'bottom'` | `'top'`/`'bottom'` are the block axis, `'start'`/`'end'` the inline one — so a side mirrors in a right-to-left page |
 | `align`      | `'center'` | which of the anchor's edges to line up with on the other axis                                                       |
 | `offset`     | `0`        | the gap, on the ÷4 spacing scale — emitted as the margin on the side facing the anchor, and a flip flips it too     |
-| `flip`       | `true`     | `positionTryFallbacks`: the side's own axis, then the alignment's, then both                                         |
+| `flip`       | `true`     | `positionTryFallbacks`: the side's own axis, then the alignment's, then both                                        |
 | `matchWidth` | `false`    | `minWidth="anchor-size(width)"`                                                                                     |
 | `name`       | generated  | the anchor's name; one per instance unless you pass one                                                             |
 | `anchor`     | —          | an anchor handed to the hook rather than one it spreads props onto — the name is written on in an effect            |
@@ -1067,8 +1067,9 @@ import Textbox from '@box-kite/react/components/textbox';
 **Portals**: `Overlay` (`components/overlay`) anchors a layer to a trigger (`anchor`, `side`, `align`,
 `offset`, `flip`, `matchWidth` — the vocabulary `useAnchorPosition` and `Tooltip` share) and renders it
 into `#box-kite-portal`, so it escapes `overflow: hidden`, clipped ancestors and the stacking order. No
-ARIA, no open state — it is positioning only. For a _description of a control_, use `Tooltip` instead
-(below): it is the same layer with the APG pattern on it.
+ARIA, no open state — it is positioning only. For a _panel a user interacts with_, use `Popover`
+(below), which is in the top layer and needs no portal at all; for a _description of a control_, use
+`Tooltip`. Both are that layer with a pattern on it.
 
 ### Styling an element Box cannot render (`useClassNames`)
 
@@ -1298,6 +1299,61 @@ next to the markup. Everything else is a Box prop, and `props` takes the `<form>
 
 ---
 
+## Popover Component
+
+```tsx
+import Popover from '@box-kite/react/components/popover';
+
+<Popover label="Filters" trigger={(t) => <Button {...t}>Filters</Button>}>
+  <Checkbox label="Only mine" />
+</Popover>;
+```
+
+A panel anchored to a trigger, on the platform's **Popover API**. The `trigger` is a render prop (the
+`ref` and the ARIA have to land on the control itself) and the **children are the panel's content** —
+the other way round from `Tooltip`, whose `content` is a short description and whose `children` are the
+trigger. The trigger must be a **button**: the toggle is the browser's own `popovertarget`.
+
+**There is no portal.** The panel is in the top layer, so it paints above every stacking context and
+outside every clipped ancestor — and because it is never moved, it keeps the theme, the custom
+properties, the direction and the tab order it was declared in. Use `Popover` rather than `Overlay`
+whenever the layer is a panel a user interacts with; `Overlay` is positioning only, and it portals.
+
+| Prop                   | Default             | What it does                                                                        |
+| ---------------------- | ------------------- | ----------------------------------------------------------------------------------- |
+| `trigger`              | —                   | Render prop given `{ ref, props }`. Spread onto a **button**.                       |
+| `children`             | —                   | The panel's content. Rendered whether or not it is open.                            |
+| `label` / `labelledBy` | —                   | The panel's accessible name. `role="dialog"` has none of its own — give it one.     |
+| `open` / `defaultOpen` | —                   | Controlled / uncontrolled open state.                                               |
+| `onOpenChange`         | —                   | `(open, { reason, event })` — `trigger`, `escape`, `outside-pointer`, `imperative`. |
+| `side` / `align`       | `bottom` / `center` | Which side of the trigger the panel sits on, and how it lines up.                   |
+| `offset`               | `2`                 | The gap, on the ÷4 scale — 8px.                                                     |
+| `flip`                 | `true`              | Whether a side with no room is swapped for its opposite.                            |
+| `matchWidth`           | `false`             | Whether the panel is at least as wide as its trigger.                               |
+| `autoFocus`            | `true`              | Whether opening moves focus into the panel. An `autofocus` inside wins.             |
+
+What the component supplies, because the `popover` attribute supplies none of it: `role="dialog"`, the
+name, and `aria-expanded`/`aria-haspopup="dialog"`/`aria-controls` on the trigger. What the **platform**
+supplies, so it is not reimplemented: the top layer, light dismiss on Escape and on an outside press,
+and focus return when the panel is hidden.
+
+Three traps, all measured in Chrome 152:
+
+- **The panel is always rendered**; closed is `display: none`, not unmounted. So the exit is a CSS
+  transition (`transitionBehavior="allow-discrete"`, already in the component styles) and **not**
+  `<Presence>` — nothing leaves the DOM. Gate expensive children yourself: `{open ? <Heavy /> : null}`.
+- **A close cannot be refused.** `beforetoggle` is cancelable opening and not closing, so a controlled
+  `<Popover open>` hears about a light dismiss only after it has happened; keep `open` true and the
+  component re-shows the panel.
+- **Never put an `onClick` toggle on the trigger.** Light dismiss closes on `pointerdown`, so the
+  `click` after it reads "closed" and reopens the panel — pressing the trigger would never close it.
+  That is exactly why the toggle is handed to `popovertarget`.
+
+Where the browser has no Popover API the panel falls back to an `Overlay` (a portal) with `useDismiss`
+and `useFocusReturn`. Same props, same styling; what is lost is what a portal costs.
+
+---
+
 ## Tooltip Component
 
 ```tsx
@@ -1312,16 +1368,16 @@ component — `<Button {...trigger}>` — or, on a plain element,
 `<button ref={trigger.ref} {...trigger.props}>`. The `ref` is what the bubble is positioned against,
 so the tooltip sits under the trigger and adds nothing to the layout.
 
-| Prop                      | Default | What it does                                                                       |
-| ------------------------- | ------- | ---------------------------------------------------------------------------------- |
-| `content`                 | —       | The description. Nothing renders while it is empty.                                |
-| `open` / `defaultOpen`    | —       | Controlled / uncontrolled open state.                                              |
-| `onOpenChange`            | —       | `(open, { reason, event })` — `hover`, `focus`, `pointer-leave`, `blur`, `escape`. |
-| `openDelay`               | `300`   | Hover dwell before it appears. Focus ignores it and shows immediately.             |
-| `closeDelay`              | `150`   | Grace period after the pointer leaves, so it can travel onto the tooltip.          |
-| `side` / `align`          | `bottom` / `center` | Which side of the trigger the bubble sits on, and how it lines up. |
-| `offset`                  | `1`     | The gap, on the ÷4 scale — 4px, near enough for the pointer to cross.              |
-| `flip`                    | `true`  | Whether a side with no room is swapped for its opposite.                           |
+| Prop                   | Default             | What it does                                                                       |
+| ---------------------- | ------------------- | ---------------------------------------------------------------------------------- |
+| `content`              | —                   | The description. Nothing renders while it is empty.                                |
+| `open` / `defaultOpen` | —                   | Controlled / uncontrolled open state.                                              |
+| `onOpenChange`         | —                   | `(open, { reason, event })` — `hover`, `focus`, `pointer-leave`, `blur`, `escape`. |
+| `openDelay`            | `300`               | Hover dwell before it appears. Focus ignores it and shows immediately.             |
+| `closeDelay`           | `150`               | Grace period after the pointer leaves, so it can travel onto the tooltip.          |
+| `side` / `align`       | `bottom` / `center` | Which side of the trigger the bubble sits on, and how it lines up.                 |
+| `offset`               | `1`                 | The gap, on the ÷4 scale — 4px, near enough for the pointer to cross.              |
+| `flip`                 | `true`              | Whether a side with no room is swapped for its opposite.                           |
 
 Every other Box prop styles the bubble, over the built-in `tooltip` component style. What the
 component guarantees, so you do not wire it: `role="tooltip"`, `aria-describedby` on the trigger only
