@@ -176,6 +176,9 @@ After any code change, all of the following must pass before considering the wor
 5. `npm test` — All tests (or `npm run test:coverage` when touching `src/core/` or `src/react/`, which is what CI runs)
 6. `npm run check:props` — the prop reference, when `src/core/boxStyles.ts` or a formatter changed
 7. `npm run check:agents` — the committed skill, Cursor rule and marketplace entry, when the rules file, the lead block above or the prop count changed
+8. `npm run check:docs` — when anything under `pages/` changed. It **compiles** every code block the docs site shows, each one wrapped as `<Box ${code}>content</Box>`, so a demo caption has to be one valid set of props: prose or an ellipsis joining two elements is a syntax error, and a block that is deliberately not compilable says `check={false}`
+
+Those eight are the ones a change usually reaches. **The authority is the workflows, not this list** — `grep -h "run: npm run" .github/workflows/*.yml | sort -u` prints all sixteen, and the rest (`check:brand`, `check:components`, `check:package`, `size`, `build:pages`, `build:vanilla`, `build:next-app`, `smoke:next-app`) are the ones a green local suite has shipped a red CI on.
 
 CI runs the test suite against React 18 and React 19 — both are in the supported peer range and the engine leans on layout effects, hydration and server rendering, which is exactly what changed between them.
 
