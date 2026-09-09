@@ -169,6 +169,8 @@ const matchCandidates = [
   'red-500/50',
   'sample',
   '16/9',
+  'anchor-size(width)',
+  'anchor(bottom)',
   // Last, so every definition already served keeps the candidate it was matching: a gradient is the one
   // record with a shape of its own, and `bgGradient` is the only definition that accepts it.
   { linear: 'r', colors: ['red-500', 'blue-500'] },

@@ -2,7 +2,7 @@ import { createContext, Ref, RefAttributes, useContext, useMemo, useRef } from '
 import { BoxProps, BoxTagProps } from '../box';
 import { useEventCallback } from '../react/a11y/callbacks';
 import useControllableState, { ChangeHandler } from '../react/a11y/useControllableState';
-import useIdentifier from '../react/a11y/useIdentifier';
+import useIdentifier from '../react/identity/useIdentifier';
 import { ComponentsAndVariants } from '../types';
 import Flex from './flex';
 import RadioButton from './radioButton';

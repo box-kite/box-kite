@@ -27,6 +27,7 @@ const NOT_TYPESCRIPT = new Set(['shell', 'css']);
 const PACKAGE_PATHS = {
   '@box-kite/react': ['src/box.ts'],
   '@box-kite/react/a11y': ['src/a11y.ts'],
+  '@box-kite/react/anchor': ['src/anchor.ts'],
   '@box-kite/core': ['src/core.ts'],
   '@box-kite/react/rsc': ['src/rsc.ts'],
   '@box-kite/react/ssg': ['src/ssg.ts'],
@@ -47,6 +48,7 @@ const PROVIDED = {
   useState: "import { useState } from 'react';",
   BaseSvg: "import BaseSvg from '@box-kite/react/components/baseSvg';",
   Box: "import Box from '@box-kite/react';",
+  useAnchorPosition: "import { useAnchorPosition } from '@box-kite/react/anchor';",
   Button: "import Button from '@box-kite/react/components/button';",
   Checkbox: "import Checkbox from '@box-kite/react/components/checkbox';",
   DataGrid: "import DataGrid from '@box-kite/react/components/dataGrid';",

@@ -23,6 +23,7 @@ const loaders: Record<SiteRoutePath, () => Promise<{ default: ComponentType }>> 
   '/variants': () => import('../pages/variantsPage'),
   '/pseudo-elements': () => import('../pages/pseudoElementsPage'),
   '/container-queries': () => import('../pages/containerQueriesPage'),
+  '/anchor': () => import('../pages/anchorPage'),
   '/rtl': () => import('../pages/rtlPage'),
   '/tailwind-parity': () => import('../pages/tailwindParityPage'),
   '/escape-hatch': () => import('../pages/escapeHatchPage'),

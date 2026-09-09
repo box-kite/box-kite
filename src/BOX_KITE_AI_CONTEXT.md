@@ -221,6 +221,53 @@ The keyword families do not mix: physical (`top`/`bottom` × `left`/`right`), lo
 
 Chrome 125+, Firefox 147+, Safari 26+. Where it is missing the layer renders unpositioned, so `Overlay` (`components/overlay`), which measures, is still the portable path.
 
+A length can also come off the anchor. Every sizing prop takes an `anchor-size()` value and every single-side inset prop an `anchor()` one, so a layer sizes and places itself against its anchor with nothing measured:
+
+```tsx
+<Box position="fixed" positionAnchor="menu-trigger" minWidth="anchor-size(width)" maxHeight="anchor-size(height, 20rem)" />
+<Box position="fixed" top="anchor(bottom)" insetStart="anchor(left)" />
+```
+
+`anchor-size()` takes an axis (`width`, `height`, `block`, `inline`, `self-block`, `self-inline`), `anchor()` an edge (`top`, `right`, `bottom`, `left`, `start`, `end`, `self-start`, `self-end`, `center`, `inside`, `outside`) or a percentage along one. Both take an optional anchor name first — with the same optional `--` — and an optional fallback after a comma. A bare `anchor()` is rejected (CSS needs the edge); a bare `anchor-size()` is not (it means the layer's own axis).
+
+### `useAnchorPosition` — the placement as one hook
+
+`@box-kite/react/anchor` turns a side and an alignment into the props above, and measures instead where the browser has no anchor positioning. It renders nothing and owns no state beyond that.
+
+```tsx
+import { useAnchorPosition } from '@box-kite/react/anchor';
+
+const { css, anchorProps, layerProps } = useAnchorPosition({ side: 'bottom', align: 'start', offset: 2, matchWidth: true });
+
+<Button {...anchorProps} onClick={toggle}>
+  Options
+</Button>;
+{
+  isOpen && (
+    <Box {...layerProps} component="menu">
+      …
+    </Box>
+  );
+}
+```
+
+| Option       | Default    | What it means                                                                                                       |
+| ------------ | ---------- | ------------------------------------------------------------------------------------------------------------------- |
+| `side`       | `'bottom'` | `'top'`/`'bottom'` are the block axis, `'start'`/`'end'` the inline one — so a side mirrors in a right-to-left page |
+| `align`      | `'center'` | which of the anchor's edges to line up with on the other axis                                                       |
+| `offset`     | `0`        | the gap, on the ÷4 spacing scale — emitted as the margin on the side facing the anchor, and a flip flips it too     |
+| `flip`       | `true`     | `positionTryFallbacks` on the side's own axis                                                                       |
+| `matchWidth` | `false`    | `minWidth="anchor-size(width)"`                                                                                     |
+| `name`       | generated  | the anchor's name; one per instance unless you pass one                                                             |
+
+`css` in the result says which path ran: `true` is the browser placing the layer with no JavaScript at all, `false` is the measured fallback (flip to the opposite side, then shift along the other axis to stay in the viewport).
+
+**Three more things worth knowing, all measured:**
+
+- **The layer is `position: fixed`**, so it escapes every `overflow: hidden` ancestor without a portal — but not a _transformed_ ancestor, which is a fixed element's containing block, and not the page's stacking order. `Overlay` is still the answer when the layer has to come out on top of everything.
+- **A flip is sticky.** Once the browser takes one it keeps it until the layer is laid out afresh, which is what stops it oscillating as the page scrolls: hiding the layer and showing it again re-evaluates. So a popup that mounts when it opens always picks the side that fits, while one that stays mounted keeps the side it first chose.
+- **The anchor's name is an inline style, not a prop.** An identity is per instance, so a class for it would be a rule per instance that is never freed — the same reason a sparkline's `d` is an attribute while its stroke is a class. Everything shared — the area, the flip, the margin, the width — is an ordinary prop.
+
 ### Colours, and the opacity modifier
 
 The palette is **Tailwind 4.3's, in OKLCH**: twenty-six families of eleven steps (`50`–`950`) — the five

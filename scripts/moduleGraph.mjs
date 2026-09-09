@@ -61,7 +61,7 @@ export const CLIENT_ONLY_COMPONENTS = [
  * Entries that are hooks all the way down. Same `'use client'` banner: importing `useDismiss` from a
  * Server Component should open a client boundary, not fail to resolve `useRef`.
  */
-export const CLIENT_ONLY_ENTRIES = ['a11y'];
+export const CLIENT_ONLY_ENTRIES = ['a11y', 'anchor'];
 
 // Hooks and APIs React's server renderer has no dispatcher for. `useMemo`, `useCallback`, `useId`,
 // `useDebugValue` and `use` are the ones it does support, so they are deliberately absent here.
@@ -181,6 +181,7 @@ export function componentPrivateModules() {
     ...moduleGraph(CORE_ENTRY).modules.keys(),
     ...moduleGraph('src/ssg.ts').modules.keys(),
     ...moduleGraph('src/a11y.ts').modules.keys(),
+    ...moduleGraph('src/anchor.ts').modules.keys(),
   ]);
 
   const reachedBy = new Map();

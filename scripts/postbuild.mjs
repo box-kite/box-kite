@@ -114,7 +114,7 @@ if (bannerViolations.length) {
 }
 
 console.log(
-  `✔ ${CLIENT_ONLY_COMPONENTS.length} client-only components and ${CLIENT_ONLY_ENTRIES.length} client-only entry ` +
+  `✔ ${CLIENT_ONLY_COMPONENTS.length} client-only components and ${CLIENT_ONLY_ENTRIES.length} client-only entries ` +
     `carry a 'use client' banner; the server-safe ones do not`,
 );
 

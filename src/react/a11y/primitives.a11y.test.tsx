@@ -3,10 +3,10 @@ import { useRef } from 'react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { expectNoAxeViolations } from '../../../dev/a11y/axe';
 import { expectFocusOn, keyboard } from '../../../dev/a11y/keyboard';
+import useIdentifier from '../identity/useIdentifier';
 import useControllableState from './useControllableState';
 import useDismiss from './useDismiss';
 import useFocusReturn from './useFocusReturn';
-import useIdentifier from './useIdentifier';
 import useRovingFocus from './useRovingFocus';
 
 /**

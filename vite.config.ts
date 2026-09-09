@@ -28,6 +28,8 @@ const entry = {
   box: path.resolve(import.meta.dirname, './src/box.ts'),
   // The behaviour primitives the accessible components are built from — see src/a11y.ts.
   a11y: path.resolve(import.meta.dirname, './src/a11y.ts'),
+  // Where a floating layer goes — see src/anchor.ts.
+  anchor: path.resolve(import.meta.dirname, './src/anchor.ts'),
   // The `react-server` condition of the main entry: the hook-free Box a Server Component gets.
   rsc: path.resolve(import.meta.dirname, './src/rsc.ts'),
   ssg: path.resolve(import.meta.dirname, './src/ssg.ts'),
@@ -204,7 +206,7 @@ export default defineConfig(({ mode }) => {
 
                   // Entry modules stay their own chunks — grouping them would drag one entry's
                   // imports (`react-dom/server`, say) into every other entry that shares the group.
-                  if (!source.includes('/src/') || /^src\/(a11y|box|core|rsc|ssg)\.ts$/.test(module)) return null;
+                  if (!source.includes('/src/') || /^src\/(a11y|anchor|box|core|rsc|ssg)\.ts$/.test(module)) return null;
                   // Component entries keep the chunks rolldown gives them, one per component.
                   if (module.startsWith('src/components/')) return null;
 
@@ -215,6 +217,10 @@ export default defineConfig(({ mode }) => {
                   // taxed the `/a11y` entry 85 B for something no behaviour primitive uses.
                   if (module.startsWith('src/utils/environment/') || module.startsWith('src/utils/dom/')) return 'platform';
                   if (module === 'src/react/effects.ts') return 'effects';
+                  // The id generator, shared by the behaviour primitives and the anchor hook, since an anchor name has
+                  // to survive a hydration the way an `aria-controls` does. Left in `behavior` it would make `/anchor`
+                  // import roving focus and dismissal to ask React for an id.
+                  if (module.startsWith('src/react/identity/')) return 'identity';
                   // `<Presence>` and the timing model behind it, shared by the three layers that animate out
                   // and by nothing else. In `client` the whole library would carry an exit nobody asked for.
                   if (module.startsWith('src/react/animation/') || module.startsWith('src/utils/animation/')) return 'motion';
@@ -238,6 +244,9 @@ export default defineConfig(({ mode }) => {
                   // useless: `/a11y` would import the styling binding and the theme provider, so anyone wanting
                   // `useDismiss` alone would bundle the engine with it.
                   if (module.startsWith('src/react/a11y/')) return 'behavior';
+
+                  // The anchor hook and the placement model behind it: one entry reaches them, so they belong in it.
+                  if (module.startsWith('src/react/anchor/') || module.startsWith('src/utils/anchor/')) return null;
 
                   return serverSafe.has(module) ? 'react-shared' : 'client';
                 },

@@ -13,7 +13,7 @@ export type { DismissOptions, DismissReason, ElementLike } from './react/a11y/us
 export { default as useFocusReturn } from './react/a11y/useFocusReturn';
 export type { FocusReturnOptions } from './react/a11y/useFocusReturn';
 
-export { default as useIdentifier } from './react/a11y/useIdentifier';
+export { default as useIdentifier } from './react/identity/useIdentifier';
 
 export { default as useRovingFocus } from './react/a11y/useRovingFocus';
 export type {

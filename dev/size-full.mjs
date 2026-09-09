@@ -6,6 +6,7 @@
 // downloads: @box-kite/react plus the @box-kite/core it depends on.
 import * as box from '../dist/box.mjs';
 import * as a11y from '../dist/a11y.mjs';
+import * as anchor from '../dist/anchor.mjs';
 import * as core from '@box-kite/core';
 import * as ssg from '../dist/ssg.mjs';
 import * as baseSvg from '../dist/components/baseSvg.mjs';
@@ -34,6 +35,7 @@ import * as visuallyHidden from '../dist/components/visuallyHidden.mjs';
 console.log(
   box,
   a11y,
+  anchor,
   core,
   ssg,
   baseSvg,
