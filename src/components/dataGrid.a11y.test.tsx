@@ -399,6 +399,18 @@ describe('DataGrid accessibility', () => {
       expect(trigger.getAttribute('aria-expanded')).toBe('false');
     });
 
+    // Same rule as the Dropdown popup: the menu was a child of its trigger and got away with it only
+    // because the portal moved it before a browser saw it. A `role="menu"` of buttons inside a
+    // `<button>` is unreachable content, so the nesting has to be right in the markup now.
+    it('renders the menu beside its trigger, never inside it', async () => {
+      const user = keyboard();
+      renderGrid();
+
+      await openMenu(user);
+
+      expect(screen.getByRole('menu').closest('button')).toBeNull();
+    });
+
     it('opens with focus on its first item and moves with the arrows', async () => {
       const user = keyboard();
       renderGrid();

@@ -18,10 +18,17 @@ function getThemeRefCounts(container: Element) {
   return counts;
 }
 
-export default function usePortalContainer() {
+/**
+ * The container every portalled layer shares, created on first use. Pass `false` on the top-layer path,
+ * where nothing is portalled: the container is a DOM node plus a theme-class subscription, and a layer
+ * that stays where it was declared inherits the theme instead of needing one copied onto it.
+ */
+export default function usePortalContainer(enabled = true) {
   const [theme] = Theme.useTheme();
 
   const portalContainer = useMemo(() => {
+    if (!enabled) return null;
+
     // Runs during render, so it has to survive a server render: no document, no container, and
     // the caller renders no portal. (This used to work only because `ssg` installed a fake
     // `document` whose `getElementById` answered every id with its own style element.)
@@ -38,7 +45,7 @@ export default function usePortalContainer() {
     }
 
     return container;
-  }, []);
+  }, [enabled]);
 
   // Update theme class when theme changes (with ref counting)
   useLayoutEffect(() => {

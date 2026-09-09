@@ -117,9 +117,9 @@ export default function AnchorPage() {
               <Bullet>
                 <b>Not a portal.</b> The layer is <Mono>position: fixed</Mono>, so it escapes every <Mono>overflow: hidden</Mono> ancestor
                 without one — but not a <em>transformed</em> ancestor, which is a fixed element&apos;s containing block, and not the
-                page&apos;s stacking order. <Mono>Overlay</Mono> is this hook plus a portal, and is what to reach for when the layer has to
-                come out on top of everything — as <Mono>Tooltip</Mono>, the <Mono>Dropdown</Mono> popup and the DataGrid column menu all
-                do.
+                page&apos;s stacking order. <Mono>Overlay</Mono> is this hook plus the browser&apos;s top layer, which beats both, and is
+                what to reach for when the layer has to come out on top of everything — as <Mono>Tooltip</Mono>, the <Mono>Dropdown</Mono>{' '}
+                popup and the DataGrid column menu all do.
               </Bullet>
               <Bullet>
                 <b>Not a class.</b> The anchor&apos;s name is an inline style, deliberately: an identity is per instance, so a class for it

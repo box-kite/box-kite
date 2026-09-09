@@ -1,12 +1,18 @@
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { ignoreLogs } from '../../dev/tests';
+import { ignoreLogs, installPopoverApi } from '../../dev/tests';
 import Overlay from './overlay';
 
 /**
  * The positioning primitive on its own — what `Tooltip`, `Dropdown` and the DataGrid menu all stand on.
- * Since B1 stage 3 that is `useAnchorPosition` plus a portal, so the two paths are tested apart: what the
- * browser places (a name, and a layer pointing at it) and what the fallback measures (coordinates).
+ * Two independent choices, tested apart: *where* the layer goes (the top layer since B2 stage 2, a portal
+ * where the browser has no Popover API) and *how* it is placed (the browser's anchor positioning, or the
+ * coordinates the hook measured).
+ *
+ * The test environment implements no Popover API, so the default here is the portal — which is why the
+ * whole suite kept passing through the migration and proves nothing about the top layer on its own.
+ * `installPopoverApi` puts the contract back for the tests that are about what the component says to the
+ * browser; what the platform itself does is verified in Chrome.
  */
 describe('Overlay', () => {
   ignoreLogs();
@@ -34,6 +40,46 @@ describe('Overlay', () => {
       return (portal()?.contains(this) ? { top: 0, left: 0, width: 100, height: 40 } : { top: 0, left: 0, ...anchor }) as DOMRect;
     });
   }
+
+  describe('where the browser has the Popover API', () => {
+    let uninstall: () => void;
+
+    // Installed before the render, since the path is decided on the first one — a layer is a different
+    // position in the React tree on each, so nothing may move it afterwards.
+    const withPopoverApi = () => {
+      uninstall = installPopoverApi();
+    };
+
+    afterEach(() => uninstall?.());
+
+    it('leaves the layer where it was declared and puts it in the top layer instead of a portal', () => {
+      withPopoverApi();
+
+      const { container } = render(<Overlay anchor={document.createElement('div')}>anywhere</Overlay>);
+
+      const content = screen.getByText('anywhere');
+      expect(container).toContainElement(content);
+      expect(portal()).toBeNull();
+    });
+
+    it('shows the layer as `popover="manual"` — a layer owns no dismissal, and light dismiss is one', () => {
+      withPopoverApi();
+
+      render(<Overlay anchor={document.createElement('div')}>anywhere</Overlay>);
+
+      expect(layer()).toHaveAttribute('popover', 'manual');
+      expect(layer().matches(':popover-open')).toBe(true);
+    });
+
+    it('writes no direction of its own: a top-layer element inherits the one around it', () => {
+      withPopoverApi();
+      vi.spyOn(window, 'getComputedStyle').mockReturnValue({ direction: 'rtl', fontSize: '16px' } as CSSStyleDeclaration);
+
+      render(<Overlay anchor={document.createElement('div')}>anywhere</Overlay>);
+
+      expect(layer()).not.toHaveAttribute('dir');
+    });
+  });
 
   it('renders its children into the portal container, not where it was declared', () => {
     const { container } = render(<Overlay>anywhere</Overlay>);

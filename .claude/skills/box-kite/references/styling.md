@@ -152,8 +152,8 @@ gradient becomes lettering — the pairing is deliberately not automatic.
 // The pre-built components come with one dir and no configuration: useRovingFocus reads the element's
 // resolved direction when a sideways arrow arrives, so ArrowLeft is the *next* item in a right-to-left
 // list or grid (APG's rule; Tab/Home/End never flip); a DataGrid column pins to 'START'/'END' of the
-// inline axis; and Overlay measures the direction it was declared in and writes it onto the portalled
-// layer as dir, since a portal inherits nothing. Physical on purpose: Overlay's page coordinates.
+// inline axis; and Overlay stays in the subtree it was declared in, so the layer inherits its direction
+// (on the portal fallback it measures one and writes it on). Physical on purpose: Overlay's coordinates.
 // Reduced motion is already the default — the preference sets --transitionTime to 0s, so every
 // Box stops animating. Declare motionReduce only to replace a movement or keep a safe one.
 <Box transitionDuration={150} motionReduce={{ transition: 'none' }} forcedColors={{ b: 1 }} />

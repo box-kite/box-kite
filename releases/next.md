@@ -15,6 +15,7 @@ The package now carries instructions for the agent writing the code, the documen
 - **[One hook places a floating layer](#one-hook-places-a-floating-layer-and-a-length-can-come-off-the-anchor)** — `useAnchorPosition` from `@box-kite/react/anchor`, plus `anchor-size()` on every sizing prop and `anchor()` on every inset, so a popup matches its trigger with nothing measured.
 - **[Every popup in the library is placed by the browser](#every-popup-in-the-library-is-placed-by-the-browser)** — `Overlay`, `Tooltip`, the `Dropdown` popup and the DataGrid column menu stand on that hook, three home-grown flip heuristics are gone, and one `side`/`align`/`offset`/`flip` vocabulary replaces the transforms they took.
 - **[A popover is a browser feature now, not a portal](#a-popover-is-a-browser-feature-now-not-a-portal)** — `<Popover>` on the platform Popover API: the top layer, light dismiss and focus return are the browser's, so there is no portal and no z-index — and it is 3.46 KB gz against Radix Popover's 23.54.
+- **[Every floating layer is in the top layer](#every-floating-layer-is-in-the-top-layer-and-the-portal-is-gone)** — `Overlay`, and so `Tooltip`, the `Dropdown` popup and the DataGrid column menu: no portal anywhere in the library, so a popup inherits the theme around it and a dropdown inside a panel no longer dismisses it.
 
 ## The package tells an agent how to use it
 
@@ -183,7 +184,7 @@ The whole surface is on [/anchor](https://www.box-kite.dev/anchor), with a live 
 
 ## Every popup in the library is placed by the browser
 
-The hook above is what the pre-built layers use now. `Overlay` is `useAnchorPosition` plus a portal, and `Tooltip`, the `Dropdown` popup and the DataGrid column menu are `Overlay` — so a popup in this library is placed by `position-area` and flipped by `position-try-fallbacks`, and on a browser with CSS anchor positioning nothing runs to keep it there: no measurement, no scroll listener, no state.
+The hook above is what the pre-built layers use now. `Overlay` is `useAnchorPosition` plus the browser's top layer (a portal, when that release shipped — see below), and `Tooltip`, the `Dropdown` popup and the DataGrid column menu are `Overlay` — so a popup in this library is placed by `position-area` and flipped by `position-try-fallbacks`, and on a browser with CSS anchor positioning nothing runs to keep it there: no measurement, no scroll listener, no state.
 
 ```tsx
 <Overlay anchor={triggerElement} side="bottom" align="start" offset={2}>
@@ -201,7 +202,7 @@ The hook above is what the pre-built layers use now. `Overlay` is `useAnchorPosi
 
 Four things worth knowing, all measured in Chrome 152:
 
-- **The portal stays, and it is not about clipping.** `position: fixed` already escapes every `overflow: hidden` ancestor; what it does not escape is a _transformed_ ancestor (a fixed element's containing block) or the page's stacking order. That is what the portal is for, and it composes with anchor positioning because an `anchor-name` is not scoped to a subtree.
+- **Escaping a clipped ancestor was never what the portal was for.** `position: fixed` already escapes every `overflow: hidden` ancestor; what it does not escape is a _transformed_ ancestor (a fixed element's containing block) or the page's stacking order. The portal was for those two, and the top layer replaced it for both — see [Every floating layer is in the top layer](#every-floating-layer-is-in-the-top-layer-and-the-portal-is-gone). Either way it composes with anchor positioning, because an `anchor-name` is not scoped to a subtree.
 - **A flip needs three candidates, not one.** A candidate position has to fit on _both_ axes, so a lone `flip-block` does nothing at all for a layer that overflows the _cross_ axis — the browser leaves it pressed against the edge of the viewport. `flip` offers the side's own axis, the alignment's, and both, in that order, which is what makes a column menu aligned to its button's end mirror to the other end near the edge of the page instead of running off it.
 - **Knowing which side the browser chose costs the entrance.** `Overlay`'s `onSideChange` reads the _used_ `position-area`, and that read is the style resolution `@starting-style` computes its before-change style from — so a class depending on the answer always lands after the entrance has been decided. An exit runs long afterwards and can use it, which is why `dropdown.items` keeps `closedUp` and has no `up`.
 - **A used `position-area` is not the value that went in.** A `span-all` half is dropped (`block-end span-all` reads back `block-end`) and a value naming both axes comes back in the `start`/`end` shorthand, where position names the axis rather than a keyword: `block-end span-inline-end` reads back `end span-end`, and `start span-end` once it has flipped.
@@ -232,12 +233,39 @@ Three things worth knowing, all measured rather than read off the spec:
 
 Where the browser has no Popover API the panel falls back to an `Overlay` — a portal — with `useDismiss` and `useFocusReturn` supplying what the platform would have. The props are identical and so is the styling; what is lost is what the portal costs. Both paths are on [/popover](https://www.box-kite.dev/popover).
 
+## Every floating layer is in the top layer, and the portal is gone
+
+`<Popover>` above needs no portal because the browser's top layer replaces one. The same is now true of every other layer the library ships: `Overlay` renders where it is declared and carries `popover="manual"`, and `Tooltip`, the `Dropdown` popup and the DataGrid column menu are `Overlay` — so nothing in the library portals any more.
+
+```tsx
+<Box.Theme use="local" theme="dark">
+  <Dropdown<string> label="Fruit">
+    <Dropdown.Item value="a">Apple</Dropdown.Item>
+  </Dropdown>
+</Box.Theme>
+```
+
+The popup is dark now. That is the change in one example: a layer that stays in the DOM it was written in **inherits** — the theme around it, the custom properties, the text direction — where a portalled one hung off the end of `<body>` and inherited nothing, which is why `Overlay` used to measure the direction off its anchor and copy it back on as a `dir`.
+
+`manual` rather than `auto` is the deliberate part. Light dismiss is a _pattern_, and `Overlay` implements none: `<Popover>` is the `auto` one. The three components built on it each own a dismissal already, and each is stricter than the platform's — a tooltip's Escape has to _last_, which WCAG 1.4.13 asks for and light dismiss does not do, and a dropdown's trigger toggles in JavaScript, which light dismiss fights for the reason the `<Popover>` section describes.
+
+Four things worth knowing, all measured in Chrome 152:
+
+- **The top layer beats what `position: fixed` cannot.** A layer in it paints over a `z-index: 9999` sibling and out of a `transform`ed ancestor; a plain fixed layer at the same coordinates is covered by both. That is what the portal was for, and it is no longer what the portal is needed for.
+- **A press inside a layer is a press inside whatever popover it was _declared_ in.** So a `Dropdown` inside a `Popover` panel no longer dismisses the panel when you open its popup or choose an option — the bug a portal caused by moving the popup to the end of the body, where every press in it read as a press outside the panel. Nothing was configured to fix it; DOM containment is simply real again.
+- **The tab order follows the markup**, so a layer declared after its trigger is what Tab reaches next, and nothing has to be said with `aria-owns`.
+- **Mounting is unchanged.** `<Presence>` still owns it, so a closed dropdown renders none of its options and a closed tooltip renders nothing at all — and an exit transition runs in the top layer like anywhere else. This is the opposite trade from `<Popover>`, whose panel is always rendered because the browser owns its toggle.
+
+Where the browser has no Popover API the layer is portalled into `#box-kite-portal` exactly as before, with everything a portal costs. The one thing to check when upgrading is in [Breaking changes](#breaking-changes) below: a layer must not be declared _inside_ its trigger any more.
+
 ## Breaking changes
 
 - **`Overlay` places a layer instead of translating one, so its four positioning props are gone.** `anchorSide` is `side` (`anchorSide="bottom"` is the default `side="bottom"`; the old `'top'` overlapped the anchor, which `side="bottom" offset={0}` does not — use a negative margin if you need the overlap). `adjustTranslateX`/`adjustTranslateY` are `offset` on the ÷4 scale for the gap and `align` for the sideways nudge (`adjustTranslateY="4px"` is `offset={1}`). `onPositionChange` is `onSideChange`, which reports the side rather than page coordinates — nothing measures a position any more, so there are none to report.
 - **`Tooltip`'s `adjustTranslateX`/`adjustTranslateY` are `side`, `align` and `offset`.** The default gap is unchanged (`offset={1}`, 4px), so a tooltip that took no nudge needs no change.
 - **`flip` on `Overlay` and `Tooltip` is the placement prop, not the CSS one.** It shadows the Box prop that writes `scale`, the way `Tooltip` already shadows `content` and `open` — a mirrored layer is a rarity, and one placement vocabulary is worth more. A child of the layer still takes the CSS `flip`.
 - **The `dropdown.items` `up` variant is gone; `closedUp` stays.** It only ever carried the entrance's starting style, and the entrance cannot know which way the popup went (see above). A `Box.components()` override that styled `up` should move to `closedUp` or to the base `startingStyle`.
+- **A layer must not be declared inside its trigger.** `Overlay` stays in the DOM where it is written now, so `<Button>{overlay}</Button>` puts a `role="listbox"` or a `role="menu"` full of buttons inside a `<button>` — content no keyboard can reach. It used to work by accident, because the portal moved the layer before a browser saw it. Render the layer beside the trigger and pass the trigger as `anchor`. The library's own `Dropdown` popup and DataGrid column menu were both doing this and have moved.
+- **Nothing is portalled into `#box-kite-portal` any more**, except on a browser with no Popover API. CSS or a test that reaches a popup through that container — `#box-kite-portal .item`, or a query scoped to it — should target the popup itself instead; it is now a sibling of its trigger. The container is no longer created at all on the top-layer path, and `Box.Theme` needs nothing copied into it, since the layer inherits the theme it was declared in.
 
 ## Fixes
 

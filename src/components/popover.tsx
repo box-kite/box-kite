@@ -10,6 +10,7 @@ import useIdentifier from '../react/identity/useIdentifier';
 import { ComponentsAndVariants } from '../types';
 import { AnchorAlign, AnchorSide } from '../utils/anchor/anchorUtils';
 import { isEventInside } from '../utils/dom/domUtils';
+import { supportsPopover } from '../utils/environment/environmentUtils';
 import Overlay from './overlay';
 
 /** Why the popover opened or closed — `onOpenChange` gets this alongside the event that did it. */
@@ -80,11 +81,6 @@ interface Props<TKey extends keyof ComponentsAndVariants> extends PopoverBoxProp
    * `autofocus` attribute inside wins: the browser applies it first and this only acts on what is left.
    */
   autoFocus?: boolean;
-}
-
-/** Whether the browser has the Popover API. Asked per mount rather than cached, so a test can answer for it. */
-function supportsPopover(): boolean {
-  return typeof HTMLElement !== 'undefined' && typeof HTMLElement.prototype.showPopover === 'function';
 }
 
 /**

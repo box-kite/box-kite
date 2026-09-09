@@ -131,7 +131,7 @@ Every axis prop was already logical — `mx` is `margin-inline`, `px` is `paddin
 
 - **The arrow keys follow the reading order.** `useRovingFocus` reads the element's _resolved_ direction when a sideways arrow arrives, so in a right-to-left list or grid `ArrowLeft` moves to the **next** item — which is what APG asks for. Nothing is configured; a `dir` anywhere above the list is enough, and a vertical list pays nothing. Tab, Home and End never flip.
 - **A DataGrid column pins to `'START'` or `'END'`** of the inline axis rather than to a screen side, so it stays where the reading begins under either direction; `'LEFT'`/`'RIGHT'` are the older spelling of those two. `align` gained `'start'`/`'end'`, the resize handle grows a column towards the reading end, and the column menu's _Pin Left_ reads _Pin Right_ when that is the side it would pin to.
-- **A popup carries the direction out of the tree with it.** `Overlay` portals into a container that is a child of the body, where nothing of the declaration site is inherited, so it reads the direction off its anchor and writes it back on as `dir` — `Tooltip`, the `Dropdown` popup and the grid's column menu all get that.
+- **A popup keeps the direction it was declared in.** `Overlay` stays in the subtree it was declared in — the top layer inherits normally — so `Tooltip`, the `Dropdown` popup and the grid's column menu simply inherit it. Only on the portal fallback, where the container is a child of the body and nothing of the declaration site reaches it, does it read the direction off its anchor and write it back on as `dir`.
 - **What stays physical, on purpose**: the grid's loading bar sweeps the same way in both. (`Overlay` no longer positions in page coordinates at all — a `side` is logical, so a layer beside its anchor mirrors with the reading order.)
 
 ### Layout
@@ -219,7 +219,7 @@ The keyword families do not mix: physical (`top`/`bottom` × `left`/`right`), lo
 - **A candidate position has to fit on _both_ axes to be taken**, so an overflow the flips cannot fix disqualifies every one of them and the layer silently stays where it started. `positionArea="block-end center"` with a layer wider than its anchor overflows the centre column, and `flip-block` then does nothing at all. Span the axis being kept — `"block-end span-all"` — and it flips.
 - **`positionVisibility` hides at paint time**, so the layer keeps its box and its computed `visibility` still reads `visible` (`checkVisibility()` agrees). Only painting and hit-testing stop, so a test asserting it needs a screenshot.
 
-Chrome 125+, Firefox 147+, Safari 26+. Where it is missing the layer renders unpositioned, so the portable path is `useAnchorPosition` (which measures instead) or `Overlay`, which is that hook plus a portal.
+Chrome 125+, Firefox 147+, Safari 26+. Where it is missing the layer renders unpositioned, so the portable path is `useAnchorPosition` (which measures instead) or `Overlay`, which is that hook plus the top layer.
 
 A length can also come off the anchor. Every sizing prop takes an `anchor-size()` value and every single-side inset prop an `anchor()` one, so a layer sizes and places itself against its anchor with nothing measured:
 
@@ -266,7 +266,7 @@ const { css, anchorProps, layerProps } = useAnchorPosition({ side: 'bottom', ali
 
 **Three more things worth knowing, all measured:**
 
-- **The layer is `position: fixed`**, so it escapes every `overflow: hidden` ancestor without a portal — but not a _transformed_ ancestor, which is a fixed element's containing block, and not the page's stacking order. `Overlay` is this hook plus a portal, and is still the answer when the layer has to come out on top of everything.
+- **The layer is `position: fixed`**, so it escapes every `overflow: hidden` ancestor without a portal — but not a _transformed_ ancestor, which is a fixed element's containing block, and not the page's stacking order. `Overlay` is this hook plus the browser's top layer, which beats both, and is still the answer when the layer has to come out on top of everything.
 - **Three fallbacks, not one.** A candidate has to fit on _both_ axes, so a lone `flip-block` does nothing at all for a layer that overflows the _cross_ axis — the browser leaves it pressed against the edge of the viewport. `flip` therefore offers the side's axis, the alignment's, and both, and a menu aligned to its trigger's end mirrors to the other end rather than running off the page.
 - **Which side the browser chose costs the entrance.** `trackSide` reads the _used_ `position-area`, and that read is the style resolution `@starting-style` computes its before-change style from — so a class that depends on the answer lands after the entrance has already been decided. The exit runs long afterwards and can use it (`dropdown.items` has `closedUp` and no `up`).
 - **A used `position-area` is not the value that went in.** Chrome 152 drops a `span-all` half (`block-end span-all` reads back `block-end`) and collapses a value naming both axes into the `start`/`end` shorthand, where position names the axis: `block-end span-inline-end` reads back `end span-end`, and `start span-end` once it has flipped.
@@ -1064,12 +1064,16 @@ import Textbox from '@box-kite/react/components/textbox';
 <Box position="fixed" top={0} left={0} right={0} bottom={0} bgColor="black" opacity={0.5} zIndex={50} />
 ```
 
-**Portals**: `Overlay` (`components/overlay`) anchors a layer to a trigger (`anchor`, `side`, `align`,
+**Floating layers**: `Overlay` (`components/overlay`) anchors a layer to a trigger (`anchor`, `side`, `align`,
 `offset`, `flip`, `matchWidth` — the vocabulary `useAnchorPosition` and `Tooltip` share) and renders it
-into `#box-kite-portal`, so it escapes `overflow: hidden`, clipped ancestors and the stacking order. No
-ARIA, no open state — it is positioning only. For a _panel a user interacts with_, use `Popover`
-(below), which is in the top layer and needs no portal at all; for a _description of a control_, use
-`Tooltip`. Both are that layer with a pattern on it.
+**where it was declared, in the browser's top layer** (`popover="manual"`, shown on mount), so it escapes
+`overflow: hidden`, clipped and transformed ancestors and the stacking order while still inheriting the
+theme, the custom properties and the direction around it. `manual` because it owns no dismissal — and no
+ARIA and no open state either: it is positioning only. **Never declare one inside its trigger**: a
+listbox or a menu inside a `<button>` is unreachable content, which the portal used to hide by moving it
+elsewhere. Where the browser has no Popover API it is portalled into `#box-kite-portal` instead. For a
+_panel a user interacts with_, use `Popover` (below); for a _description of a control_, use `Tooltip`.
+Both are that layer with a pattern on it.
 
 ### Styling an element Box cannot render (`useClassNames`)
 
@@ -1317,7 +1321,8 @@ trigger. The trigger must be a **button**: the toggle is the browser's own `popo
 **There is no portal.** The panel is in the top layer, so it paints above every stacking context and
 outside every clipped ancestor — and because it is never moved, it keeps the theme, the custom
 properties, the direction and the tab order it was declared in. Use `Popover` rather than `Overlay`
-whenever the layer is a panel a user interacts with; `Overlay` is positioning only, and it portals.
+whenever the layer is a panel a user interacts with; `Overlay` is in the same top layer, but it is
+positioning only and light-dismisses nothing.
 
 | Prop                   | Default             | What it does                                                                        |
 | ---------------------- | ------------------- | ----------------------------------------------------------------------------------- |
@@ -1349,7 +1354,7 @@ Three traps, all measured in Chrome 152:
   `click` after it reads "closed" and reopens the panel — pressing the trigger would never close it.
   That is exactly why the toggle is handed to `popovertarget`.
 
-Where the browser has no Popover API the panel falls back to an `Overlay` (a portal) with `useDismiss`
+Where the browser has no Popover API the panel falls back to a portalled `Overlay` with `useDismiss`
 and `useFocusReturn`. Same props, same styling; what is lost is what a portal costs.
 
 ---
@@ -1384,6 +1389,13 @@ component guarantees, so you do not wire it: `role="tooltip"`, `aria-describedby
 while it is open, opening on hover **and** focus, Escape to dismiss with focus left where it is (and
 no re-show until the pointer leaves and returns), the pointer able to move onto the tooltip, and no
 auto-hide timer — the three WCAG 1.4.13 rules.
+
+The bubble is an `Overlay`, so it sits in the browser's **top layer** with no portal: it paints over
+every stacking context and out of every clipped ancestor, and it inherits the theme, the custom
+properties and the direction around it. Its popover type is `manual` on purpose — light dismiss would
+close the bubble behind the component's back, and WCAG 1.4.13 asks for a dismissal that _lasts_, which
+is stricter than what the platform does for free. `<Presence>` still owns the mount, so a closed
+tooltip renders nothing at all.
 
 ---
 
@@ -1918,15 +1930,15 @@ Box.components({
 
 ### Component Style Tree
 
-| Component Name       | Description                     | Built-in Variants     |
-| -------------------- | ------------------------------- | --------------------- |
-| `dropdown`           | Root button trigger             | `compact`             |
-| `dropdown.items`     | Opened items container (portal) | —                     |
-| `dropdown.item`      | Selectable item                 | `compact`, `multiple` |
-| `dropdown.unselect`  | Clear selection option          | `compact`             |
-| `dropdown.selectAll` | Select all option               | `compact`             |
-| `dropdown.emptyItem` | No results placeholder          | `compact`             |
-| `dropdown.icon`      | Chevron arrow container         | —                     |
+| Component Name       | Description                        | Built-in Variants     |
+| -------------------- | ---------------------------------- | --------------------- |
+| `dropdown`           | Root button trigger                | `compact`             |
+| `dropdown.items`     | Opened items container (top layer) | —                     |
+| `dropdown.item`      | Selectable item                    | `compact`, `multiple` |
+| `dropdown.unselect`  | Clear selection option             | `compact`             |
+| `dropdown.selectAll` | Select all option                  | `compact`             |
+| `dropdown.emptyItem` | No results placeholder             | `compact`             |
+| `dropdown.icon`      | Chevron arrow container            | —                     |
 
 ---
 
@@ -1973,4 +1985,4 @@ Also accepts: `data` (TRow[]), `value`/`defaultValue`, `label`/`labelProps`, `mu
 2. **Class names**: Elements get classes like `_b`, `_2a`, etc.
 3. **CSS variables**: In `:root` rules
 4. **Theme issues**: Ensure `<Box.Theme>` wraps your app
-5. **Portal theming**: Tooltips/dropdowns use `#box-kite-portal` container
+5. **Layer theming**: a tooltip or dropdown popup stays where it was declared and inherits the theme; only the no-Popover-API fallback uses the `#box-kite-portal` container

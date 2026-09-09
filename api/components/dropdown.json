@@ -171,7 +171,7 @@
   "a11y": [
     "`role=\"combobox\"` with `aria-expanded`, `aria-controls` and `aria-activedescendant` on the trigger, and `role=\"listbox\"`/`role=\"option\"` with `aria-selected` on the popup.",
     "Nothing names a combobox for you — accname does not read its contents, and the trigger text is its *value* — so pass `label`, or an `aria-label` of your own in `props`.",
-    "DOM focus never leaves the trigger (or, when searchable, the field), so no option is a tab stop and the popup can be portalled without stranding the keyboard inside it."
+    "DOM focus never leaves the trigger (or, when searchable, the field), so no option is a tab stop and the keyboard is never stranded in the popup. The popup itself is a sibling of the trigger in the browser's top layer, so it needs no portal and keeps the theme and the direction around it."
   ],
   "axe": { "fixtures": ["Dropdown (closed)", "Dropdown (open)", "Dropdown (searchable, open)"], "knownViolations": [] },
   "styleTree": [

@@ -179,11 +179,12 @@ const forward = (event.key === 'ArrowRight') !== isRtl(event.currentTarget);
 move(step(activeIndex, forward ? 1 : -1, count, loop, isDisabled), 'keyboard');`}
           />
 
-          <Section id="popups" title="A popup carries the direction out of the tree with it">
-            <Mono>Overlay</Mono> renders into a portal container that is a child of the body, so nothing of the direction the layer was
-            declared in reaches it by inheritance — a tooltip on an Arabic paragraph would have come out reading left to right. So the layer
-            measures the direction it was declared in and writes it back on as <Mono>dir</Mono>. Everything built on it —{' '}
-            <Mono>Tooltip</Mono>, the <Mono>Dropdown</Mono> popup, the grid's column menu — inherits the fix.
+          <Section id="popups" title="A popup keeps the direction it was declared in">
+            <Mono>Overlay</Mono> stays in the subtree it was declared in — it is in the browser's top layer rather than a portal, and a
+            top-layer element inherits normally — so <Mono>Tooltip</Mono>, the <Mono>Dropdown</Mono> popup and the grid's column menu simply
+            inherit the direction around them. Only on the no-Popover-API fallback does the layer leave that subtree for a container hanging
+            off the body, where nothing of the declaration site is inherited and a tooltip on an Arabic paragraph would come out reading
+            left to right; there it measures the direction off its anchor and writes it back on as <Mono>dir</Mono>.
           </Section>
 
           <Code

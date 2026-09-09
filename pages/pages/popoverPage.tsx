@@ -214,7 +214,7 @@ export default function PopoverPage() {
           <Section id="fallback" title="Where the browser has no Popover API">
             <Box>
               The Popover API is Baseline and widely available; anchor positioning is not, and neither is universal. Where either is missing
-              the panel falls back to an <Mono>Overlay</Mono> — a portal — with <Mono>useDismiss</Mono> and <Mono>useFocusReturn</Mono>{' '}
+              the panel falls back to a portalled <Mono>Overlay</Mono> with <Mono>useDismiss</Mono> and <Mono>useFocusReturn</Mono>{' '}
               supplying what the platform would have. The API is identical and so is the styling; what you lose is what the portal costs,
               which is the tab order and a local theme following the markup. That is the older browser's price rather than a choice.
             </Box>

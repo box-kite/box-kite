@@ -8,6 +8,7 @@ import { ExtractElementFromTag } from '../react/reactTypes';
 import { ComponentsAndVariants } from '../types';
 import { AnchorAlign, AnchorSide } from '../utils/anchor/anchorUtils';
 import { ElementLike, htmlElementOf, isRtl } from '../utils/dom/domUtils';
+import { supportsPopover } from '../utils/environment/environmentUtils';
 
 interface OverlayProps {
   /**
@@ -52,24 +53,33 @@ interface OverlayProps {
 type Props = OverlayProps & Omit<BoxProps, 'flip'>;
 
 /**
- * A floating layer: anchored by the browser, portalled for the stacking order. `position-area` puts it on
- * the side of its anchor asked for and `position-try-fallbacks` flips it when there is no room, so on the
- * CSS path nothing here runs at all — no measurement, no scroll listener, no state (`useAnchorPosition`
- * measures instead where the browser cannot, and the layer is `position: fixed` either way).
+ * A floating layer: anchored by the browser, and in the browser's **top layer** for the stacking order.
+ * `position-area` puts it on the side of its anchor asked for and `position-try-fallbacks` flips it when
+ * there is no room, so on the CSS path nothing here runs at all — no measurement, no scroll listener, no
+ * state (`useAnchorPosition` measures instead where the browser cannot, and the layer is `position: fixed`
+ * either way).
  *
- * The portal is still the answer to the other half of the problem: `position: fixed` escapes every
- * `overflow: hidden` ancestor but neither a *transformed* one nor the page's stacking order, and a layer
- * has to come out on top of both. It owns no open state, no ARIA and no dismissal — a layer is not a
- * pattern, and `Tooltip`, `Dropdown` and the DataGrid menu each need a different one.
+ * The top layer is the answer to the other half of the problem, and **there is no portal**: `position:
+ * fixed` escapes every `overflow: hidden` ancestor but neither a *transformed* one nor the page's stacking
+ * order, and a layer has to come out on top of both. The layer carries `popover="manual"` and is shown as
+ * soon as it mounts — `manual` because this component owns no dismissal, and light dismiss is a pattern:
+ * it owns no open state, no ARIA and no focus handling either, and `Tooltip`, `Dropdown` and the DataGrid
+ * menu each need a different one. `Popover` is the light-dismissing pattern, on `popover="auto"`.
+ *
+ * Staying where it was declared is what a portal costs: the layer inherits the theme, the custom
+ * properties and the text direction around it, a press inside it is a press inside whatever popover it
+ * was declared in (so a dropdown in a `Popover` panel no longer dismisses the panel), and the tab order
+ * follows the markup. Where the browser has no Popover API it is portalled instead, which is the old
+ * behaviour and all of its compromises. Measured in Chrome 152: the top layer paints over a
+ * `z-index: 9999` sibling that covers a plain `position: fixed` control at the same coordinates.
  *
  * @a11y No role, no `aria-*` and no focus handling: whatever renders a layer owns the pattern, and a
  * layer given a role it does not implement is worse than one with none.
- * @a11y The layer is portalled out of the subtree it was declared in, so it carries the direction it was
- * read in as a `dir` of its own — a container hanging off the body inherits nothing.
- * @a11y It is declared where it is used but rendered into a container at the end of `<body>`, so the DOM
- * order a screen reader reads and the tab order both follow the *portal*, not the markup: whatever a
- * layer needs said about its place in the page has to be said with `aria-controls`, `aria-owns` or a
- * managed focus. `Popover` is the way out of that — a top-layer element stays where it was declared.
+ * @a11y The layer stays in the DOM where it was declared, so the order a screen reader reads and the tab
+ * order both follow the markup — a layer declared after its trigger is reached by Tab from it. It must
+ * therefore not be declared *inside* its trigger: interactive content in a `<button>` is unreachable.
+ * @a11y Only on the portal fallback does it leave that subtree, and there it carries the direction it was
+ * read in as a `dir` of its own, since a container hanging off the body inherits nothing.
  */
 function OverlayImpl(props: Props, ref: Ref<HTMLDivElement>) {
   const {
@@ -87,7 +97,15 @@ function OverlayImpl(props: Props, ref: Ref<HTMLDivElement>) {
   const [placeholder, setPlaceholder] = useState<HTMLElement | null>(null);
   const [rtl, setRtl] = useState(false);
   const reported = useRef<AnchorSide | null>(null);
-  const portalContainer = usePortalContainer();
+  // Decided on the first render rather than corrected in an effect, which is what the other two
+  // capability checks in this library do. A layer is a *different position* in the React tree on the two
+  // paths — in place, or inside a portal — so flipping the answer afterwards unmounts the layer and mounts
+  // a replacement, and anything the caller had focused inside it drops to `<body>` (measured: it is what
+  // took the DataGrid column menu's first item away). With no DOM this answers false and the portal
+  // branch renders nothing, which is exactly what a server render did before there was a top layer.
+  const [topLayer] = useState(supportsPopover);
+  const layerElement = useRef<HTMLElement | null>(null);
+  const portalContainer = usePortalContainer(!topLayer);
 
   const position = useAnchorPosition({
     side,
@@ -100,12 +118,28 @@ function OverlayImpl(props: Props, ref: Ref<HTMLDivElement>) {
     trackSide: !!onSideChange,
   });
 
-  // The portal container is a child of the body, so nothing of the direction the layer was declared in
-  // reaches it by inheritance — it is read off the anchor here and written back on as `dir`.
+  // Into the top layer as soon as it is in the DOM, and no dependencies: the element arrives through a
+  // ref rather than state, so this runs on the commit that mounted it instead of a render later — the
+  // difference is one frame of a layer sitting in the flow, because every Box declares `display: block`
+  // and any author rule outranks the UA's `[popover]:not(:popover-open){display:none}`.
+  //
+  // Idempotent, so running it on every commit costs a `matches` and nothing else. There is no hide to
+  // pair with it: `manual` is never shown or hidden by the browser, and removing the element hides it.
   useIsomorphicLayoutEffect(() => {
+    const element = layerElement.current;
+    if (!topLayer || !element || !element.isConnected || element.matches(':popover-open')) return;
+
+    element.showPopover();
+  });
+
+  // Only the portal needs this: its container is a child of the body, so nothing of the direction the
+  // layer was declared in reaches it by inheritance. A top-layer element inherits normally.
+  useIsomorphicLayoutEffect(() => {
+    if (topLayer) return;
+
     const element = htmlElementOf(anchor) ?? placeholder;
     setRtl(!!element && isRtl(element));
-  }, [anchor, placeholder]);
+  }, [anchor, placeholder, topLayer]);
 
   // Every commit, and reports only a change: the caller's handler is often a literal, and a dependency
   // on it would tell a dropdown which way it opened once per keystroke.
@@ -116,12 +150,14 @@ function OverlayImpl(props: Props, ref: Ref<HTMLDivElement>) {
     onSideChange?.(position.side);
   });
 
-  // Two refs for one element — the hook's, when it has something to measure, and the caller's, which is
-  // what a dismissal treats as inside the popup. React writes one ref per element, so this writes both.
+  // Three refs for one element — the hook's, when it has something to measure; this component's, which is
+  // what the show effect above needs; and the caller's, which is what a dismissal treats as inside the
+  // popup. React writes one ref per element, so this writes all three.
   const hookRef = position.layerProps.ref;
   const layerRef = useCallback(
     (element: HTMLDivElement | null) => {
       hookRef?.(element);
+      layerElement.current = element;
 
       if (typeof ref === 'function') ref(element);
       else if (ref) (ref as { current: HTMLDivElement | null }).current = element;
@@ -129,17 +165,25 @@ function OverlayImpl(props: Props, ref: Ref<HTMLDivElement>) {
     [hookRef, ref],
   );
 
+  const layer = (
+    <Box
+      {...position.layerProps}
+      ref={layerRef}
+      transition="none"
+      // `popover` rather than the React 19 `popoverTarget` family of props, for the reason `Popover`
+      // writes its attributes on: CI runs React 18 too, and it drops the ones it does not know.
+      props={topLayer ? { popover: 'manual' } : { dir: rtl ? 'rtl' : 'ltr' }}
+    >
+      <Box ref={contentRef} {...restProps} />
+    </Box>
+  );
+
   return (
     <>
       {/* Only when there is nothing else to anchor to — see `anchor`. */}
       {!anchor && <Box ref={setPlaceholder} />}
-      {portalContainer &&
-        createPortal(
-          <Box {...position.layerProps} ref={layerRef} transition="none" props={{ dir: rtl ? 'rtl' : 'ltr' }}>
-            <Box ref={contentRef} {...restProps} />
-          </Box>,
-          portalContainer,
-        )}
+      {/* In place in the top layer, or through the portal where the browser has no top layer to reach. */}
+      {topLayer ? layer : portalContainer && createPortal(layer, portalContainer)}
     </>
   );
 }
