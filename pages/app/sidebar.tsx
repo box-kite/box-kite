@@ -1,5 +1,6 @@
 import {
   AlignLeft,
+  Anchor,
   Blend,
   BookOpen,
   Bot,
@@ -203,6 +204,9 @@ export default function Sidebar({ toggleTheme, onClose }: SidebarProps) {
           </MenuItem>
           <MenuItem to="/container-queries" icon={<Proportions />}>
             Container Queries
+          </MenuItem>
+          <MenuItem to="/anchor" icon={<Anchor />}>
+            Anchor Positioning
           </MenuItem>
           <MenuItem to="/gradients-shadows" icon={<Blend />}>
             Gradients & Effects

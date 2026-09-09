@@ -339,7 +339,7 @@
     },
     {
       "name": "anchorName",
-      "description": "Names this element as an anchor, so a floating layer can hang off it by name. The `--` is optional here and added on the way out, the way a `vars` key's is, so `anchorName=\"trigger\"` and `anchorName=\"--trigger\"` are one class. A name is global to the document, so a component rendering many of them needs one per instance.",
+      "description": "Names this element as an anchor, so a floating layer can hang off it by name. The `--` is optional here and added on the way out, the way a `vars` key's is, so `anchorName=\"trigger\"` and `anchorName=\"--trigger\"` write the same declaration. A name is global to the document, so a component rendering many of them needs one per instance.",
       "properties": ["anchor-name"],
       "example": { "value": "trigger", "css": "anchor-name: --trigger" },
       "numeric": false,
@@ -393,7 +393,7 @@
     },
     {
       "name": "top",
-      "description": "The top CSS property sets the vertical position of a positioned element. This inset property has no effect on non-positioned elements.",
+      "description": "The top CSS property sets the vertical position of a positioned element. This inset property has no effect on non-positioned elements. It also takes `anchor()`, an inset measured to one of the anchor's own edges.",
       "properties": ["top"],
       "example": { "value": 4, "css": "top: 1rem" },
       "numeric": true,
@@ -402,7 +402,7 @@
     },
     {
       "name": "right",
-      "description": "The right CSS property participates in specifying the horizontal position of a positioned element. This inset property has no effect on non-positioned elements.",
+      "description": "The right CSS property participates in specifying the horizontal position of a positioned element. This inset property has no effect on non-positioned elements. It also takes `anchor()`, an inset measured to one of the anchor's own edges.",
       "properties": ["right"],
       "example": { "value": 4, "css": "right: 1rem" },
       "numeric": true,
@@ -411,7 +411,7 @@
     },
     {
       "name": "bottom",
-      "description": "The bottom CSS property participates in setting the vertical position of a positioned element. This inset property has no effect on non-positioned elements.",
+      "description": "The bottom CSS property participates in setting the vertical position of a positioned element. This inset property has no effect on non-positioned elements. It also takes `anchor()`, an inset measured to one of the anchor's own edges.",
       "properties": ["bottom"],
       "example": { "value": 4, "css": "bottom: 1rem" },
       "numeric": true,
@@ -420,7 +420,7 @@
     },
     {
       "name": "left",
-      "description": "The left CSS property participates in specifying the horizontal position of a positioned element. This inset property has no effect on non-positioned elements.",
+      "description": "The left CSS property participates in specifying the horizontal position of a positioned element. This inset property has no effect on non-positioned elements. It also takes `anchor()`, an inset measured to one of the anchor's own edges.",
       "properties": ["left"],
       "example": { "value": 4, "css": "left: 1rem" },
       "numeric": true,
@@ -456,7 +456,7 @@
     },
     {
       "name": "insetStart",
-      "description": "The inset-inline-start CSS property sets the distance from the edge the text starts at: `left` in a left-to-right writing mode, `right` in a right-to-left one.",
+      "description": "The inset-inline-start CSS property sets the distance from the edge the text starts at: `left` in a left-to-right writing mode, `right` in a right-to-left one. It also takes `anchor()`, an inset measured to one of the anchor's own edges.",
       "properties": ["inset-inline-start"],
       "example": { "value": 4, "css": "inset-inline-start: 1rem" },
       "numeric": true,
@@ -465,7 +465,7 @@
     },
     {
       "name": "insetEnd",
-      "description": "The inset-inline-end CSS property sets the distance from the edge the text ends at: `right` in a left-to-right writing mode, `left` in a right-to-left one.",
+      "description": "The inset-inline-end CSS property sets the distance from the edge the text ends at: `right` in a left-to-right writing mode, `left` in a right-to-left one. It also takes `anchor()`, an inset measured to one of the anchor's own edges.",
       "properties": ["inset-inline-end"],
       "example": { "value": 4, "css": "inset-inline-end: 1rem" },
       "numeric": true,
@@ -963,7 +963,7 @@
     },
     {
       "name": "height",
-      "description": "The height CSS property specifies the height of an element. By default, the property defines the height of the content area. If box-sizing is set to border-box, however, it instead determines the height of the border area.",
+      "description": "The height CSS property specifies the height of an element. By default, the property defines the height of the content area. If box-sizing is set to border-box, however, it instead determines the height of the border area. It also takes `anchor-size()`, a length read off the anchor a floating layer is placed against.",
       "properties": ["height"],
       "example": { "value": 4, "css": "height: 1rem" },
       "numeric": true,
@@ -1006,7 +1006,7 @@
     },
     {
       "name": "minHeight",
-      "description": "The min-height CSS property sets the minimum height of an element. It prevents the used value of the height property from becoming smaller than the value specified for min-height.",
+      "description": "The min-height CSS property sets the minimum height of an element. It prevents the used value of the height property from becoming smaller than the value specified for min-height. It also takes `anchor-size()`, a length read off the anchor a floating layer is placed against.",
       "properties": ["min-height"],
       "example": { "value": 4, "css": "min-height: 1rem" },
       "numeric": true,
@@ -1049,7 +1049,7 @@
     },
     {
       "name": "maxHeight",
-      "description": "The max-height CSS property sets the maximum height of an element. It prevents the used value of the height property from becoming larger than the value specified for max-height.",
+      "description": "The max-height CSS property sets the maximum height of an element. It prevents the used value of the height property from becoming larger than the value specified for max-height. It also takes `anchor-size()`, a length read off the anchor a floating layer is placed against.",
       "properties": ["max-height"],
       "example": { "value": 4, "css": "max-height: 1rem" },
       "numeric": true,
@@ -1092,7 +1092,7 @@
     },
     {
       "name": "width",
-      "description": "The width CSS property sets an element's width. By default, it sets the width of the content area, but if box-sizing is set to border-box, it sets the width of the border area.",
+      "description": "The width CSS property sets an element's width. By default, it sets the width of the content area, but if box-sizing is set to border-box, it sets the width of the border area. It also takes `anchor-size()`, a length read off the anchor a floating layer is placed against.",
       "properties": ["width"],
       "example": { "value": 4, "css": "width: 1rem" },
       "numeric": true,
@@ -1135,7 +1135,7 @@
     },
     {
       "name": "minWidth",
-      "description": "The min-width CSS property sets the minimum width of an element. It prevents the used value of the width property from becoming smaller than the value specified for min-width.",
+      "description": "The min-width CSS property sets the minimum width of an element. It prevents the used value of the width property from becoming smaller than the value specified for min-width. It also takes `anchor-size()`, a length read off the anchor a floating layer is placed against.",
       "properties": ["min-width"],
       "example": { "value": 4, "css": "min-width: 1rem" },
       "numeric": true,
@@ -1178,7 +1178,7 @@
     },
     {
       "name": "maxWidth",
-      "description": "The max-width CSS property sets the maximum width of an element. It prevents the used value of the width property from becoming larger than the value specified by max-width.",
+      "description": "The max-width CSS property sets the maximum width of an element. It prevents the used value of the width property from becoming larger than the value specified by max-width. It also takes `anchor-size()`, a length read off the anchor a floating layer is placed against.",
       "properties": ["max-width"],
       "example": { "value": 4, "css": "max-width: 1rem" },
       "numeric": true,

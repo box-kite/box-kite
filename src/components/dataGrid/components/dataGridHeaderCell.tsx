@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import Box from '../../../box';
 import SortIcon from '../../../icons/sortIcon';
-import useIdentifier from '../../../react/a11y/useIdentifier';
+import useIdentifier from '../../../react/identity/useIdentifier';
 import Checkbox from '../../checkbox';
 import Flex from '../../flex';
 import VisuallyHidden from '../../visuallyHidden';

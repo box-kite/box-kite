@@ -18,7 +18,7 @@ describe('Anchors.isName', () => {
     expect(Anchors.isName(4)).toBe(false);
   });
 
-  it('spells both forms the same way, so they share one class', () => {
+  it('spells both forms the same way, so a name written either way reaches the same anchor', () => {
     expect(Anchors.dashedName('trigger')).toBe('--trigger');
     expect(Anchors.dashedName('--trigger')).toBe('--trigger');
   });
@@ -107,5 +107,66 @@ describe('Anchors.isTryFallbacks', () => {
     expect(Anchors.isTryFallbacks('')).toBe(false);
     expect(Anchors.isTryFallbacks('normal')).toBe(false);
     expect(Anchors.isTryFallbacks(4)).toBe(false);
+  });
+});
+
+/**
+ * `anchor-size()` and `anchor()`: the two functions that read a length off the anchor. Both were measured
+ * in Chrome 152 — the fallback is comma-separated, a bare `anchor()` is rejected where `anchor-size()` is
+ * not, and one keyword is the anchor's *name* when it is not one of the function's own.
+ */
+describe('Anchors.isSizeValue', () => {
+  it('takes every axis, named or not, with or without a fallback', () => {
+    for (const axis of ['width', 'height', 'block', 'inline', 'self-block', 'self-inline']) {
+      expect(Anchors.isSizeValue(`anchor-size(${axis})`)).toBe(true);
+      expect(Anchors.isSizeValue(`anchor-size(trigger ${axis})`)).toBe(true);
+      expect(Anchors.isSizeValue(`anchor-size(--trigger ${axis}, 10rem)`)).toBe(true);
+    }
+  });
+
+  it('takes the two forms that name no axis, which the browser reads as the layer’s own', () => {
+    expect(Anchors.isSizeValue('anchor-size()')).toBe(true);
+    expect(Anchors.isSizeValue('anchor-size(--trigger)')).toBe(true);
+  });
+
+  it('takes a fallback carrying commas of its own, since the split is on the first one', () => {
+    expect(Anchors.isSizeValue('anchor-size(width, clamp(4rem, 50%, 20rem))')).toBe(true);
+  });
+
+  it('refuses an axis the browser has no name for, and anything that could end the declaration', () => {
+    expect(Anchors.isSizeValue('anchor-size(--trigger depth)')).toBe(false);
+    expect(Anchors.isSizeValue('anchor-size(width 10rem)')).toBe(false);
+    expect(Anchors.isSizeValue('anchor-size(width, 10rem; color: red)')).toBe(false);
+    expect(Anchors.isSizeValue('anchor-size(width')).toBe(false);
+    expect(Anchors.isSizeValue('anchor(width)')).toBe(false);
+    expect(Anchors.isSizeValue(4)).toBe(false);
+  });
+});
+
+describe('Anchors.isInsetValue', () => {
+  it('takes every edge, a percentage along one, and a named anchor', () => {
+    for (const side of ['top', 'right', 'bottom', 'left', 'start', 'end', 'self-start', 'self-end', 'center', 'inside', 'outside']) {
+      expect(Anchors.isInsetValue(`anchor(${side})`)).toBe(true);
+      expect(Anchors.isInsetValue(`anchor(trigger ${side})`)).toBe(true);
+    }
+
+    expect(Anchors.isInsetValue('anchor(50%)')).toBe(true);
+    expect(Anchors.isInsetValue('anchor(--trigger 50%, 0px)')).toBe(true);
+  });
+
+  it('needs the edge: an anchor with no side named is not a length', () => {
+    expect(Anchors.isInsetValue('anchor()')).toBe(false);
+    expect(Anchors.isInsetValue('anchor(--trigger)')).toBe(false);
+    expect(Anchors.isInsetValue('anchor(middle)')).toBe(false);
+  });
+});
+
+describe('Anchors.functionValue', () => {
+  it('dashes the name and canonicalises the spacing, so every spelling writes one declaration', () => {
+    expect(Anchors.functionValue('anchor-size(trigger width)')).toBe('anchor-size(--trigger width)');
+    expect(Anchors.functionValue('anchor-size(  width  )')).toBe('anchor-size(width)');
+    expect(Anchors.functionValue('anchor-size(--trigger)')).toBe('anchor-size(--trigger)');
+    expect(Anchors.functionValue('anchor(trigger bottom,  8px )')).toBe('anchor(--trigger bottom, 8px)');
+    expect(Anchors.functionValue('anchor(50%)')).toBe('anchor(50%)');
   });
 });

@@ -46,6 +46,27 @@ const percentValue = {
 } satisfies BoxStyle;
 
 /**
+ * A length read off the anchor, on every sizing prop: `minWidth="anchor-size(width)"` is the popup that
+ * matches its trigger, with nothing measured and no `matchWidth` to pass down. Its own `match` for the
+ * reason every template type has one.
+ */
+const anchorSizeValue = {
+  values: Anchors.sizeValue,
+  match: Anchors.isSizeValue,
+  valueFormat: Anchors.functionValue,
+} satisfies BoxStyle;
+
+/**
+ * One edge of the anchor as an inset, on every single-side inset prop: what places a layer by hand where
+ * `positionArea`'s 3x3 grid has no cell for it.
+ */
+const anchorInsetValue = {
+  values: Anchors.insetValue,
+  match: Anchors.isInsetValue,
+  valueFormat: Anchors.functionValue,
+} satisfies BoxStyle;
+
+/**
  * A ratio written compactly — `aspectRatio="4/3"` — spaced out into the `4 / 3` CSS reads. It carries its
  * own `match` for the reason every template type does: a scalar `values` is matched by `typeof` alone, so
  * `"4:3"` would otherwise reach CSS verbatim and the box would size itself off nothing (bug #31).
@@ -542,7 +563,7 @@ export const cssStyles = {
   /**
    * Names this element as an anchor, so a floating layer can hang off it by name. The `--` is optional
    * here and added on the way out, the way a `vars` key's is, so `anchorName="trigger"` and
-   * `anchorName="--trigger"` are one class. A name is global to the document, so a component rendering
+   * `anchorName="--trigger"` write the same declaration. A name is global to the document, so a component rendering
    * many of them needs one per instance.
    * @example anchorName="trigger" → anchor-name: --trigger
    */
@@ -641,6 +662,7 @@ export const cssStyles = {
   ],
   /**
    * The top CSS property sets the vertical position of a positioned element. This inset property has no effect on non-positioned elements.
+   * It also takes `anchor()`, an inset measured to one of the anchor's own edges.
    * @example top={4} → top: 1rem
    */
   top: [
@@ -662,9 +684,13 @@ export const cssStyles = {
     {
       ...percentValue,
     },
+    {
+      ...anchorInsetValue,
+    },
   ],
   /**
    * The right CSS property participates in specifying the horizontal position of a positioned element. This inset property has no effect on non-positioned elements.
+   * It also takes `anchor()`, an inset measured to one of the anchor's own edges.
    * @example right={4} → right: 1rem
    */
   right: [
@@ -686,9 +712,13 @@ export const cssStyles = {
     {
       ...percentValue,
     },
+    {
+      ...anchorInsetValue,
+    },
   ],
   /**
    * The bottom CSS property participates in setting the vertical position of a positioned element. This inset property has no effect on non-positioned elements.
+   * It also takes `anchor()`, an inset measured to one of the anchor's own edges.
    * @example bottom={4} → bottom: 1rem
    */
   bottom: [
@@ -710,9 +740,13 @@ export const cssStyles = {
     {
       ...percentValue,
     },
+    {
+      ...anchorInsetValue,
+    },
   ],
   /**
    * The left CSS property participates in specifying the horizontal position of a positioned element. This inset property has no effect on non-positioned elements.
+   * It also takes `anchor()`, an inset measured to one of the anchor's own edges.
    * @example left={4} → left: 1rem
    */
   left: [
@@ -733,6 +767,9 @@ export const cssStyles = {
     },
     {
       ...percentValue,
+    },
+    {
+      ...anchorInsetValue,
     },
   ],
   /**
@@ -819,6 +856,7 @@ export const cssStyles = {
   ],
   /**
    * The inset-inline-start CSS property sets the distance from the edge the text starts at: `left` in a left-to-right writing mode, `right` in a right-to-left one.
+   * It also takes `anchor()`, an inset measured to one of the anchor's own edges.
    * @example insetStart={4} → inset-inline-start: 1rem
    */
   insetStart: [
@@ -845,9 +883,14 @@ export const cssStyles = {
       ...percentValue,
       styleName: 'inset-inline-start',
     },
+    {
+      ...anchorInsetValue,
+      styleName: 'inset-inline-start',
+    },
   ],
   /**
    * The inset-inline-end CSS property sets the distance from the edge the text ends at: `right` in a left-to-right writing mode, `left` in a right-to-left one.
+   * It also takes `anchor()`, an inset measured to one of the anchor's own edges.
    * @example insetEnd={4} → inset-inline-end: 1rem
    */
   insetEnd: [
@@ -872,6 +915,10 @@ export const cssStyles = {
     },
     {
       ...percentValue,
+      styleName: 'inset-inline-end',
+    },
+    {
+      ...anchorInsetValue,
       styleName: 'inset-inline-end',
     },
   ],
@@ -1393,6 +1440,7 @@ export const cssStyles = {
   ],
   /**
    * The height CSS property specifies the height of an element. By default, the property defines the height of the content area. If box-sizing is set to border-box, however, it instead determines the height of the border area.
+   * It also takes `anchor-size()`, a length read off the anchor a floating layer is placed against.
    * @example height={4} → height: 1rem
    */
   height: [
@@ -1415,9 +1463,13 @@ export const cssStyles = {
     {
       ...percentValue,
     },
+    {
+      ...anchorSizeValue,
+    },
   ],
   /**
    * The min-height CSS property sets the minimum height of an element. It prevents the used value of the height property from becoming smaller than the value specified for min-height.
+   * It also takes `anchor-size()`, a length read off the anchor a floating layer is placed against.
    * @example minHeight={4} → min-height: 1rem
    */
   minHeight: [
@@ -1445,9 +1497,14 @@ export const cssStyles = {
       styleName: 'min-height',
       ...percentValue,
     },
+    {
+      ...anchorSizeValue,
+      styleName: 'min-height',
+    },
   ],
   /**
    * The max-height CSS property sets the maximum height of an element. It prevents the used value of the height property from becoming larger than the value specified for max-height.
+   * It also takes `anchor-size()`, a length read off the anchor a floating layer is placed against.
    * @example maxHeight={4} → max-height: 1rem
    */
   maxHeight: [
@@ -1475,9 +1532,14 @@ export const cssStyles = {
       styleName: 'max-height',
       ...percentValue,
     },
+    {
+      ...anchorSizeValue,
+      styleName: 'max-height',
+    },
   ],
   /**
    * The width CSS property sets an element's width. By default, it sets the width of the content area, but if box-sizing is set to border-box, it sets the width of the border area.
+   * It also takes `anchor-size()`, a length read off the anchor a floating layer is placed against.
    * @example width={4} → width: 1rem
    */
   width: [
@@ -1500,9 +1562,13 @@ export const cssStyles = {
     {
       ...percentValue,
     },
+    {
+      ...anchorSizeValue,
+    },
   ],
   /**
    * The min-width CSS property sets the minimum width of an element. It prevents the used value of the width property from becoming smaller than the value specified for min-width.
+   * It also takes `anchor-size()`, a length read off the anchor a floating layer is placed against.
    * @example minWidth={4} → min-width: 1rem
    */
   minWidth: [
@@ -1530,9 +1596,14 @@ export const cssStyles = {
       styleName: 'min-width',
       ...percentValue,
     },
+    {
+      ...anchorSizeValue,
+      styleName: 'min-width',
+    },
   ],
   /**
    * The max-width CSS property sets the maximum width of an element. It prevents the used value of the width property from becoming larger than the value specified by max-width.
+   * It also takes `anchor-size()`, a length read off the anchor a floating layer is placed against.
    * @example maxWidth={4} → max-width: 1rem
    */
   maxWidth: [
@@ -1559,6 +1630,10 @@ export const cssStyles = {
     {
       styleName: 'max-width',
       ...percentValue,
+    },
+    {
+      ...anchorSizeValue,
+      styleName: 'max-width',
     },
   ],
   /**

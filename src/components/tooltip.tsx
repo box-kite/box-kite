@@ -3,7 +3,7 @@ import { BoxProps } from '../box';
 import { useEventCallback } from '../react/a11y/callbacks';
 import useControllableState, { ChangeHandler } from '../react/a11y/useControllableState';
 import useDismiss from '../react/a11y/useDismiss';
-import useIdentifier from '../react/a11y/useIdentifier';
+import useIdentifier from '../react/identity/useIdentifier';
 import { ComponentsAndVariants } from '../types';
 import Overlay from './overlay';
 import Presence from './presence';

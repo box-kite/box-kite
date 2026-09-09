@@ -105,6 +105,12 @@ export const siteRoutes = [
       'A component that answers to the space it was given rather than to the window: cq, six sizes and their complements, against the nearest container or a named one.',
   },
   {
+    path: '/anchor',
+    name: 'Anchor Positioning',
+    description:
+      'A floating layer placed against its trigger by the browser: one hook, no measuring, and a measured fallback where the browser has none.',
+  },
+  {
     path: '/rtl',
     name: 'Right to Left',
     description:

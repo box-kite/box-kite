@@ -29,6 +29,11 @@
       "import": "./a11y.mjs",
       "require": "./a11y.cjs"
     },
+    "./anchor": {
+      "types": "./anchor.d.ts",
+      "import": "./anchor.mjs",
+      "require": "./anchor.cjs"
+    },
     "./ssg": {
       "types": "./ssg.d.ts",
       "import": "./ssg.mjs",
@@ -85,7 +90,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "26.87 KB"
+      "limit": "27.38 KB"
     },
     {
       "name": "Box in a Server Component (react-server entry)",
@@ -95,7 +100,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "25.38 KB"
+      "limit": "25.90 KB"
     },
     {
       "name": "Behavior primitives (a11y entry)",
@@ -108,10 +113,20 @@
       "limit": "3.13 KB"
     },
     {
+      "name": "Anchor positioning (anchor entry)",
+      "path": "dist/anchor.mjs",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "gzip": true,
+      "limit": "2.02 KB"
+    },
+    {
       "name": "Core engine (@box-kite/core, no React)",
       "path": "dist-core/core.mjs",
       "gzip": true,
-      "limit": "24.66 KB"
+      "limit": "25.16 KB"
     },
     {
       "name": "DataGrid",
@@ -121,7 +136,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "55.24 KB"
+      "limit": "55.80 KB"
     },
     {
       "name": "Full library (Box + ssg + every component)",
@@ -131,7 +146,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "61.47 KB"
+      "limit": "63.13 KB"
     }
   ],
   "repository": {
