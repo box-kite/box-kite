@@ -14,7 +14,7 @@ describe('anchor positioning', () => {
     renderStyles(engine, { anchorName: '--trigger' });
 
     // Two class names for one declaration: the class name is built from the value as written, not from
-    // the CSS it formats to (bug #123). The rule is the same either way, which is what a consumer sees.
+    // the CSS it formats to (bug #130). The rule is the same either way, which is what a consumer sees.
     expect(ruleList(engine)).toEqual(['.anchorName-trigger{anchor-name:--trigger}', '.anchorName---trigger{anchor-name:--trigger}']);
   });
 
