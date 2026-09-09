@@ -253,7 +253,7 @@ curl ${SITE_URL}/llms-full.txt # all of it in one file, for a tool that indexes 
             <FeatureItem
               icon={<Code2 size={18} />}
               title="Complete prop reference"
-              description="All 215 props with their CSS mappings and accepted values"
+              description="All 221 props with their CSS mappings and accepted values"
             />
             <FeatureItem
               icon={<Zap size={18} />}

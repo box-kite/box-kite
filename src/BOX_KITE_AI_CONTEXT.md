@@ -1,6 +1,6 @@
 # @box-kite/react - AI Assistant Context
 
-Runtime CSS-in-JS library. `Box` component accepts 215 CSS props and generates CSS classes at runtime. Same prop values share a single class.
+Runtime CSS-in-JS library. `Box` component accepts 221 CSS props and generates CSS classes at runtime. Same prop values share a single class.
 
 ---
 
@@ -188,6 +188,38 @@ All sizing, spacing, and positioning props also accept percentage strings: `p="5
 | `scrollbarGutter` / `scrollbarWidth` / `scrollbarColor`                                                                                                                              | scrollbar-gutter / -width / -color      | `'stable'` / `'stable both-edges'` reserve the scrollbar's space before there is one, so nothing shifts when content overflows. `scrollbarWidth`: `'auto'`/`'thin'`/`'none'`; `scrollbarColor`: `[thumb, track]`                                                                                                                                                                                                                                                                                                                                                                                                        |
 | `willChange`                                                                                                                                                                         | will-change                             | `'transform'`, `'opacity'`, `'filter'`, `'scroll-position'`, `'contents'`, `'auto'`. A hint with a real cost (a promoted layer holds memory), so it belongs on the few elements that animate, not on a list                                                                                                                                                                                                                                                                                                                                                                                                             |
 | `cursor` / `pointerEvents` / `userSelect`                                                                                                                                            | misc                                    | string values. For `transition`, `animation` and the transform props see _Animation and transitions_ below                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+
+### Anchor positioning — a floating layer with no JavaScript
+
+CSS Anchor Positioning as six props, so a tooltip, popup or badge is placed by the browser instead of measured in an effect. The anchor names itself; the layer says which anchor and which cell of the 3×3 grid around it:
+
+```tsx
+<Button anchorName="menu-trigger">Options</Button>
+
+<Box position="absolute" positionAnchor="menu-trigger" positionArea="block-end span-all" positionTryFallbacks="flip-block" mt={2}>
+  …
+</Box>
+```
+
+| Prop                   | CSS                      | Values                                                                                                                                      |
+| ---------------------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `anchorName`           | `anchor-name`            | a name with or without `--` (`"trigger"` → `--trigger`), or `'none'`. Global to the document, so one instance needs one name                |
+| `positionAnchor`       | `position-anchor`        | the same name, or `'auto'` / `'none'`. Needs `position="absolute"` (or `"fixed"`) beside it                                                 |
+| `positionArea`         | `position-area`          | one or two keywords, **block axis first**, both from one family: `'block-end center'`, `'top left'`, `'center inline-end'`, `'span-all'`    |
+| `positionTryFallbacks` | `position-try-fallbacks` | `'flip-block'`, `'flip-inline'`, `'flip-start'`, space-combined into one candidate, comma-separated into a list tried in order, or `'none'` |
+| `positionTryOrder`     | `position-try-order`     | `'normal'` (first fit), `'most-width'`, `'most-height'`, `'most-block-size'`, `'most-inline-size'`                                          |
+| `positionVisibility`   | `position-visibility`    | `'always'`, `'anchors-visible'`, `'no-overflow'`, `'anchors-visible no-overflow'`                                                           |
+
+`justifySelf` and `alignSelf` also take `'anchor-center'`. Offset a layer from its anchor with an ordinary margin — there is no offset prop, because `mt={2}` already is one.
+
+The keyword families do not mix: physical (`top`/`bottom` × `left`/`right`), logical (`block-start`/`block-end` × `inline-start`/`inline-end`), their `self-` twins, the `start`/`end` shorthand, its `self-` twin, and the `y-*` × `x-*` pair — with `center` and `span-all` neutral in all of them. So `'block-end inline-start'` is a value and `'top inline-start'` is not; a mixed pair emits no rule and no class, as does an unknown flip keyword or a name that is not an identifier.
+
+**Two traps, both measured in Chrome 152 rather than read off the spec:**
+
+- **A candidate position has to fit on _both_ axes to be taken**, so an overflow the flips cannot fix disqualifies every one of them and the layer silently stays where it started. `positionArea="block-end center"` with a layer wider than its anchor overflows the centre column, and `flip-block` then does nothing at all. Span the axis being kept — `"block-end span-all"` — and it flips.
+- **`positionVisibility` hides at paint time**, so the layer keeps its box and its computed `visibility` still reads `visible` (`checkVisibility()` agrees). Only painting and hit-testing stop, so a test asserting it needs a screenshot.
+
+Chrome 125+, Firefox 147+, Safari 26+. Where it is missing the layer renders unpositioned, so `Overlay` (`components/overlay`), which measures, is still the portable path.
 
 ### Colours, and the opacity modifier
 

@@ -15,7 +15,7 @@ Read `.claude/rules/box-kite-rules.md` — the shortest complete answer — befo
 
 ## Project Overview
 
-@box-kite/react is a React runtime CSS-in-JS library. The core `Box` component accepts 215 CSS props and generates CSS classes at runtime — no CSS files needed. Same prop values across components share a single CSS class.
+@box-kite/react is a React runtime CSS-in-JS library. The core `Box` component accepts 221 CSS props and generates CSS classes at runtime — no CSS files needed. Same prop values across components share a single CSS class.
 
 ## Commands
 
@@ -52,7 +52,7 @@ Node version: v24 (pinned in .nvmrc).
 - `src/a11y.ts` — The behaviour primitives (`@box-kite/react/a11y`): `useControllableState` (change reasons), `useDismiss` (Escape + outside pointer, layered), `useFocusReturn`, `useRovingFocus` (arrows/Home/End/typeahead, DOM focus or `aria-activedescendant`), `useIdentifier`. Sources in `src/react/a11y/**`, their own `behavior` chunk so the entry pulls in no engine; client-only, so the entry gets a `'use client'` banner. See `docs/a11y-primitives.md`
 - `src/core.ts` — The engine with no React at all, **published as its own package, `@box-kite/core`** (built by `vite.core.config.ts` into `dist-core/`): `createStyleEngine()`, `engine.classNames(props)`, `createThemeController()`, `getDefaultEngine()`, `BoxExtends`, `mergeDeep`. `examples/vanilla` is a whole page built on it. It is also the **only** module the React side may cross the boundary through — the build rewrites `./core` and `./types` to package specifiers, so a deep import into `src/core/**` from `src/react/**` would inline a second engine. Both the sources it reaches and the chunks it imports are checked for React
 - `src/types.ts` — Ships with the engine as `@box-kite/core/types`, and is the **`Box.extend()` augmentation target**: `declare module` merges into whichever package owns the file, and a re-export cannot forward it, so the types live with the prop registry they are derived from
-- `src/core/boxStyles.ts` — All CSS property definitions (215 props). Types auto-generate from these definitions
+- `src/core/boxStyles.ts` — All CSS property definitions (221 props). Types auto-generate from these definitions
 - `src/core/boxStylesFormatters.ts` — Value formatters that convert prop values to CSS (rem, px, fractions, etc.)
 - `src/core/engine/styleEngine.ts` — `createStyleEngine()`: all engine state (class-name cache, rule registry, identity factory, variables, prop and component registries) on an instance; generates class names and rules
 - `src/core/engine/styleSink.ts` — Where the CSS goes: `cssom` (`insertRule`), `textContent`, `string` (server rendering, no DOM), or `element` (nowhere — the rules come back as `<style href precedence>` descriptors for the adapter to render). Every sink places a rule by its sort key, so they all produce the same cascade

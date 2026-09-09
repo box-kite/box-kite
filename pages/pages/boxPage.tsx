@@ -550,6 +550,63 @@ function PositionDemo() {
           ))}
         </Flex>
       </DemoCard>
+
+      <DemoCard
+        title="Anchor Positioning (anchorName, positionAnchor, positionArea, positionTryFallbacks)"
+        description="The browser places the layer against the named anchor and flips it when it does not fit — no measuring, no scroll listener, no state"
+        code='anchorName="tag" … positionAnchor="tag" positionArea="block-end center" positionTryFallbacks="flip-block"'
+      >
+        <Flex gap={8} flexWrap="wrap">
+          {(
+            [
+              { area: 'block-end center', label: 'block-end center' },
+              { area: 'block-start center', label: 'block-start center' },
+              { area: 'center inline-end', label: 'center inline-end' },
+            ] as const
+          ).map(({ area, label }, index) => (
+            <Flex key={area} d="column" gap={2} ai="center">
+              {/* The wrapper is the layer's containing block, so it has to be bigger than the anchor —
+                  a `position-area` region is intersected with it, and an anchor filling it leaves nowhere to go. */}
+              <Box position="relative" width={52} height={28}>
+                <Flex
+                  position="absolute"
+                  top={9}
+                  left={6}
+                  width={28}
+                  height={10}
+                  ai="center"
+                  jc="center"
+                  fontSize={11}
+                  borderRadius={1}
+                  anchorName={`box-demo-anchor-${index}`}
+                  theme={{ dark: { bgColor: 'slate-700', color: 'slate-200' }, light: { bgColor: 'slate-200', color: 'slate-700' } }}
+                >
+                  anchor
+                </Flex>
+                {/* The layer is narrower than the anchor, so the centre column fits and `flip-block` can
+                    fire — a candidate has to fit on both axes, or every one of them is disqualified. */}
+                <Box
+                  position="absolute"
+                  positionAnchor={`box-demo-anchor-${index}`}
+                  positionArea={area}
+                  positionTryFallbacks="flip-block"
+                  px={2}
+                  py={1}
+                  m={1}
+                  fontSize={10}
+                  borderRadius={1}
+                  theme={{ dark: { bgColor: 'amber-500', color: 'slate-900' }, light: { bgColor: 'amber-400', color: 'slate-900' } }}
+                >
+                  layer
+                </Box>
+              </Box>
+              <Box fontSize={10} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-500' } }}>
+                {label}
+              </Box>
+            </Flex>
+          ))}
+        </Flex>
+      </DemoCard>
     </Flex>
   );
 }

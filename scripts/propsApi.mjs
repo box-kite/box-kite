@@ -32,6 +32,7 @@ const TOKEN = 'sky-500';
  */
 const SAMPLES = {
   accentColor: TOKEN,
+  anchorName: 'trigger',
   animationDelay: 150,
   animationDuration: 1100,
   animationIterationCount: 3,
@@ -76,6 +77,9 @@ const SAMPLES = {
   opacity: 0.5,
   outlineColor: TOKEN,
   position: 'absolute',
+  positionAnchor: 'trigger',
+  positionArea: 'block-end center',
+  positionTryFallbacks: 'flip-block',
   ringColor: TOKEN,
   rotate: 45,
   saturate: 180,

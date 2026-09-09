@@ -41,6 +41,12 @@ export const propertyGroups: ParityGroup[] = [
         note: 'insetX/insetY are the logical inset-inline/inset-block, insetStart/insetEnd their two sides',
       },
       {
+        tailwind: 'anchor positioning',
+        props: ['anchorName', 'positionAnchor', 'positionArea', 'positionTryFallbacks', 'positionTryOrder', 'positionVisibility'],
+        status: 'has',
+        note: 'no Tailwind utility — the browser places and flips the layer, so a floating element costs no JS',
+      },
+      {
         tailwind: 'border-collapse / border-spacing / table-layout',
         props: ['borderCollapse', 'borderSpacing', 'tableLayout'],
         status: 'has',
