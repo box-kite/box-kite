@@ -4,18 +4,36 @@ import { ignoreLogs } from '../../dev/tests';
 import Overlay from './overlay';
 
 /**
- * The positioning primitive on its own — what `Tooltip`, `Dropdown` and the DataGrid menu all
- * stand on. It had no tests of its own while it was called `Tooltip`, which is part of why the
- * split was worth doing: the layer and the pattern fail in completely different ways.
+ * The positioning primitive on its own — what `Tooltip`, `Dropdown` and the DataGrid menu all stand on.
+ * Since B1 stage 3 that is `useAnchorPosition` plus a portal, so the two paths are tested apart: what the
+ * browser places (a name, and a layer pointing at it) and what the fallback measures (coordinates).
  */
 describe('Overlay', () => {
   ignoreLogs();
 
   afterEach(() => {
     cleanup();
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
   });
 
   const portal = () => document.getElementById('box-kite-portal');
+  const layer = () => screen.getByText('anywhere').parentElement!;
+  // React writes a camelCase style property by assigning it, and jsdom knows no `position-anchor` to
+  // assign to — so the property it set is where the value is, rather than the style attribute.
+  const positionAnchor = () => (layer().style as unknown as Record<string, string>).positionAnchor;
+
+  /** The support check is asked once per mount, so a test can answer for the browser. */
+  function withAnchorSupport(supported: boolean) {
+    vi.stubGlobal('CSS', { supports: (value: string) => supported && value.startsWith('anchor-name') });
+  }
+
+  /** A rect for the anchor and nothing for the layer, which is what jsdom would answer anyway. */
+  function withRects(anchor: Partial<DOMRect>) {
+    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (this: Element) {
+      return (portal()?.contains(this) ? { top: 0, left: 0, width: 100, height: 40 } : { top: 0, left: 0, ...anchor }) as DOMRect;
+    });
+  }
 
   it('renders its children into the portal container, not where it was declared', () => {
     const { container } = render(<Overlay>anywhere</Overlay>);
@@ -31,68 +49,88 @@ describe('Overlay', () => {
     expect(screen.getByText('anywhere').closest('[role]')).toBeNull();
   });
 
-  it('translates to the position it measured', () => {
-    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockReturnValue({ top: 40, left: 12, width: 200 } as DOMRect);
-
-    try {
-      render(<Overlay adjustTranslateY="8px">anywhere</Overlay>);
-
-      const positioned = screen.getByText('anywhere').parentElement!;
-      expect(positioned.style.transform).toBe('translate3d(calc(12px + 0px),calc(40px + 8px), 0)');
-    } finally {
-      vi.restoreAllMocks();
-    }
-  });
-
-  it('takes the measured width by default, and leaves it alone when asked not to', () => {
-    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockReturnValue({ top: 0, left: 0, width: 200 } as DOMRect);
-
-    try {
-      const { rerender } = render(<Overlay>anywhere</Overlay>);
-      expect(screen.getByText('anywhere').parentElement!.style.width).toBe('200px');
-
-      rerender(<Overlay matchWidth={false}>anywhere</Overlay>);
-      expect(screen.getByText('anywhere').parentElement!.style.width).toBe('');
-    } finally {
-      vi.restoreAllMocks();
-    }
-  });
-
-  it('measures the anchor it is given instead of rendering a placeholder', () => {
+  it('carries the direction it was declared in across the portal, since the container inherits none', () => {
     const anchor = document.createElement('div');
-    anchor.getBoundingClientRect = () => ({ top: 10, bottom: 34, left: 5, width: 90 }) as DOMRect;
+    vi.spyOn(window, 'getComputedStyle').mockReturnValue({ direction: 'rtl', fontSize: '16px' } as CSSStyleDeclaration);
 
-    const { container } = render(<Overlay anchor={anchor}>anywhere</Overlay>);
+    render(<Overlay anchor={anchor}>anywhere</Overlay>);
 
-    // Nothing at all in the caller's layout — the placeholder is what makes an anchored layer
-    // shift the row it was declared in.
-    expect(container.childElementCount).toBe(0);
-    expect(screen.getByText('anywhere').parentElement!.style.transform).toBe('translate3d(calc(5px + 0px),calc(10px + 0px), 0)');
+    expect(layer()).toHaveAttribute('dir', 'rtl');
   });
 
-  it('starts from the anchor bottom edge when asked, which is where a tooltip goes', () => {
-    const anchor = document.createElement('div');
-    anchor.getBoundingClientRect = () => ({ top: 10, bottom: 34, left: 5, width: 90 }) as DOMRect;
+  describe('where the browser has anchor positioning', () => {
+    it('names the anchor and points the layer at it, and measures nothing', () => {
+      withAnchorSupport(true);
+      const rect = vi.spyOn(Element.prototype, 'getBoundingClientRect');
 
-    render(
-      <Overlay anchor={anchor} anchorSide="bottom">
-        anywhere
-      </Overlay>,
-    );
+      const { container } = render(<Overlay>anywhere</Overlay>);
 
-    expect(screen.getByText('anywhere').parentElement!.style.transform).toBe('translate3d(calc(5px + 0px),calc(34px + 0px), 0)');
+      // The placeholder is the anchor when there is nothing else: it carries the name the layer names.
+      const name = (container.firstElementChild as HTMLElement).style.getPropertyValue('anchor-name');
+      expect(name).toMatch(/^--/);
+      expect(positionAnchor()).toBe(name);
+      expect(layer().style.top).toBe('');
+      expect(rect).not.toHaveBeenCalled();
+    });
+
+    it('writes the name onto the anchor it is given rather than rendering a placeholder', () => {
+      withAnchorSupport(true);
+      const anchor = document.createElement('div');
+
+      const { container, unmount } = render(<Overlay anchor={anchor}>anywhere</Overlay>);
+
+      // Nothing at all in the caller's layout — the placeholder is what makes an anchored layer
+      // shift the row it was declared in.
+      expect(container.childElementCount).toBe(0);
+      expect(anchor.style.getPropertyValue('anchor-name')).toBe(positionAnchor());
+
+      // The name is the layer's, so it leaves with it: an anchor still named after an unmounted
+      // layer is one another layer can flip to.
+      unmount();
+      expect(anchor.style.getPropertyValue('anchor-name')).toBe('');
+    });
   });
 
-  it('reports the position it measured, so a caller can decide to open the other way', () => {
-    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockReturnValue({ top: 40, left: 12, width: 0 } as DOMRect);
-    const onPositionChange = vi.fn();
+  describe('where it has none', () => {
+    it('places the layer at the coordinates it measured', () => {
+      withAnchorSupport(false);
+      withRects({ top: 10, left: 5, width: 90, height: 24 });
 
-    try {
-      render(<Overlay onPositionChange={onPositionChange}>anywhere</Overlay>);
+      render(<Overlay anchor={document.createElement('div')}>anywhere</Overlay>);
 
-      expect(onPositionChange).toHaveBeenCalledWith({ top: 40, left: 12, windowScrollX: 0, windowScrollY: 0 });
-    } finally {
-      vi.restoreAllMocks();
-    }
+      // Under the anchor by default: its own bottom edge, in viewport coordinates, `position: fixed`.
+      expect(layer().style.top).toBe('34px');
+      expect(layer().style.left).toBe('0px');
+    });
+
+    it('takes the width of the anchor by default, and leaves it alone when asked not to', () => {
+      withAnchorSupport(false);
+      withRects({ top: 0, left: 0, width: 200, height: 20 });
+
+      const { rerender } = render(<Overlay anchor={document.createElement('div')}>anywhere</Overlay>);
+      expect(layer().style.minWidth).toBe('200px');
+
+      rerender(
+        <Overlay anchor={document.createElement('div')} matchWidth={false}>
+          anywhere
+        </Overlay>,
+      );
+      expect(layer().style.minWidth).toBe('');
+    });
+
+    it('reports the side it settled on, so a popup knows which way it grew', () => {
+      withAnchorSupport(false);
+      // No room under an anchor at the bottom of the viewport (768px in jsdom), and plenty above it.
+      withRects({ top: 740, left: 0, width: 90, height: 24 });
+      const onSideChange = vi.fn();
+
+      render(
+        <Overlay anchor={document.createElement('div')} onSideChange={onSideChange}>
+          anywhere
+        </Overlay>,
+      );
+
+      expect(onSideChange).toHaveBeenLastCalledWith('top');
+    });
   });
 });

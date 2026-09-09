@@ -1,6 +1,7 @@
 import { FunctionComponent, Ref, useCallback, useState } from 'react';
 import Box from '../../box';
 import { BoxStyleProps } from '../../types';
+import { AnchorSide } from '../../utils/anchor/anchorUtils';
 import Overlay from '../overlay';
 import { PresenceHandle } from '../presence';
 import { DropdownRow, useDropdownContext } from './dropdownContext';
@@ -45,45 +46,32 @@ export default function DropdownItems<TVal>(props: Props<TVal>) {
   const { present, ref: contentRef, props: presenceProps } = presence;
   const { multiple, variant } = useDropdownContext<TVal>();
 
+  // Which way it went, from the browser rather than from a guess about the viewport: the popup asks
+  // for the space under the trigger and `position-try-fallbacks` moves it above when there is none.
+  // It arrives too late for the entrance (see the component's `startingStyle`) and in good time for
+  // the exit, which is what `closedUp` is.
   const [openUp, setOpenUp] = useState(false);
-  // Read the trigger height synchronously for the initial downward offset before the Overlay
-  // reports its measured position via onPositionChange; a deferred read would flash at the wrong spot.
-  // eslint-disable-next-line react-hooks/refs
-  const translateY = openUp ? 0 : (triggerRef.current?.getBoundingClientRect().height ?? 0);
-
-  const handlePositionChange = useCallback((data: { top: number; windowScrollY: number }) => {
-    const shouldOpenUp = data.top - data.windowScrollY > window.innerHeight / 2;
-    setOpenUp((prev) => (prev === shouldOpenUp ? prev : shouldOpenUp));
-  }, []);
+  const handleSideChange = useCallback((side: AnchorSide) => setOpenUp(side === 'top'), []);
 
   return (
-    <Box position="absolute" inset={0}>
-      <Overlay
-        ref={popupRef}
-        minWidth="fit-content"
-        style={{ transform: openUp ? `translateY(calc(-100% - 2px))` : `translateY(${translateY}px)` }}
-        onPositionChange={handlePositionChange}
+    <Overlay ref={popupRef} anchor={triggerRef} side="bottom" align="start" offset={0.5} onSideChange={handleSideChange}>
+      <Box
+        ref={contentRef}
+        component="dropdown.items"
+        {...itemsProps}
+        variant={[variant, { closed: !present && !openUp, closedUp: !present && openUp }] as never}
+        id={listboxId}
+        props={{ ...rolesFor(rows.length > 0, multiple, labelledBy), ...presenceProps }}
       >
-        <Box
-          ref={contentRef}
-          component="dropdown.items"
-          {...itemsProps}
-          // Which way it opened decides which way it animates, both in and out. `openUp` is settled
-          // before this Box exists: `Overlay` renders nothing into the portal until it has measured.
-          variant={[variant, { up: openUp, closed: !present && !openUp, closedUp: !present && openUp }] as never}
-          id={listboxId}
-          props={{ ...rolesFor(rows.length > 0, multiple, labelledBy), ...presenceProps }}
-        >
-          {rows.map((row, index) => (
-            <DropdownRowRenderer<TVal> key={rowKey(row, index)} row={row} index={index} />
-          ))}
+        {rows.map((row, index) => (
+          <DropdownRowRenderer<TVal> key={rowKey(row, index)} row={row} index={index} />
+        ))}
 
-          {rows.length === 0 && emptyItem && (
-            <Box component="dropdown.emptyItem" variant={variant as never} {...(emptyItem as React.ReactElement<object>).props} />
-          )}
-        </Box>
-      </Overlay>
-    </Box>
+        {rows.length === 0 && emptyItem && (
+          <Box component="dropdown.emptyItem" variant={variant as never} {...(emptyItem as React.ReactElement<object>).props} />
+        )}
+      </Box>
+    </Overlay>
   );
 }
 

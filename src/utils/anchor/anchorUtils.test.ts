@@ -1,12 +1,61 @@
 import { describe, expect, it } from 'vitest';
 import Anchors from '../../core/anchors';
-import { AnchorRect, areaFor, flipFor, place } from './anchorUtils';
+import { AnchorRect, areaFor, fallbacksFor, place, sideOfArea } from './anchorUtils';
 
 const viewport: AnchorRect = { top: 0, left: 0, width: 1000, height: 600 };
 const anchor: AnchorRect = { top: 300, left: 400, width: 80, height: 30 };
 const layer: AnchorRect = { top: 0, left: 0, width: 120, height: 40 };
 
 const options = { side: 'bottom', align: 'center', offset: 0, flip: true, rtl: false } as const;
+
+/**
+ * Every used value Chrome 152 reports for the twelve `areaFor` outputs, measured against hand-written CSS
+ * with no library involved. It is the table `sideOfArea` is written from, and none of the entries is the
+ * value that went in: `span-all` is dropped, and two named axes come back in the `start`/`end` shorthand.
+ */
+const USED_AREAS: Record<string, string> = {
+  'block-start span-all': 'block-start',
+  'block-start span-inline-start': 'start span-start',
+  'block-start span-inline-end': 'start span-end',
+  'block-end span-all': 'block-end',
+  'block-end span-inline-start': 'end span-start',
+  'block-end span-inline-end': 'end span-end',
+  'span-all inline-start': 'inline-start',
+  'span-block-start inline-start': 'span-start start',
+  'span-block-end inline-start': 'span-end start',
+  'span-all inline-end': 'inline-end',
+  'span-block-start inline-end': 'span-start end',
+  'span-block-end inline-end': 'span-end end',
+};
+
+describe('sideOfArea', () => {
+  const sides = ['top', 'bottom', 'start', 'end'] as const;
+  const aligns = ['start', 'center', 'end'] as const;
+
+  it('reads back the side of every value the model emits, out of the used form the browser reports', () => {
+    for (const side of sides) {
+      for (const align of aligns) {
+        const specified = areaFor(side, align);
+
+        expect(sideOfArea(USED_AREAS[specified])).toBe(side);
+      }
+    }
+  });
+
+  it('reads a flip as the side it flipped to', () => {
+    // What Chrome reported for a `block-end span-inline-end` layer with no room under its anchor.
+    expect(sideOfArea('start span-end')).toBe('top');
+    expect(sideOfArea('block-start')).toBe('top');
+    expect(sideOfArea('span-end start')).toBe('start');
+  });
+
+  it('answers nothing for a value it cannot read, which leaves the requested side standing', () => {
+    // What a test environment that lays nothing out reports, and the centre cell nothing here emits.
+    expect(sideOfArea('')).toBeNull();
+    expect(sideOfArea('none')).toBeNull();
+    expect(sideOfArea('center center')).toBeNull();
+  });
+});
 
 /**
  * The `position-area` half of the model: what the browser is given. The expectations here are the rects
@@ -38,10 +87,16 @@ describe('areaFor', () => {
     }
   });
 
-  it('flips along the side’s own axis', () => {
-    expect(flipFor('bottom')).toBe('flip-block');
-    expect(flipFor('top')).toBe('flip-block');
-    expect(flipFor('start')).toBe('flip-inline');
+  it('offers the side’s own axis first, then the alignment’s, then both', () => {
+    expect(fallbacksFor('bottom')).toBe('flip-block, flip-inline, flip-block flip-inline');
+    expect(fallbacksFor('top')).toBe('flip-block, flip-inline, flip-block flip-inline');
+    expect(fallbacksFor('start')).toBe('flip-inline, flip-block, flip-inline flip-block');
+  });
+
+  it('offers a list the prop takes, since a candidate the grammar rejects drops the whole value', () => {
+    for (const side of ['top', 'bottom', 'start', 'end'] as const) {
+      expect(Anchors.isTryFallbacks(fallbacksFor(side))).toBe(true);
+    }
   });
 });
 

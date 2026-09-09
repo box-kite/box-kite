@@ -9,7 +9,6 @@ import useFocusReturn from '../../../react/a11y/useFocusReturn';
 import useRovingFocus from '../../../react/a11y/useRovingFocus';
 import { useIsomorphicLayoutEffect } from '../../../react/effects';
 import useIdentifier from '../../../react/identity/useIdentifier';
-import { isBrowser } from '../../../utils/environment/environmentUtils';
 import Button from '../../button';
 import Flex from '../../flex';
 import Overlay from '../../overlay';
@@ -65,10 +64,6 @@ export default function DataGridHeaderCellContextMenu<TRow>(props: Props<TRow>) 
   const triggerRef = useRef<HTMLButtonElement>(null);
   const popupRef = useRef<HTMLDivElement>(null);
   const pendingFocus = useRef(false);
-  const [tooltipPosition, setTooltipPosition] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
-  // The menu has never been opened during a server render, so which side it would open to is a
-  // question with no answer there — and `window` is not a thing that exists to ask (bug #85).
-  const openLeft = useMemo(() => isBrowser() && tooltipPosition.left > window.innerWidth / 2, [tooltipPosition.left]);
 
   const positionStart = isEndAligned ? 2 : undefined;
   const positionEnd = isEndAligned ? undefined : column.pin === 'END' ? 2.5 : 4;
@@ -225,11 +220,15 @@ export default function DataGridHeaderCellContextMenu<TRow>(props: Props<TRow>) 
             <Overlay
               component={`${grid.componentName}.header.cell.contextMenu.tooltip` as never}
               variant={{ closed: !presence.present } as never}
-              onPositionChange={setTooltipPosition}
               ref={popupRef}
               contentRef={presence.ref}
-              adjustTranslateX={openLeft ? '-100%' : '-21px'}
-              adjustTranslateY="16px"
+              anchor={triggerRef}
+              // Below the button, hanging back across the column it belongs to — which screen side that
+              // is depends on the reading order. It is the alignment that can run off the page here, not
+              // the side, and the browser mirrors it near the inline start where the old heuristic guessed.
+              side="bottom"
+              align="end"
+              matchWidth={false}
               id={identifier}
               props={{ role: 'menu', 'aria-label': `Column options for ${columnName}`, onKeyDown: roving.onKeyDown, ...presence.props }}
             >

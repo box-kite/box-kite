@@ -5,6 +5,7 @@ import useControllableState, { ChangeHandler } from '../react/a11y/useControllab
 import useDismiss from '../react/a11y/useDismiss';
 import useIdentifier from '../react/identity/useIdentifier';
 import { ComponentsAndVariants } from '../types';
+import { AnchorAlign, AnchorSide } from '../utils/anchor/anchorUtils';
 import Overlay from './overlay';
 import Presence from './presence';
 
@@ -38,8 +39,9 @@ export interface TooltipTrigger {
 // `content` shadows the CSS prop of the same name, which is the right trade: the CSS one is for
 // generated content on a pseudo-element, and the tooltip has no pseudo-element to generate onto. `open`
 // shadows the pseudo-class nesting key for the same reason — the component owns that state, and the way
-// to style it here is the `data-state` `<Presence>` already sets.
-type TooltipBoxProps<TKey extends keyof ComponentsAndVariants> = Omit<BoxProps<'div', TKey>, 'children' | 'content' | 'open'>;
+// to style it here is the `data-state` `<Presence>` already sets. `flip` is the placement one, which is
+// the vocabulary `Overlay` and `useAnchorPosition` use for it.
+type TooltipBoxProps<TKey extends keyof ComponentsAndVariants> = Omit<BoxProps<'div', TKey>, 'children' | 'content' | 'open' | 'flip'>;
 
 interface Props<TKey extends keyof ComponentsAndVariants> extends TooltipBoxProps<TKey> {
   /** The description itself. Nothing renders while this is empty. */
@@ -60,10 +62,20 @@ interface Props<TKey extends keyof ComponentsAndVariants> extends TooltipBoxProp
   openDelay?: number;
   /** The grace period after the pointer leaves, in ms. Default 150, so the pointer can reach the tooltip (WCAG 1.4.13). */
   closeDelay?: number;
-  /** Nudge the bubble along the inline axis, as a CSS length. */
-  adjustTranslateX?: string;
-  /** Nudge the bubble along the block axis, as a CSS length. */
-  adjustTranslateY?: string;
+  /**
+   * Which side of the trigger the bubble sits on — `top`/`bottom` are the block axis, `start`/`end` the
+   * inline one. Default `'bottom'`, and a side with no room flips to its opposite either way.
+   */
+  side?: AnchorSide;
+  /** Which of the trigger's edges to line the bubble up with along the other axis. Default `'center'`. */
+  align?: AnchorAlign;
+  /**
+   * The gap between trigger and bubble, on the ÷4 spacing scale. Default 1 — 4px, which is near enough
+   * for the pointer to cross without leaving the trigger (WCAG 1.4.13) and far enough to read as a layer.
+   */
+  offset?: number;
+  /** Whether a side with no room may be swapped for its opposite. Default `true`. */
+  flip?: boolean;
 }
 
 /**
@@ -108,8 +120,10 @@ function Tooltip<TKey extends keyof ComponentsAndVariants = 'tooltip'>(props: Pr
     onOpenChange,
     openDelay = 300,
     closeDelay = 150,
-    adjustTranslateX,
-    adjustTranslateY,
+    side = 'bottom',
+    align = 'center',
+    offset = 1,
+    flip = true,
     props: contentProps,
     ...restProps
   } = props;
@@ -255,12 +269,13 @@ function Tooltip<TKey extends keyof ComponentsAndVariants = 'tooltip'>(props: Pr
             ref={overlayRef}
             contentRef={presence.ref}
             anchor={triggerElement}
-            // Under the trigger, not over it — with a small gap, which is also what keeps the pointer
-            // travelling between the two from crossing anything else.
-            anchorSide="bottom"
+            // Beside the trigger rather than over it, and sized to its own content: a description is
+            // as long as it is, where a listbox lines up with the field it belongs to.
+            side={side}
+            align={align}
+            offset={offset}
+            flip={flip}
             matchWidth={false}
-            adjustTranslateX={adjustTranslateX}
-            adjustTranslateY={adjustTranslateY ?? '4px'}
             component={'tooltip' as TKey}
             {...(restProps as TooltipBoxProps<TKey>)}
             variant={[restProps.variant, { closed: !presence.present }] as never}

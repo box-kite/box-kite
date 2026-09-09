@@ -2,7 +2,7 @@
 
 _Unreleased. A PR that changes what a consumer sees adds its section here — see CONTRIBUTING.md, "Release notes"._
 
-The package now carries instructions for the agent writing the code, the documentation site answers in markdown, the same rules install as a skill in about forty-five coding agents, and every component page states its own props, keys and accessibility — all of it generated from the sources the library is built from.
+The package now carries instructions for the agent writing the code, the documentation site answers in markdown, the same rules install as a skill in about forty-five coding agents, and every component page states its own props, keys and accessibility — all of it generated from the sources the library is built from. A floating layer is also placed by the browser now rather than measured in JavaScript, all the way through: six props, one hook, and every popup the library ships standing on them.
 
 ## Highlights
 
@@ -13,6 +13,7 @@ The package now carries instructions for the agent writing the code, the documen
 - **[Three props for a table, and a list that shows its markers](#three-props-for-a-table-and-a-list-that-shows-its-markers)** — `borderCollapse`, `borderSpacing`, `tableLayout`, plus `display="list-item"` and the markers `listStyle` was missing.
 - **[A floating layer is six props, and no JavaScript](#a-floating-layer-is-six-props-and-no-javascript)** — CSS anchor positioning: name an anchor, say which cell of the grid around it to sit in, and let the browser flip the layer when it does not fit.
 - **[One hook places a floating layer](#one-hook-places-a-floating-layer-and-a-length-can-come-off-the-anchor)** — `useAnchorPosition` from `@box-kite/react/anchor`, plus `anchor-size()` on every sizing prop and `anchor()` on every inset, so a popup matches its trigger with nothing measured.
+- **[Every popup in the library is placed by the browser](#every-popup-in-the-library-is-placed-by-the-browser)** — `Overlay`, `Tooltip`, the `Dropdown` popup and the DataGrid column menu stand on that hook, three home-grown flip heuristics are gone, and one `side`/`align`/`offset`/`flip` vocabulary replaces the transforms they took.
 
 ## The package tells an agent how to use it
 
@@ -179,9 +180,37 @@ Three things worth knowing, all measured in Chrome 152:
 
 The whole surface is on [/anchor](https://www.box-kite.dev/anchor), with a live playground for the twelve placements.
 
+## Every popup in the library is placed by the browser
+
+The hook above is what the pre-built layers use now. `Overlay` is `useAnchorPosition` plus a portal, and `Tooltip`, the `Dropdown` popup and the DataGrid column menu are `Overlay` — so a popup in this library is placed by `position-area` and flipped by `position-try-fallbacks`, and on a browser with CSS anchor positioning nothing runs to keep it there: no measurement, no scroll listener, no state.
+
+```tsx
+<Overlay anchor={triggerElement} side="bottom" align="start" offset={2}>
+  anything, anywhere
+</Overlay>;
+
+<Tooltip content="Deletes the row for good" side="end" offset={2}>
+  {(trigger) => <Button {...trigger}>Delete</Button>}
+</Tooltip>;
+```
+
+**One placement vocabulary**, the hook's: `side` is `'top'`/`'bottom'` on the block axis or `'start'`/`'end'` on the inline one — so a layer beside its anchor mirrors in a right-to-left page — `align` lines it up with one of the anchor's edges, `offset` is the gap on the ÷4 spacing scale, and `flip` lets the browser move a layer that does not fit. `anchor` is the element to hang off, and `matchWidth` makes the layer at least as wide as it. The transforms and callbacks these components used to take are gone; the migration is in [Breaking changes](#breaking-changes) below.
+
+**Three home-grown flip heuristics went with it.** The dropdown popup opened upward when its trigger was below the middle of the viewport, the column menu opened leftward when its button was in the right half of it, and the tooltip never flipped at all — none of the three asked whether the layer actually fits. The browser does, and it is right in the cases the heuristics were wrong about: a trigger low on a tall page with room under it keeps its popup below, and one with no room gets it above.
+
+Four things worth knowing, all measured in Chrome 152:
+
+- **The portal stays, and it is not about clipping.** `position: fixed` already escapes every `overflow: hidden` ancestor; what it does not escape is a *transformed* ancestor (a fixed element's containing block) or the page's stacking order. That is what the portal is for, and it composes with anchor positioning because an `anchor-name` is not scoped to a subtree.
+- **A flip needs three candidates, not one.** A candidate position has to fit on *both* axes, so a lone `flip-block` does nothing at all for a layer that overflows the *cross* axis — the browser leaves it pressed against the edge of the viewport. `flip` offers the side's own axis, the alignment's, and both, in that order, which is what makes a column menu aligned to its button's end mirror to the other end near the edge of the page instead of running off it.
+- **Knowing which side the browser chose costs the entrance.** `Overlay`'s `onSideChange` reads the *used* `position-area`, and that read is the style resolution `@starting-style` computes its before-change style from — so a class depending on the answer always lands after the entrance has been decided. An exit runs long afterwards and can use it, which is why `dropdown.items` keeps `closedUp` and has no `up`.
+- **A used `position-area` is not the value that went in.** A `span-all` half is dropped (`block-end span-all` reads back `block-end`) and a value naming both axes comes back in the `start`/`end` shorthand, where position names the axis rather than a keyword: `block-end span-inline-end` reads back `end span-end`, and `start span-end` once it has flipped.
+
 ## Breaking changes
 
-None.
+- **`Overlay` places a layer instead of translating one, so its four positioning props are gone.** `anchorSide` is `side` (`anchorSide="bottom"` is the default `side="bottom"`; the old `'top'` overlapped the anchor, which `side="bottom" offset={0}` does not — use a negative margin if you need the overlap). `adjustTranslateX`/`adjustTranslateY` are `offset` on the ÷4 scale for the gap and `align` for the sideways nudge (`adjustTranslateY="4px"` is `offset={1}`). `onPositionChange` is `onSideChange`, which reports the side rather than page coordinates — nothing measures a position any more, so there are none to report.
+- **`Tooltip`'s `adjustTranslateX`/`adjustTranslateY` are `side`, `align` and `offset`.** The default gap is unchanged (`offset={1}`, 4px), so a tooltip that took no nudge needs no change.
+- **`flip` on `Overlay` and `Tooltip` is the placement prop, not the CSS one.** It shadows the Box prop that writes `scale`, the way `Tooltip` already shadows `content` and `open` — a mirrored layer is a rarity, and one placement vocabulary is worth more. A child of the layer still takes the CSS `flip`.
+- **The `dropdown.items` `up` variant is gone; `closedUp` stays.** It only ever carried the entrance's starting style, and the entrance cannot know which way the popup went (see above). A `Box.components()` override that styled `up` should move to `closedUp` or to the base `startingStyle`.
 
 ## Fixes
 

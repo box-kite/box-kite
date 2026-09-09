@@ -628,13 +628,15 @@ const boxComponents = {
             },
           },
           // The popup is mounted when it opens, so `@starting-style` is its entrance and no state,
-          // no effect and no JavaScript are involved in it. Downward is the default direction.
+          // no effect and no JavaScript are involved in it. One direction, whichever way it opened:
+          // the before-change style is computed from the popup's first style resolution, and which
+          // side the browser flipped to is only knowable by forcing that resolution (measured).
           startingStyle: { opacity: 0, translateY: -1 },
         },
-        // A popup grows *away* from its trigger and collapses back into it, so the 4px it covers
-        // changes sign with the direction it opened in — `up` and `closedUp` are the flipped pair.
+        // A popup collapses back into the trigger it came out of, so the 4px the exit covers changes
+        // sign with the direction it opened in — `closed` and `closedUp` are that pair. The exit runs
+        // long after the flip is settled, which is why it can be sure of the side and the entrance cannot.
         variants: {
-          up: { startingStyle: { translateY: 1 } },
           // The exit `<Presence>` holds the popup open for. Not clickable while it runs: a second
           // selection landing on a closing listbox would change the value the user just settled.
           closed: { opacity: 0, translateY: -1, pointerEvents: 'none' },

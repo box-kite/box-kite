@@ -1,6 +1,6 @@
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { ignoreLogs } from '../../dev/tests';
+import { ignoreLogs, withUsedPositionArea } from '../../dev/tests';
 import Dropdown from './dropdown';
 
 describe('Dropdown', () => {
@@ -109,49 +109,40 @@ describe('Dropdown', () => {
   });
 
   /**
-   * A popup grows *away* from its trigger and collapses back into it, so the 4px it covers changes sign
-   * with the direction it opened in. Nothing here is visible to happy-dom, which lays out nothing — what
-   * is testable is the class the direction resolves to, and a browser was used for the rest.
+   * A popup collapses back into the trigger it came out of, so the 4px its exit covers changes sign with
+   * the direction it opened in. Which direction that is belongs to the browser now — it asks for the space
+   * under the trigger and flips when there is none — and `withUsedPositionArea` is that answer.
    */
   describe('Open direction', () => {
-    const realRect = Element.prototype.getBoundingClientRect;
-
     afterEach(() => {
-      Element.prototype.getBoundingClientRect = realRect;
+      vi.restoreAllMocks();
     });
-
-    // `Overlay` measures the trigger, and a trigger below the middle of the viewport makes the popup
-    // open upward. With no layout every rect is zero, so where it sits has to be said out loud.
-    const triggerAt = (top: number) => {
-      Element.prototype.getBoundingClientRect = function () {
-        return { top, bottom: top + 30, left: 0, right: 200, width: 200, height: 30, x: 0, y: top, toJSON: () => ({}) } as DOMRect;
-      };
-    };
 
     const listboxClasses = () => screen.getByRole('listbox').className.split(' ');
 
-    it('starts above its resting place when it opens downward', () => {
-      triggerAt(10);
+    it('starts above its resting place, whichever way it went', () => {
       renderDropdown();
       openDropdown();
 
       expect(listboxClasses()).toContain('starting-translateY--1');
     });
 
-    it('starts below it when it opens upward', () => {
-      triggerAt(700);
+    it('enters the same way when the browser flipped it, because the side arrives too late to matter', () => {
+      // Measured in Chrome 152: `@starting-style` computes the before-change style from the popup's
+      // first style resolution, and asking which side the browser chose is what forces that resolution.
+      // So the entrance is settled before the answer exists — only the exit below can use it.
+      withUsedPositionArea('start span-end');
       renderDropdown();
       openDropdown();
 
-      expect(listboxClasses()).toContain('starting-translateY-1');
-      expect(listboxClasses()).not.toContain('starting-translateY--1');
+      expect(listboxClasses()).toContain('starting-translateY--1');
     });
 
     it('reverses the exit with the direction too', () => {
       vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
 
       try {
-        triggerAt(700);
+        withUsedPositionArea('start span-end');
         renderDropdown({ itemsProps: { transitionDuration: 200 } });
         openDropdown();
         openDropdown();

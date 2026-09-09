@@ -55,18 +55,32 @@
       "description": "The grace period after the pointer leaves, in ms. Default 150, so the pointer can reach the tooltip (WCAG 1.4.13)."
     },
     {
-      "name": "adjustTranslateX",
-      "type": "string",
+      "name": "side",
+      "type": "AnchorSide",
       "required": false,
-      "default": null,
-      "description": "Nudge the bubble along the inline axis, as a CSS length."
+      "default": "'bottom'",
+      "description": "Which side of the trigger the bubble sits on — `top`/`bottom` are the block axis, `start`/`end` the inline one. Default `'bottom'`, and a side with no room flips to its opposite either way."
     },
     {
-      "name": "adjustTranslateY",
-      "type": "string",
+      "name": "align",
+      "type": "AnchorAlign",
       "required": false,
-      "default": null,
-      "description": "Nudge the bubble along the block axis, as a CSS length."
+      "default": "'center'",
+      "description": "Which of the trigger's edges to line the bubble up with along the other axis. Default `'center'`."
+    },
+    {
+      "name": "offset",
+      "type": "number",
+      "required": false,
+      "default": "1",
+      "description": "The gap between trigger and bubble, on the ÷4 spacing scale. Default 1 — 4px, which is near enough for the pointer to cross without leaving the trigger (WCAG 1.4.13) and far enough to read as a layer."
+    },
+    {
+      "name": "flip",
+      "type": "boolean",
+      "required": false,
+      "default": "true",
+      "description": "Whether a side with no room may be swapped for its opposite. Default `true`."
     }
   ],
   "parts": [],

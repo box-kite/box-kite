@@ -117,14 +117,15 @@ export default function TooltipPage() {
           <Section id="styling" title="Styling">
             <Box>
               Every Box prop on <Mono>&lt;Tooltip&gt;</Mono> styles the bubble, on top of the built-in <Mono>tooltip</Mono> component style
-              (inverted against the page, so it reads as an overlay in either theme). <Mono>adjustTranslateX</Mono> and{' '}
-              <Mono>adjustTranslateY</Mono> nudge where it lands.
+              (inverted against the page, so it reads as an overlay in either theme). Where it lands is <Mono>side</Mono>,{' '}
+              <Mono>align</Mono> and <Mono>offset</Mono> — the placement vocabulary <Mono>Overlay</Mono> and <Mono>useAnchorPosition</Mono>{' '}
+              share — and a side with no room flips to its opposite on its own.
             </Box>
             <Box mt={4}>
               <Code
                 language="jsx"
                 codeOnly
-                code={`<Tooltip content="On brand" bgColor="indigo-600" color="white" borderRadius={2} adjustTranslateY="4px">
+                code={`<Tooltip content="On brand" bgColor="indigo-600" color="white" borderRadius={2} side="end" offset={2}>
   {(trigger) => <Button {...trigger}>Delete</Button>}
 </Tooltip>`}
               />

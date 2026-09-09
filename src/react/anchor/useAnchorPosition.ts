@@ -1,7 +1,7 @@
 import { CSSProperties, useCallback, useState } from 'react';
 import { BoxStyleProps } from '../../types';
-import { AnchorAlign, AnchorRect, AnchorSide, Placement, areaFor, flipFor, place } from '../../utils/anchor/anchorUtils';
-import { isRtl } from '../../utils/dom/domUtils';
+import { AnchorAlign, AnchorRect, AnchorSide, Placement, areaFor, fallbacksFor, place, sideOfArea } from '../../utils/anchor/anchorUtils';
+import { ElementLike, htmlElementOf, isRtl } from '../../utils/dom/domUtils';
 import { useIsomorphicLayoutEffect } from '../effects';
 import useIdentifier from '../identity/useIdentifier';
 
@@ -20,12 +20,25 @@ export interface AnchorPositionOptions {
   align?: AnchorAlign;
   /** The gap between anchor and layer, on the ÷4 spacing scale — `offset: 2` is 8px. Default `0`. */
   offset?: number;
-  /** Whether a side with no room may be swapped for its opposite. Default `true`. */
+  /**
+   * Whether the browser may move the layer where it does not fit: the side swapped for its opposite, the
+   * alignment mirrored, or both — three candidates, since a candidate has to fit on both axes. Default `true`.
+   */
   flip?: boolean;
   /** Whether the layer is at least as wide as its anchor, the way a select popup is. Default `false`. */
   matchWidth?: boolean;
   /** The anchor's name. Generated per instance when omitted, which is what keeps two layers apart. */
   name?: string;
+  /**
+   * The anchor as an element rather than props to spread — for a caller handed a trigger it does not
+   * render itself. The name is written onto it in a layout effect, so a ref is read when the layer mounts.
+   */
+  anchor?: ElementLike;
+  /**
+   * Whether `side` reports where the layer ended up rather than where it was asked to go. Off by default,
+   * because on the CSS path it costs the one thing that path otherwise never does: a read after layout.
+   */
+  trackSide?: boolean;
 }
 
 /** The two anchor-positioning properties, which csstype does not know yet. An inline style, deliberately — see the hook. */
@@ -49,6 +62,8 @@ export interface AnchorLayerProps extends Pick<
 export interface AnchorPosition {
   /** Whether the browser is placing the layer. `false` means this hook measured it instead. */
   css: boolean;
+  /** The side the layer is on: the requested one, unless `trackSide` is on and a flip moved it. */
+  side: AnchorSide;
   anchorProps: AnchorElementProps;
   layerProps: AnchorLayerProps;
 }
@@ -104,7 +119,7 @@ function same(a: Measured | null, b: Measured): boolean {
  * renders one — `useDismiss` and `useFocusReturn` from `@box-kite/react/a11y` are the other half.
  */
 export default function useAnchorPosition(options: AnchorPositionOptions = {}): AnchorPosition {
-  const { side = 'bottom', align = 'center', offset = 0, flip = true, matchWidth = false, name } = options;
+  const { side = 'bottom', align = 'center', offset = 0, flip = true, matchWidth = false, name, anchor, trackSide = false } = options;
 
   const generated = useIdentifier('anchor');
   const anchorName = `--${(name ?? generated).replace(/^--/, '')}`;
@@ -112,22 +127,48 @@ export default function useAnchorPosition(options: AnchorPositionOptions = {}): 
   // Starts as the CSS path so a server render and the first client render agree; a browser without
   // anchor positioning says so before it paints.
   const [css, setCss] = useState(true);
-  const [anchorElement, setAnchorElement] = useState<HTMLElement | null>(null);
+  const [spreadAnchor, setSpreadAnchor] = useState<HTMLElement | null>(null);
   const [layerElement, setLayerElement] = useState<HTMLElement | null>(null);
   const [measured, setMeasured] = useState<Measured | null>(null);
+  const [usedSide, setUsedSide] = useState<AnchorSide | null>(null);
 
   useIsomorphicLayoutEffect(() => {
     if (!supportsAnchorPositioning()) setCss(false);
   }, []);
 
+  // An anchor handed to the hook rather than one it hands props to: the name still has to reach the
+  // element, and an element somebody else rendered can only be written to in an effect.
   useIsomorphicLayoutEffect(() => {
+    const element = htmlElementOf(anchor);
+    if (!element) return;
+
+    element.style.setProperty('anchor-name', anchorName);
+
+    return () => {
+      element.style.removeProperty('anchor-name');
+    };
+  }, [anchor, anchorName]);
+
+  // Which side the browser settled on, read off the *used* `position-area` (see `sideOfArea`, which is
+  // where the shape of that value is written down). Once per layout, because a flip is sticky.
+  useIsomorphicLayoutEffect(() => {
+    if (!css || !trackSide || !layerElement) return;
+
+    setUsedSide(sideOfArea(getComputedStyle(layerElement).getPropertyValue('position-area')));
+  }, [css, trackSide, layerElement, side, align, flip]);
+
+  useIsomorphicLayoutEffect(() => {
+    // Resolved here rather than during render: `anchor` may be a ref, and a ref read in a render is
+    // both a lint error and a staleness bug — the element it points at attaches after that render.
+    const anchorElement = htmlElementOf(anchor) ?? spreadAnchor;
     if (css || !anchorElement || !layerElement) return;
 
     const measure = () => {
-      const anchor = rectOf(anchorElement);
+      const anchorRect = rectOf(anchorElement);
       const layer = rectOf(layerElement);
       const viewport = { top: 0, left: 0, width: window.innerWidth, height: window.innerHeight };
-      const placement = place(anchor, { ...layer, width: matchWidth ? Math.max(layer.width, anchor.width) : layer.width }, viewport, {
+      const width = matchWidth ? Math.max(layer.width, anchorRect.width) : layer.width;
+      const placement = place(anchorRect, { ...layer, width }, viewport, {
         side,
         align,
         offset: (offset / SPACING_DIVIDER) * rootFontSize(),
@@ -135,7 +176,7 @@ export default function useAnchorPosition(options: AnchorPositionOptions = {}): 
         rtl: isRtl(anchorElement),
       });
 
-      const next = { ...placement, anchorWidth: anchor.width };
+      const next = { ...placement, anchorWidth: anchorRect.width };
       setMeasured((previous) => (same(previous, next) ? previous : next));
     };
 
@@ -147,9 +188,9 @@ export default function useAnchorPosition(options: AnchorPositionOptions = {}): 
     window.addEventListener('resize', measure, { signal: controller.signal, passive: true });
 
     return () => controller.abort();
-  }, [css, anchorElement, layerElement, side, align, offset, flip, matchWidth]);
+  }, [css, anchor, spreadAnchor, layerElement, side, align, offset, flip, matchWidth]);
 
-  const anchorRef = useCallback((element: HTMLElement | null) => setAnchorElement(element), []);
+  const anchorRef = useCallback((element: HTMLElement | null) => setSpreadAnchor(element), []);
   const layerRef = useCallback((element: HTMLElement | null) => setLayerElement(element), []);
 
   // The name goes on the anchor either way: a property the browser does not know costs nothing in an
@@ -159,11 +200,15 @@ export default function useAnchorPosition(options: AnchorPositionOptions = {}): 
   if (css) {
     return {
       css,
+      // Whatever the browser settled on, or the requested side while nobody has asked which it was.
+      side: usedSide ?? side,
       anchorProps,
       layerProps: {
+        // Nothing to measure the layer for unless the used side is being read off it.
+        ...(trackSide ? { ref: layerRef } : {}),
         position: 'fixed',
         positionArea: areaFor(side, align),
-        ...(flip ? { positionTryFallbacks: flipFor(side) } : {}),
+        ...(flip ? { positionTryFallbacks: fallbacksFor(side) } : {}),
         ...(matchWidth ? { minWidth: 'anchor-size(width)' as const } : {}),
         ...(offset ? { [offsetProp[side]]: offset } : {}),
         style: { positionAnchor: anchorName },
@@ -173,6 +218,8 @@ export default function useAnchorPosition(options: AnchorPositionOptions = {}): 
 
   return {
     css,
+    // The fallback flips in the model, so its side costs nothing and needs no `trackSide`.
+    side: measured?.side ?? side,
     anchorProps,
     layerProps: {
       ref: layerRef,
