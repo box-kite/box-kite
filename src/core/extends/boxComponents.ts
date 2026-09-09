@@ -32,6 +32,42 @@ const boxComponents = {
   span: {
     styles: { display: 'inline-block' },
   },
+  // The `role="dialog"` panel. It carries the UA stylesheet's `[popover]` look underneath it — a border,
+  // padding and the system colours — so every one of those is declared here rather than inherited.
+  popover: {
+    styles: {
+      width: 'fit-content',
+      p: 4,
+      b: 1,
+      borderRadius: 2,
+      bgColor: 'white',
+      color: 'gray-900',
+      borderColor: 'gray-300',
+      shadow: 'medium',
+      overflow: 'auto',
+      theme: {
+        dark: { bgColor: 'gray-800', borderColor: 'gray-700', color: 'gray-100' },
+      },
+      // The panel is displayed when it opens — from `display: none` on the platform path, by mounting on
+      // the other — and both are a first style resolution, which is the moment `@starting-style` names.
+      startingStyle: { opacity: 0, translateY: -1 },
+    },
+    variants: {
+      // The exit, on the top-layer path only, where the panel is hidden rather than unmounted: losing
+      // `:popover-open` *is* the exit, and `allow-discrete` holds `display` back until it has run. Every
+      // Box already transitions `all`, and `all` carries `display` and `overlay` too (measured) — so this
+      // is one prop rather than a `<Presence>`. Off on the fallback path, where the panel really unmounts
+      // and `:popover-open` would never match, leaving the rule to hide it permanently.
+      // `display: none` is declared here rather than left to the UA stylesheet's own
+      // `[popover]:not(:popover-open)` rule, because any author rule outranks that one — and every Box
+      // carries `display: block`, so without this a closed panel stays laid out over the page. Measured:
+      // it is the one thing the test environment cannot see, since it has no UA popover styles either.
+      topLayer: {
+        transitionBehavior: 'allow-discrete',
+        not: { open: { opacity: 0, translateY: -1, display: 'none' } },
+      },
+    },
+  },
   // The `role="tooltip"` bubble. Inverted against the page on purpose: a tooltip is a temporary
   // overlay and has to read as one at a glance, whichever theme is underneath it.
   tooltip: {

@@ -20,6 +20,7 @@ import * as form from '../dist/components/form.mjs';
 import * as grid from '../dist/components/grid.mjs';
 import * as icon from '../dist/components/icon.mjs';
 import * as overlay from '../dist/components/overlay.mjs';
+import * as popover from '../dist/components/popover.mjs';
 import * as presence from '../dist/components/presence.mjs';
 import * as radioButton from '../dist/components/radioButton.mjs';
 import * as radioGroup from '../dist/components/radioGroup.mjs';
@@ -49,6 +50,7 @@ console.log(
   grid,
   icon,
   overlay,
+  popover,
   presence,
   radioButton,
   radioGroup,

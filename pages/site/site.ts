@@ -173,6 +173,12 @@ export const siteRoutes = [
       'A description that appears on hover and on focus, wired to its trigger with aria-describedby — the APG tooltip, WCAG 1.4.13 rules included.',
   },
   {
+    path: '/popover',
+    name: 'Popover',
+    description:
+      "A panel anchored to its trigger on the platform's Popover API: top layer, light dismiss and focus return, with no portal and no z-index.",
+  },
+  {
     path: '/overlay',
     name: 'Overlay',
     description:

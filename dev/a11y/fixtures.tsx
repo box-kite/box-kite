@@ -11,6 +11,7 @@ import Form from '../../src/components/form';
 import Grid from '../../src/components/grid';
 import Icon from '../../src/components/icon';
 import Overlay from '../../src/components/overlay';
+import Popover from '../../src/components/popover';
 import RadioButton from '../../src/components/radioButton';
 import RadioGroup from '../../src/components/radioGroup';
 import Select from '../../src/components/select';
@@ -293,6 +294,14 @@ export const fixtures: A11yFixture[] = [
     // and the pattern belongs to whatever is rendered into it.
     name: 'Overlay',
     render: () => <Overlay>Anything, anywhere</Overlay>,
+  },
+  {
+    name: 'Popover (open)',
+    render: () => (
+      <Popover label="Filters" defaultOpen trigger={(trigger) => <Button {...trigger}>Filters</Button>}>
+        <Checkbox label="Only mine" />
+      </Popover>
+    ),
   },
   {
     name: 'DataGrid',

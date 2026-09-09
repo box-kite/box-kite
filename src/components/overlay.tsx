@@ -66,8 +66,10 @@ type Props = OverlayProps & Omit<BoxProps, 'flip'>;
  * layer given a role it does not implement is worse than one with none.
  * @a11y The layer is portalled out of the subtree it was declared in, so it carries the direction it was
  * read in as a `dir` of its own — a container hanging off the body inherits nothing.
- * @a11y It renders where it is declared in the React tree, so the DOM order a screen reader reads and
- * the tab order both follow the markup rather than the portal.
+ * @a11y It is declared where it is used but rendered into a container at the end of `<body>`, so the DOM
+ * order a screen reader reads and the tab order both follow the *portal*, not the markup: whatever a
+ * layer needs said about its place in the page has to be said with `aria-controls`, `aria-owns` or a
+ * managed focus. `Popover` is the way out of that — a top-layer element stays where it was declared.
  */
 function OverlayImpl(props: Props, ref: Ref<HTMLDivElement>) {
   const {

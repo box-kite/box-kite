@@ -50,6 +50,7 @@ export const CLIENT_ONLY_COMPONENTS = [
   'dropdown',
   'form',
   'overlay',
+  'popover',
   'presence',
   'radioGroup',
   'select',

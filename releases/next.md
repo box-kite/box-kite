@@ -14,6 +14,7 @@ The package now carries instructions for the agent writing the code, the documen
 - **[A floating layer is six props, and no JavaScript](#a-floating-layer-is-six-props-and-no-javascript)** — CSS anchor positioning: name an anchor, say which cell of the grid around it to sit in, and let the browser flip the layer when it does not fit.
 - **[One hook places a floating layer](#one-hook-places-a-floating-layer-and-a-length-can-come-off-the-anchor)** — `useAnchorPosition` from `@box-kite/react/anchor`, plus `anchor-size()` on every sizing prop and `anchor()` on every inset, so a popup matches its trigger with nothing measured.
 - **[Every popup in the library is placed by the browser](#every-popup-in-the-library-is-placed-by-the-browser)** — `Overlay`, `Tooltip`, the `Dropdown` popup and the DataGrid column menu stand on that hook, three home-grown flip heuristics are gone, and one `side`/`align`/`offset`/`flip` vocabulary replaces the transforms they took.
+- **[A popover is a browser feature now, not a portal](#a-popover-is-a-browser-feature-now-not-a-portal)** — `<Popover>` on the platform Popover API: the top layer, light dismiss and focus return are the browser's, so there is no portal and no z-index — and it is 3.46 KB gz against Radix Popover's 23.54.
 
 ## The package tells an agent how to use it
 
@@ -75,7 +76,7 @@ cp node_modules/@box-kite/react/.cursor/rules/box-kite.mdc .cursor/rules/
 curl -O https://www.box-kite.dev/box-kite.mdc   # or without the package installed
 ```
 
-The skill is **shorter than the file it replaces and says more**. Its body is the four facts a model's priors get wrong, the twenty-seven rules, a divider table measured from the engine — `p={4}` is `padding: 1rem` and `b={4}` is `border-width: 4px`, the same number twice — the deprecations, and a table of contents. The depth moved into four references it loads only when a question needs one: `styling.md` (every prop by category, the six kinds of nesting, the theme), `components.md` (which component replaces which `<Box tag>`, and the Dropdown, Select and DataGrid), `extending.md` (`Box.extend()` and `Box.components()`) and `patterns.md` (server rendering, the behaviour hooks, portals, form controls, the tooltip). A skill's body loads in full every time it is used, so what an agent pays for on a `p={4}` question dropped from 49 KB to 21 KB.
+The skill is **shorter than the file it replaces and says more**. Its body is the four facts a model's priors get wrong, the twenty-nine rules, a divider table measured from the engine — `p={4}` is `padding: 1rem` and `b={4}` is `border-width: 4px`, the same number twice — the deprecations, and a table of contents. The depth moved into four references it loads only when a question needs one: `styling.md` (every prop by category, the six kinds of nesting, the theme), `components.md` (which component replaces which `<Box tag>`, and the Dropdown, Select and DataGrid), `extending.md` (`Box.extend()` and `Box.components()`) and `patterns.md` (server rendering, the behaviour hooks, portals, form controls, the tooltip). A skill's body loads in full every time it is used, so what an agent pays for on a `p={4}` question dropped from 49 KB to 21 KB.
 
 All three files are generated from the sources the library is built from — the rules file, the prop reference, the lead block of `AGENTS.md`, the `@deprecated` tags — and CI fails if one has been edited by hand instead of its source. The docs site serves the first two at [skill.md](https://www.box-kite.dev/skill.md) and [box-kite.mdc](https://www.box-kite.dev/box-kite.mdc), generated the same way, for an agent that can fetch a URL but not run a command; `llms.txt` lists both.
 
@@ -200,10 +201,36 @@ The hook above is what the pre-built layers use now. `Overlay` is `useAnchorPosi
 
 Four things worth knowing, all measured in Chrome 152:
 
-- **The portal stays, and it is not about clipping.** `position: fixed` already escapes every `overflow: hidden` ancestor; what it does not escape is a *transformed* ancestor (a fixed element's containing block) or the page's stacking order. That is what the portal is for, and it composes with anchor positioning because an `anchor-name` is not scoped to a subtree.
-- **A flip needs three candidates, not one.** A candidate position has to fit on *both* axes, so a lone `flip-block` does nothing at all for a layer that overflows the *cross* axis — the browser leaves it pressed against the edge of the viewport. `flip` offers the side's own axis, the alignment's, and both, in that order, which is what makes a column menu aligned to its button's end mirror to the other end near the edge of the page instead of running off it.
-- **Knowing which side the browser chose costs the entrance.** `Overlay`'s `onSideChange` reads the *used* `position-area`, and that read is the style resolution `@starting-style` computes its before-change style from — so a class depending on the answer always lands after the entrance has been decided. An exit runs long afterwards and can use it, which is why `dropdown.items` keeps `closedUp` and has no `up`.
+- **The portal stays, and it is not about clipping.** `position: fixed` already escapes every `overflow: hidden` ancestor; what it does not escape is a _transformed_ ancestor (a fixed element's containing block) or the page's stacking order. That is what the portal is for, and it composes with anchor positioning because an `anchor-name` is not scoped to a subtree.
+- **A flip needs three candidates, not one.** A candidate position has to fit on _both_ axes, so a lone `flip-block` does nothing at all for a layer that overflows the _cross_ axis — the browser leaves it pressed against the edge of the viewport. `flip` offers the side's own axis, the alignment's, and both, in that order, which is what makes a column menu aligned to its button's end mirror to the other end near the edge of the page instead of running off it.
+- **Knowing which side the browser chose costs the entrance.** `Overlay`'s `onSideChange` reads the _used_ `position-area`, and that read is the style resolution `@starting-style` computes its before-change style from — so a class depending on the answer always lands after the entrance has been decided. An exit runs long afterwards and can use it, which is why `dropdown.items` keeps `closedUp` and has no `up`.
 - **A used `position-area` is not the value that went in.** A `span-all` half is dropped (`block-end span-all` reads back `block-end`) and a value naming both axes comes back in the `start`/`end` shorthand, where position names the axis rather than a keyword: `block-end span-inline-end` reads back `end span-end`, and `start span-end` once it has flipped.
+
+## A popover is a browser feature now, not a portal
+
+Every floating panel in React has been the same pile of workarounds: a portal so it escapes `overflow: hidden`, a z-index so it lands on top, a click-outside listener, an Escape listener, and code to put focus back. The browser owns all five now, and `<Popover>` is what that looks like:
+
+```tsx
+import Popover from '@box-kite/react/components/popover';
+
+<Popover label="Filters" trigger={(t) => <Button {...t}>Filters</Button>}>
+  <Checkbox label="Only mine" />
+</Popover>;
+```
+
+That is the whole thing. The panel carries the `popover` attribute, so it is in the browser's **top layer**; the trigger carries `popovertarget`, so the browser toggles it; light dismiss and focus return come with them. The component supplies what the platform deliberately does not — the `role="dialog"`, the name, `aria-expanded`/`aria-haspopup`/`aria-controls` on the trigger, moving focus into the panel on open, and `onOpenChange(open, { reason })`.
+
+**There is no portal, and that is the point.** A top-layer element paints above every stacking context and outside every clipped ancestor — measured in Chrome 152 against a sibling with `z-index: 9999`, a `transform`ed ancestor and an `overflow: hidden` one, where `position: fixed` loses two of the three. Because nothing is moved, the panel keeps what it inherits where it was written: the theme around it, the custom properties, the text direction, and its place in the tab order — trigger, then panel, then the rest of the page. A portalled layer has none of that for free.
+
+It is also **smaller by a lot**. `@radix-ui/react-popover` is 23.54 KB gz with React external (it bundles its own positioning); `<Popover>` adds **3.46 KB gz** on top of a `Box` an app already has, and 1.03 KB where `Tooltip` or `Dropdown` already ship the placement and behaviour chunks it shares. Both figures measured, minified and gzipped, the same way.
+
+Three things worth knowing, all measured rather than read off the spec:
+
+- **The panel is always rendered**; closed is `display: none`, not unmounted. That is what lets the browser own showing and hiding — and it is what makes the exit a plain CSS transition rather than a `<Presence>`, since nothing leaves the DOM to be held back. The entrance is `startingStyle`, the exit is `transitionBehavior="allow-discrete"`, and both are already in the component's styles. Children that are expensive to build should be gated by the consumer: `{open ? <Heavy /> : null}`.
+- **A close cannot be refused.** The platform's `beforetoggle` is cancelable opening and not cancelable closing, so a controlled `<Popover open>` can decline to open but hears about a light dismiss only after it has happened. Keep `open` true and the component shows the panel again rather than arguing with the browser.
+- **The trigger has to be a button**, because `popovertarget` is what the browser reads off one — and handing the toggle over is what fixes the trap every hand-rolled popover falls into. Light dismiss closes on `pointerdown`, so a click handler of your own runs afterwards, reads "closed" and opens the panel straight back up; pressing the trigger of an open popover would never close it.
+
+Where the browser has no Popover API the panel falls back to an `Overlay` — a portal — with `useDismiss` and `useFocusReturn` supplying what the platform would have. The props are identical and so is the styling; what is lost is what the portal costs. Both paths are on [/popover](https://www.box-kite.dev/popover).
 
 ## Breaking changes
 

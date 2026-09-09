@@ -58,6 +58,7 @@ const PROVIDED = {
   Grid: "import Grid from '@box-kite/react/components/grid';",
   Icon: "import Icon from '@box-kite/react/components/icon';",
   Overlay: "import Overlay from '@box-kite/react/components/overlay';",
+  Popover: "import Popover from '@box-kite/react/components/popover';",
   Presence: "import Presence from '@box-kite/react/components/presence';",
   RadioButton: "import RadioButton from '@box-kite/react/components/radioButton';",
   RadioGroup: "import RadioGroup from '@box-kite/react/components/radioGroup';",

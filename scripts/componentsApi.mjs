@@ -52,6 +52,7 @@ const CONFIG = [
   },
   { name: 'Tooltip', route: '/tooltip', file: 'src/components/tooltip.tsx', props: 'Props', doc: 'Tooltip', styles: 'tooltip' },
   { name: 'Overlay', route: '/overlay', file: 'src/components/overlay.tsx', props: 'OverlayProps', doc: 'OverlayImpl' },
+  { name: 'Popover', route: '/popover', file: 'src/components/popover.tsx', props: 'Props', doc: 'PopoverImpl', styles: 'popover' },
   {
     name: 'Dropdown',
     route: '/dropdown',
