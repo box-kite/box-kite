@@ -1,6 +1,8 @@
 import { ArrowRight, Box as BoxIcon, Eye, Grid3X3, Layers, Maximize2, MousePointer, Move, Palette, Type } from 'lucide-react';
-import { ReactNode, useState } from 'react';
+import { ReactNode, Ref, useState } from 'react';
+import { useRovingFocus } from '../../src/a11y';
 import Box from '../../src/box';
+import Button from '../../src/components/button';
 import Checkbox from '../../src/components/checkbox';
 import Flex from '../../src/components/flex';
 import Grid from '../../src/components/grid';
@@ -28,6 +30,11 @@ type CategoryId = (typeof categories)[number]['id'];
 // Demo wrapper component
 function DemoCard({ title, description, children, code }: { title: string; description: string; children: ReactNode; code: string }) {
   const [showCode, setShowCode] = useState(false);
+  // Derived from the title rather than `useIdentifier`, for the reason the tabs below use static ids.
+  const codeId = `box-demo-${title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')}-code`;
 
   return (
     <Reveal>
@@ -60,24 +67,35 @@ function DemoCard({ title, description, children, code }: { title: string; descr
           ai="center"
           theme={{ dark: { bgColor: 'slate-900', borderColor: 'slate-700' }, light: { bgColor: 'slate-50', borderColor: 'slate-200' } }}
         >
-          <Box fontSize={11} fontWeight={500} theme={{ dark: { color: 'slate-500' }, light: { color: 'slate-400' } }} fontStyle="italic">
+          {/* slate-500 on slate-900 measured 3.74:1 at 11px, which is a contrast failure at any size. */}
+          <Box fontSize={11} fontWeight={500} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }} fontStyle="italic">
             {code}
           </Box>
-          <Box
+          {/* A real button, because a clickable Box is reachable by mouse only — the same shape as the
+              category switchers above it (bug #116), and there are forty of these cards. */}
+          {/* The colours are inside `theme`, not beside it: the `button` component declares its own
+              inside one, and a nested rule outranks a flat prop however late it is written. */}
+          <Button
             fontSize={11}
-            cursor="pointer"
-            theme={{ dark: { color: 'violet-400' }, light: { color: 'violet-600' } }}
+            fontWeight={400}
+            p={0}
             hover={{ textDecoration: 'underline' }}
-            props={{ onClick: () => setShowCode(!showCode), 'data-md': 'skip' }}
+            theme={{
+              dark: { bgColor: 'transparent', color: 'violet-400', hover: { bgColor: 'transparent' }, active: { bgColor: 'transparent' } },
+              light: { bgColor: 'transparent', color: 'violet-600', hover: { bgColor: 'transparent' }, active: { bgColor: 'transparent' } },
+            }}
+            onClick={() => setShowCode(!showCode)}
+            props={{ 'aria-expanded': showCode, 'aria-controls': codeId, 'data-md': 'skip' }}
           >
             {showCode ? 'Hide' : 'Show'} code
-          </Box>
+          </Button>
         </Flex>
         {/* Mounted only while it is open — every card on this page would otherwise run Prism over a
             block nobody asked to see — so the collapse needs `<Presence>` to have a node to run on. */}
         <Presence present={showCode}>
           {(presence) => (
             <Box
+              id={codeId}
               ref={presence.ref}
               props={presence.props}
               height={presence.present ? 'auto' : 0}
@@ -1143,6 +1161,22 @@ export default function BoxPage() {
   const [activeCategory, setActiveCategory] = useState<CategoryId>('spacing');
   const ActiveContent = categoryContent[activeCategory];
 
+  // APG tabs, because the nine categories used to be clickable `<div>`s: eight of the panels of the
+  // largest prop reference on the site could not be reached without a mouse (bug #116). Selection
+  // follows focus, which is APG's automatic activation — the panel is already rendered either way.
+  // Static ids, not `useIdentifier`: the site's prerendered HTML and its hydration disagree about
+  // `useId` (bug #94), and the tabs and the panel are different subtrees — so one kept the server's id
+  // while the other took the client's, and `aria-labelledby` pointed at nothing. There is one /box.
+  const panelId = 'box-category-panel';
+  const tabId = (id: CategoryId) => `box-category-${id}`;
+  const selectCategory = (index: number) => setActiveCategory(categories[index].id);
+  const roving = useRovingFocus({
+    count: categories.length,
+    orientation: 'horizontal',
+    activeIndex: categories.findIndex((cat) => cat.id === activeCategory),
+    onActiveIndexChange: (index) => selectCategory(index),
+  });
+
   return (
     <Box>
       <PageHeader
@@ -1167,13 +1201,17 @@ export default function BoxPage() {
               md={{ gridTemplateColumns: 5 }}
               lg={{ gridTemplateColumns: 9 }}
               gap={2}
+              props={{ role: 'tablist', 'aria-label': 'Property categories', onKeyDown: roving.onKeyDown }}
             >
-              {categories.map((cat) => {
+              {categories.map((cat, index) => {
                 const Icon = cat.icon;
                 const isActive = activeCategory === cat.id;
+                const { ref, tabIndex } = roving.itemProps(index);
+
                 return (
-                  <Flex
+                  <Button
                     key={cat.id}
+                    ref={ref as Ref<HTMLButtonElement>}
                     d="column"
                     ai="center"
                     gap={2}
@@ -1186,28 +1224,32 @@ export default function BoxPage() {
                       dark: {
                         bgColor: isActive ? 'violet-950' : 'slate-800',
                         borderColor: isActive ? 'violet-500' : 'slate-700',
+                        color: 'slate-200',
                       },
                       light: {
                         bgColor: isActive ? 'violet-50' : 'white',
                         borderColor: isActive ? 'violet-400' : 'slate-200',
+                        color: 'slate-800',
                       },
                     }}
                     hover={{ borderColor: 'violet-500', scale: 1.02 }}
                     active={{ scale: 0.98 }}
-                    props={{ onClick: () => setActiveCategory(cat.id) }}
+                    onClick={() => selectCategory(index)}
+                    id={tabId(cat.id)}
+                    props={{ role: 'tab', tabIndex, 'aria-selected': isActive, 'aria-controls': panelId }}
                   >
                     <Icon size={20} />
                     <Box fontSize={11} fontWeight={500} textAlign="center">
                       {cat.name}
                     </Box>
-                  </Flex>
+                  </Button>
                 );
               })}
             </Grid>
           </Box>
 
           {/* Active Category Content */}
-          <Box>
+          <Box id={panelId} props={{ role: 'tabpanel', 'aria-labelledby': tabId(activeCategory), tabIndex: 0 }}>
             <Flex ai="center" gap={2} mb={4}>
               <Box fontSize={14} fontWeight={600} theme={{ dark: { color: 'slate-300' }, light: { color: 'slate-700' } }}>
                 {categories.find((c) => c.id === activeCategory)?.name} Properties

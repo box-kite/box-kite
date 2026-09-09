@@ -1,0 +1,67 @@
+{
+  "name": "Overlay",
+  "route": "/overlay",
+  "import": "import Overlay from '@box-kite/react/components/overlay';",
+  "description": "A floating layer, rendered into the portal container at the place it is declared: it measures where it sits, then renders its children into `#box-kite-portal` translated to that spot, so they escape `overflow: hidden` and every clipped ancestor. It owns no open state, no ARIA and no dismissal — a layer is not a pattern, and `Tooltip`, `Dropdown` and the DataGrid menu each need a different one. (This was called `Tooltip` until A3, which is the one thing it is not.)",
+  "pattern": null,
+  "props": [
+    {
+      "name": "onPositionChange",
+      "type": "?(position: { top: number; left: number; windowScrollX: number; windowScrollY: number }): void;",
+      "required": false,
+      "default": null,
+      "description": "Fires whenever the layer is repositioned, with the page coordinates it was moved to."
+    },
+    {
+      "name": "adjustTranslateX",
+      "type": "string",
+      "required": false,
+      "default": "'0px'",
+      "description": "Nudge the layer along the inline axis, as a CSS length."
+    },
+    {
+      "name": "adjustTranslateY",
+      "type": "string",
+      "required": false,
+      "default": "'0px'",
+      "description": "Nudge the layer along the block axis, as a CSS length."
+    },
+    {
+      "name": "anchor",
+      "type": "ElementLike",
+      "required": false,
+      "default": null,
+      "description": "Measure this element instead of the layer's own placeholder — right when the layer belongs to an element next to it rather than to the spot it was declared in. The placeholder is a real box: inside a flex row it becomes a flex item, so opening the layer shifts everything after it by one `gap`."
+    },
+    {
+      "name": "anchorSide",
+      "type": "'top' | 'bottom'",
+      "required": false,
+      "default": "'top'",
+      "description": "Which edge of the anchor the layer starts from. Default `'top'`."
+    },
+    {
+      "name": "contentRef",
+      "type": "Ref<HTMLDivElement>",
+      "required": false,
+      "default": null,
+      "description": "The content Box, which is the one that animates. `ref` is the positioning wrapper, whose transform follows the anchor and which therefore transitions nothing on purpose — so a `<Presence>` measuring an exit has to reach past it."
+    },
+    {
+      "name": "matchWidth",
+      "type": "boolean",
+      "required": false,
+      "default": "true",
+      "description": "Whether the layer takes the measured width of the anchor. Default true, so a dropdown popup lines up with its trigger; a tooltip sizes to its own content and turns it off."
+    }
+  ],
+  "parts": [],
+  "keyboard": [],
+  "a11y": [
+    "No role, no `aria-*` and no focus handling: whatever renders a layer owns the pattern, and a layer given a role it does not implement is worse than one with none.",
+    "The layer is portalled out of the subtree it was declared in, so it carries the direction it was measured in as a `dir` of its own — a container hanging off the body inherits nothing.",
+    "It renders where it is declared in the React tree, so the DOM order a screen reader reads and the tab order both follow the markup rather than the portal."
+  ],
+  "axe": { "fixtures": ["Overlay"], "knownViolations": [] },
+  "styleTree": []
+}

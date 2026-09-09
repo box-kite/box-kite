@@ -13,6 +13,7 @@ import Switch from '../../src/components/switch';
 import Textbox from '../../src/components/textbox';
 import Tooltip from '../../src/components/tooltip';
 import Code from '../components/code';
+import Mono from '../components/mono';
 import PageHeader from '../components/pageHeader';
 import Reveal from '../components/reveal';
 import useTableOfContents from '../hooks/useTableOfContents';
@@ -323,21 +324,6 @@ function Bullet({ children }: { children: ReactNode }) {
       <Box width={1} height={1} borderRadius={10} bgColor="indigo-400" />
       <Box flex1>{children}</Box>
     </Flex>
-  );
-}
-
-function Mono({ children }: { children: ReactNode }) {
-  return (
-    <Box
-      tag="code"
-      display="inline"
-      px={1}
-      borderRadius={1}
-      fontSize={13}
-      theme={{ dark: { bgColor: 'slate-800', color: 'slate-200' }, light: { bgColor: 'slate-100', color: 'slate-800' } }}
-    >
-      {children}
-    </Box>
   );
 }
 

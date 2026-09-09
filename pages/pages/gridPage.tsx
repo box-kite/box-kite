@@ -1,12 +1,17 @@
 import { LayoutGrid } from 'lucide-react';
+import gridApi from '../../api/components/grid.json';
 import Box from '../../src/box';
 import Flex from '../../src/components/flex';
 import Grid from '../../src/components/grid';
+import ApiReference from '../components/apiReference';
 import Code from '../components/code';
 import PageHeader from '../components/pageHeader';
 import Reveal from '../components/reveal';
+import useTableOfContents from '../hooks/useTableOfContents';
+import { apiSections } from '../site/componentApi';
 
 export default function GridPage() {
+  useTableOfContents([...apiSections(gridApi)]);
   return (
     <Box>
       <PageHeader icon={LayoutGrid} title="Grid" description="A shortcut component for display: grid with powerful layout features." />
@@ -83,6 +88,7 @@ export default function GridPage() {
               </Box>
             </Grid>
           </Code>
+          <ApiReference api={gridApi} />
         </Flex>
       </Reveal>
     </Box>

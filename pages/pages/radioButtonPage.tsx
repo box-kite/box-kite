@@ -1,14 +1,19 @@
 import { Circle } from 'lucide-react';
 import { ReactNode, useState } from 'react';
+import radioButtonApi from '../../api/components/radiobutton.json';
+import radioGroupApi from '../../api/components/radiogroup.json';
 import Box from '../../src/box';
 import Flex from '../../src/components/flex';
 import RadioButton from '../../src/components/radioButton';
 import RadioGroup, { RadioGroupReason } from '../../src/components/radioGroup';
 import { H2, Span } from '../../src/components/semantics';
+import ApiReference from '../components/apiReference';
 import Code from '../components/code';
+import Mono from '../components/mono';
 import PageHeader from '../components/pageHeader';
 import Reveal from '../components/reveal';
 import useTableOfContents from '../hooks/useTableOfContents';
+import { apiSections } from '../site/componentApi';
 
 export default function RadioButtonPage() {
   useTableOfContents(sidebarLinks);
@@ -61,10 +66,6 @@ import RadioButton from '@box-kite/react/components/radioButton';`}
               it; a <Mono>tabIndex</Mono> of ours would only fight the platform. The arrow keys are the half worth owning, and they select
               as they move, which is what APG asks of a radio group and what distinguishes it from a listbox.
             </Box>
-          </Section>
-
-          <Section id="keyboard" title="Keyboard">
-            <KeyTable />
           </Section>
 
           <Code
@@ -168,6 +169,9 @@ const [plan, setPlan] = useState<string | undefined>('free');
               <RadioButton clean name="clean-demo" value="pro" label="Pro" />
             </Flex>
           </Code>
+          <ApiReference api={radioButtonApi} />
+
+          <ApiReference api={radioGroupApi} />
         </Flex>
       </Reveal>
     </Box>
@@ -177,78 +181,15 @@ const [plan, setPlan] = useState<string | undefined>('free');
 const sidebarLinks = [
   { id: 'group', label: 'A group' },
   { id: 'why', label: 'What the group is for' },
-  { id: 'keyboard', label: 'Keyboard' },
   { id: 'orientation', label: 'Horizontal' },
   { id: 'controlled', label: 'Controlled' },
   { id: 'single', label: 'One on its own' },
   { id: 'label', label: 'The label' },
   { id: 'disabled', label: 'Disabled' },
   { id: 'clean', label: 'Clean' },
-] as const;
-
-const interactions: { input: string; result: string }[] = [
-  { input: 'Tab', result: 'Enters the group once, landing on the checked option — or the first, when none is checked.' },
-  { input: 'Down / Right', result: 'Next option, selecting it as focus arrives. Wraps to the first.' },
-  { input: 'Up / Left', result: 'Previous option, same. Wraps to the last.' },
-  { input: 'Space', result: 'Selects the focused option (the platform supplies this one).' },
-  { input: 'Tab, again', result: 'Leaves the group entirely — a radio set is one stop, not one per option.' },
-  { input: 'A disabled option', result: 'Skipped by the arrows, never landed on.' },
+  ...apiSections(radioButtonApi),
+  ...apiSections(radioGroupApi),
 ];
-
-function KeyTable() {
-  return (
-    <Box tag="table" width="fit" css={{ borderCollapse: 'collapse' }}>
-      <Box tag="thead">
-        <Box tag="tr">
-          <HeadCell>Key</HeadCell>
-          <HeadCell>Result</HeadCell>
-        </Box>
-      </Box>
-      <Box tag="tbody">
-        {interactions.map((row) => (
-          <Box tag="tr" key={row.input}>
-            <Cell>
-              <Mono>{row.input}</Mono>
-            </Cell>
-            <Cell>{row.result}</Cell>
-          </Box>
-        ))}
-      </Box>
-    </Box>
-  );
-}
-
-function HeadCell({ children }: { children: ReactNode }) {
-  return (
-    <Box
-      tag="th"
-      textAlign="left"
-      fontSize={13}
-      fontWeight={600}
-      py={2}
-      pr={6}
-      bb={1}
-      theme={{ dark: { color: 'slate-300', borderColor: 'slate-700' }, light: { color: 'slate-700', borderColor: 'slate-200' } }}
-    >
-      {children}
-    </Box>
-  );
-}
-
-function Cell({ children }: { children: ReactNode }) {
-  return (
-    <Box
-      tag="td"
-      fontSize={14}
-      py={2}
-      pr={6}
-      bb={1}
-      theme={{ dark: { color: 'slate-400', borderColor: 'slate-800' }, light: { color: 'slate-600', borderColor: 'slate-100' } }}
-    >
-      {children}
-    </Box>
-  );
-}
 
 function Section({ id, title, children }: { id: string; title: string; children: ReactNode }) {
   return (
@@ -259,21 +200,6 @@ function Section({ id, title, children }: { id: string; title: string; children:
       <Box fontSize={15} lineHeight={26} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
         {children}
       </Box>
-    </Box>
-  );
-}
-
-function Mono({ children }: { children: ReactNode }) {
-  return (
-    <Box
-      tag="code"
-      display="inline"
-      px={1}
-      borderRadius={1}
-      fontSize={13}
-      theme={{ dark: { bgColor: 'slate-800', color: 'slate-200' }, light: { bgColor: 'slate-100', color: 'slate-800' } }}
-    >
-      {children}
     </Box>
   );
 }

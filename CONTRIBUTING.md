@@ -57,7 +57,7 @@ box-kite/
 │   ├── ssg.ts                    # Server-side rendering support (entry point)
 │   │
 │   ├── core/                     # Core styling engine — ZERO react imports (enforced)
-│   │   ├── boxStyles.ts          # CSS property definitions (212 props)
+│   │   ├── boxStyles.ts          # CSS property definitions (215 props)
 │   │   ├── boxStylesFormatters.ts # Value formatters (px, rem, etc.)
 │   │   ├── variables.ts          # Where a value becomes a variable: the registry, bgImages, shadows
 │   │   ├── palette.ts            # Tailwind's OKLCH palette (26 families) + the `token/alpha` grammar

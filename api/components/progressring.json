@@ -1,0 +1,37 @@
+{
+  "name": "ProgressRing",
+  "route": "/charts",
+  "import": "import { ProgressRing } from '@box-kite/react/components/chart';",
+  "description": "A circular progress arc: one value from 0 to 1, drawn as the filled part of a ring over its own track.",
+  "pattern": null,
+  "props": [
+    {
+      "name": "value",
+      "type": "number",
+      "required": true,
+      "default": null,
+      "description": "How full the arc is, from 0 to 1. Rounded to half a percent — see `ChartUtils.FRACTION_STEP`."
+    },
+    {
+      "name": "thickness",
+      "type": "number",
+      "required": false,
+      "default": "10",
+      "description": "The width of the ring in view units, out of the 100 the box is wide."
+    },
+    {
+      "name": "trackOpacity",
+      "type": "NonNullable<BoxStyleProps['strokeOpacity']>",
+      "required": false,
+      "default": "0.2",
+      "description": "The unfilled part of the ring, as the same colour faded — so the track follows the theme too."
+    }
+  ],
+  "parts": [],
+  "keyboard": [],
+  "a11y": [
+    "`aria-hidden` with no `label`, and a `label` makes it `role=\"img\"`. For progress a user is *waiting* on, put the value in text or in a `role=\"progressbar\"` of your own — an image role does not announce a change."
+  ],
+  "axe": { "fixtures": ["ProgressRing"], "knownViolations": [] },
+  "styleTree": []
+}

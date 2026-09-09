@@ -1,11 +1,14 @@
 import { TextCursor } from 'lucide-react';
+import textboxApi from '../../api/components/textbox.json';
 import Box from '../../src/box';
 import Flex from '../../src/components/flex';
 import Textbox from '../../src/components/textbox';
+import ApiReference from '../components/apiReference';
 import Code from '../components/code';
 import PageHeader from '../components/pageHeader';
 import Reveal from '../components/reveal';
 import useTableOfContents from '../hooks/useTableOfContents';
+import { apiSections } from '../site/componentApi';
 
 export default function TextboxPage() {
   useTableOfContents(sidebarLinks);
@@ -91,6 +94,7 @@ export default function TextboxPage() {
               theme={{ dark: { bgColor: 'slate-800', color: 'white' } }}
             />
           </Code>
+          <ApiReference api={textboxApi} />
         </Flex>
       </Reveal>
     </Box>
@@ -103,4 +107,5 @@ const sidebarLinks = [
   { id: 'states', label: 'States' },
   { id: 'sizes', label: 'Sizes' },
   { id: 'custom', label: 'Custom Styling' },
-] as const;
+  ...apiSections(textboxApi),
+];

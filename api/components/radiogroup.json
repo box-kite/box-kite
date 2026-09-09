@@ -1,0 +1,125 @@
+{
+  "name": "RadioGroup",
+  "route": "/radiobutton",
+  "import": "import RadioGroup from '@box-kite/react/components/radioGroup';",
+  "description": "The APG radio group: one label over a set of radios, the arrow keys moving between them and choosing as they go. Pattern: https://www.w3.org/WAI/ARIA/apg/patterns/radio/",
+  "pattern": "https://www.w3.org/WAI/ARIA/apg/patterns/radio/",
+  "props": [
+    {
+      "name": "label",
+      "type": "React.ReactNode",
+      "required": false,
+      "default": null,
+      "description": "The group's name, rendered above it and used as the group's accessible name."
+    },
+    {
+      "name": "name",
+      "type": "string",
+      "required": false,
+      "default": null,
+      "description": "The `name` every radio in the group submits under. Generated when left out."
+    },
+    {
+      "name": "value",
+      "type": "string",
+      "required": false,
+      "default": null,
+      "description": "Controlled selection. Leave it out and the group owns it."
+    },
+    {
+      "name": "defaultValue",
+      "type": "string",
+      "required": false,
+      "default": null,
+      "description": "The option chosen to begin with, when the group owns its value."
+    },
+    {
+      "name": "onChange",
+      "type": "ChangeHandler<string | undefined, RadioGroupReason>",
+      "required": false,
+      "default": null,
+      "description": "Fires with the new value and why it changed — `'click'` or `'keyboard'`. A group can also hold nothing, so the value is `string | undefined`."
+    },
+    {
+      "name": "orientation",
+      "type": "'vertical' | 'horizontal'",
+      "required": false,
+      "default": "'vertical'",
+      "description": "Which way the radios stack. Both arrow pairs navigate either way, as APG specifies."
+    },
+    {
+      "name": "children",
+      "type": "React.ReactNode",
+      "required": false,
+      "default": null,
+      "description": "The options: `RadioGroup.Item` elements, or anything else the group should hold."
+    }
+  ],
+  "parts": [
+    {
+      "name": "RadioGroup.Item",
+      "description": "A radio that reads its group: the shared `name`, whether it is selected, and what to report when it is chosen. Outside a `RadioGroup` it is a plain `RadioButton`.",
+      "props": [
+        {
+          "name": "value",
+          "type": "string",
+          "required": true,
+          "default": null,
+          "description": "What this radio submits, and what the group reports when it is chosen."
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "Only for an item rendered outside a group — inside one, the group supplies the name."
+        },
+        {
+          "name": "label",
+          "type": "React.ReactNode",
+          "required": false,
+          "default": null,
+          "description": "The text beside the radio, rendered inside a label that wraps the input."
+        },
+        {
+          "name": "labelProps",
+          "type": "BoxProps<'label'>",
+          "required": false,
+          "default": null,
+          "description": "Styles for the wrapping `<label>`: the row's layout, not the radio's own appearance."
+        },
+        {
+          "name": "props",
+          "type": "BoxTagProps<'input'>",
+          "required": false,
+          "default": null,
+          "description": "Attributes for the `<input>` itself. `type`, `name` and `checked` are the group's."
+        },
+        {
+          "name": "ref",
+          "type": "Ref<HTMLInputElement>",
+          "required": false,
+          "default": null,
+          "description": "The `<input>` element, for a caller that has to focus or measure this option."
+        }
+      ]
+    }
+  ],
+  "keyboard": [
+    {
+      "mode": null,
+      "keys": "Tab",
+      "action": "Enters the group once, landing on the chosen option — or on the first, when none is chosen. Tab again leaves the group entirely."
+    },
+    { "mode": null, "keys": "Down / Right", "action": "The next option, choosing it as focus arrives, wrapping to the first." },
+    { "mode": null, "keys": "Up / Left", "action": "The previous option, the same way, wrapping to the last." },
+    { "mode": null, "keys": "Space", "action": "Chooses the focused option. The platform supplies this one." }
+  ],
+  "a11y": [
+    "`role=\"radiogroup\"`, named by its own `label` through `aria-labelledby` — radios with nothing over them are unrelated controls to a screen reader.",
+    "`aria-orientation` follows `orientation`, and every item shares one generated `name`, so the set submits as one field.",
+    "The tab order is deliberately the platform's: a native radio set is already one tab stop with a roving tabindex, which a `tabIndex` of ours would fight."
+  ],
+  "axe": { "fixtures": ["RadioGroup"], "knownViolations": [] },
+  "styleTree": []
+}

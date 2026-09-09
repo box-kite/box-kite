@@ -1,5 +1,6 @@
 import { Loader2, Sparkles } from 'lucide-react';
 import { ReactNode, useState } from 'react';
+import presenceApi from '../../api/components/presence.json';
 import Box from '../../src/box';
 import Button from '../../src/components/button';
 import Flex from '../../src/components/flex';
@@ -8,10 +9,13 @@ import Presence from '../../src/components/presence';
 import { H2 } from '../../src/components/semantics';
 import { Line, Path, Svg } from '../../src/components/svg';
 import Springs from '../../src/core/springs';
+import ApiReference from '../components/apiReference';
 import Code from '../components/code';
+import Mono from '../components/mono';
 import PageHeader from '../components/pageHeader';
 import Reveal from '../components/reveal';
 import useTableOfContents from '../hooks/useTableOfContents';
+import { apiSections } from '../site/componentApi';
 
 // Registered once, at module scope, the way `Box.extend()` is: registration is free — a sequence
 // reaches the stylesheet only when a rule names it, and then exactly once.
@@ -535,6 +539,7 @@ Box.configure({ transition: 'colors' });
 // Or nothing at all:
 Box.configure({ transition: false });`}
           />
+          <ApiReference api={presenceApi} />
         </Flex>
       </Reveal>
     </Box>
@@ -576,21 +581,6 @@ function Section({ id, title, children }: { id: string; title: string; children:
   );
 }
 
-function Mono({ children }: { children: ReactNode }) {
-  return (
-    <Box
-      tag="code"
-      display="inline"
-      px={1}
-      borderRadius={1}
-      fontSize={13}
-      theme={{ dark: { bgColor: 'slate-800', color: 'slate-200' }, light: { bgColor: 'slate-100', color: 'slate-800' } }}
-    >
-      {children}
-    </Box>
-  );
-}
-
 const sidebarLinks = [
   { id: 'presets', label: 'Four presets' },
   { id: 'reduced-motion', label: 'Reduced motion' },
@@ -607,4 +597,5 @@ const sidebarLinks = [
   { id: 'drawing', label: 'Animating any prop' },
   { id: 'server', label: 'On a server' },
   { id: 'off', label: 'Turning it off' },
+  ...apiSections(presenceApi),
 ];

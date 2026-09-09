@@ -1,15 +1,20 @@
 import { ChevronDown, Keyboard, ListTree, Tags } from 'lucide-react';
 import { ReactNode, useState } from 'react';
+import dropdownApi from '../../api/components/dropdown.json';
 import Box from '../../src/box';
 import Button from '../../src/components/button';
 import Dropdown from '../../src/components/dropdown';
 import Flex from '../../src/components/flex';
 import Select from '../../src/components/select';
 import { H2, H3 } from '../../src/components/semantics';
+import ApiReference from '../components/apiReference';
 import Code from '../components/code';
+import Mono from '../components/mono';
 import PageHeader from '../components/pageHeader';
 import Reveal from '../components/reveal';
 import useTableOfContents from '../hooks/useTableOfContents';
+import { TocEntry } from '../pageContext';
+import { apiSections } from '../site/componentApi';
 
 interface User {
   id: number;
@@ -76,21 +81,10 @@ export default function DropdownPage() {
               <Note icon={Keyboard} title="Searchable is the editable combobox">
                 With <Mono>isSearchable</Mono> the text field <em>is</em> the combobox — the role, the ARIA and anything you pass in{' '}
                 <Mono>props</Mono> live on the input, so nothing focusable sits inside anything else focusable. It is a different keyboard
-                map, in the second table below: the printable keys type instead of navigating, and only Down and Up reach the listbox.
+                map — the one under <Mono>With isSearchable</Mono> in the keyboard reference below: the printable keys type instead of
+                navigating, and only Down and Up reach the listbox.
               </Note>
             </Flex>
-            <Box mt={6}>
-              <H3 fontSize={15} fontWeight={600} mb={3} theme={{ dark: { color: 'slate-200' }, light: { color: 'slate-800' } }}>
-                Select-only — the default
-              </H3>
-              <KeyTable rows={interactions} />
-            </Box>
-            <Box mt={6}>
-              <H3 fontSize={15} fontWeight={600} mb={3} theme={{ dark: { color: 'slate-200' }, light: { color: 'slate-800' } }}>
-                Editable — with isSearchable
-              </H3>
-              <KeyTable rows={editableInteractions} />
-            </Box>
           </Section>
 
           <Code
@@ -352,13 +346,14 @@ declare module '@box-kite/core/types' {
               </Code>
             </Flex>
           </Box>
+          <ApiReference api={dropdownApi} />
         </Flex>
       </Reveal>
     </Box>
   );
 }
 
-const sidebarLinks = [
+const sidebarLinks: TocEntry[] = [
   { label: 'Dropdown', section: true },
   { id: 'basic', label: 'Basic' },
   { id: 'a11y', label: 'Keyboard and roles' },
@@ -376,70 +371,8 @@ const sidebarLinks = [
   { id: 'select-basic', label: 'Basic' },
   { id: 'select-display', label: 'Custom Display' },
   { id: 'select-multiple', label: 'Multiple + Search' },
-] as const;
-
-const interactions: { input: string; result: string }[] = [
-  { input: 'Down / Up (closed)', result: 'Opens, with the highlight on the selected option — or the first / last when nothing is chosen.' },
-  { input: 'Alt + Down (closed)', result: 'Opens without moving the highlight.' },
-  { input: 'Enter / Space (closed)', result: 'Opens. The browser own activation is suppressed, so it does not shut again.' },
-  { input: 'Home / End (closed)', result: 'Opens at the first or the last option.' },
-  { input: 'A printable character', result: 'Opens with the first option starting with it already highlighted.' },
-  { input: 'Down / Up (open)', result: 'Moves the highlight, wrapping at the ends and skipping disabled options.' },
-  { input: 'Home / End (open)', result: 'Jumps to the first or last option.' },
-  { input: 'Typing (open)', result: 'Typeahead. A longer buffer narrows; the same letter twice cycles through the options sharing it.' },
-  { input: 'Enter / Space (open)', result: 'Chooses the highlighted option and closes. In multiple mode it toggles and stays open.' },
-  { input: 'Alt + Up (open)', result: 'Chooses the highlighted option and closes.' },
-  { input: 'Escape', result: 'Closes, changing nothing. Focus never left the trigger, so nothing has to be restored.' },
-  { input: 'Tab (open)', result: 'Chooses the highlighted option, then moves on to the next control.' },
+  ...apiSections(dropdownApi),
 ];
-
-const editableInteractions: { input: string; result: string }[] = [
-  {
-    input: 'A printable character',
-    result: 'Types into the field, which opens the listbox and filters it. No typeahead — the field owns the keys.',
-  },
-  { input: 'Down / Up (closed)', result: 'Opens, with the highlight on the selected option — or the first / last when nothing is chosen.' },
-  { input: 'Alt + Down (closed)', result: 'Opens without highlighting anything.' },
-  { input: 'Down / Up (open)', result: 'Moves the highlight through what the filter left, wrapping and skipping disabled options.' },
-  {
-    input: 'Home / End, Left / Right',
-    result: 'Move the caret, and hand the highlight back to the field — no option is where you are any more.',
-  },
-  { input: 'Space', result: 'Types a space. Only Enter chooses in this mode.' },
-  {
-    input: 'Enter (open)',
-    result: 'Chooses the highlighted option and puts its text in the field. With nothing highlighted it does nothing.',
-  },
-  { input: 'Escape', result: 'Closes the listbox, keeping what was typed. Pressed again on a closed one, it clears the field.' },
-  { input: 'Tab (open)', result: 'Chooses the highlighted option, then moves on to the next control.' },
-  {
-    input: 'Clicking away',
-    result: 'Closes, and the field goes back to the value — a query left behind would describe a filter that is gone.',
-  },
-];
-
-function KeyTable({ rows }: { rows: { input: string; result: string }[] }) {
-  return (
-    <Box tag="table" width="fit" css={{ borderCollapse: 'collapse' }}>
-      <Box tag="thead">
-        <Box tag="tr">
-          <HeadCell>Key</HeadCell>
-          <HeadCell>What happens</HeadCell>
-        </Box>
-      </Box>
-      <Box tag="tbody">
-        {rows.map((row) => (
-          <Box tag="tr" key={row.input}>
-            <Cell>
-              <Mono>{row.input}</Mono>
-            </Cell>
-            <Cell>{row.result}</Cell>
-          </Box>
-        ))}
-      </Box>
-    </Box>
-  );
-}
 
 function Section({ id, title, children }: { id: string; title: string; children: ReactNode }) {
   return (
@@ -473,52 +406,5 @@ function Note({ icon: Icon, title, children }: { icon: typeof Tags; title: strin
         <Box fontSize={14}>{children}</Box>
       </Box>
     </Flex>
-  );
-}
-
-function HeadCell({ children }: { children: ReactNode }) {
-  return (
-    <Box
-      tag="th"
-      textAlign="left"
-      fontSize={13}
-      fontWeight={600}
-      py={2}
-      pr={6}
-      bb={1}
-      theme={{ dark: { color: 'slate-300', borderColor: 'slate-700' }, light: { color: 'slate-700', borderColor: 'slate-200' } }}
-    >
-      {children}
-    </Box>
-  );
-}
-
-function Cell({ children }: { children: ReactNode }) {
-  return (
-    <Box
-      tag="td"
-      fontSize={14}
-      py={2}
-      pr={6}
-      bb={1}
-      theme={{ dark: { color: 'slate-400', borderColor: 'slate-800' }, light: { color: 'slate-600', borderColor: 'slate-100' } }}
-    >
-      {children}
-    </Box>
-  );
-}
-
-function Mono({ children }: { children: ReactNode }) {
-  return (
-    <Box
-      tag="code"
-      display="inline"
-      px={1}
-      borderRadius={1}
-      fontSize={13}
-      theme={{ dark: { bgColor: 'slate-800', color: 'slate-200' }, light: { bgColor: 'slate-100', color: 'slate-800' } }}
-    >
-      {children}
-    </Box>
   );
 }

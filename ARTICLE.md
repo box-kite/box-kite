@@ -44,7 +44,7 @@ I didn't choose this path because Tailwind is wrong. I chose it because TypeScri
 
 ## The Anatomy of Box
 
-At the heart of the library is a single component called `Box`. It accepts 212 CSS properties as typed props and renders any HTML element you need.
+At the heart of the library is a single component called `Box`. It accepts 215 CSS properties as typed props and renders any HTML element you need.
 
 The simplest usage looks like this:
 
@@ -178,7 +178,7 @@ These are the numbers behind the library:
 - **Latest commit**: February 2026
 - **300** commits
 - **169** published versions on npm
-- **212** CSS properties
+- **215** CSS properties
 - **99** lines in the main Box component
 - **1,364** lines in the core style definitions
 - **17** semantic HTML wrappers

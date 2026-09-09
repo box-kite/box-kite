@@ -2,6 +2,7 @@ import { Bot, CheckCircle2, Code2, FileText, Lightbulb, MessageSquare, Rocket, S
 import Box from '../../src/box';
 import Flex from '../../src/components/flex';
 import Code from '../components/code';
+import Mono from '../components/mono';
 import PageHeader from '../components/pageHeader';
 import Reveal from '../components/reveal';
 import { SITE_URL } from '../site/site';
@@ -252,7 +253,7 @@ curl ${SITE_URL}/llms-full.txt # all of it in one file, for a tool that indexes 
             <FeatureItem
               icon={<Code2 size={18} />}
               title="Complete prop reference"
-              description="All 212 props with their CSS mappings and accepted values"
+              description="All 215 props with their CSS mappings and accepted values"
             />
             <FeatureItem
               icon={<Zap size={18} />}
@@ -331,21 +332,6 @@ curl ${SITE_URL}/llms-full.txt # all of it in one file, for a tool that indexes 
           </Box>
         </Flex>
       </Reveal>
-    </Box>
-  );
-}
-
-function Mono({ children }: { children: React.ReactNode }) {
-  return (
-    <Box
-      tag="code"
-      display="inline"
-      px={1}
-      borderRadius={1}
-      fontSize={13}
-      theme={{ dark: { bgColor: 'slate-800', color: 'slate-200' }, light: { bgColor: 'slate-100', color: 'slate-800' } }}
-    >
-      {children}
     </Box>
   );
 }

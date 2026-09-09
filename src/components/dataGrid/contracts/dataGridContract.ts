@@ -188,9 +188,13 @@ export interface GridDefinition<TRow> {
 export interface DataGridProps<TRow> {
   /** Component name for style resolution. Default: 'datagrid'. Set to a custom name to use a different component style tree. */
   component?: keyof ComponentsAndVariants;
+  /** The rows. Virtualization means the length is not what is rendered — ten thousand is fine. */
   data: TRow[];
+  /** Everything about the grid that is not the rows: the columns, the bars, the title, the row height. */
   def: GridDefinition<TRow>;
+  /** Show the loading sweep over the rows. The grid keeps whatever it is already showing underneath. */
   loading?: boolean;
+  /** Fires when rows are selected or deselected, with the keys affected and whether all are now selected. */
   onSelectionChange?: (event: SelectionChangeEvent<TRow>) => void;
   /** Controlled global filter value */
   globalFilterValue?: string;

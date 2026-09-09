@@ -1,12 +1,15 @@
 import { MousePointer2 } from 'lucide-react';
 import { useState } from 'react';
+import buttonApi from '../../api/components/button.json';
 import Box from '../../src/box';
 import Button from '../../src/components/button';
 import Flex from '../../src/components/flex';
+import ApiReference from '../components/apiReference';
 import Code from '../components/code';
 import PageHeader from '../components/pageHeader';
 import Reveal from '../components/reveal';
 import useTableOfContents from '../hooks/useTableOfContents';
+import { apiSections } from '../site/componentApi';
 
 export default function ButtonPage() {
   useTableOfContents(sidebarLinks);
@@ -81,6 +84,7 @@ export default function ButtonPage() {
               </Button>
             </Flex>
           </Code>
+          <ApiReference api={buttonApi} />
         </Flex>
       </Reveal>
     </Box>
@@ -93,4 +97,5 @@ const sidebarLinks = [
   { id: 'counter', label: 'With Counter' },
   { id: 'custom', label: 'Custom Styling' },
   { id: 'sizes', label: 'Sizes' },
-] as const;
+  ...apiSections(buttonApi),
+];

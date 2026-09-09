@@ -1,0 +1,30 @@
+{
+  "name": "Gauge",
+  "route": "/charts",
+  "import": "import { Gauge } from '@box-kite/react/components/chart';",
+  "description": "A `ProgressRing` that stops short of a full turn: `sweep` is how far round the dial goes and `start` where it begins, so a value reads as a needle position rather than as a proportion.",
+  "pattern": null,
+  "props": [
+    {
+      "name": "sweep",
+      "type": "number",
+      "required": false,
+      "default": "270",
+      "description": "How far round the dial goes, in degrees. Three quarters of a turn by default."
+    },
+    {
+      "name": "start",
+      "type": "number",
+      "required": false,
+      "default": "225",
+      "description": "Where it starts, in degrees clockwise from twelve o'clock. Bottom left by default."
+    }
+  ],
+  "parts": [],
+  "keyboard": [],
+  "a11y": [
+    "`aria-hidden` with no `label`, and a `label` makes it `role=\"img\"`. The value itself belongs in text: a dial's angle is not readable by anyone who cannot see it."
+  ],
+  "axe": { "fixtures": ["Gauge"], "knownViolations": [] },
+  "styleTree": []
+}

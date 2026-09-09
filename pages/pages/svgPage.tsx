@@ -6,6 +6,7 @@ import { H2 } from '../../src/components/semantics';
 // prettier-ignore
 import { Circle, ClipPath, Defs, Ellipse, G, Line, LinearGradient, Path, Polyline, Rect, Stop, Svg, SvgText } from '../../src/components/svg';
 import Code from '../components/code';
+import Mono from '../components/mono';
 import PageHeader from '../components/pageHeader';
 import Reveal from '../components/reveal';
 import useTableOfContents from '../hooks/useTableOfContents';
@@ -938,7 +939,7 @@ const elements: { name: string; element: string; attributes: string }[] = [
 function ElementTable() {
   return (
     <Box overflow="auto">
-      <Box tag="table" display="table" width="fit" css={{ borderCollapse: 'collapse' }}>
+      <Box tag="table" display="table" borderCollapse="collapse" width="fit">
         <Box tag="thead" display="table-header-group">
           <Box tag="tr" display="table-row">
             <HeadCell>Component</HeadCell>
@@ -965,7 +966,7 @@ function ElementTable() {
 function PropTable() {
   return (
     <Box overflow="auto">
-      <Box tag="table" display="table" width="fit" css={{ borderCollapse: 'collapse' }}>
+      <Box tag="table" display="table" borderCollapse="collapse" width="fit">
         <Box tag="thead" display="table-header-group">
           <Box tag="tr" display="table-row">
             <HeadCell>Prop</HeadCell>
@@ -1032,21 +1033,6 @@ function Section({ id, title, children }: { id: string; title: string; children:
       <Box fontSize={15} lineHeight={26} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
         {children}
       </Box>
-    </Box>
-  );
-}
-
-function Mono({ children }: { children: ReactNode }) {
-  return (
-    <Box
-      tag="code"
-      display="inline"
-      px={1}
-      borderRadius={1}
-      fontSize={13}
-      theme={{ dark: { bgColor: 'slate-800', color: 'slate-200' }, light: { bgColor: 'slate-100', color: 'slate-800' } }}
-    >
-      {children}
     </Box>
   );
 }

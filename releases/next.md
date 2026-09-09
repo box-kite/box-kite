@@ -2,13 +2,15 @@
 
 _Unreleased. A PR that changes what a consumer sees adds its section here — see CONTRIBUTING.md, "Release notes"._
 
-The package now carries instructions for the agent writing the code, the documentation site answers in markdown, and the same rules install as a skill in about forty-five coding agents — all of it generated from the sources the library is built from.
+The package now carries instructions for the agent writing the code, the documentation site answers in markdown, the same rules install as a skill in about forty-five coding agents, and every component page states its own props, keys and accessibility — all of it generated from the sources the library is built from.
 
 ## Highlights
 
 - **[The package tells an agent how to use it](#the-package-tells-an-agent-how-to-use-it)** — `AGENTS.md` and a `docs/` folder ship in the tarball, generated from the prop registry and the built chunks themselves.
 - **[Every docs page is also markdown](#every-docs-page-is-also-markdown)** — append `.md` to any address, or start at `llms.txt`, which indexes all of them and states the four facts a model's priors get wrong.
 - **[The rules install as a skill](#the-rules-install-as-a-skill)** — `npx skills add box-kite/box-kite` for about forty-five coding agents, a plugin marketplace for Claude Code, and a `.mdc` for Cursor.
+- **[Every component page states its own API](#every-component-page-states-its-own-api)** — props, keys, accessibility and the style tree, generated from each component's types and doc tags, so a table cannot go stale.
+- **[Three props for a table, and a list that shows its markers](#three-props-for-a-table-and-a-list-that-shows-its-markers)** — `borderCollapse`, `borderSpacing`, `tableLayout`, plus `display="list-item"` and the markers `listStyle` was missing.
 
 ## The package tells an agent how to use it
 
@@ -17,7 +19,7 @@ A coding agent has priors about a library this new, and they are wrong: the prop
 ```shell
 node_modules/@box-kite/react/
   AGENTS.md                the rules, and the block that argues with the model's priors
-  docs/props.md            all 212 props, the CSS each writes, and one measured example
+  docs/props.md            all 215 props, the CSS each writes, and one measured example
   docs/components.md       every component, its import, and whether it renders on a server
   docs/a11y.md             the behaviour hooks, for a pattern the library does not ship
   BOX_KITE_AI_CONTEXT.md   the long-form reference, as before
@@ -74,6 +76,41 @@ The skill is **shorter than the file it replaces and says more**. Its body is th
 
 All three files are generated from the sources the library is built from — the rules file, the prop reference, the lead block of `AGENTS.md`, the `@deprecated` tags — and CI fails if one has been edited by hand instead of its source. The docs site serves the first two at [skill.md](https://www.box-kite.dev/skill.md) and [box-kite.mdc](https://www.box-kite.dev/box-kite.mdc), generated the same way, for an agent that can fetch a URL but not run a command; `llms.txt` lists both.
 
+## Every component page states its own API
+
+Every component page on [box-kite.dev](https://www.box-kite.dev/) now ends in four sections — **props**, **keyboard**, **accessibility** and **style tree** — and not one of them is typed out by hand:
+
+- **Props** come from the component's own props interface: the name, the type as the source writes it, the default read out of the destructuring, and the description from its JSDoc — which is the same text an editor shows on hover. Only the props a component adds are listed; all 215 Box props apply too and stay on [/box](https://www.box-kite.dev/box).
+- **Keyboard** comes from `@keyboard` tags on the component, one per row. A component with two maps says which is which: the [Dropdown](https://www.box-kite.dev/dropdown) lists select-only and `isSearchable` separately, and the [DataGrid](https://www.box-kite.dev/datagrid) lists the column resizer apart from the grid.
+- **Accessibility** is the APG pattern it implements, the roles and ARIA it owns as `@a11y` lines, and what the axe sweep covered — by fixture name, so "swept" says which states were swept.
+- **Style tree** is read out of the component styles themselves: every node `Box.components()` can restyle, its variants, and what it extends.
+
+The point of generating it is the failure mode it removes. A keyboard table written beside a component is true on the day it is written; CI now fails when a documented prop has no prose, when a documented **key** is one no test presses, and when a component's page renders no reference at all — which is how four components turned out to be claiming keys that nothing exercised. They have keyboard tests now.
+
+```shell
+npm run docs:components   # write api/components/*.json from the components
+npm run check:components  # fail when the reference, the tests or a page have drifted
+```
+
+The markdown mirror carries all of it, so `curl box-kite.dev/switch.md` is the whole reference as tables.
+
+## Three props for a table, and a list that shows its markers
+
+`Box` is `display: block` whatever element it renders, which is right until the element brings its own layout — and then there was no prop to say so. The values arrived with the SVG work; the properties that make a table _look_ like a table did not:
+
+```tsx
+<Box tag="table" display="table" borderCollapse="collapse" tableLayout="fixed">
+  <Box tag="tbody" display="table-row-group">
+    <Box tag="tr" display="table-row">
+      <Box tag="td" display="table-cell" px={3}>Ada</Box>
+```
+
+- **`borderCollapse`** — `collapse` or `separate`, the value that makes a bordered table read as one grid.
+- **`borderSpacing`** — the gap between a `separate` table's cells, on the ÷4 spacing scale, so `borderSpacing={2}` is `0.5rem`.
+- **`tableLayout`** — `fixed` sizes a table from its own width and first row, so one long cell cannot widen its column.
+
+A list had the same gap from the other direction: `display` gained **`list-item`**, and `listStyle` the markers it was missing (`disc`, `circle`, `decimal` beside `square`), so a `<Ul>` built from Boxes shows bullets and keeps the list semantics Chrome derives from that display value.
+
 ## Breaking changes
 
 None.
@@ -82,4 +119,6 @@ None.
 
 <!-- One bullet per fix: **What was wrong.** What it does now. -->
 
+- **The docs site's own keyboard access, in the two places it was a clickable `<div>`.** The nine category switchers on [/box](https://www.box-kite.dev/box) — the largest prop reference on the site — could only be reached with a mouse, so eight of its nine panels were unreachable and a screen reader was told nothing about them. They are a `role="tablist"` of real buttons over the library's own `useRovingFocus` now, with arrow keys, Home/End and a `role="tabpanel"` that says which tab named it; the forty "Show code" toggles below them are buttons with `aria-expanded`. One caption on the same page also failed contrast at 3.74:1 and does not now.
+- **Every table on the docs site rendered as a stack of full-width blocks.** `display: block` on a `<Box tag="table">` costs the table its layout _and_ its semantics, and five pages had written their own copy of the same broken table. There is one shared table now, carrying the display values each element needs — and the props above are what let it stop reaching for the escape hatch to collapse its borders.
 - **Inline code in the prose of ten documentation pages was rendered as a block.** Each `<code>` took a line of its own, breaking the paragraph around it into stripes — the local helper was missing `display="inline"`, which is the trap the library's own rules warn about: a `Box` is `display: block` whatever element it renders. Nothing in the library changed; the pages read as paragraphs again. The same pages' tables also lost their last nine inline `style` attributes to `css={{ borderCollapse: 'collapse' }}`, which is what the escape hatch is for.

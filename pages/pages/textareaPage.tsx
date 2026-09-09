@@ -1,12 +1,17 @@
 import { AlignLeft } from 'lucide-react';
+import textareaApi from '../../api/components/textarea.json';
 import Box from '../../src/box';
 import Flex from '../../src/components/flex';
 import Textarea from '../../src/components/textarea';
+import ApiReference from '../components/apiReference';
 import Code from '../components/code';
 import PageHeader from '../components/pageHeader';
 import Reveal from '../components/reveal';
+import useTableOfContents from '../hooks/useTableOfContents';
+import { apiSections } from '../site/componentApi';
 
 export default function TextareaPage() {
+  useTableOfContents([...apiSections(textareaApi)]);
   return (
     <Box>
       <PageHeader icon={AlignLeft} title="Textarea" description="Use Textarea component to enter and edit multiline user data." />
@@ -22,6 +27,7 @@ export default function TextareaPage() {
           <Code label="Disabled Textarea" language="jsx" code='<Textarea disabled defaultValue="Disabled" />'>
             <Textarea disabled defaultValue="Disabled" />
           </Code>
+          <ApiReference api={textareaApi} />
         </Flex>
       </Reveal>
     </Box>

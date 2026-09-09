@@ -1,13 +1,17 @@
 import { ToggleLeft } from 'lucide-react';
 import { ReactNode, useState } from 'react';
+import switchApi from '../../api/components/switch.json';
 import Box from '../../src/box';
 import Flex from '../../src/components/flex';
 import { H2 } from '../../src/components/semantics';
 import Switch from '../../src/components/switch';
+import ApiReference from '../components/apiReference';
 import Code from '../components/code';
+import Mono from '../components/mono';
 import PageHeader from '../components/pageHeader';
 import Reveal from '../components/reveal';
 import useTableOfContents from '../hooks/useTableOfContents';
+import { apiSections } from '../site/componentApi';
 
 export default function SwitchPage() {
   useTableOfContents(sidebarLinks);
@@ -46,10 +50,6 @@ export default function SwitchPage() {
               The track and the thumb are one element and its <Mono>::before</Mono>. Nothing decorative is in the accessibility tree, and
               there is no second element to keep in sync with the first.
             </Box>
-          </Section>
-
-          <Section id="keyboard" title="Keyboard">
-            <KeyTable />
           </Section>
 
           <Code
@@ -100,6 +100,7 @@ export default function SwitchPage() {
               </Flex>
             </Box>
           </Section>
+          <ApiReference api={switchApi} />
         </Flex>
       </Reveal>
     </Box>
@@ -109,74 +110,10 @@ export default function SwitchPage() {
 const sidebarLinks = [
   { id: 'usage', label: 'Usage' },
   { id: 'why', label: 'Why it is an input' },
-  { id: 'keyboard', label: 'Keyboard' },
   { id: 'controlled', label: 'Controlled' },
   { id: 'styling', label: 'Styling' },
-] as const;
-
-const interactions: { input: string; result: string }[] = [
-  { input: 'Tab', result: 'Focuses the switch — it is one tab stop, like any other control.' },
-  { input: 'Space', result: 'Toggles it. The platform supplies this one.' },
-  {
-    input: 'Enter',
-    result: 'Toggles it too, and does not submit the surrounding form. APG lists Enter as optional; a bare checkbox ignores it.',
-  },
+  ...apiSections(switchApi),
 ];
-
-function KeyTable() {
-  return (
-    <Box tag="table" width="fit" css={{ borderCollapse: 'collapse' }}>
-      <Box tag="thead">
-        <Box tag="tr">
-          <HeadCell>Key</HeadCell>
-          <HeadCell>Result</HeadCell>
-        </Box>
-      </Box>
-      <Box tag="tbody">
-        {interactions.map((row) => (
-          <Box tag="tr" key={row.input}>
-            <Cell>
-              <Mono>{row.input}</Mono>
-            </Cell>
-            <Cell>{row.result}</Cell>
-          </Box>
-        ))}
-      </Box>
-    </Box>
-  );
-}
-
-function HeadCell({ children }: { children: ReactNode }) {
-  return (
-    <Box
-      tag="th"
-      textAlign="left"
-      fontSize={13}
-      fontWeight={600}
-      py={2}
-      pr={6}
-      bb={1}
-      theme={{ dark: { color: 'slate-300', borderColor: 'slate-700' }, light: { color: 'slate-700', borderColor: 'slate-200' } }}
-    >
-      {children}
-    </Box>
-  );
-}
-
-function Cell({ children }: { children: ReactNode }) {
-  return (
-    <Box
-      tag="td"
-      fontSize={14}
-      py={2}
-      pr={6}
-      bb={1}
-      theme={{ dark: { color: 'slate-400', borderColor: 'slate-800' }, light: { color: 'slate-600', borderColor: 'slate-100' } }}
-    >
-      {children}
-    </Box>
-  );
-}
 
 function Section({ id, title, children }: { id: string; title: string; children: ReactNode }) {
   return (
@@ -187,21 +124,6 @@ function Section({ id, title, children }: { id: string; title: string; children:
       <Box fontSize={15} lineHeight={26} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
         {children}
       </Box>
-    </Box>
-  );
-}
-
-function Mono({ children }: { children: ReactNode }) {
-  return (
-    <Box
-      tag="code"
-      display="inline"
-      px={1}
-      borderRadius={1}
-      fontSize={13}
-      theme={{ dark: { bgColor: 'slate-800', color: 'slate-200' }, light: { bgColor: 'slate-100', color: 'slate-800' } }}
-    >
-      {children}
     </Box>
   );
 }

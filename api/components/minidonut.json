@@ -1,0 +1,37 @@
+{
+  "name": "MiniDonut",
+  "route": "/charts",
+  "import": "import { MiniDonut } from '@box-kite/react/components/chart';",
+  "description": "A ring of segments, each drawn as its share of the whole — so the values need no total, and the colours cycle through the six a `ChartContainer` declares.",
+  "pattern": null,
+  "props": [
+    {
+      "name": "data",
+      "type": "readonly number[]",
+      "required": true,
+      "default": null,
+      "description": "One value per segment. Each is drawn as its share of the whole, so they need no total."
+    },
+    {
+      "name": "colors",
+      "type": "readonly Paint[]",
+      "required": false,
+      "default": "DEFAULT_COLORS",
+      "description": "One colour per segment, cycled if there are fewer than there are values."
+    },
+    {
+      "name": "thickness",
+      "type": "number",
+      "required": false,
+      "default": "20",
+      "description": "The width of the ring in view units, out of the 100 the box is wide."
+    }
+  ],
+  "parts": [],
+  "keyboard": [],
+  "a11y": [
+    "`aria-hidden` with no `label`, and a `label` makes it `role=\"img\"`. Segments are told apart by colour alone, so the breakdown has to exist somewhere a reader can get at it."
+  ],
+  "axe": { "fixtures": ["MiniDonut"], "knownViolations": [] },
+  "styleTree": []
+}

@@ -1,0 +1,31 @@
+{
+  "name": "Presence",
+  "route": "/animation",
+  "import": "import Presence from '@box-kite/react/components/presence';",
+  "description": "The exit half of the animation story: it keeps rendering its child with `present: false` until the child's own CSS says its transition is over, and only then lets React remove it. `startingStyle` is the entrance and needs no JavaScript at all — this is the ~1 KB the other direction costs, because React unmounts synchronously and there is nothing left to transition.",
+  "pattern": null,
+  "props": [
+    {
+      "name": "present",
+      "type": "boolean",
+      "required": true,
+      "default": null,
+      "description": "Whether the child should be there. The exit starts the moment this goes false."
+    },
+    {
+      "name": "children",
+      "type": "(presence: PresenceHandle) => React.ReactNode",
+      "required": true,
+      "default": null,
+      "description": "The subtree, told which way it is going."
+    }
+  ],
+  "parts": [],
+  "keyboard": [],
+  "a11y": [
+    "The exit is measured from the element's own `transition-duration`/`animation-duration`, so `prefers-reduced-motion` — which zeroes `--transitionTime` — removes the node in the same commit with no opt-in.",
+    "`data-state` is `'open'` or `'closed'` on the child, which is what a CSS exit selects on. A node on its way out is still in the accessibility tree, so anything hiding it has to say so itself."
+  ],
+  "axe": { "fixtures": [], "knownViolations": [] },
+  "styleTree": []
+}

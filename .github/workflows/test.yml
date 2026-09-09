@@ -36,6 +36,10 @@ jobs:
       # formatter or a value list changes and the reference beside it did not.
       - name: Check the prop reference is current 🔧
         run: npm run check:props
+      # Each component's reference is generated from its own types, JSDoc and doc tags, so this fails on
+      # a prop with no prose, a documented key no test presses, and a component whose page shows none of it.
+      - name: Check the component reference is current 🔧
+        run: npm run check:components
       # The skill, the Cursor rule and the marketplace entry are generated from the rules file and the
       # prop reference, and an install command reads them out of this repository — so a hand-edit of one
       # is a claim nothing holds up.

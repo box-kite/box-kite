@@ -1,0 +1,39 @@
+{
+  "name": "Sparkline",
+  "route": "/charts",
+  "import": "import { Sparkline } from '@box-kite/react/components/chart';",
+  "description": "A trend line with no axes, no legend and no labels: the shape of a series, small enough to sit in a table cell. `variant` draws it as a line, an area or bars.",
+  "pattern": null,
+  "props": [
+    { "name": "data", "type": "readonly number[]", "required": true, "default": null, "description": "The numbers to draw, oldest first." },
+    {
+      "name": "variant",
+      "type": "'line' | 'area' | 'bar'",
+      "required": false,
+      "default": "'line'",
+      "description": "`line` (default), `area` — the line with the space beneath it filled — or `bar`."
+    },
+    {
+      "name": "min",
+      "type": "number",
+      "required": false,
+      "default": null,
+      "description": "Fix the ends of the value axis. Without them the line uses its own lowest and highest value, so every row of a table is scaled to itself; with them a column of sparklines is comparable."
+    },
+    {
+      "name": "max",
+      "type": "number",
+      "required": false,
+      "default": null,
+      "description": "The top of the value axis — see `min`, which it is written beside."
+    }
+  ],
+  "parts": [],
+  "keyboard": [],
+  "a11y": [
+    "The `<svg>` is `aria-hidden` unless it is given a `label`, because a sparkline usually repeats a number that is already in the row beside it.",
+    "A chart is not a substitute for the values: where the shape *is* the information, give it a `label` saying what it shows, and keep the numbers reachable in text."
+  ],
+  "axe": { "fixtures": ["Sparkline", "Sparkline (decoration)"], "knownViolations": [] },
+  "styleTree": []
+}

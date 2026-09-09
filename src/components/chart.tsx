@@ -43,9 +43,19 @@ export interface SparklineProps extends ChartProps {
    * every row of a table is scaled to itself; with them a column of sparklines is comparable.
    */
   min?: number;
+  /** The top of the value axis — see `min`, which it is written beside. */
   max?: number;
 }
 
+/**
+ * A trend line with no axes, no legend and no labels: the shape of a series, small enough to sit in a
+ * table cell. `variant` draws it as a line, an area or bars.
+ *
+ * @a11y The `<svg>` is `aria-hidden` unless it is given a `label`, because a sparkline usually repeats
+ * a number that is already in the row beside it.
+ * @a11y A chart is not a substitute for the values: where the shape *is* the information, give it a
+ * `label` saying what it shows, and keep the numbers reachable in text.
+ */
 function SparklineImpl(props: SparklineProps, ref: Ref<SVGSVGElement>) {
   const { data, variant = 'line', min, max, children, ...svgProps } = props;
   const domain = { min, max };
@@ -97,6 +107,13 @@ export interface ProgressRingProps extends ChartProps {
   trackOpacity?: NonNullable<BoxStyleProps['strokeOpacity']>;
 }
 
+/**
+ * A circular progress arc: one value from 0 to 1, drawn as the filled part of a ring over its own track.
+ *
+ * @a11y `aria-hidden` with no `label`, and a `label` makes it `role="img"`. For progress a user is
+ * *waiting* on, put the value in text or in a `role="progressbar"` of your own — an image role does not
+ * announce a change.
+ */
 function ProgressRingImpl(props: ProgressRingProps, ref: Ref<SVGSVGElement>) {
   const { value, thickness = 10, trackOpacity = 0.2, children, ...svgProps } = props;
   const radius = ChartUtils.radius(thickness);
@@ -142,6 +159,13 @@ export interface GaugeProps extends ProgressRingProps {
   start?: number;
 }
 
+/**
+ * A `ProgressRing` that stops short of a full turn: `sweep` is how far round the dial goes and `start`
+ * where it begins, so a value reads as a needle position rather than as a proportion.
+ *
+ * @a11y `aria-hidden` with no `label`, and a `label` makes it `role="img"`. The value itself belongs
+ * in text: a dial's angle is not readable by anyone who cannot see it.
+ */
 function GaugeImpl(props: GaugeProps, ref: Ref<SVGSVGElement>) {
   const { value, thickness = 10, trackOpacity = 0.2, sweep = 270, start = 225, children, ...svgProps } = props;
   const radius = ChartUtils.radius(thickness);
@@ -181,6 +205,13 @@ export interface MiniDonutProps extends ChartProps {
   thickness?: number;
 }
 
+/**
+ * A ring of segments, each drawn as its share of the whole — so the values need no total, and the
+ * colours cycle through the six a `ChartContainer` declares.
+ *
+ * @a11y `aria-hidden` with no `label`, and a `label` makes it `role="img"`. Segments are told apart by
+ * colour alone, so the breakdown has to exist somewhere a reader can get at it.
+ */
 function MiniDonutImpl(props: MiniDonutProps, ref: Ref<SVGSVGElement>) {
   const { data, colors = DEFAULT_COLORS, thickness = 20, children, ...svgProps } = props;
   const radius = ChartUtils.radius(thickness);
@@ -224,6 +255,14 @@ export interface ChartContainerProps<
   series?: ChartSeries;
 }
 
+/**
+ * The theming bridge for a chart somebody else draws: a Box that declares `--chart-1` … `--chart-6` in
+ * both themes plus one `--color-<series>` per series, so a Recharts `<Line stroke="var(--color-revenue)">`
+ * names no colour of its own and its dark mode belongs to the page.
+ *
+ * @a11y It is a `<div>` with variables on it — no role, no name, nothing in the accessibility tree.
+ * Whatever the chart library renders inside owns its own accessibility.
+ */
 function ChartContainerImpl<TTag extends keyof React.JSX.IntrinsicElements = 'div'>(
   props: ChartContainerProps<TTag>,
   ref: Ref<ExtractElementFromTag<TTag>>,

@@ -1,0 +1,91 @@
+{
+  "name": "Checkbox",
+  "route": "/checkbox",
+  "import": "import Checkbox from '@box-kite/react/components/checkbox';",
+  "description": "The APG checkbox — which is to say, a real `<input type=\"checkbox\">`. Almost nothing here is behaviour: the platform supplies focus, Space, the checked state and form submission, and every custom-drawn checkbox gets some of those wrong. What the component owes is the label and the mixed state.",
+  "pattern": "https://www.w3.org/WAI/ARIA/apg/patterns/checkbox/",
+  "props": [
+    {
+      "name": "name",
+      "type": "string",
+      "required": false,
+      "default": null,
+      "description": "What the checkbox submits under. Needed for a form; a controlled checkbox can do without one."
+    },
+    {
+      "name": "props",
+      "type": "CheckboxTagProps",
+      "required": false,
+      "default": null,
+      "description": "Attributes for the `<input>` itself — `type` is the component's, and so is `aria-checked`."
+    },
+    {
+      "name": "onInput",
+      "type": "(e: React.ChangeEvent<HTMLInputElement>) => void",
+      "required": false,
+      "default": null,
+      "description": "Fires on every click or keystroke. On a checkbox this is the same moment as `onChange`."
+    },
+    {
+      "name": "onChange",
+      "type": "(e: React.ChangeEvent<HTMLInputElement>) => void",
+      "required": false,
+      "default": null,
+      "description": "Fires when the box is ticked or cleared. `e.target.checked` is the new state."
+    },
+    {
+      "name": "value",
+      "type": "string | number",
+      "required": false,
+      "default": null,
+      "description": "The value the form submits when it is checked. Defaults to `\"on\"`, as HTML does."
+    },
+    {
+      "name": "autoFocus",
+      "type": "boolean",
+      "required": false,
+      "default": null,
+      "description": "Focus it on mount. One per page at most — a stolen focus is a lost place in the document."
+    },
+    {
+      "name": "readOnly",
+      "type": "boolean",
+      "required": false,
+      "default": null,
+      "description": "Rendered and read, but not toggleable. Unlike `disabled` it stays in the tab order and submits."
+    },
+    {
+      "name": "defaultChecked",
+      "type": "boolean",
+      "required": false,
+      "default": null,
+      "description": "The state it starts in when the checkbox is uncontrolled. Pass `checked` instead to control it."
+    },
+    {
+      "name": "label",
+      "type": "React.ReactNode",
+      "required": false,
+      "default": null,
+      "description": "The text beside the checkbox — rendered inside a `<label>` that wraps the input, so the association is the component's job. Without it a consumer has to wire `htmlFor`/`id` by hand, and a checkbox with no label is the single most common accessibility failure there is."
+    },
+    {
+      "name": "labelProps",
+      "type": "BoxProps<'label'>",
+      "required": false,
+      "default": null,
+      "description": "Styles for the wrapping `<label>`: the row's layout, not the box's own appearance."
+    }
+  ],
+  "parts": [],
+  "keyboard": [
+    { "mode": null, "keys": "Tab", "action": "Focuses the checkbox. It is one tab stop, whether or not it carries a label." },
+    { "mode": null, "keys": "Space", "action": "Ticks and clears it. The platform supplies this one." }
+  ],
+  "a11y": [
+    "A real `<input type=\"checkbox\">`, so focus, the checked state, the disabled state and form submission are the platform's rather than this component's.",
+    "`label` renders the `<label>` wrapping the input, which is what names it — without one a checkbox is the commonest accessibility failure there is.",
+    "`indeterminate` sets the DOM property *and* `aria-checked=\"mixed\"`: the browser draws from the first, a screen reader reads the second, and a checkbox with only the property is read as unchecked."
+  ],
+  "axe": { "fixtures": ["Checkbox", "Checkbox (indeterminate)"], "knownViolations": [] },
+  "styleTree": [{ "path": "checkbox", "depth": 0, "extends": null, "variants": ["datagrid"] }]
+}

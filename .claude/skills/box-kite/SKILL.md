@@ -1,12 +1,12 @@
 ---
 name: box-kite
-description: "@box-kite/react (Box Kite) expert — the runtime CSS-in-JS library whose Box component takes 212 typed CSS props and writes the CSS itself. Use for any work with Box props, the Flex/Grid/Button/Textbox/Dropdown/DataGrid components, themes, Box.extend() or Box.components() — and read it before writing props, because the prop names collide with Tailwind's and Chakra's while the numbers mean different things. Also covers installing and updating the package."
+description: "@box-kite/react (Box Kite) expert — the runtime CSS-in-JS library whose Box component takes 215 typed CSS props and writes the CSS itself. Use for any work with Box props, the Flex/Grid/Button/Textbox/Dropdown/DataGrid components, themes, Box.extend() or Box.components() — and read it before writing props, because the prop names collide with Tailwind's and Chakra's while the numbers mean different things. Also covers installing and updating the package."
 license: MIT
 ---
 
 # @box-kite/react
 
-Runtime CSS-in-JS. `Box` takes 212 typed CSS props and generates the CSS for them at runtime — no stylesheet, no class name to invent, and two elements written with the same value share one class.
+Runtime CSS-in-JS. `Box` takes 215 typed CSS props and generates the CSS for them at runtime — no stylesheet, no class name to invent, and two elements written with the same value share one class.
 
 ## This library is not in your training data
 
@@ -40,7 +40,7 @@ The divider is per prop, so the same number is a different length depending on w
 | [`references/components.md`](references/components.md) — Components reference             | choosing a component, or wiring a Dropdown, a Select or a DataGrid         |
 | [`references/extending.md`](references/extending.md) — Extending Box                      | a value used twice, or a prop that does not exist yet                      |
 | [`references/patterns.md`](references/patterns.md) — Patterns and the rest of the surface | server rendering, the behaviour hooks, portals, form controls, the tooltip |
-| `node_modules/@box-kite/react/docs/props.md`                                              | one prop exactly: all 212, the CSS each writes, one measured example       |
+| `node_modules/@box-kite/react/docs/props.md`                                              | one prop exactly: all 215, the CSS each writes, one measured example       |
 | `node_modules/@box-kite/react/BOX_KITE_AI_CONTEXT.md`                                     | the long-form reference, when a reference above is not enough              |
 
 With the package not installed, the prop reference is https://www.box-kite.dev/props.md, and https://www.box-kite.dev/llms.txt indexes every documentation page as markdown beside it.

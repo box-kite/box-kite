@@ -1,0 +1,23 @@
+{
+  "name": "ChartContainer",
+  "route": "/charts",
+  "import": "import { ChartContainer } from '@box-kite/react/components/chart';",
+  "description": "The theming bridge for a chart somebody else draws: a Box that declares `--chart-1` … `--chart-6` in both themes plus one `--color-<series>` per series, so a Recharts `<Line stroke=\"var(--color-revenue)\">` names no colour of its own and its dark mode belongs to the page.",
+  "pattern": null,
+  "props": [
+    {
+      "name": "series",
+      "type": "ChartSeries",
+      "required": false,
+      "default": null,
+      "description": "The series drawn inside, and what colour each of them is."
+    }
+  ],
+  "parts": [],
+  "keyboard": [],
+  "a11y": [
+    "It is a `<div>` with variables on it — no role, no name, nothing in the accessibility tree. Whatever the chart library renders inside owns its own accessibility."
+  ],
+  "axe": { "fixtures": ["ChartContainer"], "knownViolations": [] },
+  "styleTree": []
+}

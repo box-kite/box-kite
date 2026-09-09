@@ -117,7 +117,7 @@ function Table({ token }: { token: Tokens.Table }) {
   return (
     <Box overflow="auto" mb={6}>
       {/* `border-collapse` has no prop; the one-off is the hatch's job. */}
-      <Box tag="table" display="table" width="fit" fontSize={14} lineHeight={22} css={{ borderCollapse: 'collapse' }} theme={prose}>
+      <Box tag="table" display="table" borderCollapse="collapse" width="fit" fontSize={14} lineHeight={22} theme={prose}>
         <Box tag="thead" display="table-header-group">
           <Box tag="tr" display="table-row">
             {token.header.map((cell, index) => (

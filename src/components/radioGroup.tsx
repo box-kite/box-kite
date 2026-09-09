@@ -28,10 +28,14 @@ interface Props<TKey extends keyof ComponentsAndVariants> extends RadioGroupBoxP
   name?: string;
   /** Controlled selection. Leave it out and the group owns it. */
   value?: string;
+  /** The option chosen to begin with, when the group owns its value. */
   defaultValue?: string;
+  /** Fires with the new value and why it changed — `'click'` or `'keyboard'`. A group can also hold
+   * nothing, so the value is `string | undefined`. */
   onChange?: ChangeHandler<string | undefined, RadioGroupReason>;
   /** Which way the radios stack. Both arrow pairs navigate either way, as APG specifies. */
   orientation?: 'vertical' | 'horizontal';
+  /** The options: `RadioGroup.Item` elements, or anything else the group should hold. */
   children?: React.ReactNode;
 }
 
@@ -42,8 +46,11 @@ interface ItemProps extends Omit<BoxProps<'input', 'radioButton'>, 'tag' | 'prop
   name?: string;
   /** The text beside the radio, rendered inside a label that wraps the input. */
   label?: React.ReactNode;
+  /** Styles for the wrapping `<label>`: the row's layout, not the radio's own appearance. */
   labelProps?: BoxProps<'label'>;
+  /** Attributes for the `<input>` itself. `type`, `name` and `checked` are the group's. */
   props?: BoxTagProps<'input'>;
+  /** The `<input>` element, for a caller that has to focus or measure this option. */
   ref?: Ref<HTMLInputElement>;
 }
 
@@ -84,6 +91,19 @@ function directionOf(key: string): number {
  * tabindex, which a `tabIndex` of ours would fight. The browser implements the arrows too, so the handler
  * calls `preventDefault` and activates with a real click, as the browser does. `RadioGroup.Item` is a
  * `RadioButton` wired to the group; a plain one nested inside keeps its own `name` and `checked`.
+ *
+ * @pattern https://www.w3.org/WAI/ARIA/apg/patterns/radio/
+ * @a11y `role="radiogroup"`, named by its own `label` through `aria-labelledby` — radios with nothing
+ * over them are unrelated controls to a screen reader.
+ * @a11y `aria-orientation` follows `orientation`, and every item shares one generated `name`, so the
+ * set submits as one field.
+ * @a11y The tab order is deliberately the platform's: a native radio set is already one tab stop with a
+ * roving tabindex, which a `tabIndex` of ours would fight.
+ * @keyboard Tab — Enters the group once, landing on the chosen option — or on the first, when none is
+ * chosen. Tab again leaves the group entirely.
+ * @keyboard Down / Right — The next option, choosing it as focus arrives, wrapping to the first.
+ * @keyboard Up / Left — The previous option, the same way, wrapping to the last.
+ * @keyboard Space — Chooses the focused option. The platform supplies this one.
  */
 function RadioGroupImpl<TKey extends keyof ComponentsAndVariants = never>(props: Props<TKey>) {
   const { label, name, value, defaultValue, onChange, orientation = 'vertical', children, props: tagProps, ...restProps } = props;

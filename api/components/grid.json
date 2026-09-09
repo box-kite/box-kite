@@ -1,0 +1,15 @@
+{
+  "name": "Grid",
+  "route": "/grid",
+  "import": "import Grid from '@box-kite/react/components/grid';",
+  "description": "`Box` with `display: grid` on it — `inline` makes that `inline-grid`. It adds no props of its own: `gridTemplateColumns`, `gridColumn`, `gap`, `placeItems` and the rest are Box props.",
+  "pattern": null,
+  "props": [],
+  "parts": [],
+  "keyboard": [],
+  "a11y": [
+    "A `<div>` unless `tag` says otherwise. Placing an item in a track does not move it in the markup, so the tab order and a screen reader still follow source order — WCAG 1.3.2, and the reason a grid that reads correctly is laid out in the order it reads."
+  ],
+  "axe": { "fixtures": ["Grid"], "knownViolations": [] },
+  "styleTree": []
+}

@@ -12,13 +12,21 @@ type CheckboxProps<TKey extends keyof ComponentsAndVariants> = Omit<BoxProps<'in
 type CheckboxTagProps = OmitTagProps<BoxTagProps<'input'>, TagPropsType | 'type'>;
 
 interface Props<TKey extends keyof ComponentsAndVariants> extends CheckboxProps<TKey> {
+  /** What the checkbox submits under. Needed for a form; a controlled checkbox can do without one. */
   name?: string;
+  /** Attributes for the `<input>` itself — `type` is the component's, and so is `aria-checked`. */
   props?: CheckboxTagProps;
+  /** Fires on every click or keystroke. On a checkbox this is the same moment as `onChange`. */
   onInput?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  /** Fires when the box is ticked or cleared. `e.target.checked` is the new state. */
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  /** The value the form submits when it is checked. Defaults to `"on"`, as HTML does. */
   value?: string | number;
+  /** Focus it on mount. One per page at most — a stolen focus is a lost place in the document. */
   autoFocus?: boolean;
+  /** Rendered and read, but not toggleable. Unlike `disabled` it stays in the tab order and submits. */
   readOnly?: boolean;
+  /** The state it starts in when the checkbox is uncontrolled. Pass `checked` instead to control it. */
   defaultChecked?: boolean;
   /**
    * The text beside the checkbox — rendered inside a `<label>` that wraps the input, so the
@@ -34,7 +42,16 @@ interface Props<TKey extends keyof ComponentsAndVariants> extends CheckboxProps<
  * The APG checkbox — which is to say, a real `<input type="checkbox">`. Almost nothing here is behaviour:
  * the platform supplies focus, Space, the checked state and form submission, and every custom-drawn
  * checkbox gets some of those wrong. What the component owes is the label and the mixed state.
- * Pattern: https://www.w3.org/WAI/ARIA/apg/patterns/checkbox/
+ *
+ * @pattern https://www.w3.org/WAI/ARIA/apg/patterns/checkbox/
+ * @a11y A real `<input type="checkbox">`, so focus, the checked state, the disabled state and form
+ * submission are the platform's rather than this component's.
+ * @a11y `label` renders the `<label>` wrapping the input, which is what names it — without one a
+ * checkbox is the commonest accessibility failure there is.
+ * @a11y `indeterminate` sets the DOM property *and* `aria-checked="mixed"`: the browser draws from the
+ * first, a screen reader reads the second, and a checkbox with only the property is read as unchecked.
+ * @keyboard Tab — Focuses the checkbox. It is one tab stop, whether or not it carries a label.
+ * @keyboard Space — Ticks and clears it. The platform supplies this one.
  */
 function CheckboxImpl<TKey extends keyof ComponentsAndVariants>(props: Props<TKey>, ref: Ref<HTMLInputElement>) {
   const { label, labelProps, ...controlProps } = props;

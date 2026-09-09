@@ -40,6 +40,12 @@ export const propertyGroups: ParityGroup[] = [
         status: 'has',
         note: 'insetX/insetY are the logical inset-inline/inset-block, insetStart/insetEnd their two sides',
       },
+      {
+        tailwind: 'border-collapse / border-spacing / table-layout',
+        props: ['borderCollapse', 'borderSpacing', 'tableLayout'],
+        status: 'has',
+        note: 'the three that make a <table> look like one; borderSpacing is on the ÷4 scale',
+      },
       { tailwind: 'visibility', props: ['visibility'], status: 'has' },
       { tailwind: 'z-index', props: ['zIndex'], status: 'has' },
       { tailwind: '@container', props: ['container', 'containerName', 'containerType'], status: 'has' },

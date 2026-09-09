@@ -1,15 +1,21 @@
 import { Layers } from 'lucide-react';
 import { ReactNode, useState } from 'react';
+import overlayApi from '../../api/components/overlay.json';
 import Box from '../../src/box';
 import Button from '../../src/components/button';
 import Flex from '../../src/components/flex';
 import Overlay from '../../src/components/overlay';
 import { H2 } from '../../src/components/semantics';
+import ApiReference from '../components/apiReference';
 import Code from '../components/code';
+import Mono from '../components/mono';
 import PageHeader from '../components/pageHeader';
 import Reveal from '../components/reveal';
+import useTableOfContents from '../hooks/useTableOfContents';
+import { apiSections } from '../site/componentApi';
 
 export default function OverlayPage() {
+  useTableOfContents([...apiSections(overlayApi)]);
   const [openAbsolute, setOpenAbsolute] = useState(false);
   const [openOverlay, setOpenOverlay] = useState(false);
 
@@ -166,6 +172,7 @@ export default function OverlayPage() {
               <Bullet>Every Box prop, applied to the layer's content.</Bullet>
             </Flex>
           </Section>
+          <ApiReference api={overlayApi} />
         </Flex>
       </Reveal>
     </Box>
@@ -191,20 +198,5 @@ function Bullet({ children }: { children: ReactNode }) {
       <Box width={1} height={1} borderRadius={10} bgColor="indigo-400" />
       <Box flex1>{children}</Box>
     </Flex>
-  );
-}
-
-function Mono({ children }: { children: ReactNode }) {
-  return (
-    <Box
-      tag="code"
-      display="inline"
-      px={1}
-      borderRadius={1}
-      fontSize={13}
-      theme={{ dark: { bgColor: 'slate-800', color: 'slate-200' }, light: { bgColor: 'slate-100', color: 'slate-800' } }}
-    >
-      {children}
-    </Box>
   );
 }

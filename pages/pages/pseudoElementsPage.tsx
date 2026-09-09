@@ -6,6 +6,7 @@ import Flex from '../../src/components/flex';
 import { H2, Li, P, Ul } from '../../src/components/semantics';
 import Textbox from '../../src/components/textbox';
 import Code from '../components/code';
+import Mono from '../components/mono';
 import PageHeader from '../components/pageHeader';
 import Reveal from '../components/reveal';
 import useTableOfContents from '../hooks/useTableOfContents';
@@ -292,21 +293,6 @@ function Section({ id, title, children }: { id: string; title: string; children:
       <Box fontSize={15} lineHeight={26} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
         {children}
       </Box>
-    </Box>
-  );
-}
-
-function Mono({ children }: { children: ReactNode }) {
-  return (
-    <Box
-      tag="code"
-      display="inline"
-      px={1}
-      borderRadius={1}
-      fontSize={13}
-      theme={{ dark: { bgColor: 'slate-800', color: 'slate-200' }, light: { bgColor: 'slate-100', color: 'slate-800' } }}
-    >
-      {children}
     </Box>
   );
 }

@@ -18,9 +18,13 @@ import Presence from './presence';
 import Textbox from './textbox';
 
 interface Props<TVal, TKey extends keyof ComponentsAndVariants = 'dropdown'> extends Omit<BoxProps<'button', TKey>, 'ref' | 'tag'> {
+  /** What the selection submits under: the component renders a hidden input carrying it. */
   name?: string;
+  /** What is selected to begin with, when the dropdown owns its own value. An array in `multiple` mode. */
   defaultValue?: TVal | TVal[];
+  /** Controlled selection. Pair it with `onChange`, or nothing the user picks sticks. */
   value?: TVal | TVal[];
+  /** Let more than one option be chosen. Enter and Space then toggle without closing the listbox. */
   multiple?: boolean;
   /**
    * Turn the control into the APG *editable* combobox: a text field that filters the listbox, and a
@@ -29,7 +33,9 @@ interface Props<TVal, TKey extends keyof ComponentsAndVariants = 'dropdown'> ext
    * the listbox before it clears the field.
    */
   isSearchable?: boolean;
+  /** The placeholder for the `isSearchable` field. Not a name — see `label`. */
   searchPlaceholder?: string;
+  /** Drop the chevron. It is decoration either way: it is `aria-hidden` and never focusable. */
   hideIcon?: boolean;
   /** Show checkbox for each item in multiple selection mode */
   showCheckbox?: boolean;
@@ -45,6 +51,7 @@ interface Props<TVal, TKey extends keyof ComponentsAndVariants = 'dropdown'> ext
   itemsProps?: BoxStyleProps;
   /** BoxProps applied to the chevron icon container (dropdown.icon) */
   iconProps?: BoxStyleProps;
+  /** Fires with the value chosen (`undefined` when it was unselected) and the full selection beside it. */
   onChange?: (value: TVal | undefined, values: TVal[]) => void;
 }
 
@@ -85,6 +92,41 @@ const TEXT_EDITING_KEYS = new Set([' ', 'Home', 'End', 'ArrowLeft', 'ArrowRight'
  * left/right move the caret and hand the highlight back, only Down/Up reach the listbox, and a second
  * Escape clears the query. Filtering never highlights a suggestion — that is list, not inline,
  * autocomplete. What is deliberately *not* here is a name: see the `label` prop.
+ *
+ * @pattern https://www.w3.org/WAI/ARIA/apg/patterns/combobox/
+ * @a11y `role="combobox"` with `aria-expanded`, `aria-controls` and `aria-activedescendant` on the
+ * trigger, and `role="listbox"`/`role="option"` with `aria-selected` on the popup.
+ * @a11y Nothing names a combobox for you — accname does not read its contents, and the trigger text is
+ * its *value* — so pass `label`, or an `aria-label` of your own in `props`.
+ * @a11y DOM focus never leaves the trigger (or, when searchable, the field), so no option is a tab stop
+ * and the popup can be portalled without stranding the keyboard inside it.
+ * @keyboard Down / Up (closed) — Opens, with the highlight on the selected option — or on the first or
+ * last when nothing is chosen.
+ * @keyboard Alt + Down (closed) — Opens without moving the highlight.
+ * @keyboard Enter / Space (closed) — Opens. The browser's own activation is suppressed, so it does not
+ * shut again.
+ * @keyboard Home / End (closed) — Opens at the first or the last option.
+ * @keyboard A printable character — Opens with the first option starting with it already highlighted.
+ * @keyboard Down / Up (open) — Moves the highlight, wrapping at the ends and skipping disabled options.
+ * @keyboard Home / End (open) — Jumps to the first or last option.
+ * @keyboard Typing (open) — Typeahead. A longer buffer narrows; the same letter twice cycles through the
+ * options sharing it.
+ * @keyboard Enter / Space (open) — Chooses the highlighted option and closes. In `multiple` mode it
+ * toggles and stays open.
+ * @keyboard Alt + Up (open) — Chooses the highlighted option and closes.
+ * @keyboard Escape — Closes, changing nothing. Focus never left the trigger, so nothing is restored.
+ * @keyboard Tab (open) — Chooses the highlighted option, then moves on to the next control.
+ * @keyboard (With isSearchable) A printable character — Types into the field, which opens the listbox and
+ * filters it. No typeahead — the field owns the keys.
+ * @keyboard (With isSearchable) Down / Up — Opens, or moves the highlight through what the filter left,
+ * wrapping and skipping disabled options.
+ * @keyboard (With isSearchable) Home / End, Left / Right — Move the caret, and hand the highlight back to
+ * the field: no option is where you are any more.
+ * @keyboard (With isSearchable) Space — Types a space. Only Enter chooses in this mode.
+ * @keyboard (With isSearchable) Enter — Chooses the highlighted option and puts its text in the field.
+ * With nothing highlighted it does nothing.
+ * @keyboard (With isSearchable) Escape — Closes the listbox, keeping what was typed. Pressed again on a
+ * closed one, it clears the field.
  */
 function DropdownImpl<TVal>(props: Props<TVal>, ref: Ref<HTMLInputElement>): React.ReactNode {
   const {
@@ -611,6 +653,7 @@ function DropdownImpl<TVal>(props: Props<TVal>, ref: Ref<HTMLInputElement>): Rea
 type ChildrenName = 'DropdownItem' | 'DropdownUnselect' | 'DropdownEmptyItem' | 'DropdownDisplay' | 'DropdownSelectAll';
 
 interface DropdownDisplayProps<TVal> extends Omit<BoxProps, 'children'> {
+  /** What the trigger shows: a node, or a function given the selected values and whether it is open. */
   children: ((selectedValues: TVal[], isOpen: boolean) => React.ReactNode) | React.ReactNode;
 }
 
