@@ -554,7 +554,7 @@ function PositionDemo() {
       <DemoCard
         title="Anchor Positioning (anchorName, positionAnchor, positionArea, positionTryFallbacks)"
         description="The browser places the layer against the named anchor and flips it when it does not fit — no measuring, no scroll listener, no state"
-        code='anchorName="tag" … positionAnchor="tag" positionArea="block-end center" positionTryFallbacks="flip-block"'
+        code='positionAnchor="tag" positionArea="block-end center" positionTryFallbacks="flip-block"'
       >
         <Flex gap={8} flexWrap="wrap">
           {(
