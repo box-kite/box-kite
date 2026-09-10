@@ -45,6 +45,7 @@ export const SERVER_SAFE_COMPONENTS = [
  * their chunks carry a `'use client'` banner — but nothing here renders *on* the server.
  */
 export const CLIENT_ONLY_COMPONENTS = [
+  'accordion',
   'checkbox',
   'dataGrid',
   'dialog',

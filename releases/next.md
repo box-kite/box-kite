@@ -2,7 +2,7 @@
 
 _Unreleased. A PR that changes what a consumer sees adds its section here — see CONTRIBUTING.md, "Release notes"._
 
-The package now carries instructions for the agent writing the code, the documentation site answers in markdown, the same rules install as a skill in about forty-five coding agents, and every component page states its own props, keys and accessibility — all of it generated from the sources the library is built from. A floating layer is also placed by the browser now rather than measured in JavaScript, all the way through: six props, one hook, and every popup the library ships standing on them. Three of those popups are now browser features rather than components: a popover on the Popover API, a modal dialog on `<dialog>`, and a menu button whose submenus are popovers nested inside it. Tabs arrive beside them, on nothing but the keyboard the pattern asks for — with an indicator that travels between them and a panel box that resizes to fit.
+The package now carries instructions for the agent writing the code, the documentation site answers in markdown, the same rules install as a skill in about forty-five coding agents, and every component page states its own props, keys and accessibility — all of it generated from the sources the library is built from. A floating layer is also placed by the browser now rather than measured in JavaScript, all the way through: six props, one hook, and every popup the library ships standing on them. Three of those popups are now browser features rather than components: a popover on the Popover API, a modal dialog on `<dialog>`, and a menu button whose submenus are popovers nested inside it. Tabs arrive beside them, on nothing but the keyboard the pattern asks for — with an indicator that travels between them and a panel box that resizes to fit. An accordion arrives with them, opening its panels on a grid track nobody had to measure.
 
 ## Highlights
 
@@ -19,6 +19,7 @@ The package now carries instructions for the agent writing the code, the documen
 - **[A modal dialog is a browser feature too](#a-modal-dialog-is-a-browser-feature-too)** — `<Dialog>` and `<AlertDialog>` on the native `<dialog>`: `showModal()` supplies the top layer, the backdrop, an inert page, Escape, focus containment and focus return, so the two together add 2.15 KB gz against Radix Dialog's 13.28.
 - **[A menu, and its submenus, are nested popovers](#a-menu-and-its-submenus-are-nested-popovers)** — `<Menu>` is APG's menu button on the Popover API: seven parts, the whole keyboard, submenus that nest as deeply as the markup, and 6.36 KB gz against Radix DropdownMenu's 30.85.
 - **[Tabs, where selection follows focus](#tabs-where-selection-follows-focus)** — the APG tabs pattern in four parts: one tab stop for the list, arrows that follow the reading order, both activation modes, and 3.03 KB gz against Radix Tabs 9.18. An indicator that travels between tabs and a panel box that resizes between panels are each one opt-in away.
+- **[An accordion whose animation is a class](#an-accordion-whose-animation-is-a-class)** — `<Accordion>` and `Collapsible`, where a panel opens in a grid track rather than a measured pixel: no `ResizeObserver`, nothing written per instance, and 1.79 KB gz for both against Radix's 8.78.
 
 ## The package tells an agent how to use it
 
@@ -413,6 +414,47 @@ The container is **clipped only while its height is travelling**. It has to be: 
 It is **smaller**: `@radix-ui/react-tabs` is 9.18 KB gz with React external, where `<Tabs>` and all four of its parts add **3.03 KB gz** on top of a `Box` an app already has. Both figures measured, minified and gzipped, the same way. About 1.16 KB of that is the two things that move, and it is there whether or not they are switched on: `Tabs.Panels` hangs off `Tabs` and the list measures from the same module, so neither shakes out.
 
 Every part is a Box, and the defaults are a style tree — `tabs`, with `tabs.list`, `tabs.tab`, `tabs.panel` beneath it, plus `tabs.indicator` for the travelling bar and `tabs.panels` for the resizing container. The selected state is `aria-selected`, so `ariaAttr={{ selected: … }}` styles it on a tab — inside a style tree the same state is the bare `selected` key, while as a _prop_ `selected` writes the attribute the component owns. The indicator is a border rather than a background, because a forced-colors mode throws every background away and selection would otherwise read identically on and off.
+
+## An accordion whose animation is a class
+
+`<Accordion>` is APG's accordion — a set of sections, each opened by its own header — and `Collapsible`, a named export of the same module, is one disclosure on its own.
+
+```tsx
+import Accordion, { Collapsible } from '@box-kite/react/components/accordion';
+
+<Accordion defaultValue={['shipping']} onValueChange={(value, { reason }) => log(value, reason)}>
+  <Accordion.Item value="shipping">
+    <Accordion.Trigger>Shipping</Accordion.Trigger>
+    <Accordion.Panel>Two to four working days, tracked.</Accordion.Panel>
+  </Accordion.Item>
+  <Accordion.Item value="returns">
+    <Accordion.Trigger>Returns</Accordion.Trigger>
+    <Accordion.Panel>Thirty days, in the packaging it came in.</Accordion.Panel>
+  </Accordion.Item>
+</Accordion>;
+```
+
+**The height animation is a class, not a measurement.** Every other library measures: an effect reads the panel's height, writes it into a custom property, and a `ResizeObserver` keeps it up to date as the content changes. Nothing here does. The panel sits in a grid of one row whose track runs `1fr` to `0fr`, so the height being animated is the one the browser was going to compute anyway. Three things follow. There is no number to write down, so there is nothing per instance — two shared rules do the whole animation on every accordion on the page, where a measured height is a rule per panel that is never freed. Content that grows while the panel is open simply makes it taller, because nothing was pinned. And a page animates before its JavaScript arrives, since none of it is JavaScript.
+
+**A closed panel is hidden with `visibility`, not `display`.** It has to be hidden by something: content behind a zero-height track is still laid out, and clipped content is still tabbable and still read out. `visibility` is the one that is _animatable_ — it flips to hidden only once the track has finished closing, and back to visible the instant it opens, which is exactly the two moments the content may not be reachable. That is also why there is no `@starting-style` here and no `transitionBehavior="allow-discrete"`: unlike `display`, `visibility` leaves the element with a before-change style to transition from, so the entrance needs nothing declared and a server-rendered open panel does not animate itself open on load. It rides `--transitionTime` like everything else, so `prefers-reduced-motion` turns both directions off with no opt-in.
+
+The consequence to know is the other side of it: **the panel is always in the DOM**, so a half-filled form in one survives being shut — and children too expensive to render closed are yours to gate, with `{open ? … : null}` inside the panel.
+
+**Every header is its own tab stop**, which is the opposite of `Tabs` and is APG's rule for each: an accordion is not a composite widget, so Down and Up are a shortcut between headers rather than the only way in. They wrap unless `loop={false}`, Home and End go to the ends, and the sideways pair is left to the page. Each header is a real `<button>` inside a heading — `level`, default `3`, says which, because a heading level is the document's outline and a screen reader navigates by it. The panel is a `role="region"` named by its header; past half a dozen of them the landmarks are noise, which is APG's own caveat, and `props={{ role: undefined }}` drops it.
+
+**One panel at a time** unless `multiple` says otherwise, and closing the open one is always allowed — so an accordion can stand with everything shut, and there is no second prop to say whether it may. A disabled section is the `disabled` attribute, so the browser has already taken it out of the tab sequence and the arrows step over it for the same reason.
+
+`Collapsible` is the same mechanism with no heading, no group and no arrow keys, because a lone button needs none of them. Note the shape — the trigger is the render prop and the children are the content, the way `<Popover>` reads:
+
+```tsx
+<Collapsible trigger={(trigger) => <Button {...trigger}>What is in the box?</Button>}>
+  <P>A kite, and the string for it.</P>
+</Collapsible>
+```
+
+It is **smaller**: `@radix-ui/react-accordion` and `@radix-ui/react-collapsible` are 8.78 KB gz together with React external, where `<Accordion>`, all three of its parts and `Collapsible` add **1.79 KB gz** on top of a `Box` an app already has. Both figures measured the same way, by a harness that ships in the repo — `npm run size:published`, so the number in this paragraph can be re-derived rather than believed. Not measuring is most of the difference.
+
+Every part is a Box, and the defaults are a style tree — `accordion`, with `accordion.item`, `accordion.heading`, `accordion.trigger`, `accordion.arrow` and `accordion.panel` beneath it, plus `collapsible` for the lone one. The open state on a header is its own `aria-expanded`, so `ariaAttr={{ expanded: … }}` styles it and no variant is needed: the attribute the pattern already has to write is the selector. The one part that is not yours is `accordion.clip`, the grid the panel opens in — a padding or a border on it would keep the track from ever reaching zero, so the component keeps it, and the panel's own padding is the room a focus ring at its edge needs.
 
 ## Breaking changes
 

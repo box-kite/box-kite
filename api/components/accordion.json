@@ -1,0 +1,139 @@
+{
+  "name": "Accordion",
+  "route": "/accordion",
+  "import": "import Accordion from '@box-kite/react/components/accordion';",
+  "description": "A set of sections, each opened by its own header. Pattern: https://www.w3.org/WAI/ARIA/apg/patterns/accordion/",
+  "pattern": "https://www.w3.org/WAI/ARIA/apg/patterns/accordion/",
+  "props": [
+    {
+      "name": "children",
+      "type": "React.ReactNode",
+      "required": false,
+      "default": null,
+      "description": "The sections: one `Accordion.Item` each, holding an `Accordion.Trigger` and an `Accordion.Panel`."
+    },
+    {
+      "name": "value",
+      "type": "string[]",
+      "required": false,
+      "default": null,
+      "description": "Controlled: the values of every panel standing open. Leave it out and the widget owns them."
+    },
+    {
+      "name": "defaultValue",
+      "type": "string[]",
+      "required": false,
+      "default": null,
+      "description": "Which panels start open. Left out, all of them are closed."
+    },
+    {
+      "name": "onValueChange",
+      "type": "ChangeHandler<string[], DisclosureReason>",
+      "required": false,
+      "default": null,
+      "description": "Fires with the panels now open, in the order they were opened."
+    },
+    {
+      "name": "multiple",
+      "type": "boolean",
+      "required": false,
+      "default": "false",
+      "description": "Whether several panels may stand open at once. Default `false`, so opening one closes the last."
+    },
+    {
+      "name": "loop",
+      "type": "boolean",
+      "required": false,
+      "default": "true",
+      "description": "Whether Down and Up wrap around at the ends. Default `true`."
+    },
+    {
+      "name": "level",
+      "type": "AccordionLevel",
+      "required": false,
+      "default": "3",
+      "description": "Which heading each header sits in. Default `3`. It has to fit the page around it — a heading level is the document's outline, and a screen reader navigates by it."
+    }
+  ],
+  "parts": [
+    {
+      "name": "Accordion.Item",
+      "description": "One section. It owns the pair of ids its header and its panel are wired together by.",
+      "props": [
+        {
+          "name": "value",
+          "type": "string",
+          "required": true,
+          "default": null,
+          "description": "What this section stands for, and what the widget reports when it is open."
+        },
+        { "name": "children", "type": "React.ReactNode", "required": false, "default": null, "description": "The header and the panel." },
+        {
+          "name": "disabled",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Not openable, and stepped over by Down and Up. It is the `disabled` attribute, so the browser has already taken the header out of the tab sequence — arrows that still stopped there would be reaching what Tab cannot."
+        }
+      ]
+    },
+    {
+      "name": "Accordion.Trigger",
+      "description": "The header: a real `<button>` in a heading, which is the pair APG asks for.",
+      "props": [
+        { "name": "children", "type": "React.ReactNode", "required": false, "default": null, "description": "The header's label." },
+        {
+          "name": "level",
+          "type": "AccordionLevel",
+          "required": false,
+          "default": null,
+          "description": "This header's heading level, when it differs from the one the accordion sets."
+        },
+        {
+          "name": "arrow",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "Whether to draw the chevron. Turn it off to supply an affordance of your own. Default `true`."
+        }
+      ]
+    },
+    {
+      "name": "Accordion.Panel",
+      "description": "The section's content, in the grid that gives it its height.",
+      "props": [
+        { "name": "children", "type": "React.ReactNode", "required": false, "default": null, "description": "The section's content." }
+      ]
+    }
+  ],
+  "keyboard": [
+    {
+      "mode": null,
+      "keys": "Tab",
+      "action": "Every header is in the tab sequence, and so is anything inside an open panel. An accordion is not a composite widget, so nothing here is a roving tabindex."
+    },
+    { "mode": null, "keys": "Enter, Space", "action": "Opens the header's panel, or closes it." },
+    {
+      "mode": null,
+      "keys": "Down / Up",
+      "action": "The next and previous header, wrapping at the ends and stepping over disabled ones. They do nothing inside a panel, so a textarea in one keeps its own arrows."
+    },
+    { "mode": null, "keys": "Home / End", "action": "The first and last header." }
+  ],
+  "a11y": [
+    "Each header is a `<button aria-expanded>` inside a heading — `level` says which, and it has to fit the outline of the page around it.",
+    "`aria-controls` on the header names its panel, which is always in the DOM, so the reference cannot dangle.",
+    "The panel is a `role=\"region\"` named by its header. Pass `props={{ role: undefined }}` on a long accordion: past half a dozen panels the landmarks are noise, which is APG's own caveat.",
+    "The chevron is `aria-hidden`: it says what `aria-expanded` already says."
+  ],
+  "axe": { "fixtures": ["Accordion"], "knownViolations": [] },
+  "styleTree": [
+    { "path": "accordion", "depth": 0, "extends": null, "variants": [] },
+    { "path": "accordion.item", "depth": 1, "extends": null, "variants": [] },
+    { "path": "accordion.heading", "depth": 1, "extends": null, "variants": [] },
+    { "path": "accordion.trigger", "depth": 1, "extends": null, "variants": [] },
+    { "path": "accordion.arrow", "depth": 1, "extends": null, "variants": ["open"] },
+    { "path": "accordion.clip", "depth": 1, "extends": null, "variants": ["closed"] },
+    { "path": "accordion.panel", "depth": 1, "extends": null, "variants": [] }
+  ]
+}

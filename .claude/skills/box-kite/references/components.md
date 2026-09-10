@@ -16,6 +16,8 @@ Which component replaces which `<Box tag>`, and the three that carry a pattern o
 | `<Box tag="form">`                   | `<Form>`                               | `components/form`                                                |
 | `<Box tag="svg/path/circle/rect">`   | `<Svg>`/`<Path>`/`<Circle>`/`<Rect>`   | `components/svg`                                                 |
 | a menu button and its menu           | `<Menu>`                               | `components/menu`                                                |
+| sections that open one at a time     | `<Accordion>`                          | `components/accordion`                                           |
+| one "show more" disclosure           | `<Collapsible>`                        | `components/accordion`                                           |
 | a lucide/Tabler icon, styled         | `<Icon>`                               | `components/icon`                                                |
 | a sparkline, ring, gauge or donut    | `<Sparkline>`/`<ProgressRing>`/…       | `components/chart`                                               |
 | a themed Recharts (or any) chart     | `<ChartContainer>`                     | `components/chart`                                               |
@@ -25,6 +27,36 @@ Also: `Mark`, `Figure`, `Figcaption`, `Details`, `Summary`, `MenuList` (the sema
 `<Form<T> onSubmit={(values, e) => …}>` reads its own named fields on submit (after `preventDefault()`): a value per
 named input, a boolean for a lone checkbox/radio, an array for a repeated name, and `name="a.b"` nests. `T` is the shape you
 expect, not a check against the fields.
+
+## Accordion and Collapsible
+
+```tsx
+import Accordion, { Collapsible } from '@box-kite/react/components/accordion';
+
+<Accordion defaultValue={['shipping']} multiple onValueChange={(open, { reason }) => log(open, reason)}>
+  <Accordion.Item value="shipping">
+    <Accordion.Trigger>Shipping</Accordion.Trigger>
+    <Accordion.Panel>Two to four working days.</Accordion.Panel>
+  </Accordion.Item>
+  <Accordion.Item value="audit" disabled>
+    <Accordion.Trigger>Audit log</Accordion.Trigger>
+    <Accordion.Panel>On the Team plan.</Accordion.Panel>
+  </Accordion.Item>
+</Accordion>;
+
+<Collapsible trigger={(trigger) => <Button {...trigger}>What is in the box?</Button>}>A kite.</Collapsible>;
+```
+
+`Accordion`: `value`/`defaultValue` (`string[]`), `onValueChange(open, { reason })`, `multiple` (default
+`false`), `loop` (default `true`), `level` (`1`–`6`, default `3`). `Accordion.Item`: `value`, `disabled`.
+`Accordion.Trigger`: `level` to override one header, `arrow` (default `true`) for the built-in chevron.
+`Accordion.Panel`: every Box prop. `Collapsible`: `trigger`, `open`/`defaultOpen`, `onOpenChange`.
+
+The height animation is a shared class — a one-row grid whose track runs `1fr` to `0fr` — so nothing is
+measured and nothing is written per instance. A closed panel is hidden with `visibility` and stays in the
+DOM, which is what keeps its state and what gives the exit a value to animate from. Every header is its
+own tab stop; Down/Up/Home/End are a shortcut. Style the open state with `ariaAttr={{ expanded: … }}`,
+never a variant, and leave `accordion.clip` alone: padding on it stops the track reaching zero.
 
 ## Dropdown
 

@@ -37,6 +37,7 @@ Read `.claude/rules/box-kite-rules.md` — the shortest complete answer — befo
 | `npm run check:props`                      | Fail if a prop has no JSDoc, an example no longer matches the CSS, or the reference is stale                      |
 | `npm run docs:agents`                      | Write the committed agent files: the skill, the Cursor rule and the plugin marketplace entry                      |
 | `npm run check:agents`                     | Fail if one of those three has been edited by hand instead of its source                                          |
+| `npm run size:published -- accordion tabs` | The "N KB gz on top of Box" figure a release note quotes, measured rather than transcribed                        |
 | `npm run release -- minor`                 | Turn `releases/next.md` into the versioned notes, bump the manifest and open the release PR — merging it releases |
 
 Node version: v24 (pinned in .nvmrc).

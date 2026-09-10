@@ -411,6 +411,124 @@ const boxComponents = {
       },
     },
   },
+  // A disclosure, and a set of them. The height animation is a *class* rather than a measurement: the
+  // panel sits in a one-row grid whose track runs `1fr` to `0fr`, so nothing is observed, nothing is
+  // written per instance, and a hundred items share one rule where a measured height would be a hundred.
+  // `visibility` is what takes the closed content out of the tab order and the accessibility tree — and
+  // unlike `display`, it has a before-change style, so the exit needs no `allow-discrete`, the entrance
+  // needs no `@starting-style`, and a server-rendered open panel does not animate itself open on load.
+  accordion: {
+    styles: { display: 'flex', d: 'column' },
+    children: {
+      item: {
+        styles: {
+          bb: 1,
+          borderColor: 'gray-200',
+          theme: { dark: { borderColor: 'gray-700' } },
+        },
+      },
+      // The heading APG asks the button be wrapped in. It carries no look of its own: the level says
+      // where the section sits in the document outline, and must not also decide how the header reads.
+      heading: {
+        styles: { display: 'flex' },
+      },
+      trigger: {
+        styles: {
+          display: 'flex',
+          ai: 'center',
+          jc: 'space-between',
+          gap: 2,
+          // The whole row, so the pointer target is the header rather than the words in it.
+          width: 'fit',
+          py: 3,
+          fontSize: 14,
+          lineHeight: 20,
+          fontWeight: 500,
+          textAlign: 'start',
+          color: 'gray-900',
+          bgColor: 'transparent',
+          b: 0,
+          cursor: 'pointer',
+          transition: 'colors',
+          hover: { color: 'indigo-600' },
+          // The open state is the button's own `aria-expanded`, so it needs no variant: the attribute
+          // the pattern already has to write is the selector.
+          ariaAttr: { expanded: { color: 'indigo-600' } },
+          disabled: { color: 'gray-400', cursor: 'default', hover: { color: 'gray-400' } },
+          focusVisible: { outline: 2, outlineColor: 'indigo-500', outlineOffset: -2, borderRadius: 1 },
+          forcedColors: { ariaAttr: { expanded: { color: 'Highlight' } } },
+          theme: {
+            dark: {
+              color: 'gray-100',
+              hover: { color: 'indigo-400' },
+              ariaAttr: { expanded: { color: 'indigo-400' } },
+              disabled: { color: 'gray-600', hover: { color: 'gray-600' } },
+            },
+          },
+        },
+      },
+      // The chevron, drawn with two borders the way the menu's arrow and its tick are — the library
+      // ships no icons. Pointing down closed and up open, and the turn animates on `._b`'s own
+      // transition. Physical sides on purpose: an accordion opens downwards in every reading order.
+      arrow: {
+        styles: { width: 1.5, height: 1.5, bt: 1.5, br: 1.5, borderColor: 'currentColor', rotate: 135, opacity: 0.6, flexShrink: 0 },
+        variants: {
+          open: { rotate: -45 },
+        },
+      },
+      // The mechanism, and the only part the component keeps for itself. A grid of one row, so the
+      // panel's own height is what `1fr` resolves to and no number is ever written down.
+      clip: {
+        styles: {
+          display: 'grid',
+          // The registry has no fraction value for a track list, and this is the one place that wants
+          // one — `css` is where a property with no prop goes, and it still compiles to a shared class.
+          css: { gridTemplateRows: '1fr' },
+          // The panel overflows a zero-height track on the way in and out, so the clip belongs here,
+          // on the mechanism, rather than on the panel a consumer styles.
+          overflow: 'hidden',
+        },
+        variants: {
+          // `visibility` rather than `display`: it is animatable, flipping to hidden only once the
+          // track has finished closing and back to visible the instant it opens, which is exactly the
+          // two moments the content may not be reachable.
+          closed: { css: { gridTemplateRows: '0fr' }, visibility: 'hidden' },
+        },
+      },
+      panel: {
+        styles: {
+          // Without it the grid item's automatic minimum size is its content, and a `0fr` track would
+          // never close. The one line the whole animation rests on.
+          minHeight: 0,
+          // Room above for a focus ring on a control at the very top of the panel: the clip above is
+          // permanent, and a ring is drawn outside the box it belongs to.
+          pt: 2,
+          pb: 4,
+          fontSize: 14,
+          lineHeight: 20,
+          color: 'gray-700',
+          theme: { dark: { color: 'gray-300' } },
+        },
+      },
+    },
+  },
+  // One disclosure on its own: the same mechanism with no heading, no group and no keyboard, since a
+  // lone button needs none. The two trees are separate but their rules are not — identical values share
+  // one class, so the second component's mechanism costs nothing.
+  collapsible: {
+    styles: { display: 'flex', d: 'column', gap: 2 },
+    children: {
+      clip: {
+        styles: { display: 'grid', css: { gridTemplateRows: '1fr' }, overflow: 'hidden' },
+        variants: {
+          closed: { css: { gridTemplateRows: '0fr' }, visibility: 'hidden' },
+        },
+      },
+      panel: {
+        styles: { minHeight: 0, fontSize: 14, lineHeight: 20 },
+      },
+    },
+  },
   // The `role="tooltip"` bubble. Inverted against the page on purpose: a tooltip is a temporary
   // overlay and has to read as one at a glance, whichever theme is underneath it.
   tooltip: {

@@ -191,6 +191,11 @@ export const siteRoutes = [
       "A menu button and its menu on the Popover API: APG's roles and keys, submenus as nested popovers, and no portal or focus trap.",
   },
   {
+    path: '/accordion',
+    name: 'Accordion',
+    description: "APG's accordion and the disclosure under it, whose height animation is a shared class rather than a measured pixel.",
+  },
+  {
     path: '/tabs',
     name: 'Tabs',
     description:

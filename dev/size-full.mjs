@@ -9,6 +9,7 @@ import * as a11y from '../dist/a11y.mjs';
 import * as anchor from '../dist/anchor.mjs';
 import * as core from '@box-kite/core';
 import * as ssg from '../dist/ssg.mjs';
+import * as accordion from '../dist/components/accordion.mjs';
 import * as baseSvg from '../dist/components/baseSvg.mjs';
 import * as button from '../dist/components/button.mjs';
 import * as chart from '../dist/components/chart.mjs';
@@ -42,6 +43,7 @@ console.log(
   anchor,
   core,
   ssg,
+  accordion,
   baseSvg,
   button,
   chart,

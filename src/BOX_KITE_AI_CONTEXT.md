@@ -1650,6 +1650,94 @@ away, so selection would otherwise read identically on and off.
 
 ---
 
+## Accordion & Collapsible
+
+```tsx
+import Accordion, { Collapsible } from '@box-kite/react/components/accordion';
+
+<Accordion defaultValue={['shipping']} onValueChange={(open, { reason }) => log(open, reason)}>
+  <Accordion.Item value="shipping">
+    <Accordion.Trigger>Shipping</Accordion.Trigger>
+    <Accordion.Panel>Two to four working days, tracked.</Accordion.Panel>
+  </Accordion.Item>
+  <Accordion.Item value="returns">
+    <Accordion.Trigger>Returns</Accordion.Trigger>
+    <Accordion.Panel>Thirty days, in the packaging it came in.</Accordion.Panel>
+  </Accordion.Item>
+</Accordion>;
+```
+
+APG's accordion. **The height animation is a class, not a measurement**: the panel sits in a grid of one
+row whose track runs `1fr` to `0fr`, so there is no `ResizeObserver`, no measured pixel and nothing
+written per instance — and content that grows while a panel is open grows with it.
+
+| Prop            | Default | What it does                                                              |
+| --------------- | ------- | ------------------------------------------------------------------------- |
+| `value`         | —       | Controlled: the values of every panel standing open, a `string[]`.        |
+| `defaultValue`  | —       | Which panels start open. Left out, all of them are closed.                |
+| `onValueChange` | —       | `(open, { reason, event })` — `reason` is `'trigger'`.                    |
+| `multiple`      | `false` | Whether several panels may stand open at once.                            |
+| `loop`          | `true`  | Whether Down and Up wrap at the ends.                                     |
+| `level`         | `3`     | Which heading each header sits in. It has to fit the outline of the page. |
+
+| Part                | Props                               | Role                                                |
+| ------------------- | ----------------------------------- | --------------------------------------------------- |
+| `Accordion.Item`    | `value`, `disabled`, every Box prop | none — it owns the pair of ids                      |
+| `Accordion.Trigger` | `level`, `arrow`, every Box prop    | `<button aria-expanded aria-controls>` in a heading |
+| `Accordion.Panel`   | every Box prop                      | `region` + `aria-labelledby`                        |
+
+| Key           | What it does                                                                                  |
+| ------------- | --------------------------------------------------------------------------------------------- |
+| Tab           | Every header is its own tab stop, and so is anything inside an open panel.                    |
+| Enter / Space | Opens the focused section, or closes it.                                                      |
+| Down / Up     | The next and previous header, wrapping and stepping over disabled ones. Inert inside a panel. |
+| Home / End    | The first and last header.                                                                    |
+
+An accordion is **not** a composite widget, so nothing here is a roving tabindex — that is the one thing
+to unlearn from `Tabs`, where the whole list is a single tab stop.
+
+**A closed panel is hidden with `visibility`, and is always rendered.** Content behind a zero-height
+track is still laid out, still tabbable and still read out, so it has to be hidden by something —
+and `visibility` is the one that is animatable, flipping to hidden only once the track has closed and
+back the instant it opens. So there is no `@starting-style` and no `transitionBehavior="allow-discrete"`
+here, a server-rendered open panel does not animate itself open on load, a half-filled form in a panel
+survives being shut, and children too expensive to render closed are yours to gate:
+
+```tsx
+<Accordion.Panel>{open ? <ExpensiveThing /> : null}</Accordion.Panel>
+```
+
+One panel stands open at a time unless `multiple`, and closing the open one is always allowed — so an
+accordion can stand with everything shut and there is no second prop for it. A `disabled` item is the
+`disabled` attribute, so the browser takes the header out of the tab sequence and the arrows step over it.
+The panel is a `role="region"` named by its header; past about six panels the landmarks are noise, which
+is APG's own caveat, and `props={{ role: undefined }}` drops it.
+
+`Collapsible` is a **named export of the same module**: the same mechanism with no heading, no group and
+no arrow keys. The trigger is a render prop and the children are the content, the way `<Popover>` reads.
+
+```tsx
+<Collapsible defaultOpen trigger={(trigger) => <Button {...trigger}>What is in the box?</Button>}>
+  <P>A kite, and the string for it.</P>
+</Collapsible>
+```
+
+Styling is the `accordion` tree — `accordion.item`, `accordion.heading`, `accordion.trigger`,
+`accordion.arrow`, `accordion.panel` — plus `collapsible` for the lone one. A header's open state is its
+own `aria-expanded`, so `ariaAttr={{ expanded: … }}` styles it and no variant is involved:
+
+```tsx
+<Accordion.Trigger py={4} ariaAttr={{ expanded: { color: 'emerald-600' } }}>
+  Shipping
+</Accordion.Trigger>
+```
+
+The one part that is not yours is `accordion.clip`, the grid the panel opens in: a padding or a border on
+it would keep the track from ever reaching zero. The clip is permanent, which is what pays for the
+animation — the panel's own padding is the room a focus ring on something at its edge needs.
+
+---
+
 ## Tooltip Component
 
 ```tsx
