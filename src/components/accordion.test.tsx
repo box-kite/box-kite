@@ -34,8 +34,10 @@ describe('Accordion', () => {
 
   const header = (name: string) => screen.getByRole('button', { name });
   const panelOf = (name: string) => document.getElementById(header(name).getAttribute('aria-controls')!)!;
-  /** The grid the panel opens in — the mechanism, which is the panel's own parent. */
+  /** The bare grid item that clips the panel — the panel's own parent. */
   const clipOf = (name: string) => panelOf(name).parentElement!;
+  /** The grid whose track animates, one above the clip. */
+  const trackOf = (name: string) => clipOf(name).parentElement!;
 
   describe('roles and naming', () => {
     it('puts every header in a heading, as APG asks', () => {
@@ -230,9 +232,9 @@ describe('Accordion', () => {
 
       // The open panel's grid track is `1fr`, the closed one's is `0fr`, and neither carries an inline
       // height: two shared rules do the whole animation.
-      expect(clipOf('Shipping').className).toContain('css-gridTemplateRows-1fr');
-      expect(clipOf('Returns').className).toContain('css-gridTemplateRows-0fr');
-      expect(clipOf('Shipping').getAttribute('style')).toBeNull();
+      expect(trackOf('Shipping').className).toContain('css-gridTemplateRows-1fr');
+      expect(trackOf('Returns').className).toContain('css-gridTemplateRows-0fr');
+      expect(trackOf('Shipping').getAttribute('style')).toBeNull();
     });
 
     it('hides a closed panel with visibility, which is what takes it out of the tab order', () => {
@@ -241,23 +243,36 @@ describe('Accordion', () => {
       // `visibility` rather than `display`: it is animatable, so it flips to hidden only once the track
       // has closed, and back the instant it opens — which is also why the entrance needs no
       // `@starting-style` and a server-rendered open panel does not animate itself open on load.
-      expect(clipOf('Returns').className).toContain('visibility-hidden');
-      expect(clipOf('Shipping').className).not.toContain('visibility-hidden');
+      expect(trackOf('Returns').className).toContain('visibility-hidden');
+      expect(trackOf('Shipping').className).not.toContain('visibility-hidden');
     });
 
     it('clips on the mechanism, never on the panel a consumer styles', () => {
       render(<Example defaultValue={['shipping']} />);
 
       expect(clipOf('Shipping').className).toContain('overflow-hidden');
+      expect(clipOf('Shipping').className).toContain('minHeight-0');
       expect(panelOf('Shipping').className).not.toContain('overflow');
     });
 
-    it('lets the panel shrink below its content, which is the line the whole thing rests on', () => {
-      render(<Example />);
+    it('keeps every size off the grid item, which is what lets the track reach zero', () => {
+      render(
+        <Accordion defaultValue={['a']}>
+          <Accordion.Item value="a">
+            <Accordion.Trigger>One</Accordion.Trigger>
+            <Accordion.Panel p={4}>Body</Accordion.Panel>
+          </Accordion.Item>
+        </Accordion>,
+      );
 
-      // Without `min-height: 0` a grid item's automatic minimum size is its content, and a `0fr` track
-      // would never close.
-      expect(panelOf('Shipping').className).toContain('minHeight-0');
+      // Bug #142: **padding cannot be squeezed**, so a grid item carrying any floors the `0fr` track at
+      // exactly that much — measured in Chrome as a permanent 24px stub under every closed section, and
+      // as a stretch of the transition where the height had stopped but the text was still painted.
+      // The panel is inside the clip rather than being the item, so its padding costs the track nothing.
+      // jsdom computes no layout, but the wiring this rests on is exactly what can be asserted.
+      expect(clipOf('One').className).not.toMatch(/(^|\s)(p|px|py|pt|pb|ps|pe|b|bt|bb|height|minHeight)-(?!0\b)/);
+      expect(panelOf('One').className).toContain('p-4');
+      expect(clipOf('One').contains(panelOf('One'))).toBe(true);
     });
 
     it('turns the chevron over rather than swapping it, which is what animates it', () => {
@@ -392,7 +407,7 @@ describe('Collapsible', () => {
     render(<Example defaultOpen />);
 
     expect(trigger()).toHaveAttribute('aria-expanded', 'true');
-    expect(panel().parentElement!.className).toContain('css-gridTemplateRows-1fr');
+    expect(panel().parentElement!.parentElement!.className).toContain('css-gridTemplateRows-1fr');
   });
 
   it('refuses a state the consumer never asked for when they own it', () => {
@@ -406,9 +421,9 @@ describe('Collapsible', () => {
   it('opens in the same grid an accordion panel does', () => {
     render(<Example />);
 
-    expect(panel().parentElement!.className).toContain('css-gridTemplateRows-0fr');
-    expect(panel().parentElement!.className).toContain('visibility-hidden');
-    expect(panel().className).toContain('minHeight-0');
+    expect(panel().parentElement!.parentElement!.className).toContain('css-gridTemplateRows-0fr');
+    expect(panel().parentElement!.parentElement!.className).toContain('visibility-hidden');
+    expect(panel().parentElement!.className).toContain('minHeight-0');
   });
 
   it('leaves the content without a role, since a region wants a name', () => {

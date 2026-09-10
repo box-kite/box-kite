@@ -56,7 +56,8 @@ The height animation is a shared class — a one-row grid whose track runs `1fr`
 measured and nothing is written per instance. A closed panel is hidden with `visibility` and stays in the
 DOM, which is what keeps its state and what gives the exit a value to animate from. Every header is its
 own tab stop; Down/Up/Home/End are a shortcut. Style the open state with `ariaAttr={{ expanded: … }}`,
-never a variant, and leave `accordion.clip` alone: padding on it stops the track reaching zero.
+never a variant, and leave `accordion.track`/`accordion.clip` alone: padding on a grid item cannot be
+squeezed, so it floors the `0fr` track — which is why your padded panel sits inside the clip (#142).
 
 ## Dropdown
 

@@ -101,7 +101,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "26.81 KB"
+      "limit": "26.82 KB"
     },
     {
       "name": "Behavior primitives (a11y entry)",
@@ -157,7 +157,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "34.16 KB"
+      "limit": "34.17 KB"
     },
     {
       "name": "Accordion",
@@ -167,7 +167,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "29.64 KB"
+      "limit": "29.66 KB"
     },
     {
       "name": "Tabs",
@@ -177,7 +177,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "30.84 KB"
+      "limit": "30.85 KB"
     },
     {
       "name": "DataGrid",
@@ -197,7 +197,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "71.96 KB"
+      "limit": "71.98 KB"
     }
   ],
   "repository": {

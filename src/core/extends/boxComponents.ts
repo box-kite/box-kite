@@ -476,17 +476,14 @@ const boxComponents = {
           open: { rotate: -45 },
         },
       },
-      // The mechanism, and the only part the component keeps for itself. A grid of one row, so the
+      // The mechanism, in two elements the component keeps for itself. A grid of one row, so the
       // panel's own height is what `1fr` resolves to and no number is ever written down.
-      clip: {
+      track: {
         styles: {
           display: 'grid',
           // The registry has no fraction value for a track list, and this is the one place that wants
           // one — `css` is where a property with no prop goes, and it still compiles to a shared class.
           css: { gridTemplateRows: '1fr' },
-          // The panel overflows a zero-height track on the way in and out, so the clip belongs here,
-          // on the mechanism, rather than on the panel a consumer styles.
-          overflow: 'hidden',
         },
         variants: {
           // `visibility` rather than `display`: it is animatable, flipping to hidden only once the
@@ -495,13 +492,19 @@ const boxComponents = {
           closed: { css: { gridTemplateRows: '0fr' }, visibility: 'hidden' },
         },
       },
+      // Why the panel is not itself the grid item: **padding cannot be squeezed**, so an item carrying
+      // any floors the `0fr` track at exactly that much. Measured in Chrome 152 — the panel's own
+      // `8px + 16px` left every closed section a permanent 24px stub, and stopped the height moving at
+      // 45% of the transition while the text stayed painted until `visibility` flipped at 100%, which
+      // is the "content is still visible" of bug #142. This element carries nothing that has a size.
+      clip: {
+        styles: { minHeight: 0, overflow: 'hidden' },
+      },
       panel: {
         styles: {
-          // Without it the grid item's automatic minimum size is its content, and a `0fr` track would
-          // never close. The one line the whole animation rests on.
-          minHeight: 0,
-          // Room above for a focus ring on a control at the very top of the panel: the clip above is
-          // permanent, and a ring is drawn outside the box it belongs to.
+          // Room above for a focus ring on a control at the very top of the panel: the clip above it is
+          // permanent, and a ring is drawn outside the box it belongs to. Padding is safe here and
+          // nowhere above: this element is inside the clip rather than being the grid item.
           pt: 2,
           pb: 4,
           fontSize: 14,
@@ -518,14 +521,17 @@ const boxComponents = {
   collapsible: {
     styles: { display: 'flex', d: 'column', gap: 2 },
     children: {
-      clip: {
-        styles: { display: 'grid', css: { gridTemplateRows: '1fr' }, overflow: 'hidden' },
+      track: {
+        styles: { display: 'grid', css: { gridTemplateRows: '1fr' } },
         variants: {
           closed: { css: { gridTemplateRows: '0fr' }, visibility: 'hidden' },
         },
       },
+      clip: {
+        styles: { minHeight: 0, overflow: 'hidden' },
+      },
       panel: {
-        styles: { minHeight: 0, fontSize: 14, lineHeight: 20 },
+        styles: { fontSize: 14, lineHeight: 20 },
       },
     },
   },

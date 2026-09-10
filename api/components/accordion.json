@@ -133,7 +133,8 @@
     { "path": "accordion.heading", "depth": 1, "extends": null, "variants": [] },
     { "path": "accordion.trigger", "depth": 1, "extends": null, "variants": [] },
     { "path": "accordion.arrow", "depth": 1, "extends": null, "variants": ["open"] },
-    { "path": "accordion.clip", "depth": 1, "extends": null, "variants": ["closed"] },
+    { "path": "accordion.track", "depth": 1, "extends": null, "variants": ["closed"] },
+    { "path": "accordion.clip", "depth": 1, "extends": null, "variants": [] },
     { "path": "accordion.panel", "depth": 1, "extends": null, "variants": [] }
   ]
 }

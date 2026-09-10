@@ -1732,9 +1732,12 @@ own `aria-expanded`, so `ariaAttr={{ expanded: … }}` styles it and no variant 
 </Accordion.Trigger>
 ```
 
-The one part that is not yours is `accordion.clip`, the grid the panel opens in: a padding or a border on
-it would keep the track from ever reaching zero. The clip is permanent, which is what pays for the
-animation — the panel's own padding is the room a focus ring on something at its edge needs.
+Two parts are not yours: `accordion.track`, the grid whose row animates, and `accordion.clip` inside it,
+the bare grid item that clips. Bare is the point — **padding cannot be squeezed**, so a grid item carrying
+any floors the `0fr` track at exactly that much, leaving a permanent stub and a stretch of the transition
+where the height has stopped but the text is still painted (measured in Chrome, bug #142). The panel you
+pad is inside the clip, so its padding costs the track nothing; that padding is also the room a focus ring
+on something at the panel's edge needs, since the clip is permanent.
 
 ---
 

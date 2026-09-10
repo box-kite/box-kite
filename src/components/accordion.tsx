@@ -309,16 +309,19 @@ function AccordionPanel<TKey extends keyof ComponentsAndVariants = 'accordion.pa
   const { open, triggerId, panelId } = useAccordionItem('Accordion.Panel');
 
   return (
-    // The clip is the component's: it is a mechanism, and anything a consumer put on it — a padding, a
-    // border — would keep the track from ever reaching zero.
-    <Box component="accordion.clip" variant={{ closed: !open }}>
-      <Box
-        component={'accordion.panel' as TKey}
-        {...(restProps as BoxProps<'div', TKey>)}
-        id={panelId}
-        props={{ role: 'region', 'aria-labelledby': triggerId, ...tagProps }}
-      >
-        {children}
+    // Two elements, both the component's: the grid whose track animates, and the bare item inside it
+    // that does the clipping. Bare is the point — padding on a grid item floors a `0fr` track at
+    // exactly that much (#142), so the padding belongs to the panel below, inside the clip.
+    <Box component="accordion.track" variant={{ closed: !open }}>
+      <Box component="accordion.clip">
+        <Box
+          component={'accordion.panel' as TKey}
+          {...(restProps as BoxProps<'div', TKey>)}
+          id={panelId}
+          props={{ role: 'region', 'aria-labelledby': triggerId, ...tagProps }}
+        >
+          {children}
+        </Box>
       </Box>
     </Box>
   );
@@ -364,9 +367,11 @@ function Collapsible<TKey extends keyof ComponentsAndVariants = 'collapsible'>(p
   return (
     <Box component={'collapsible' as TKey} {...(restProps as BoxProps<'div', TKey>)} props={tagProps}>
       {trigger(bag)}
-      <Box component="collapsible.clip" variant={{ closed: !isOpen }}>
-        <Box component="collapsible.panel" id={panelId}>
-          {children}
+      <Box component="collapsible.track" variant={{ closed: !isOpen }}>
+        <Box component="collapsible.clip">
+          <Box component="collapsible.panel" id={panelId}>
+            {children}
+          </Box>
         </Box>
       </Box>
     </Box>

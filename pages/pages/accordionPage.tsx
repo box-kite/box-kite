@@ -319,9 +319,10 @@ export default function AccordionPage() {
 </Accordion.Trigger>`}
             />
             <Box mt={4}>
-              The one part that is not yours is <Mono>accordion.clip</Mono>, the grid the panel opens in: a padding or a border on it would
-              keep the track from ever reaching zero, so the component keeps it. The clip is permanent, which is what pays for the animation
-              — the panel's own padding is the room a focus ring on something at its edge needs.
+              Two parts are not yours: <Mono>accordion.track</Mono>, the grid whose row animates, and <Mono>accordion.clip</Mono> inside it,
+              the bare item that clips. Bare is the point — padding cannot be squeezed, so a grid item carrying any floors the{' '}
+              <Mono>0fr</Mono> track at exactly that much, which is why the panel you pad sits inside the clip rather than being it. That
+              padding is also the room a focus ring at the panel's edge needs, since the clip is permanent.
             </Box>
           </Section>
 
