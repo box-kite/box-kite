@@ -133,6 +133,142 @@ const boxComponents = {
       },
     },
   },
+  // The `role="menu"` panel and everything in it. Same UA `[popover]` look underneath as the popover
+  // panel, so the border, the padding and the system colours are all declared here.
+  menu: {
+    styles: {
+      display: 'flex',
+      d: 'column',
+      minWidth: 44,
+      width: 'fit-content',
+      maxHeight: 80,
+      p: 1,
+      b: 1,
+      borderRadius: 2,
+      bgColor: 'white',
+      color: 'gray-900',
+      borderColor: 'gray-300',
+      shadow: 'medium',
+      overflow: 'auto',
+      theme: {
+        dark: { bgColor: 'gray-800', borderColor: 'gray-700', color: 'gray-100' },
+      },
+      // Opening is the panel's first style resolution — `display: none` to shown on the platform path,
+      // and mounting on the other — which is the moment `@starting-style` names.
+      startingStyle: { opacity: 0, translateY: -1 },
+    },
+    variants: {
+      // The exit, on the top-layer path only, where the panel is hidden rather than unmounted: losing
+      // `:popover-open` *is* the exit, and `allow-discrete` holds `display` back until it has run.
+      // `display: none` is declared rather than left to the UA's `[popover]:not(:popover-open)` rule,
+      // because any author rule outranks that one — and every Box carries `display: block`, so without
+      // it a closed menu stays laid out over the page. The same pair `popover` carries, for the same
+      // measured reason.
+      topLayer: {
+        transitionBehavior: 'allow-discrete',
+        not: { open: { opacity: 0, translateY: -1, display: 'none' } },
+      },
+    },
+    children: {
+      // One `role="menuitem"`, and the two that carry a state. The highlight is drawn on `:focus`
+      // because in a menu focus *is* the highlight — the pointer moves it, so hover and the keyboard
+      // cannot disagree — with `hover` beside it for the frame before focus lands.
+      item: {
+        styles: {
+          display: 'flex',
+          ai: 'center',
+          gap: 2,
+          width: 'fit',
+          px: 2,
+          py: 1.5,
+          borderRadius: 1,
+          fontSize: 14,
+          lineHeight: 20,
+          textAlign: 'start',
+          cursor: 'pointer',
+          userSelect: 'none',
+          whiteSpace: 'nowrap',
+          transition: 'none',
+          hover: { bgColor: 'gray-100' },
+          focus: { bgColor: 'gray-100', outline: 0 },
+          // A disabled item is `aria-disabled` rather than `disabled`, because APG asks that it stay
+          // focusable — so the attribute is what styles it.
+          ariaAttr: {
+            disabled: { color: 'gray-400', cursor: 'default', hover: { bgColor: 'transparent' }, focus: { bgColor: 'transparent' } },
+          },
+          // A forced-colors mode throws every background away, and the highlight is a background: these
+          // two are the only pair those modes keep, so without them focus reads identically on and off.
+          forcedColors: { focus: { bgColor: 'Highlight', color: 'HighlightText' } },
+          theme: {
+            dark: {
+              hover: { bgColor: 'gray-700' },
+              focus: { bgColor: 'gray-700' },
+              ariaAttr: {
+                disabled: { color: 'gray-500', hover: { bgColor: 'transparent' }, focus: { bgColor: 'transparent' } },
+              },
+            },
+          },
+        },
+        variants: {
+          // An item that opens a submenu: its arrow sits at the far end, whichever end that is.
+          sub: { jc: 'space-between' },
+        },
+      },
+      // The fixed slot a tick or a dot goes in, so the text of every item in a menu lines up whether or
+      // not that item carries a state.
+      indicator: {
+        styles: { display: 'flex', ai: 'center', jc: 'center', width: 4, height: 4, ms: -0.5 },
+      },
+      // A tick, drawn with two borders rather than an asset: the library ships no icons, and a check
+      // mark is two lines. Physical sides on purpose — a tick is not mirrored in a right-to-left menu.
+      check: {
+        styles: { width: 2.5, height: 1.25, bl: 2, bb: 2, borderColor: 'currentColor', borderRadius: 0.25, rotate: -45, mb: 0.5 },
+      },
+      // The radio group's dot. A radius at least half the box is how a circle is written here.
+      dot: {
+        styles: { width: 1.5, height: 1.5, borderRadius: 1.5, bgColor: 'currentColor' },
+      },
+      // The chevron on an item that opens a submenu, drawn the way the tick is. It points the way the
+      // submenu comes out, so in a right-to-left menu it points the other way — one `:dir(rtl)` rule.
+      arrow: {
+        styles: {
+          width: 1.5,
+          height: 1.5,
+          bt: 1.5,
+          br: 1.5,
+          borderColor: 'currentColor',
+          rotate: 45,
+          ms: 2,
+          opacity: 0.6,
+          rtl: { rotate: -135 },
+        },
+      },
+      group: {
+        styles: { display: 'flex', d: 'column' },
+      },
+      // A group's heading. `role="presentation"`, since a menu owns items, groups and separators and
+      // nothing else — what makes it a name at all is the group's `aria-labelledby`.
+      label: {
+        styles: {
+          px: 2,
+          py: 1,
+          fontSize: 12,
+          fontWeight: 600,
+          lineHeight: 16,
+          color: 'gray-500',
+          theme: { dark: { color: 'gray-400' } },
+        },
+      },
+      separator: {
+        styles: {
+          my: 1,
+          bt: 1,
+          borderColor: 'gray-200',
+          theme: { dark: { borderColor: 'gray-700' } },
+        },
+      },
+    },
+  },
   // The `role="tooltip"` bubble. Inverted against the page on purpose: a tooltip is a temporary
   // overlay and has to read as one at a glance, whichever theme is underneath it.
   tooltip: {

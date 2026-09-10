@@ -32,7 +32,12 @@ export const Header = semantic('header');
 export const Main = semantic('main');
 export const Mark = semantic('mark');
 export const Nav = semantic('nav');
-export const Menu = semantic('menu');
+export const MenuList = semantic('menu');
+/**
+ * @deprecated `MenuList` is this element now. `Menu` is the menu **button** (`components/menu`), and two exports of
+ * that name are one import away from the wrong component. Same element, same props.
+ */
+export const Menu = MenuList;
 export const Section = semantic('section');
 export const Summary = semantic('summary');
 export const Time = semantic('time');

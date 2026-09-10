@@ -37,6 +37,7 @@ const loaders: Record<SiteRoutePath, () => Promise<{ default: ComponentType }>> 
   '/overlay': () => import('../pages/overlayPage'),
   '/popover': () => import('../pages/popoverPage'),
   '/dialog': () => import('../pages/dialogPage'),
+  '/menu': () => import('../pages/menuPage'),
   '/dropdown': () => import('../pages/dropdownPage'),
   '/datagrid': () => import('../pages/dataGridPage'),
   '/flex': () => import('../pages/flexPage'),

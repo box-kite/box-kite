@@ -1,14 +1,12 @@
 import { useCallback, useRef, useState } from 'react';
 import { isRtl } from '../../utils/dom/domUtils';
+import TypeaheadUtils from '../../utils/keyboard/typeaheadUtils';
 import { useLatest } from './callbacks';
 import useControllableState, { ChangeDetails, ChangeHandler } from './useControllableState';
 
 export type RovingFocusReason = 'keyboard' | 'typeahead' | 'focus' | 'programmatic';
 
 export type RovingOrientation = 'vertical' | 'horizontal' | 'both';
-
-/** How long a typeahead buffer stays open, per APG. */
-const TYPEAHEAD_TIMEOUT = 1000;
 
 /** Rows a PageUp/PageDown moves when the caller names no page size. */
 const DEFAULT_PAGE_SIZE = 10;
@@ -122,39 +120,6 @@ function edge(delta: number, count: number, isDisabled?: (index: number) => bool
 }
 
 /**
- * The item a typeahead buffer points at. One character — or the same one repeated, which is how a user
- * cycles through a letter — searches from *after* the current item; a longer buffer is a real prefix and
- * searches from it, so further letters narrow instead of skipping.
- */
-function typeaheadTarget(
-  query: string,
-  from: number,
-  count: number,
-  textOf: (index: number) => string,
-  isDisabled?: (index: number) => boolean,
-): number {
-  if (count === 0) return -1;
-
-  const chars = [...query];
-  const repeated = chars.every((char) => char === chars[0]);
-  const needle = (repeated ? chars[0] : query).toLowerCase();
-  const start = repeated ? from + 1 : from;
-
-  for (let offset = 0; offset < count; offset++) {
-    const index = (((start + offset) % count) + count) % count;
-
-    if (isDisabled?.(index)) continue;
-    if (textOf(index).trim().toLowerCase().startsWith(needle)) return index;
-  }
-
-  return -1;
-}
-
-function isPrintable(event: React.KeyboardEvent): boolean {
-  return event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey;
-}
-
-/**
  * Arrow-key navigation over a list: the movement half of every APG list pattern (listbox, menu, tabs,
  * radio group), with both focus strategies. It owns which item is active and how the keys move it; the
  * caller owns the roles and the ARIA, because a listbox and a menu navigate alike and are named quite
@@ -223,7 +188,7 @@ export default function useRovingFocus(options: RovingFocusOptions): RovingFocus
   const itemRefs = useRef(new Map<number, (element: HTMLElement | null) => void>());
   const cells = useRef(new Map<string, HTMLElement>());
   const cellRefs = useRef(new Map<string, (element: HTMLElement | null) => void>());
-  const typeahead = useRef({ query: '', at: 0 });
+  const typeahead = useRef<TypeaheadUtils.Buffer>({ query: '', at: 0 });
 
   const focusItem = useCallback((index: number) => {
     items.current[index]?.focus();
@@ -403,7 +368,7 @@ export default function useRovingFocus(options: RovingFocusOptions): RovingFocus
       const vertical = orientation !== 'horizontal';
       const horizontal = orientation !== 'vertical';
       const buffer = typeahead.current;
-      const bufferIsOpen = buffer.query !== '' && event.timeStamp - buffer.at < TYPEAHEAD_TIMEOUT;
+      const bufferIsOpen = TypeaheadUtils.isOpen(buffer, event.timeStamp);
 
       const move = (target: number, reason: RovingFocusReason) => {
         if (target === -1 || target === activeIndex) return;
@@ -451,11 +416,10 @@ export default function useRovingFocus(options: RovingFocusOptions): RovingFocus
         return;
       }
 
-      if (textOf && isPrintable(event)) {
-        buffer.query = bufferIsOpen ? buffer.query + event.key : event.key;
-        buffer.at = event.timeStamp;
+      if (textOf && TypeaheadUtils.isPrintable(event)) {
+        const query = TypeaheadUtils.push(buffer, event.key, event.timeStamp);
 
-        move(typeaheadTarget(buffer.query, activeIndex, count, textOf, isDisabled), 'typeahead');
+        move(TypeaheadUtils.target(query, activeIndex, count, textOf, isDisabled), 'typeahead');
       }
     },
     [activeIndex, count, focusItem, focusItems, isDisabled, isGrid, loop, onGridKeyDown, onSelect, orientation, setIndex, textOf],

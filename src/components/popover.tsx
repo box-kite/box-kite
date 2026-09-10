@@ -1,29 +1,21 @@
-import { FunctionComponent, useMemo, useRef, useState } from 'react';
+import { FunctionComponent } from 'react';
 import Box, { BoxProps } from '../box';
 import { useEventCallback } from '../react/a11y/callbacks';
-import useControllableState, { ChangeHandler } from '../react/a11y/useControllableState';
-import useDismiss from '../react/a11y/useDismiss';
-import useFocusReturn from '../react/a11y/useFocusReturn';
+import { ChangeHandler } from '../react/a11y/useControllableState';
 import useAnchorPosition from '../react/anchor/useAnchorPosition';
-import { useIsomorphicLayoutEffect } from '../react/effects';
-import useIdentifier from '../react/identity/useIdentifier';
+import usePopoverLayer, {
+  PopoverReason,
+  PopoverTrigger as PopoverLayerTrigger,
+  PopoverTriggerAttributes as PopoverLayerTriggerAttributes,
+} from '../react/popover/usePopoverLayer';
 import { ComponentsAndVariants } from '../types';
 import { AnchorAlign, AnchorSide } from '../utils/anchor/anchorUtils';
-import { isEventInside } from '../utils/dom/domUtils';
-import { supportsPopover } from '../utils/environment/environmentUtils';
 import Overlay from './overlay';
 
-/** Why the popover opened or closed — `onOpenChange` gets this alongside the event that did it. */
-export type PopoverReason = 'trigger' | 'escape' | 'outside-pointer' | 'imperative';
+export type { PopoverReason };
 
 /** The DOM attributes the trigger has to carry. */
-export interface PopoverTriggerAttributes {
-  'aria-expanded': boolean;
-  'aria-haspopup': 'dialog';
-  'aria-controls'?: string;
-  /** Only where the browser has no Popover API. On the platform path `popovertarget` does the toggling. */
-  onClick?(event: React.MouseEvent): void;
-}
+export type PopoverTriggerAttributes = PopoverLayerTriggerAttributes<'dialog'>;
 
 /**
  * What the trigger has to carry: spread it onto the control itself, not a wrapper. The `ref` is what the
@@ -36,10 +28,7 @@ export interface PopoverTriggerAttributes {
  *
  * It must be a **button**: `popovertarget` is what the browser toggles on, and it only reads it off one.
  */
-export interface PopoverTrigger {
-  ref: React.RefCallback<HTMLElement>;
-  props: PopoverTriggerAttributes;
-}
+export type PopoverTrigger = PopoverLayerTrigger<'dialog'>;
 
 // `open` shadows the pseudo-class nesting key, and `flip` the CSS prop of that name — the `content`/`open`
 // precedent `Tooltip` set. The component owns both states, and `:popover-open` is what styles this one.
@@ -141,168 +130,57 @@ function PopoverImpl<TKey extends keyof ComponentsAndVariants = 'popover'>(props
     ...restProps
   } = props;
 
-  const generatedId = useIdentifier('popover');
-  // A consumer id wins, and `aria-controls`/`popovertarget` both have to name whichever won.
-  const popoverId = restProps.id ?? generatedId;
-  const [isOpen, setOpen] = useControllableState<boolean, PopoverReason>({
-    value: open,
-    defaultValue: defaultOpen,
-    onChange: onOpenChange,
+  const handleOpened = useEventCallback((panel: HTMLElement) => {
+    // After the browser has had its go: an `autofocus` inside is applied by `showPopover` itself.
+    if (!autoFocus || panel.contains(document.activeElement)) return;
+
+    panel.focus();
   });
 
-  // The trigger element, as state rather than a ref: it is read during render (it is what the panel is
-  // anchored to), and a ref read in render is both a lint error here and a real staleness bug.
-  const [triggerElement, setTriggerElement] = useState<HTMLElement | null>(null);
-  const [panel, setPanel] = useState<HTMLElement | null>(null);
-  const [platform, setPlatform] = useState(true);
-  // What the DOM says, mirrored as state so the two can be compared on a commit. Without it a controlled
-  // popover the browser closed would stay closed: `isOpen` never changed, so nothing would re-render.
-  const [domOpen, setDomOpen] = useState(false);
-  // What the last input was, read when the platform tells us it closed: a ToggleEvent carries no reason.
-  const dismissReason = useRef<PopoverReason>('imperative');
+  const {
+    platform,
+    isOpen,
+    id: popoverId,
+    trigger: triggerBag,
+    triggerElement,
+    setPanel,
+  } = usePopoverLayer({
+    haspopup: 'dialog',
+    idPrefix: 'popover',
+    id: restProps.id,
+    open,
+    defaultOpen,
+    onOpenChange,
+    onOpened: handleOpened,
+  });
 
   const position = useAnchorPosition({ side, align, offset, flip, matchWidth, anchor: triggerElement });
-
-  // Starts on the platform path so a server render and the first client render agree; a browser without
-  // the API says so before it paints, the way `useAnchorPosition` does for anchor positioning.
-  useIsomorphicLayoutEffect(() => {
-    if (!supportsPopover()) setPlatform(false);
-  }, []);
-
-  // The platform's own state, mirrored back. `beforetoggle` is cancelable opening and *not* closing, so
-  // a controlled consumer can refuse to open but never to close — the sync effect re-shows it instead.
-  const handleBeforeToggle = useEventCallback((event: Event) => {
-    const toggle = event as Event & { newState: string };
-    const next = toggle.newState === 'open';
-
-    if (next && open === false) {
-      event.preventDefault();
-      return;
-    }
-
-    setDomOpen(next);
-
-    const reason = next ? 'trigger' : dismissReason.current;
-    dismissReason.current = 'imperative';
-    setOpen(next, { reason, event });
-  });
-
-  // Focus goes in on `toggle` rather than from an effect on `isOpen`, and the difference is not academic:
-  // `beforetoggle` fires *before* the panel opens, a discrete event is flushed synchronously, so an effect
-  // would run while `:popover-open` still does not match — and this component's own rules make that
-  // `display: none`. Focusing a hidden element does nothing at all (measured). `toggle` is queued until
-  // after the state really changed, and it fires whoever opened the panel, the browser or the effect below.
-  const handleToggle = useEventCallback((event: Event) => {
-    const target = event.currentTarget as HTMLElement;
-    if ((event as Event & { newState: string }).newState !== 'open' || !autoFocus) return;
-    // After the browser has had its go: an `autofocus` inside is applied by `showPopover` itself.
-    if (!target.contains(document.activeElement)) target.focus();
-  });
-
-  // Ahead of the effect that shows the panel, and that ordering is the point: an effect declared after it
-  // would miss the very first `beforetoggle`, leaving the DOM mirror below wrong from the start.
-  // Listened for rather than declared as a prop because `onBeforeToggle` is React 19's spelling and React
-  // 18 drops it, and both are supported — the same reason `popovertarget` is written as an attribute.
-  useIsomorphicLayoutEffect(() => {
-    if (!platform || !panel) return;
-
-    const controller = new AbortController();
-    panel.addEventListener('beforetoggle', handleBeforeToggle, { signal: controller.signal });
-    panel.addEventListener('toggle', handleToggle, { signal: controller.signal });
-
-    return () => controller.abort();
-  }, [platform, panel, handleBeforeToggle, handleToggle]);
-
-  // The one place the component tells the platform anything: whenever the two disagree, the state wins.
-  // A close cannot be refused, so a controlled popover the browser dismissed is put back here rather
-  // than argued with — `domOpen` is what makes that commit happen when `isOpen` itself never changed.
-  //
-  // It is compared against `domOpen` rather than against `:popover-open` because a discrete event is
-  // flushed synchronously: React re-renders and runs this *inside* the browser's own show operation,
-  // where the selector does not match yet and `showPopover` throws `InvalidStateError` (measured — the
-  // one combination of the four that does). The mirror already knows where the platform is heading.
-  useIsomorphicLayoutEffect(() => {
-    if (!platform || !panel || isOpen === domOpen) return;
-
-    if (isOpen) panel.showPopover();
-    else panel.hidePopover();
-  }, [isOpen, domOpen, panel, platform]);
-
-  // Why it is about to close. The platform dismisses on `keydown`/`pointerdown` and fires `beforetoggle`
-  // inside that dispatch, so a capture listener has already run and named the reason by then.
-  useIsomorphicLayoutEffect(() => {
-    if (!platform || !isOpen) return;
-
-    const controller = new AbortController();
-    const listen = (type: string, handler: (event: Event) => void) =>
-      document.addEventListener(type, handler, { signal: controller.signal, capture: true });
-
-    listen('keydown', (event) => {
-      if ((event as KeyboardEvent).key === 'Escape') dismissReason.current = 'escape';
-    });
-    listen('pointerdown', (event) => {
-      const onTrigger = !!triggerElement && isEventInside(event, [triggerElement]);
-      dismissReason.current = onTrigger ? 'trigger' : 'outside-pointer';
-    });
-
-    return () => controller.abort();
-  }, [platform, isOpen, triggerElement]);
-
-  // The trigger is an element the component was handed, so its attribute is written on rather than
-  // rendered — the way `useAnchorPosition` writes an anchor's name. `popovertarget` is what makes the
-  // browser own the toggle, and with it the press that closes an open popover from its own trigger.
-  useIsomorphicLayoutEffect(() => {
-    if (!platform || !triggerElement) return;
-
-    triggerElement.setAttribute('popovertarget', popoverId);
-
-    return () => triggerElement.removeAttribute('popovertarget');
-  }, [platform, triggerElement, popoverId]);
-
-  const handleTriggerClick = useEventCallback((event: React.MouseEvent) => {
-    setOpen((current) => !current, { reason: 'trigger', event });
-  });
-
-  const triggerBag = useMemo<PopoverTrigger>(
-    () => ({
-      ref: setTriggerElement,
-      props: {
-        'aria-expanded': isOpen,
-        'aria-haspopup': 'dialog',
-        'aria-controls': isOpen ? popoverId : undefined,
-        // Only where the platform has no `popovertarget` to do it. A click handler on the platform path
-        // would fight the light dismiss: it closes on `pointerdown`, so the `click` after it reads
-        // "closed" and opens the popover straight back up (measured).
-        ...(platform ? {} : { onClick: handleTriggerClick }),
-      },
-    }),
-    [handleTriggerClick, isOpen, platform, popoverId],
-  );
 
   const naming = { 'aria-label': label, 'aria-labelledby': labelledBy };
   const boxProps = restProps as PopoverBoxProps<TKey>;
 
   if (!platform) {
     return (
-      <PopoverFallback
-        {...(boxProps as PopoverBoxProps<'popover'>)}
-        trigger={trigger}
-        triggerBag={triggerBag}
-        triggerElement={triggerElement}
-        isOpen={isOpen}
-        setOpen={setOpen}
-        id={popoverId}
-        naming={naming}
-        contentProps={contentProps}
-        autoFocus={autoFocus}
-        side={side}
-        align={align}
-        offset={offset}
-        flip={flip}
-        matchWidth={matchWidth}
-      >
-        {children}
-      </PopoverFallback>
+      <>
+        {trigger(triggerBag)}
+        {isOpen && (
+          <Overlay
+            contentRef={setPanel}
+            anchor={triggerElement}
+            side={side}
+            align={align}
+            offset={offset}
+            flip={flip}
+            matchWidth={matchWidth}
+            component="popover"
+            {...(boxProps as PopoverBoxProps<'popover'>)}
+            id={popoverId}
+            props={{ role: 'dialog', ...naming, tabIndex: -1, ...contentProps }}
+          >
+            {children}
+          </Overlay>
+        )}
+      </>
     );
   }
 
@@ -328,73 +206,6 @@ function PopoverImpl<TKey extends keyof ComponentsAndVariants = 'popover'>(props
       >
         {children}
       </Box>
-    </>
-  );
-}
-
-interface FallbackProps extends PopoverBoxProps<'popover'> {
-  trigger: (trigger: PopoverTrigger) => React.ReactNode;
-  triggerBag: PopoverTrigger;
-  triggerElement: HTMLElement | null;
-  isOpen: boolean;
-  setOpen: (next: boolean, details: { reason: PopoverReason; event?: Event | React.SyntheticEvent }) => void;
-  naming: { 'aria-label'?: string; 'aria-labelledby'?: string };
-  contentProps?: Record<string, unknown>;
-  autoFocus: boolean;
-  side: AnchorSide;
-  align: AnchorAlign;
-  offset: number;
-  flip: boolean;
-  matchWidth: boolean;
-}
-
-/**
- * The same popover where the browser has no Popover API: an `Overlay` — a portal — plus the two primitives
- * the platform would otherwise supply. It costs a portal's compromises back (the panel leaves the DOM it
- * was declared in, so the tab order and a local theme no longer follow it), which is the price of the
- * older browser rather than a choice.
- */
-function PopoverFallback(props: FallbackProps) {
-  const { trigger, triggerBag, triggerElement, isOpen, setOpen, naming, contentProps, autoFocus, children, ...rest } = props;
-  const { side, align, offset, flip, matchWidth, id, ...boxProps } = rest;
-
-  const panelRef = useRef<HTMLDivElement>(null);
-
-  useDismiss({
-    enabled: isOpen,
-    inside: [panelRef, triggerElement],
-    onDismiss: (reason, event) => setOpen(false, { reason: reason as PopoverReason, event }),
-  });
-
-  useFocusReturn({ enabled: isOpen, returnTo: triggerElement });
-
-  useIsomorphicLayoutEffect(() => {
-    const panel = panelRef.current;
-    if (!isOpen || !panel || !autoFocus || panel.contains(document.activeElement)) return;
-
-    panel.focus();
-  }, [isOpen, autoFocus]);
-
-  return (
-    <>
-      {trigger(triggerBag)}
-      {isOpen && (
-        <Overlay
-          contentRef={panelRef}
-          anchor={triggerElement}
-          side={side}
-          align={align}
-          offset={offset}
-          flip={flip}
-          matchWidth={matchWidth}
-          component="popover"
-          {...boxProps}
-          id={id}
-          props={{ role: 'dialog', ...naming, tabIndex: -1, ...contentProps }}
-        >
-          {children}
-        </Overlay>
-      )}
     </>
   );
 }

@@ -2,7 +2,7 @@
 
 _Unreleased. A PR that changes what a consumer sees adds its section here — see CONTRIBUTING.md, "Release notes"._
 
-The package now carries instructions for the agent writing the code, the documentation site answers in markdown, the same rules install as a skill in about forty-five coding agents, and every component page states its own props, keys and accessibility — all of it generated from the sources the library is built from. A floating layer is also placed by the browser now rather than measured in JavaScript, all the way through: six props, one hook, and every popup the library ships standing on them. Two of those popups are now browser features rather than components: a popover on the Popover API, and a modal dialog on `<dialog>`.
+The package now carries instructions for the agent writing the code, the documentation site answers in markdown, the same rules install as a skill in about forty-five coding agents, and every component page states its own props, keys and accessibility — all of it generated from the sources the library is built from. A floating layer is also placed by the browser now rather than measured in JavaScript, all the way through: six props, one hook, and every popup the library ships standing on them. Three of those popups are now browser features rather than components: a popover on the Popover API, a modal dialog on `<dialog>`, and a menu button whose submenus are popovers nested inside it.
 
 ## Highlights
 
@@ -17,6 +17,7 @@ The package now carries instructions for the agent writing the code, the documen
 - **[A popover is a browser feature now, not a portal](#a-popover-is-a-browser-feature-now-not-a-portal)** — `<Popover>` on the platform Popover API: the top layer, light dismiss and focus return are the browser's, so there is no portal and no z-index — and it is 3.46 KB gz against Radix Popover's 23.54.
 - **[Every floating layer is in the top layer](#every-floating-layer-is-in-the-top-layer-and-the-portal-is-gone)** — `Overlay`, and so `Tooltip`, the `Dropdown` popup and the DataGrid column menu: no portal anywhere in the library, so a popup inherits the theme around it and a dropdown inside a panel no longer dismisses it.
 - **[A modal dialog is a browser feature too](#a-modal-dialog-is-a-browser-feature-too)** — `<Dialog>` and `<AlertDialog>` on the native `<dialog>`: `showModal()` supplies the top layer, the backdrop, an inert page, Escape, focus containment and focus return, so the two together add 2.15 KB gz against Radix Dialog's 13.28.
+- **[A menu, and its submenus, are nested popovers](#a-menu-and-its-submenus-are-nested-popovers)** — `<Menu>` is APG's menu button on the Popover API: seven parts, the whole keyboard, submenus that nest as deeply as the markup, and 6.36 KB gz against Radix DropdownMenu's 30.85.
 
 ## The package tells an agent how to use it
 
@@ -308,6 +309,51 @@ The style tree in `Box.components('dialog')` deliberately says almost nothing ab
 It is also **smaller by a lot**. `@radix-ui/react-dialog` is 13.28 KB gz with React external and `@radix-ui/react-alert-dialog` is 13.64 (13.81 for both, since they share code); `<Dialog>` and `<AlertDialog>` together add **2.15 KB gz** on top of a `Box` an app already has. Both figures measured, minified and gzipped, the same way.
 
 Because nothing is portalled, a local `Box.Theme` reaches inside a dialog the way it now reaches inside a dropdown: a top-layer element still matches the `.dark .className` rules of the ancestor it was declared in, and still inherits its custom properties and its text direction. Measured both with the library and in hand-written CSS.
+
+## A menu, and its submenus, are nested popovers
+
+`<Menu>` (`components/menu`) is APG's [menu button](https://www.w3.org/WAI/ARIA/apg/patterns/menu-button/) on the same Popover API `<Popover>` and `<Dialog>` stand on — and a submenu is a popover nested inside its menu, which is what the platform's own nesting rules are for.
+
+```tsx
+import Menu from '@box-kite/react/components/menu';
+
+<Menu trigger={(t) => <Button {...t}>Actions</Button>}>
+  <Menu.Item onSelect={duplicate}>Duplicate</Menu.Item>
+  <Menu.Item disabled>Move</Menu.Item>
+  <Menu.Separator />
+  <Menu.Group label="View">
+    <Menu.CheckboxItem checked={compact} onCheckedChange={setCompact}>
+      Compact rows
+    </Menu.CheckboxItem>
+  </Menu.Group>
+  <Menu.RadioGroup label="Sort by" value={sort} onValueChange={setSort}>
+    <Menu.RadioItem value="name">Name</Menu.RadioItem>
+    <Menu.RadioItem value="date">Date added</Menu.RadioItem>
+  </Menu.RadioGroup>
+  <Menu.Sub label="Share">
+    <Menu.Item onSelect={copyLink}>Copy link</Menu.Item>
+  </Menu.Sub>
+</Menu>;
+```
+
+**The platform's half is the layer.** The menu is in the top layer, so it paints over every stacking context and outside every clipped ancestor with no portal and no `z-index`; light dismiss is the browser's, and it closes the innermost menu first — one layer per Escape, a submenu before the menu it came out of — while a press outside closes the lot. The trigger's toggle is `popovertarget`, including the press that closes an open menu from its own button. All of it measured in Chrome 152.
+
+**The component's half is the pattern.** `role="menu"` named by its trigger (APG's rule, so a menu needs no `label` of its own), `menuitem`, `menuitemcheckbox` and `menuitemradio` with `aria-checked`, `role="group"` around a titled section and `role="separator"` between them. Then the keys: Down and Up wrapping at the ends, Home and End, typeahead where a longer buffer narrows and the same letter again cycles, and Right and Left for a submenu — in **reading order**, so the two swap in a right-to-left menu and the chevron turns round with them from a single `rtl` rule.
+
+`Menu.Sub` renders both halves of a submenu: the item that opens it — `aria-haspopup="menu"`, `aria-expanded`, the chevron — and the menu beside it, declared _inside_ the menu it belongs to. It takes the same four placement props as the menu (`side`/`align`/`offset`/`flip`), defaulting to `side="end"` and `offset={0}` so it abuts the menu it came out of, and submenus nest as deeply as the markup does.
+
+Four things worth knowing, each of them measured:
+
+- **A disabled item is `aria-disabled` and stays focusable.** That is APG's rule, and the `disabled` attribute would break it: an item out of the keyboard's reach is an item a keyboard user cannot discover. The arrows land on it, a screen reader announces it as unavailable, and activating it does nothing.
+- **A command closes the menu and a state does not.** `Menu.Item` closes on select, because choosing a command is the end of the visit; `Menu.CheckboxItem` and `Menu.RadioItem` stay open, so several boxes can be ticked in one go. `closeOnSelect` swaps either default. `onOpenChange` reports **`select`** and **`tab`** beside the four reasons every layer in the library reports, so "the user chose something" and "the user dismissed it" are told apart without guessing.
+- **The menu is always rendered**, closed being `display: none` rather than unmounted — the same shape as `<Popover>` and `<Dialog>`, and what lets the browser own showing and hiding. The exit is a CSS transition rather than a `<Presence>`; gate expensive items yourself with `{open ? <Items /> : null}`.
+- **The platform returns focus for the outermost layer only.** Closing a nested popover drops focus to `<body>` — so a submenu puts focus back on its own item itself, before the browser hides the panel, and the move never lands anywhere visible. Opening a submenu moves focus into it, hover included, which is what keeps the highlight and the keyboard in the same place.
+
+It is **smaller by a lot**: `@radix-ui/react-dropdown-menu` is 30.85 KB gz with React external, where `<Menu>` and all seven of its parts add **6.36 KB gz** on top of a `Box` an app already has. Both figures measured, minified and gzipped, the same way.
+
+The four marks a menu draws — the tick, the radio dot, the chevron and the slot they sit in — are borders and a radius rather than an asset, so the library still ships no icons, and each is a node in the style tree (`menu.item`, `menu.group`, `menu.label`, `menu.separator`, `menu.indicator`, `menu.check`, `menu.dot`, `menu.arrow`). The highlight is drawn on `:focus`, because in a menu focus _is_ the highlight: the pointer moves it, so hover and the keyboard cannot disagree.
+
+One name had to move out of the way. The semantic `<menu>` element is **`MenuList`** in `components/semantics` now; `Menu` is still exported there and still works, but it is deprecated — two exports of that name are one import away from the wrong component.
 
 ## Breaking changes
 

@@ -69,6 +69,23 @@ const CONFIG = [
   // does not get to choose, so listing it a second time would be one table drifting from another.
   { name: 'AlertDialog', route: '/dialog', file: 'src/components/dialog.tsx', doc: 'AlertDialogImpl', named: true },
   {
+    name: 'Menu',
+    route: '/menu',
+    file: 'src/components/menu.tsx',
+    props: 'MenuProps',
+    doc: 'MenuImpl',
+    styles: 'menu',
+    parts: [
+      { name: 'Menu.Item', props: 'MenuItemProps', doc: 'MenuItem' },
+      { name: 'Menu.CheckboxItem', props: 'MenuCheckboxItemProps', doc: 'MenuCheckboxItem' },
+      { name: 'Menu.RadioGroup', props: 'MenuRadioGroupProps', doc: 'MenuRadioGroup' },
+      { name: 'Menu.RadioItem', props: 'MenuRadioItemProps', doc: 'MenuRadioItem' },
+      { name: 'Menu.Group', props: 'MenuGroupProps', doc: 'MenuGroup' },
+      { name: 'Menu.Separator', props: 'MenuSeparatorProps', doc: 'MenuSeparator' },
+      { name: 'Menu.Sub', props: 'MenuSubProps', doc: 'MenuSub' },
+    ],
+  },
+  {
     name: 'Dropdown',
     route: '/dropdown',
     file: 'src/components/dropdown.tsx',

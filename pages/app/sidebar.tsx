@@ -31,6 +31,7 @@ import {
   SlidersHorizontal,
   Sparkles,
   Spline,
+  SquareMenu,
   SquareStack,
   Sun,
   Table,
@@ -252,6 +253,9 @@ export default function Sidebar({ toggleTheme, onClose }: SidebarProps) {
           </MenuItem>
           <MenuItem to="/dialog" icon={<SquareStack />}>
             Dialog
+          </MenuItem>
+          <MenuItem to="/menu" icon={<SquareMenu />}>
+            Menu
           </MenuItem>
           <MenuItem to="/overlay" icon={<Layers />}>
             Overlay

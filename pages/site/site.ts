@@ -185,6 +185,12 @@ export const siteRoutes = [
       "A modal dialog on the native <dialog> element: the top layer, the backdrop, an inert page, Escape and focus containment are the browser's.",
   },
   {
+    path: '/menu',
+    name: 'Menu',
+    description:
+      "A menu button and its menu on the Popover API: APG's roles and keys, submenus as nested popovers, and no portal or focus trap.",
+  },
+  {
     path: '/overlay',
     name: 'Overlay',
     description:

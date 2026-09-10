@@ -14,11 +14,13 @@ import * as button from '../dist/components/button.mjs';
 import * as chart from '../dist/components/chart.mjs';
 import * as checkbox from '../dist/components/checkbox.mjs';
 import * as dataGrid from '../dist/components/dataGrid.mjs';
+import * as dialog from '../dist/components/dialog.mjs';
 import * as dropdown from '../dist/components/dropdown.mjs';
 import * as flex from '../dist/components/flex.mjs';
 import * as form from '../dist/components/form.mjs';
 import * as grid from '../dist/components/grid.mjs';
 import * as icon from '../dist/components/icon.mjs';
+import * as menu from '../dist/components/menu.mjs';
 import * as overlay from '../dist/components/overlay.mjs';
 import * as popover from '../dist/components/popover.mjs';
 import * as presence from '../dist/components/presence.mjs';
@@ -44,11 +46,13 @@ console.log(
   chart,
   checkbox,
   dataGrid,
+  dialog,
   dropdown,
   flex,
   form,
   grid,
   icon,
+  menu,
   overlay,
   popover,
   presence,
