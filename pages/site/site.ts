@@ -179,6 +179,12 @@ export const siteRoutes = [
       "A panel anchored to its trigger on the platform's Popover API: top layer, light dismiss and focus return, with no portal and no z-index.",
   },
   {
+    path: '/dialog',
+    name: 'Dialog',
+    description:
+      "A modal dialog on the native <dialog> element: the top layer, the backdrop, an inert page, Escape and focus containment are the browser's.",
+  },
+  {
     path: '/overlay',
     name: 'Overlay',
     description:

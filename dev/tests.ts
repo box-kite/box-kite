@@ -90,3 +90,55 @@ export function ignoreLogs() {
     console.debug = originalConsoleDebug;
   });
 }
+
+/**
+ * The half of `<dialog>` no test environment implements. happy-dom has `show`, `showModal`, `close` and
+ * the `close` event, and the UA's `dialog:not([open])` rule — but nothing a *user* does: no close request
+ * on Escape, and no light dismiss. This installs both, plus the `closedBy` property whose presence is how
+ * the component decides whether they are the browser's job (all measured in Chrome 152).
+ *
+ * Without it a test takes the path of a browser with no `closedby`, which is where the component's own
+ * dismissal runs — so both paths are reachable, the way `installPopoverApi` makes them for `<Popover>`.
+ */
+export function installDialogPlatform(): () => void {
+  const prototype = HTMLDialogElement.prototype as unknown as Record<string, unknown>;
+  const dialogs = () => [...document.querySelectorAll('dialog[open]')] as HTMLDialogElement[];
+
+  // A close request: `cancel` first, cancelable, then the close itself — and only the last dialog
+  // opened, since the top layer is a stack.
+  const requestClose = (dialog: HTMLDialogElement) => {
+    if (!dialog.dispatchEvent(new Event('cancel', { cancelable: true }))) return;
+
+    dialog.close();
+  };
+
+  const onKeyDown = (event: Event) => {
+    if ((event as KeyboardEvent).key !== 'Escape') return;
+
+    const open = dialogs().filter((dialog) => dialog.getAttribute('closedby') !== 'none');
+    const last = open[open.length - 1];
+
+    if (last) requestClose(last);
+  };
+
+  const onPointerDown = (event: Event) => {
+    for (const dialog of dialogs()) {
+      const target = event.target;
+      const inside = target instanceof Node && dialog.contains(target);
+
+      if (dialog.getAttribute('closedby') === 'any' && !inside) requestClose(dialog);
+    }
+  };
+
+  // Bubble phase, not capture: the platform dismisses at the *default action* stage, after every
+  // listener has run — which is what lets the component name the reason before the dialog closes.
+  prototype.closedBy = 'auto';
+  document.addEventListener('keydown', onKeyDown);
+  document.addEventListener('pointerdown', onPointerDown);
+
+  return () => {
+    delete prototype.closedBy;
+    document.removeEventListener('keydown', onKeyDown);
+    document.removeEventListener('pointerdown', onPointerDown);
+  };
+}

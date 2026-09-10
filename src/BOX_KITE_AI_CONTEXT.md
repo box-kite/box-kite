@@ -51,6 +51,7 @@ NEVER use `<Box tag="...">` when a component exists. NEVER use `<Box display="fl
 | `<Box tag="nav/header/footer/main">` | `<Nav>/<Header>/<Footer>/<Main>` | `components/semantics` |
 | `<Box tag="section/article/aside">`  | `<Section>/<Article>/<Aside>`    | `components/semantics` |
 | `<Box tag="svg/path/circle/rect">`   | `<Svg>/<Path>/<Circle>/<Rect>`   | `components/svg`       |
+| `<Box tag="dialog">`                 | `<Dialog>/<AlertDialog>`         | `components/dialog`    |
 | a lucide/Tabler icon, styled         | `<Icon>`                         | `components/icon`      |
 
 All imports from `@box-kite/react/components/...`. Semantics also export: `Mark`, `Figure`, `Figcaption`, `Details`, `Summary`, `Menu`, `Time`.
@@ -1360,6 +1361,87 @@ Three traps, all measured in Chrome 152:
 
 Where the browser has no Popover API the panel falls back to a portalled `Overlay` with `useDismiss`
 and `useFocusReturn`. Same props, same styling; what is lost is what a portal costs.
+
+---
+
+## Dialog Component
+
+```tsx
+import Dialog, { AlertDialog } from '@box-kite/react/components/dialog';
+
+<Dialog trigger={(t) => <Button {...t}>Rename</Button>}>
+  <Dialog.Title>Rename this view</Dialog.Title>
+  <Dialog.Description>The name is only shown to you.</Dialog.Description>
+  <Textbox name="name" props={{ 'aria-label': 'Name' }} />
+</Dialog>;
+```
+
+A real `<dialog>` shown with **`showModal()`**, which is where the whole pattern comes from: the top
+layer, the `::backdrop`, an inert page behind it, Escape, focus containment and focus return are all the
+browser's. There is no focus trap here, no `aria-hidden` sweep over the page and no `z-index` — measured
+in Chrome 152, a modal dialog paints over a `position: fixed` sibling with `z-index: 9999`.
+
+| Prop                   | Default | What it does                                                                        |
+| ---------------------- | ------- | ----------------------------------------------------------------------------------- |
+| `trigger`              | —       | Render prop given `{ ref, props }`. Optional — open it from anywhere instead.       |
+| `children`             | —       | The dialog's content. Rendered whether or not it is open.                           |
+| `open` / `defaultOpen` | —       | Controlled / uncontrolled open state.                                               |
+| `onOpenChange`         | —       | `(open, { reason, event })` — `trigger`, `escape`, `outside-pointer`, `imperative`. |
+| `label` / `labelledBy` | —       | The name, when no `Dialog.Title` supplies one.                                      |
+| `describedBy`          | —       | The description, when no `Dialog.Description` supplies one.                         |
+| `modal`                | `true`  | `showModal()`. `false` is `show()`: no backdrop, nothing inert.                     |
+| `dismissible`          | `true`  | Whether a press outside closes it.                                                  |
+| `lockScroll`           | `modal` | Whether the page behind it stops scrolling.                                         |
+| `initialFocus`         | —       | Where focus lands, instead of the first focusable thing inside.                     |
+
+`Dialog.Title` and `Dialog.Description` are how it is named: rendering a title writes `aria-labelledby`
+on the dialog and rendering a description writes `aria-describedby`. **Neither attribute is written when
+the part is absent**, so a reference never dangles — and a dialog showing no heading wants `label`,
+`labelledBy` or `describedBy` instead. Both are Boxes (`dialog.title`, `dialog.description` in the style
+tree), and `AlertDialog` carries the same two.
+
+```tsx
+const cancel = useRef(null);
+
+<AlertDialog initialFocus={cancel} trigger={(t) => <Button {...t}>Delete</Button>}>
+  <AlertDialog.Title>Delete this view?</AlertDialog.Title>
+  <AlertDialog.Description>Nothing here can be undone.</AlertDialog.Description>
+  <Button bgColor="rose-600">Delete</Button>
+  <Button ref={cancel}>Cancel</Button>
+</AlertDialog>;
+```
+
+`AlertDialog` is `role="alertdialog"` — the content is an alert rather than a panel, so the name and the
+description are announced together on open. It is always modal and **never dismissed by a press
+outside**; Escape still closes it, because a keyboard user must always have a way out. `initialFocus` is
+APG's requirement that focus land on the least destructive action, so a deletion cannot be confirmed by
+reflex. It takes every `Dialog` prop but `modal`, `dismissible` and `lockScroll`, which are not choices
+it gets to make.
+
+Four traps, all measured in Chrome 152:
+
+- **The dialog is always rendered**; closed is `display: none`, not unmounted — the same shape as
+  `Popover`. The exit is a CSS transition (`transitionBehavior="allow-discrete"`, already in the
+  component styles, and it covers the `::backdrop` too) and **not** `<Presence>`. Gate expensive
+  children yourself: `{open ? <Heavy /> : null}`.
+- **A close cannot be refused.** `cancel` is cancelable, but the browser has already closed the dialog
+  by the time `onOpenChange` runs, so a controlled `<Dialog open>` hears about a dismissal afterwards
+  and keeping `open` true shows it again. `dismissible={false}` is how a decision is made unavoidable.
+- **For a modal dialog the backdrop _is_ the dialog element.** A press on it targets the `<dialog>`, so
+  every containment test calls it inside. The platform's `closedby="any"` gets this right and the
+  component writes it; where the browser has not got it yet, the press is measured against the dialog's
+  own box instead.
+- **The platform does not stop the page scrolling** (measured: `overflow` stays `visible` while a modal
+  dialog is open). That is what `lockScroll` is — an `overflow: hidden` class on `<html>`, held by a
+  counter so an inner dialog closing cannot unlock the page under an outer one. The scrollbar's width
+  leaves the page as it is applied, so a document that must not shift wants `scrollbarGutter="stable"`;
+  iOS Safari scrolls anyway.
+
+The style tree says almost nothing about position or size on purpose: the UA stylesheet centres a modal
+dialog in the viewport and caps it at `calc(100% - 6px - 2em)`. The **one** exception is `margin: auto`,
+which `Box.components('dialog')` has to declare because `._b` sets `margin: 0` and outranks the UA rule
+— without it the dialog sits in the corner. `display: none` while closed is declared for the same
+reason.
 
 ---
 

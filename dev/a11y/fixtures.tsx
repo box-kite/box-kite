@@ -5,6 +5,7 @@ import Button from '../../src/components/button';
 import { ChartContainer, Gauge, MiniDonut, ProgressRing, Sparkline } from '../../src/components/chart';
 import Checkbox from '../../src/components/checkbox';
 import DataGrid from '../../src/components/dataGrid';
+import Dialog, { AlertDialog } from '../../src/components/dialog';
 import Dropdown from '../../src/components/dropdown';
 import Flex from '../../src/components/flex';
 import Form from '../../src/components/form';
@@ -294,6 +295,26 @@ export const fixtures: A11yFixture[] = [
     // and the pattern belongs to whatever is rendered into it.
     name: 'Overlay',
     render: () => <Overlay>Anything, anywhere</Overlay>,
+  },
+  {
+    name: 'Dialog (open)',
+    render: () => (
+      <Dialog defaultOpen trigger={(trigger) => <Button {...trigger}>Rename</Button>}>
+        <Dialog.Title>Rename this view</Dialog.Title>
+        <Dialog.Description>The name is only shown to you.</Dialog.Description>
+        <Button>Save</Button>
+      </Dialog>
+    ),
+  },
+  {
+    name: 'AlertDialog (open)',
+    render: () => (
+      <AlertDialog defaultOpen>
+        <AlertDialog.Title>Delete this view?</AlertDialog.Title>
+        <AlertDialog.Description>Nothing here can be undone.</AlertDialog.Description>
+        <Button>Cancel</Button>
+      </AlertDialog>
+    ),
   },
   {
     name: 'Popover (open)',

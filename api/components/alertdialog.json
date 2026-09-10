@@ -1,0 +1,19 @@
+{
+  "name": "AlertDialog",
+  "route": "/dialog",
+  "import": "import { AlertDialog } from '@box-kite/react/components/dialog';",
+  "description": "A dialog that interrupts to ask something: `role=\"alertdialog\"`, always modal, and **never dismissed by a press outside**, because a decision that can be clicked away is one the user did not make.",
+  "pattern": null,
+  "props": [],
+  "parts": [],
+  "keyboard": [
+    { "mode": null, "keys": "Escape", "action": "Closes it and returns focus to the trigger." },
+    { "mode": null, "keys": "Tab", "action": "Cycles focus inside it and never leaves." }
+  ],
+  "a11y": [
+    "`role=\"alertdialog\"`, which tells a screen reader the content is an alert rather than a panel, so the name and description are announced together on open.",
+    "A press outside is ignored on purpose; Escape is not, so the dialog is never a trap."
+  ],
+  "axe": { "fixtures": ["AlertDialog (open)"], "knownViolations": [] },
+  "styleTree": []
+}
