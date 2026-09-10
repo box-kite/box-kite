@@ -90,7 +90,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "28.01 KB"
+      "limit": "28.00 KB"
     },
     {
       "name": "Box in a Server Component (react-server entry)",
@@ -100,7 +100,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "26.53 KB"
+      "limit": "26.52 KB"
     },
     {
       "name": "Behavior primitives (a11y entry)",
@@ -126,7 +126,7 @@
       "name": "Core engine (@box-kite/core, no React)",
       "path": "dist-core/core.mjs",
       "gzip": true,
-      "limit": "25.80 KB"
+      "limit": "25.78 KB"
     },
     {
       "name": "Dialog",
@@ -136,7 +136,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "30.16 KB"
+      "limit": "30.15 KB"
     },
     {
       "name": "Popover",
@@ -146,7 +146,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "31.63 KB"
+      "limit": "31.61 KB"
     },
     {
       "name": "Menu",
@@ -156,7 +156,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "33.87 KB"
+      "limit": "33.86 KB"
     },
     {
       "name": "Tabs",
@@ -166,7 +166,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "29.51 KB"
+      "limit": "29.48 KB"
     },
     {
       "name": "DataGrid",
@@ -176,7 +176,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "57.63 KB"
+      "limit": "57.62 KB"
     },
     {
       "name": "Full library (Box + ssg + every component)",
@@ -186,7 +186,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "69.62 KB"
+      "limit": "69.59 KB"
     }
   ],
   "repository": {

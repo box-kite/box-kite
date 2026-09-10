@@ -287,14 +287,16 @@ const boxComponents = {
           ai: 'center',
           bb: 1,
           borderColor: 'gray-200',
-          // A list that outruns its container scrolls rather than wrapping: a tab on a second row is a
-          // tab the arrows walk in an order nobody can see.
-          overflowX: 'auto',
+          // Deliberately **not** a scroll container. The selected tab's indicator overhangs this rule by
+          // 1px to sit on it, and naming one axis is enough to lose that: `overflow` computes a `visible`
+          // companion to an `auto` up to `auto`, so `overflowX: 'auto'` alone turned the 1px into a 15px
+          // *vertical* scrollbar on every horizontal tablist. Scrolling a list that outgrows its
+          // container is the consumer's to solve; doing it here costs the overlap.
           theme: { dark: { borderColor: 'gray-700' } },
         },
         variants: {
           // The rule moves to the inline end, which mirrors in a right-to-left page where `br` would not.
-          vertical: { d: 'column', ai: 'stretch', gap: 0.5, bb: 0, be: 1, overflowX: 'visible' },
+          vertical: { d: 'column', ai: 'stretch', gap: 0.5, bb: 0, be: 1 },
         },
       },
       tab: {

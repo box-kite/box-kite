@@ -87,6 +87,15 @@ describe('Tabs', () => {
       expect(screen.getByRole('tablist')).toHaveAttribute('aria-orientation', 'vertical');
     });
 
+    it('leaves the tablist off the overflow properties entirely', () => {
+      render(<Example defaultValue="overview" />);
+
+      // The indicator overhangs the list's rule by 1px on purpose, and `overflow-x: auto` forces
+      // `overflow-y` to compute to `auto` too — which turned that 1px into a 15px vertical scrollbar
+      // (measured in Chrome). Neither axis may be named here; scrolling a long list is the consumer's.
+      expect(screen.getByRole('tablist').className).not.toMatch(/overflow/);
+    });
+
     it('turns the indicator with the list, not just the list', () => {
       render(<Example defaultValue="overview" orientation="vertical" />);
 
