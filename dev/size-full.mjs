@@ -30,6 +30,7 @@ import * as select from '../dist/components/select.mjs';
 import * as semantics from '../dist/components/semantics.mjs';
 import * as svg from '../dist/components/svg.mjs';
 import * as switchControl from '../dist/components/switch.mjs';
+import * as tabs from '../dist/components/tabs.mjs';
 import * as textarea from '../dist/components/textarea.mjs';
 import * as textbox from '../dist/components/textbox.mjs';
 import * as tooltip from '../dist/components/tooltip.mjs';
@@ -62,6 +63,7 @@ console.log(
   semantics,
   svg,
   switchControl,
+  tabs,
   textarea,
   textbox,
   tooltip,

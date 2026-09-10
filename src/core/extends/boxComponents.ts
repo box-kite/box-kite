@@ -269,6 +269,148 @@ const boxComponents = {
       },
     },
   },
+  // The tabs widget: the wrapper, the `role="tablist"`, one tab and one panel. Underlined tabs rather
+  // than a segmented control, because the underline is the one indicator that survives a forced-colors
+  // mode — a background would be thrown away and selection would read identically on and off.
+  tabs: {
+    styles: { display: 'flex', d: 'column', gap: 4 },
+    variants: {
+      // A vertical list sits beside its panels instead of over them, so the axis of the whole widget turns.
+      vertical: { d: 'row', gap: 6, ai: 'start' },
+    },
+    children: {
+      list: {
+        styles: {
+          display: 'flex',
+          d: 'row',
+          gap: 1,
+          ai: 'center',
+          bb: 1,
+          borderColor: 'gray-200',
+          // Deliberately **not** a scroll container. The selected tab's indicator overhangs this rule by
+          // 1px to sit on it, and naming one axis is enough to lose that: `overflow` computes a `visible`
+          // companion to an `auto` up to `auto`, so `overflowX: 'auto'` alone turned the 1px into a 15px
+          // *vertical* scrollbar on every horizontal tablist. Scrolling a list that outgrows its
+          // container is the consumer's to solve; doing it here costs the overlap.
+          theme: { dark: { borderColor: 'gray-700' } },
+        },
+        variants: {
+          // The rule moves to the inline end, which mirrors in a right-to-left page where `br` would not.
+          vertical: { d: 'column', ai: 'stretch', gap: 0.5, bb: 0, be: 1 },
+          // The travelling indicator is positioned against the list, and only this variant has one: a
+          // consumer's own absolutely positioned child inside a tab would otherwise start resolving
+          // against the list instead of whatever it was written under.
+          sliding: { position: 'relative' },
+        },
+      },
+      tab: {
+        styles: {
+          display: 'flex',
+          ai: 'center',
+          gap: 2,
+          px: 3,
+          py: 2,
+          fontSize: 14,
+          lineHeight: 20,
+          fontWeight: 500,
+          color: 'gray-600',
+          bgColor: 'transparent',
+          b: 0,
+          // The border the indicator is drawn on, pulled over the list's own 1px rule so the two read as
+          // one line. Carried by every tab whichever indicator is in use, so the two measure the same. The
+          // margin is on the ÷4 scale — `-1` would be 4px and leave a gap only a browser shows.
+          bb: 2,
+          borderColor: 'transparent',
+          mb: -0.25,
+          cursor: 'pointer',
+          whiteSpace: 'nowrap',
+          userSelect: 'none',
+          transition: 'colors',
+          hover: { color: 'gray-900' },
+          selected: { color: 'indigo-600' },
+          disabled: { color: 'gray-400', cursor: 'default', hover: { color: 'gray-400' } },
+          // Inside the underline rather than around it: a ring drawn outside would sit under the
+          // neighbouring tab, since the list scrolls and clips.
+          focusVisible: { outline: 2, outlineColor: 'indigo-500', outlineOffset: -2, borderRadius: 1 },
+          // Every colour is gone in a forced-colors mode, so the selected tab has to be told apart with
+          // one of the pair those modes keep — otherwise it reads exactly like the rest.
+          forcedColors: { selected: { color: 'Highlight' } },
+          theme: {
+            dark: {
+              color: 'gray-400',
+              hover: { color: 'gray-100' },
+              selected: { color: 'indigo-400' },
+              disabled: { color: 'gray-600', hover: { color: 'gray-600' } },
+            },
+          },
+        },
+        variants: {
+          // In a vertical list the indicator turns with it, onto the inline end the list's rule is on.
+          vertical: { textAlign: 'start', bb: 0, be: 2, mb: 0, me: -0.25 },
+          // The tab colours its own border in. Declared here rather than in `selected` because the
+          // travelling indicator turns it off, and a colour declared once is better than three undone.
+          underline: {
+            selected: { borderColor: 'indigo-500' },
+            forcedColors: { selected: { borderColor: 'Highlight' } },
+            theme: { dark: { selected: { borderColor: 'indigo-400' } } },
+          },
+        },
+      },
+      // The one indicator for the whole list, travelling between tabs instead of being drawn by each.
+      // Nothing declares a transition: the base class already transitions every property on
+      // `--transitionTime`, which is also what stops the travel under `prefers-reduced-motion`.
+      indicator: {
+        styles: {
+          position: 'absolute',
+          // Exactly where the tab's own border sits: over the list's 1px rule, matching the tab's `mb`.
+          // Physical, because the block axis does not mirror — `be` would be wrong here and right below.
+          bottom: -0.25,
+          height: 0.5,
+          bgColor: 'indigo-500',
+          forcedColors: { bgColor: 'Highlight' },
+          theme: { dark: { bgColor: 'indigo-400' } },
+        },
+        variants: {
+          // The bar turns with the list: along the block axis, on the inline end. `bottom` goes back to
+          // `auto` because the instance sets `top` and `height`, and all three would over-constrain it.
+          vertical: { bottom: 'auto', insetEnd: -0.25, height: 'auto', width: 0.5 },
+        },
+      },
+      // The optional container that takes the height of the panel on screen, so a switch between panels
+      // of different heights is a transition rather than a jump.
+      panels: {
+        styles: {
+          width: 'fit',
+          // A flex container so the formatting context never changes: without one, the clip below would
+          // stop a consumer's margin collapsing out of the panel halfway through every transition.
+          display: 'flex',
+          d: 'column',
+          // Narrowed from the base class's `all`, which would animate a consumer's own padding with it.
+          transition: 'size',
+        },
+        variants: {
+          // Only while the height is actually travelling. A permanent clip would cut the focus ring off
+          // every element sitting at a panel's edge, since at rest the container is exactly that tall.
+          resizing: { overflow: 'hidden' },
+        },
+      },
+      panel: {
+        styles: {
+          width: 'fit',
+          fontSize: 14,
+          lineHeight: 20,
+          // The panel is a tab stop of its own (APG), and a container is not what a focus ring is for.
+          focusVisible: { outline: 2, outlineColor: 'indigo-500', outlineOffset: 2, borderRadius: 1 },
+          startingStyle: { opacity: 0, translateY: 1 },
+        },
+        variants: {
+          // A panel kept mounted while another is selected. Declared rather than left to the UA's
+          // `[hidden]` rule, because every Box carries `display: block` and any author rule outranks it.
+          hidden: { display: 'none' },
+        },
+      },
+    },
+  },
   // The `role="tooltip"` bubble. Inverted against the page on purpose: a tooltip is a temporary
   // overlay and has to read as one at a glance, whichever theme is underneath it.
   tooltip: {
