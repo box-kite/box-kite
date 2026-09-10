@@ -270,7 +270,7 @@ const { css, anchorProps, layerProps } = useAnchorPosition({ side: 'bottom', ali
 - **Three fallbacks, not one.** A candidate has to fit on _both_ axes, so a lone `flip-block` does nothing at all for a layer that overflows the _cross_ axis — the browser leaves it pressed against the edge of the viewport. `flip` therefore offers the side's axis, the alignment's, and both, and a menu aligned to its trigger's end mirrors to the other end rather than running off the page.
 - **Which side the browser chose costs the entrance.** `trackSide` reads the _used_ `position-area`, and that read is the style resolution `@starting-style` computes its before-change style from — so a class that depends on the answer lands after the entrance has already been decided. The exit runs long afterwards and can use it (`dropdown.items` has `closedUp` and no `up`).
 - **A used `position-area` is not the value that went in.** Chrome 152 drops a `span-all` half (`block-end span-all` reads back `block-end`) and collapses a value naming both axes into the `start`/`end` shorthand, where position names the axis: `block-end span-inline-end` reads back `end span-end`, and `start span-end` once it has flipped.
-- **A flip is sticky.** Once the browser takes one it keeps it until the layer is laid out afresh, which is what stops it oscillating as the page scrolls: hiding the layer and showing it again re-evaluates. So a popup that mounts when it opens always picks the side that fits, while one that stays mounted keeps the side it first chose.
+- **A flip is sticky, and in the top layer it is never re-evaluated on scroll at all.** Once the browser takes one it keeps it until the layer is laid out afresh, which is what stops it oscillating as the page scrolls: hiding the layer and showing it again re-evaluates. So a popup that mounts when it opens always picks the side that fits, while one that stays mounted keeps the side it first chose. For an element in the **top layer** — which is every pre-built layer: `Overlay`, and so `Tooltip`, the `Dropdown` popup and the DataGrid menu, plus `Popover` — Chrome does not re-evaluate on scroll even once the side has run out of room, so a layer open across a long scroll slides past the viewport edge. Measured in Chrome 152 against an otherwise identical non-top-layer element, which does flip; only leaving and re-entering the top layer re-arms it.
 - **The anchor's name is an inline style, not a prop.** An identity is per instance, so a class for it would be a rule per instance that is never freed — the same reason a sparkline's `d` is an attribute while its stroke is a class. Everything shared — the area, the flip, the margin, the width — is an ordinary prop.
 
 ### Colours, and the opacity modifier
@@ -1071,7 +1071,11 @@ import Textbox from '@box-kite/react/components/textbox';
 theme, the custom properties and the direction around it. `manual` because it owns no dismissal — and no
 ARIA and no open state either: it is positioning only. **Never declare one inside its trigger**: a
 listbox or a menu inside a `<button>` is unreachable content, which the portal used to hide by moving it
-elsewhere. Where the browser has no Popover API it is portalled into `#box-kite-portal` instead. For a
+elsewhere. **One cost comes with the top layer**: the layer keeps the side it chose when it opened, because
+Chrome never re-evaluates `position-try-fallbacks` on scroll for a top-layer element (measured in 152) — so
+a layer left open while the page scrolls slides past the viewport edge rather than flipping. Every open
+picks the right side; close a layer if the page can scroll far underneath it. Where the browser has no
+Popover API it is portalled into `#box-kite-portal` instead, and that path measures, so it flips. For a
 _panel a user interacts with_, use `Popover` (below); for a _description of a control_, use `Tooltip`.
 Both are that layer with a pattern on it.
 

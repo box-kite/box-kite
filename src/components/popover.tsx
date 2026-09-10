@@ -104,6 +104,11 @@ interface Props<TKey extends keyof ComponentsAndVariants> extends PopoverBoxProp
  * `<Presence>`, since nothing unmounts. Content that is expensive to render should be gated by the
  * consumer: `{open && <Heavy />}`.
  *
+ * **The panel keeps the side it chose when it opened.** Chrome re-evaluates `position-try-fallbacks` on
+ * scroll for an ordinary positioned element and never for one in the top layer (measured in 152), so a
+ * panel left open while the page scrolls does not flip when its side runs out of room. Every open picks
+ * the right side; it is only a scroll *while* open that this affects. See `Overlay`, which shares it.
+ *
  * Where the browser has no Popover API the panel is an `Overlay` — a portal — with `useDismiss` and
  * `useFocusReturn` supplying what the platform otherwise would.
  *

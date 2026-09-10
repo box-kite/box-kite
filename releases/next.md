@@ -256,6 +256,10 @@ Four things worth knowing, all measured in Chrome 152:
 - **The tab order follows the markup**, so a layer declared after its trigger is what Tab reaches next, and nothing has to be said with `aria-owns`.
 - **Mounting is unchanged.** `<Presence>` still owns it, so a closed dropdown renders none of its options and a closed tooltip renders nothing at all — and an exit transition runs in the top layer like anywhere else. This is the opposite trade from `<Popover>`, whose panel is always rendered because the browser owns its toggle.
 
+One thing the top layer costs, and it is worth knowing before you reach for a layer: **it keeps the side it chose when it opened.** Chrome re-evaluates `position-try-fallbacks` on scroll for an ordinary positioned element and never for one in the top layer, so a layer left open while the page scrolls does not flip when its side runs out of room — it slides past the viewport edge instead. Measured in Chrome 152, both with the library and in hand-written CSS against an otherwise identical element outside the top layer, which does flip.
+
+Every _open_ picks the right side, because a layer that mounts when it opens is laid out for the first time then, and that is the common case: a dropdown opened near the bottom of the window still opens upwards. Only a scroll _while_ the layer is open is affected. Nothing but leaving and re-entering the top layer re-arms the browser, so close a layer if the page can scroll far underneath it — and note that `<Popover>` shares this, since its panel is in the same top layer, while the no-Popover-API fallback measures and therefore flips.
+
 Where the browser has no Popover API the layer is portalled into `#box-kite-portal` exactly as before, with everything a portal costs. The one thing to check when upgrading is in [Breaking changes](#breaking-changes) below: a layer must not be declared _inside_ its trigger any more.
 
 ## Breaking changes

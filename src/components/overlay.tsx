@@ -73,6 +73,15 @@ type Props = OverlayProps & Omit<BoxProps, 'flip'>;
  * behaviour and all of its compromises. Measured in Chrome 152: the top layer paints over a
  * `z-index: 9999` sibling that covers a plain `position: fixed` control at the same coordinates.
  *
+ * **The layer keeps the side it chose when it opened.** Chrome re-evaluates `position-try-fallbacks` on
+ * scroll for an ordinary positioned element and *never* for one in the top layer (measured in 152, with
+ * hand-written CSS and with the library) — so a layer left open while the page scrolls does not flip when
+ * its side runs out of room, and slides past the viewport edge instead. The side is chosen correctly on
+ * every open, because a layer that mounts when it opens is laid out for the first time then; it is only a
+ * scroll *while* open that this affects. Nothing but leaving and re-entering the top layer re-arms the
+ * browser, so a page that scrolls far under an open layer should close it. The portal fallback, which
+ * measures, does not have this limitation.
+ *
  * @a11y No role, no `aria-*` and no focus handling: whatever renders a layer owns the pattern, and a
  * layer given a role it does not implement is worse than one with none.
  * @a11y The layer stays in the DOM where it was declared, so the order a screen reader reads and the tab

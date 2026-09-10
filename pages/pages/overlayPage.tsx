@@ -181,6 +181,15 @@ export default function OverlayPage() {
               content no keyboard can reach. Put the layer beside the trigger and give it <Mono>anchor</Mono>.
             </Box>
             <Box mt={4}>
+              <b>The one cost: the layer keeps the side it chose when it opened.</b> Chrome re-evaluates <Mono>position-try-fallbacks</Mono>{' '}
+              on scroll for an ordinary positioned element and never for one in the top layer, so a layer left open while the page scrolls
+              does not flip when its side runs out of room — it slides past the viewport edge instead. Measured in Chrome 152, against an
+              otherwise identical element outside the top layer, which does flip. Every <em>open</em> picks the right side, because a layer
+              that mounts when it opens is laid out for the first time then; only a scroll <em>while</em> open is affected. Nothing but
+              leaving and re-entering the top layer re-arms the browser, so close a layer if the page can scroll far underneath it.{' '}
+              <Mono>Popover</Mono> shares this; the portal fallback, which measures, does not.
+            </Box>
+            <Box mt={4}>
               Where the browser has no Popover API the layer is portalled into <Mono>#box-kite-portal</Mono> instead, with everything a
               portal costs — including the direction, which is measured off the anchor and written back on as <Mono>dir</Mono>. Mounting is
               still yours (or <Mono>Presence</Mono>&apos;s): a closed dropdown renders none of its options, and an exit transition runs in
