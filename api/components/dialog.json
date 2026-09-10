@@ -1,0 +1,121 @@
+{
+  "name": "Dialog",
+  "route": "/dialog",
+  "import": "import Dialog from '@box-kite/react/components/dialog';",
+  "description": "A modal dialog on the platform's own `<dialog>`: `showModal()` supplies the top layer, the `::backdrop`, an inert page behind it, Escape, focus containment and focus return — so none of that is written here.",
+  "pattern": null,
+  "props": [
+    {
+      "name": "trigger",
+      "type": "(trigger: DialogTrigger) => React.ReactNode",
+      "required": false,
+      "default": null,
+      "description": "The control that opens it, handed the ref and props that wire it up. Leave it out to open the dialog from anywhere else."
+    },
+    {
+      "name": "children",
+      "type": "React.ReactNode",
+      "required": false,
+      "default": null,
+      "description": "The dialog's content — a `Dialog.Title`, usually a `Dialog.Description`, and the controls."
+    },
+    {
+      "name": "open",
+      "type": "boolean",
+      "required": false,
+      "default": null,
+      "description": "Controlled open state. Leave it out and the dialog owns it."
+    },
+    {
+      "name": "defaultOpen",
+      "type": "boolean",
+      "required": false,
+      "default": null,
+      "description": "Whether it starts open, when the dialog owns its own state."
+    },
+    {
+      "name": "onOpenChange",
+      "type": "ChangeHandler<boolean, DialogReason>",
+      "required": false,
+      "default": null,
+      "description": "Fires with the new state and why it changed — `'trigger'`, `'escape'`, `'outside-pointer'` or `'imperative'`. A close cannot be refused: the browser has already done it by the time this runs."
+    },
+    {
+      "name": "label",
+      "type": "string",
+      "required": false,
+      "default": null,
+      "description": "The dialog's accessible name, when no `Dialog.Title` supplies one. A dialog without a name is unusable."
+    },
+    {
+      "name": "labelledBy",
+      "type": "string",
+      "required": false,
+      "default": null,
+      "description": "Names the dialog after an element already on the page, instead of `label` or a `Dialog.Title`."
+    },
+    {
+      "name": "describedBy",
+      "type": "string",
+      "required": false,
+      "default": null,
+      "description": "Describes it from an element already on the page, instead of a `Dialog.Description`."
+    },
+    {
+      "name": "modal",
+      "type": "boolean",
+      "required": false,
+      "default": null,
+      "description": "Whether the rest of the page is blocked while it is open. Default `true`, which is `showModal()`: the top layer, a `::backdrop`, an inert page, Escape and focus containment, all the browser's."
+    },
+    {
+      "name": "dismissible",
+      "type": "boolean",
+      "required": false,
+      "default": null,
+      "description": "Whether a press outside closes it. Default `true` — `false` is what makes a decision unavoidable."
+    },
+    {
+      "name": "lockScroll",
+      "type": "boolean",
+      "required": false,
+      "default": null,
+      "description": "Whether the page behind it stops scrolling. Default: whatever `modal` is, because a modal dialog that scrolls the page behind it is the commonest complaint about every library that blocks it unasked."
+    },
+    {
+      "name": "initialFocus",
+      "type": "ElementLike",
+      "required": false,
+      "default": null,
+      "description": "Where focus lands on open, instead of the first focusable thing inside. An **alert dialog owes this to its least destructive action** — APG's rule, so that a keyboard user cannot confirm a deletion by reflex. An `autofocus` attribute inside does the same job with no ref."
+    }
+  ],
+  "parts": [
+    {
+      "name": "Dialog.Title",
+      "description": "The dialog's heading, and what names it: rendering one is what puts `aria-labelledby` on the dialog, so a name and a visible title cannot drift apart. An `<h2>` by default — `tag` takes any of the six.",
+      "props": []
+    },
+    {
+      "name": "Dialog.Description",
+      "description": "The dialog's supporting text, and what describes it: rendering one puts `aria-describedby` on the dialog.",
+      "props": []
+    }
+  ],
+  "keyboard": [
+    { "mode": null, "keys": "Escape", "action": "Closes it, from anywhere inside, and returns focus to the trigger." },
+    { "mode": null, "keys": "Tab", "action": "Cycles focus inside a modal dialog and never leaves it; in a non-modal one it moves on." },
+    { "mode": null, "keys": "Enter, Space", "action": "On the trigger, opens the dialog." }
+  ],
+  "a11y": [
+    "`role=\"dialog\"` (`alertdialog` on `<AlertDialog>`), named by a `Dialog.Title`, `label` or `labelledBy`, and described by a `Dialog.Description` or `describedBy`.",
+    "The trigger carries `aria-haspopup=\"dialog\"`, `aria-expanded` and `aria-controls`.",
+    "Focus is contained while a modal dialog is open and returns to the trigger when it closes, both from the platform. `initialFocus` is what an alert dialog needs to land on its least destructive action."
+  ],
+  "axe": { "fixtures": ["Dialog (open)"], "knownViolations": [] },
+  "styleTree": [
+    { "path": "dialog", "depth": 0, "extends": null, "variants": [] },
+    { "path": "dialog.title", "depth": 1, "extends": null, "variants": [] },
+    { "path": "dialog.description", "depth": 1, "extends": null, "variants": [] }
+  ]
+}

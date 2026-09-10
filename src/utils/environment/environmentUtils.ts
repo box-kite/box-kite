@@ -38,6 +38,14 @@ export function supportsPopover(): boolean {
   return typeof HTMLElement !== 'undefined' && typeof HTMLElement.prototype.showPopover === 'function';
 }
 
+/**
+ * Whether the browser owns a `<dialog>`'s light dismiss: `closedby="any"` closes it on a press outside,
+ * and `closedby="closerequest"` gives a non-modal one Escape. Asked per mount, like `supportsPopover`.
+ */
+export function supportsDialogClosedBy(): boolean {
+  return typeof HTMLDialogElement !== 'undefined' && 'closedBy' in HTMLDialogElement.prototype;
+}
+
 /** A media query, or null where `matchMedia` does not exist — a server, or a bare jsdom. */
 export function matchMedia(query: string): MediaQueryList | null {
   if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return null;

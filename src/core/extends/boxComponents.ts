@@ -32,6 +32,71 @@ const boxComponents = {
   span: {
     styles: { display: 'inline-block' },
   },
+  // The `<dialog>` element, `role="dialog"` and `role="alertdialog"` alike — one node, because an alert
+  // dialog looks like a dialog and differs only in what it does. Deliberately says almost **nothing about
+  // position or size**: the UA stylesheet centres a modal one in the viewport (`position: fixed`,
+  // `inset: 0`, `margin: auto`) and caps it at `calc(100% - 6px - 2em)`, which is better than anything
+  // this could express, and it is the look that has to be overridden rather than the geometry.
+  dialog: {
+    styles: {
+      // The one exception, and the reason it is one: `._b` declares `margin: 0`, which outranks the UA's
+      // `margin: auto` — so without this the dialog sits in the top corner instead of the middle of the
+      // viewport. Measured in Chrome 152; same family as the `display` rule below.
+      m: 'auto',
+      p: 6,
+      b: 1,
+      borderRadius: 3,
+      bgColor: 'white',
+      color: 'gray-900',
+      borderColor: 'gray-200',
+      shadow: 'large',
+      theme: {
+        dark: { bgColor: 'gray-800', borderColor: 'gray-700', color: 'gray-100' },
+      },
+      // Opening is a first style resolution — `display: none` to shown — which is the moment
+      // `@starting-style` names; `allow-discrete` is what holds `display` and `overlay` back on the way
+      // out, so the exit is a transition rather than a `<Presence>`. Every Box already transitions `all`,
+      // which carries both of those (measured).
+      startingStyle: { opacity: 0, scale: 0.96 },
+      transitionBehavior: 'allow-discrete',
+      // `display: none` is declared here rather than left to the UA's own `dialog:not([open])` rule,
+      // because any author rule outranks that one — and every Box carries `display: block`, so without
+      // this a closed dialog stays laid out over the page. Measured: the one thing a test environment
+      // cannot see, having no UA dialog styles of its own.
+      not: { open: { opacity: 0, scale: 0.96, display: 'none' } },
+      // The backdrop is a pseudo-element, so it inherits none of the above and transitions nothing unless
+      // it says so. Only a modal dialog has one to paint; the rule still resolves for the other kind,
+      // there is simply no box (measured — a non-modal dialog computes this and shows nothing).
+      backdrop: {
+        bgColor: 'black/50',
+        transition: 'opacity',
+        startingStyle: { opacity: 0 },
+        not: { open: { opacity: 0 } },
+      },
+    },
+    children: {
+      title: {
+        styles: {
+          fontSize: 18,
+          fontWeight: 600,
+          lineHeight: 26,
+          m: 0,
+        },
+      },
+      description: {
+        styles: {
+          fontSize: 14,
+          lineHeight: 22,
+          mt: 2,
+          mb: 0,
+          color: 'gray-600',
+          theme: {
+            dark: { color: 'gray-400' },
+          },
+        },
+      },
+    },
+  },
   // The `role="dialog"` panel. It carries the UA stylesheet's `[popover]` look underneath it — a border,
   // padding and the system colours — so every one of those is declared here rather than inherited.
   popover: {

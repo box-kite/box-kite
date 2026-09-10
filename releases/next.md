@@ -2,7 +2,7 @@
 
 _Unreleased. A PR that changes what a consumer sees adds its section here — see CONTRIBUTING.md, "Release notes"._
 
-The package now carries instructions for the agent writing the code, the documentation site answers in markdown, the same rules install as a skill in about forty-five coding agents, and every component page states its own props, keys and accessibility — all of it generated from the sources the library is built from. A floating layer is also placed by the browser now rather than measured in JavaScript, all the way through: six props, one hook, and every popup the library ships standing on them.
+The package now carries instructions for the agent writing the code, the documentation site answers in markdown, the same rules install as a skill in about forty-five coding agents, and every component page states its own props, keys and accessibility — all of it generated from the sources the library is built from. A floating layer is also placed by the browser now rather than measured in JavaScript, all the way through: six props, one hook, and every popup the library ships standing on them. Two of those popups are now browser features rather than components: a popover on the Popover API, and a modal dialog on `<dialog>`.
 
 ## Highlights
 
@@ -16,6 +16,7 @@ The package now carries instructions for the agent writing the code, the documen
 - **[Every popup in the library is placed by the browser](#every-popup-in-the-library-is-placed-by-the-browser)** — `Overlay`, `Tooltip`, the `Dropdown` popup and the DataGrid column menu stand on that hook, three home-grown flip heuristics are gone, and one `side`/`align`/`offset`/`flip` vocabulary replaces the transforms they took.
 - **[A popover is a browser feature now, not a portal](#a-popover-is-a-browser-feature-now-not-a-portal)** — `<Popover>` on the platform Popover API: the top layer, light dismiss and focus return are the browser's, so there is no portal and no z-index — and it is 3.46 KB gz against Radix Popover's 23.54.
 - **[Every floating layer is in the top layer](#every-floating-layer-is-in-the-top-layer-and-the-portal-is-gone)** — `Overlay`, and so `Tooltip`, the `Dropdown` popup and the DataGrid column menu: no portal anywhere in the library, so a popup inherits the theme around it and a dropdown inside a panel no longer dismisses it.
+- **[A modal dialog is a browser feature too](#a-modal-dialog-is-a-browser-feature-too)** — `<Dialog>` and `<AlertDialog>` on the native `<dialog>`: `showModal()` supplies the top layer, the backdrop, an inert page, Escape, focus containment and focus return, so the two together add 2.15 KB gz against Radix Dialog's 13.28.
 
 ## The package tells an agent how to use it
 
@@ -261,6 +262,52 @@ One thing the top layer costs, and it is worth knowing before you reach for a la
 Every _open_ picks the right side, because a layer that mounts when it opens is laid out for the first time then, and that is the common case: a dropdown opened near the bottom of the window still opens upwards. Only a scroll _while_ the layer is open is affected. Nothing but leaving and re-entering the top layer re-arms the browser, so close a layer if the page can scroll far underneath it — and note that `<Popover>` shares this, since its panel is in the same top layer, while the no-Popover-API fallback measures and therefore flips.
 
 Where the browser has no Popover API the layer is portalled into `#box-kite-portal` exactly as before, with everything a portal costs. The one thing to check when upgrading is in [Breaking changes](#breaking-changes) below: a layer must not be declared _inside_ its trigger any more.
+
+## A modal dialog is a browser feature too
+
+`<Dialog>` is a real `<dialog>` shown with `showModal()`, and that one call is the pattern: the top layer, the `::backdrop`, an inert page behind it, Escape, focus containment and focus return are the browser's. There is no focus trap in this component, no `aria-hidden` sweep over the page, and no `z-index` anywhere.
+
+```tsx
+import Dialog, { AlertDialog } from '@box-kite/react/components/dialog';
+
+<Dialog trigger={(t) => <Button {...t}>Rename</Button>}>
+  <Dialog.Title>Rename this view</Dialog.Title>
+  <Dialog.Description>The name is only shown to you.</Dialog.Description>
+  <Textbox name="name" props={{ 'aria-label': 'Name' }} />
+</Dialog>;
+```
+
+**Rendering a `Dialog.Title` is what names the dialog.** It writes `aria-labelledby`, a `Dialog.Description` writes `aria-describedby`, and neither attribute exists when the part is absent — so a name and a visible heading cannot drift apart, and a reference never points at nothing. A dialog that shows no heading takes `label`, `labelledBy` or `describedBy` instead.
+
+What the component adds on top of the element: `role="dialog"`, the naming above, `aria-haspopup="dialog"`/`aria-expanded`/`aria-controls` on the trigger, `open`/`defaultOpen`/`onOpenChange(open, { reason })` — `trigger`, `escape`, `outside-pointer` or `imperative`, the last covering a `close()` call and a `<form method="dialog">` submit alike — `modal` (`false` is `show()`: no backdrop, nothing inert), `dismissible`, `lockScroll`, and `initialFocus`.
+
+`<AlertDialog>`, a named export of the same module, is the interrupting kind:
+
+```tsx
+const cancel = useRef(null);
+
+<AlertDialog initialFocus={cancel} trigger={(t) => <Button {...t}>Delete</Button>}>
+  <AlertDialog.Title>Delete this view?</AlertDialog.Title>
+  <AlertDialog.Description>Nothing here can be undone.</AlertDialog.Description>
+  <Button bgColor="rose-600">Delete</Button>
+  <Button ref={cancel}>Cancel</Button>
+</AlertDialog>;
+```
+
+`role="alertdialog"` tells a screen reader the content is an alert rather than a panel, so the name and the description are announced together the moment it opens. It is always modal and **never dismissed by a press outside** — a decision that can be clicked away is one the user did not make — while Escape still closes it, because a keyboard user must always have a way out. `initialFocus` is APG's requirement that focus land on the least destructive action, so a deletion cannot be confirmed by reflex.
+
+Four things worth knowing, all measured in Chrome 152:
+
+- **The dialog is always rendered**, and closed is `display: none` rather than unmounted — the same shape as `<Popover>`, and what lets the browser own showing and hiding. The exit is therefore a CSS transition (`transitionBehavior="allow-discrete"`, already in the component styles, and it covers the `::backdrop` too) and never a `<Presence>`. Gate expensive children yourself with `{open ? <Heavy /> : null}`.
+- **A close cannot be refused.** The `cancel` event is cancelable, but the browser has already closed the dialog by the time `onOpenChange` runs, so a controlled `<Dialog open>` hears about a dismissal afterwards and keeping `open` true shows it again. `dismissible={false}` is how a decision is made unavoidable.
+- **For a modal dialog the backdrop _is_ the dialog element.** A press on it targets the `<dialog>`, which is why every hand-rolled outside-press check calls a backdrop click "inside". The platform's own `closedby="any"` gets it right and the component writes it; where a browser has not got that yet, the press is measured against the dialog's own box instead.
+- **The platform does not stop the page scrolling** — `overflow` on `<html>` stays `visible` while a modal dialog is open, and a wheel over the backdrop scrolls the page behind it. That is the whole reason `lockScroll` exists, and it defaults to whatever `modal` is rather than being unconditional: it is an `overflow: hidden` class held by a counter, so an inner dialog closing cannot unlock the page under an outer one. The scrollbar's width leaves the page as the lock is applied, so a document that must not shift wants `scrollbarGutter="stable"`.
+
+The style tree in `Box.components('dialog')` deliberately says almost nothing about position or size: the browser's own stylesheet centres a modal dialog in the viewport and caps it at `calc(100% - 6px - 2em)`, which is better than any default here could express. The **one** exception is `margin: auto`, which it has to declare because every Box carries `margin: 0` and an author rule outranks the UA's — without it a modal dialog sits in the corner instead of the middle. `display: none` while closed is declared for exactly the same reason.
+
+It is also **smaller by a lot**. `@radix-ui/react-dialog` is 13.28 KB gz with React external and `@radix-ui/react-alert-dialog` is 13.64 (13.81 for both, since they share code); `<Dialog>` and `<AlertDialog>` together add **2.15 KB gz** on top of a `Box` an app already has. Both figures measured, minified and gzipped, the same way.
+
+Because nothing is portalled, a local `Box.Theme` reaches inside a dialog the way it now reaches inside a dropdown: a top-layer element still matches the `.dark .className` rules of the ancestor it was declared in, and still inherits its custom properties and its text direction. Measured both with the library and in hand-written CSS.
 
 ## Breaking changes
 

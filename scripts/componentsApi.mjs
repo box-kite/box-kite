@@ -54,6 +54,21 @@ const CONFIG = [
   { name: 'Overlay', route: '/overlay', file: 'src/components/overlay.tsx', props: 'OverlayProps', doc: 'OverlayImpl' },
   { name: 'Popover', route: '/popover', file: 'src/components/popover.tsx', props: 'Props', doc: 'PopoverImpl', styles: 'popover' },
   {
+    name: 'Dialog',
+    route: '/dialog',
+    file: 'src/components/dialog.tsx',
+    props: 'DialogProps',
+    doc: 'DialogImpl',
+    styles: 'dialog',
+    parts: [
+      { name: 'Dialog.Title', props: 'DialogTitleProps', doc: 'DialogTitle' },
+      { name: 'Dialog.Description', props: 'DialogDescriptionProps', doc: 'DialogDescription' },
+    ],
+  },
+  // No props of its own on purpose: `AlertDialogProps` is `DialogProps` minus the three an alert dialog
+  // does not get to choose, so listing it a second time would be one table drifting from another.
+  { name: 'AlertDialog', route: '/dialog', file: 'src/components/dialog.tsx', doc: 'AlertDialogImpl', named: true },
+  {
     name: 'Dropdown',
     route: '/dropdown',
     file: 'src/components/dropdown.tsx',
