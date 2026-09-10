@@ -99,7 +99,8 @@ const TEXT_EDITING_KEYS = new Set([' ', 'Home', 'End', 'ArrowLeft', 'ArrowRight'
  * @a11y Nothing names a combobox for you — accname does not read its contents, and the trigger text is
  * its *value* — so pass `label`, or an `aria-label` of your own in `props`.
  * @a11y DOM focus never leaves the trigger (or, when searchable, the field), so no option is a tab stop
- * and the popup can be portalled without stranding the keyboard inside it.
+ * and the keyboard is never stranded in the popup. The popup itself is a sibling of the trigger in the
+ * browser's top layer, so it needs no portal and keeps the theme and the direction around it.
  * @keyboard Down / Up (closed) — Opens, with the highlight on the selected option — or on the first or
  * last when nothing is chosen.
  * @keyboard Alt + Down (closed) — Opens without moving the highlight.
@@ -307,9 +308,8 @@ function DropdownImpl<TVal>(props: Props<TVal>, ref: Ref<HTMLInputElement>): Rea
         }
       }
 
-      // The popup is a React child of the trigger even though it renders through a portal, so a
-      // click inside it bubbles to the trigger's own toggle. Stopping it here is what keeps
-      // choosing an option from reopening the dropdown in the same gesture.
+      // The popup is a sibling of the trigger rather than a child of it, so this no longer has a
+      // toggle to stop — it keeps a press on an option off whatever the dropdown was rendered into.
       e.stopPropagation();
 
       if (multiple) {
@@ -608,7 +608,6 @@ function DropdownImpl<TVal>(props: Props<TVal>, ref: Ref<HTMLInputElement>): Rea
         </Box>
       )}
       {icon}
-      {popup}
     </Box>
   ) : (
     <Button
@@ -630,10 +629,13 @@ function DropdownImpl<TVal>(props: Props<TVal>, ref: Ref<HTMLInputElement>): Rea
           typed away again. */}
       {display ?? '\u00A0'}
       {icon}
-      {popup}
     </Button>
   );
 
+  // The popup is a *sibling* of the trigger, never a child of it: since B2 stage 2 the layer stays in the
+  // DOM where it is declared, and a listbox full of options inside a `<button>` is unreachable markup —
+  // bug #47's family, which the portal used to hide by rendering it somewhere else. Beside the trigger it
+  // is also what Tab reaches next, which is what the pattern wants anyway.
   return (
     <DropdownContext.Provider value={contextValue}>
       {hasLabel ? (
@@ -642,9 +644,13 @@ function DropdownImpl<TVal>(props: Props<TVal>, ref: Ref<HTMLInputElement>): Rea
             {label}
           </Box>
           {trigger}
+          {popup}
         </Flex>
       ) : (
-        trigger
+        <>
+          {trigger}
+          {popup}
+        </>
       )}
     </DropdownContext.Provider>
   );

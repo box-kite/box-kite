@@ -182,7 +182,7 @@ export const siteRoutes = [
     path: '/overlay',
     name: 'Overlay',
     description:
-      'A portal rendered where it is declared, so its children escape overflow: hidden, clipped ancestors and stacking contexts.',
+      'A layer rendered where it is declared, in the top layer, so it escapes overflow: hidden, clipped ancestors and stacking contexts.',
   },
   {
     path: '/dropdown',

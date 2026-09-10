@@ -58,6 +58,18 @@ describe('Dropdown', () => {
   });
 
   describe('Opening and Closing', () => {
+    // The popup used to be a child of the trigger, which only worked because it was portalled out of
+    // the DOM before a browser ever saw it. Since B2 stage 2 the layer stays where it is declared, so
+    // the nesting has to be right in the markup: a listbox inside a `<button>` is unreachable content.
+    it('renders the popup beside the trigger, never inside it', () => {
+      renderDropdown();
+      openDropdown();
+
+      const listbox = screen.getByRole('listbox');
+      expect(listbox.closest('button')).toBeNull();
+      expect(screen.getByRole('combobox')).not.toContainElement(listbox);
+    });
+
     it('opens dropdown on click', () => {
       renderDropdown();
       openDropdown();

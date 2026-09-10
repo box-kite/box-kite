@@ -134,7 +134,7 @@ export default function TooltipPage() {
 
           <Section id="overlay" title="Only need the positioning?">
             <Box>
-              A tooltip is a pattern; escaping an <Mono>overflow: hidden</Mono> is not. The portal-and-position half of this component ships
+              A tooltip is a pattern; escaping an <Mono>overflow: hidden</Mono> is not. The layer-and-position half of this component ships
               on its own as <Mono>Overlay</Mono> — no ARIA, no open state, no dismissal — and that is what to reach for when the thing being
               rendered is not a description of a control. Before A3 this component <em>was</em> that primitive, so code that used it to
               escape an overflow becomes <Mono>Overlay</Mono>, unchanged.

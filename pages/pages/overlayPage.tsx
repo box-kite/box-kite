@@ -24,7 +24,7 @@ export default function OverlayPage() {
       <PageHeader
         icon={Layers}
         title="Overlay"
-        description="A floating layer anchored by the browser and portalled for the stacking order — so it escapes overflow: hidden, clipped ancestors and the z-index wars, and flips when there is no room."
+        description="A floating layer anchored by the browser and rendered in its top layer — so it escapes overflow: hidden, clipped and transformed ancestors and the z-index wars, and flips when there is no room."
       />
 
       <Reveal delay={0.1}>
@@ -34,14 +34,14 @@ export default function OverlayPage() {
           <Section title="A layer, not a pattern">
             <Box>
               Overlay owns no open state, no ARIA and no dismissal: it names an anchor, asks the browser to put the layer on a side of it,
-              and renders it in the portal container. That is all every popup in this library shares — <Mono>Tooltip</Mono>,{' '}
+              and renders it in the browser&apos;s top layer. That is all every popup in this library shares — <Mono>Tooltip</Mono>,{' '}
               <Mono>Dropdown</Mono> and the DataGrid menu each add a different pattern on top. If what you are rendering describes a
               control, reach for <Mono>Tooltip</Mono> instead: it adds <Mono>role="tooltip"</Mono>, the <Mono>aria-describedby</Mono>{' '}
               wiring, hover-and-focus open and Escape.
             </Box>
             <Box mt={4}>
               The placement is CSS anchor positioning — <Mono>useAnchorPosition</Mono> under the hood, so on a browser that has it nothing
-              runs at all: no measurement, no scroll listener, no state. The portal is still here for the other half of the problem.{' '}
+              runs at all: no measurement, no scroll listener, no state. The top layer answers the other half of the problem.{' '}
               <Mono>position: fixed</Mono> escapes every <Mono>overflow: hidden</Mono> ancestor but neither a <em>transformed</em> one nor
               the page's stacking order, and a layer has to come out on top of both.
             </Box>
@@ -70,7 +70,7 @@ export default function OverlayPage() {
         </Flex>
       </Box>
 
-      {/* Overlay — portalled out, so nothing clips it */}
+      {/* Overlay — in the top layer, so nothing clips it */}
       <Box flex1 height={40} b={1} borderRadius={1} overflow="auto" position="relative" minWidth={80}>
         <Flex ml={4}>
           <Box>
@@ -159,6 +159,43 @@ export default function OverlayPage() {
             </Flex>
           </Code>
 
+          <Section title="The top layer, and the one rule that comes with it">
+            <Box>
+              The layer carries <Mono>popover=&quot;manual&quot;</Mono> and is shown the moment it mounts, which puts it in the
+              browser&apos;s <b>top layer</b>: it paints over every stacking context and out of every clipped <em>and transformed</em>{' '}
+              ancestor, which <Mono>position: fixed</Mono> alone cannot do. Measured in Chrome 152 against a sibling with{' '}
+              <Mono>z-index: 9999</Mono>, which covers a plain fixed layer at the same coordinates and loses to this one.{' '}
+              <Mono>manual</Mono> rather than <Mono>auto</Mono> because a layer owns no dismissal — <Mono>Popover</Mono> is the{' '}
+              <Mono>auto</Mono> one, with light dismiss and focus return from the browser.
+            </Box>
+            <Box mt={4}>
+              Because nothing is moved, the layer inherits the theme, the custom properties and the text direction around it, and the tab
+              order runs trigger then layer then the rest of the page. It also means a press inside the layer is a press inside whatever
+              popover it was <em>declared</em> in, so a <Mono>Dropdown</Mono> inside a <Mono>Popover</Mono> panel no longer dismisses the
+              panel — the bug a portal caused by moving the popup to the end of the body, where every press in it read as outside.
+            </Box>
+            <Box mt={4}>
+              <b>The rule: never declare a layer inside its trigger.</b> A portal used to move it before a browser ever saw it, so{' '}
+              <Mono>{'<Button>{overlay}</Button>'}</Mono> worked by accident. It stays where you put it now, and a{' '}
+              <Mono>role=&quot;listbox&quot;</Mono> or <Mono>role=&quot;menu&quot;</Mono> full of buttons inside a <Mono>button</Mono> is
+              content no keyboard can reach. Put the layer beside the trigger and give it <Mono>anchor</Mono>.
+            </Box>
+            <Box mt={4}>
+              <b>The one cost: the layer keeps the side it chose when it opened.</b> Chrome re-evaluates <Mono>position-try-fallbacks</Mono>{' '}
+              on scroll for an ordinary positioned element and never for one in the top layer, so a layer left open while the page scrolls
+              does not flip when its side runs out of room — it slides past the viewport edge instead. Measured in Chrome 152, against an
+              otherwise identical element outside the top layer, which does flip. Every <em>open</em> picks the right side, because a layer
+              that mounts when it opens is laid out for the first time then; only a scroll <em>while</em> open is affected. Nothing but
+              leaving and re-entering the top layer re-arms the browser, so close a layer if the page can scroll far underneath it.{' '}
+              <Mono>Popover</Mono> shares this; the portal fallback, which measures, does not.
+            </Box>
+            <Box mt={4}>
+              Where the browser has no Popover API the layer is portalled into <Mono>#box-kite-portal</Mono> instead, with everything a
+              portal costs — including the direction, which is measured off the anchor and written back on as <Mono>dir</Mono>. Mounting is
+              still yours (or <Mono>Presence</Mono>&apos;s): a closed dropdown renders none of its options, and an exit transition runs in
+              the top layer like anywhere else.
+            </Box>
+          </Section>
           <Section title="Where it goes">
             <Flex tag="ul" d="column" gap={2}>
               <Bullet>

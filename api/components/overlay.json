@@ -2,7 +2,7 @@
   "name": "Overlay",
   "route": "/overlay",
   "import": "import Overlay from '@box-kite/react/components/overlay';",
-  "description": "A floating layer: anchored by the browser, portalled for the stacking order. `position-area` puts it on the side of its anchor asked for and `position-try-fallbacks` flips it when there is no room, so on the CSS path nothing here runs at all — no measurement, no scroll listener, no state (`useAnchorPosition` measures instead where the browser cannot, and the layer is `position: fixed` either way).",
+  "description": "A floating layer: anchored by the browser, and in the browser's **top layer** for the stacking order. `position-area` puts it on the side of its anchor asked for and `position-try-fallbacks` flips it when there is no room, so on the CSS path nothing here runs at all — no measurement, no scroll listener, no state (`useAnchorPosition` measures instead where the browser cannot, and the layer is `position: fixed` either way).",
   "pattern": null,
   "props": [
     {
@@ -66,8 +66,8 @@
   "keyboard": [],
   "a11y": [
     "No role, no `aria-*` and no focus handling: whatever renders a layer owns the pattern, and a layer given a role it does not implement is worse than one with none.",
-    "The layer is portalled out of the subtree it was declared in, so it carries the direction it was read in as a `dir` of its own — a container hanging off the body inherits nothing.",
-    "It is declared where it is used but rendered into a container at the end of `<body>`, so the DOM order a screen reader reads and the tab order both follow the *portal*, not the markup: whatever a layer needs said about its place in the page has to be said with `aria-controls`, `aria-owns` or a managed focus. `Popover` is the way out of that — a top-layer element stays where it was declared."
+    "The layer stays in the DOM where it was declared, so the order a screen reader reads and the tab order both follow the markup — a layer declared after its trigger is reached by Tab from it. It must therefore not be declared *inside* its trigger: interactive content in a `<button>` is unreachable.",
+    "Only on the portal fallback does it leave that subtree, and there it carries the direction it was read in as a `dir` of its own, since a container hanging off the body inherits nothing."
   ],
   "axe": { "fixtures": ["Overlay"], "knownViolations": [] },
   "styleTree": []

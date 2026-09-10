@@ -10,6 +10,7 @@ import useIdentifier from '../react/identity/useIdentifier';
 import { ComponentsAndVariants } from '../types';
 import { AnchorAlign, AnchorSide } from '../utils/anchor/anchorUtils';
 import { isEventInside } from '../utils/dom/domUtils';
+import { supportsPopover } from '../utils/environment/environmentUtils';
 import Overlay from './overlay';
 
 /** Why the popover opened or closed — `onOpenChange` gets this alongside the event that did it. */
@@ -82,11 +83,6 @@ interface Props<TKey extends keyof ComponentsAndVariants> extends PopoverBoxProp
   autoFocus?: boolean;
 }
 
-/** Whether the browser has the Popover API. Asked per mount rather than cached, so a test can answer for it. */
-function supportsPopover(): boolean {
-  return typeof HTMLElement !== 'undefined' && typeof HTMLElement.prototype.showPopover === 'function';
-}
-
 /**
  * A panel anchored to a trigger, on the platform's own Popover API: the top layer, light dismiss and
  * focus return are the browser's, and the position is CSS anchor positioning.
@@ -107,6 +103,11 @@ function supportsPopover(): boolean {
  * lets the browser own show and hide — and what makes the exit a plain CSS transition rather than a
  * `<Presence>`, since nothing unmounts. Content that is expensive to render should be gated by the
  * consumer: `{open && <Heavy />}`.
+ *
+ * **The panel keeps the side it chose when it opened.** Chrome re-evaluates `position-try-fallbacks` on
+ * scroll for an ordinary positioned element and never for one in the top layer (measured in 152), so a
+ * panel left open while the page scrolls does not flip when its side runs out of room. Every open picks
+ * the right side; it is only a scroll *while* open that this affects. See `Overlay`, which shares it.
  *
  * Where the browser has no Popover API the panel is an `Overlay` — a portal — with `useDismiss` and
  * `useFocusReturn` supplying what the platform otherwise would.

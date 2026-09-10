@@ -30,6 +30,14 @@ export function documentHead(): HTMLHeadElement | null {
   return documentOrNull()?.head ?? null;
 }
 
+/**
+ * Whether the browser has the Popover API, which is what puts a floating layer in the top layer. Asked
+ * per mount rather than cached, so a test can install the contract and answer for the browser.
+ */
+export function supportsPopover(): boolean {
+  return typeof HTMLElement !== 'undefined' && typeof HTMLElement.prototype.showPopover === 'function';
+}
+
 /** A media query, or null where `matchMedia` does not exist — a server, or a bare jsdom. */
 export function matchMedia(query: string): MediaQueryList | null {
   if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return null;

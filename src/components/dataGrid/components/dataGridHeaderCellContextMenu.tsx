@@ -186,9 +186,9 @@ export default function DataGridHeaderCellContextMenu<TRow>(props: Props<TRow>) 
   useIsomorphicLayoutEffect(() => {
     if (!pendingFocus.current) return;
 
-    // Not `[isOpen]`: `Overlay` measures where it sits before it renders anything into the portal,
-    // so on the commit that opens the menu there is no item to focus yet. Waiting for one to
-    // appear is what makes this run on every render instead.
+    // Not `[isOpen]`: `Overlay` settles where it sits before it renders any of its content, so on the
+    // commit that opens the menu there is no item to focus yet. Waiting for one to appear is what
+    // makes this run on every render instead.
     const item = activeItem();
     if (!item) return;
 
@@ -215,59 +215,60 @@ export default function DataGridHeaderCellContextMenu<TRow>(props: Props<TRow>) 
         <Span component={`${grid.componentName}.header.cell.contextMenu.icon` as never}>
           <DotsIcon fill="currentColor" />
         </Span>
-        <Presence present={isOpen}>
-          {(presence) => (
-            <Overlay
-              component={`${grid.componentName}.header.cell.contextMenu.tooltip` as never}
-              variant={{ closed: !presence.present } as never}
-              ref={popupRef}
-              contentRef={presence.ref}
-              anchor={triggerRef}
-              // Below the button, hanging back across the column it belongs to — which screen side that
-              // is depends on the reading order. It is the alignment that can run off the page here, not
-              // the side, and the browser mirrors it near the inline start where the old heuristic guessed.
-              side="bottom"
-              align="end"
-              matchWidth={false}
-              id={identifier}
-              props={{ role: 'menu', 'aria-label': `Column options for ${columnName}`, onKeyDown: roving.onKeyDown, ...presence.props }}
-            >
-              {items.map((item, index) => {
-                const { ref, tabIndex, onFocus } = roving.itemProps(index);
-
-                return (
-                  <Fragment key={item.key}>
-                    {item.startsSection && (
-                      <Box
-                        bb={1}
-                        my={2}
-                        borderColor="gray-300"
-                        component={`${grid.componentName}.header.cell.contextMenu.tooltip.item.separator` as never}
-                      />
-                    )}
-                    <Button
-                      component={`${grid.componentName}.header.cell.contextMenu.tooltip.item` as never}
-                      ref={ref}
-                      type="button"
-                      onClick={(event) => {
-                        // The popup is portalled out of the DOM but not out of the React tree, so a
-                        // click in it still reaches the trigger's own toggle on the way up.
-                        event.stopPropagation();
-                        item.run();
-                        close();
-                      }}
-                      props={{ role: 'menuitem', tabIndex, onFocus }}
-                    >
-                      {item.icon}
-                      {item.label}
-                    </Button>
-                  </Fragment>
-                );
-              })}
-            </Overlay>
-          )}
-        </Presence>
       </Button>
+      <Presence present={isOpen}>
+        {(presence) => (
+          <Overlay
+            component={`${grid.componentName}.header.cell.contextMenu.tooltip` as never}
+            variant={{ closed: !presence.present } as never}
+            ref={popupRef}
+            contentRef={presence.ref}
+            anchor={triggerRef}
+            // Below the button, hanging back across the column it belongs to — which screen side that
+            // is depends on the reading order. It is the alignment that can run off the page here, not
+            // the side, and the browser mirrors it near the inline start where the old heuristic guessed.
+            side="bottom"
+            align="end"
+            matchWidth={false}
+            id={identifier}
+            props={{ role: 'menu', 'aria-label': `Column options for ${columnName}`, onKeyDown: roving.onKeyDown, ...presence.props }}
+          >
+            {items.map((item, index) => {
+              const { ref, tabIndex, onFocus } = roving.itemProps(index);
+
+              return (
+                <Fragment key={item.key}>
+                  {item.startsSection && (
+                    <Box
+                      bb={1}
+                      my={2}
+                      borderColor="gray-300"
+                      component={`${grid.componentName}.header.cell.contextMenu.tooltip.item.separator` as never}
+                    />
+                  )}
+                  <Button
+                    component={`${grid.componentName}.header.cell.contextMenu.tooltip.item` as never}
+                    ref={ref}
+                    type="button"
+                    onClick={(event) => {
+                      // The menu is a sibling of its trigger rather than a child of it, so this no
+                      // longer has a toggle to stop — it keeps a press on an item off the header cell
+                      // the whole menu sits in.
+                      event.stopPropagation();
+                      item.run();
+                      close();
+                    }}
+                    props={{ role: 'menuitem', tabIndex, onFocus }}
+                  >
+                    {item.icon}
+                    {item.label}
+                  </Button>
+                </Fragment>
+              );
+            })}
+          </Overlay>
+        )}
+      </Presence>
     </Flex>
   );
 }
