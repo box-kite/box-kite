@@ -1,4 +1,4 @@
-import { Columns3, Focus, Keyboard, MousePointerClick, Rows3 } from 'lucide-react';
+import { Columns3, Focus, Keyboard, MousePointerClick, Rows3, Ruler, Scissors } from 'lucide-react';
 import { ReactNode, useState } from 'react';
 import tabsApi from '../../api/components/tabs.json';
 import Box from '../../src/box';
@@ -151,6 +151,138 @@ export default function TabsPage() {
                 </Tabs>
               </Box>
             </Code>
+          </Section>
+
+          <Section id="indicator" title="An indicator that travels">
+            <Box>
+              <Mono>indicator="sliding"</Mono> replaces the border each tab draws with one element for the whole list, which animates
+              between tabs because it <em>is</em> the same element. Where it goes is measured, so it appears once the widget has run — and
+              until then the tabs keep drawing their own, which is what a prerendered page paints and what a reader whose JavaScript never
+              arrives keeps. The travel rides <Mono>--transitionTime</Mono>, so <Mono>prefers-reduced-motion</Mono> stops it with no
+              opt-out.
+            </Box>
+            <Code
+              language="jsx"
+              mt={4}
+              code={`<Tabs defaultValue="overview" indicator="sliding">
+  <Tabs.List label="Project">
+    <Tabs.Tab value="overview">Overview</Tabs.Tab>
+    <Tabs.Tab value="activity">Activity</Tabs.Tab>
+    <Tabs.Tab value="members">Members and permissions</Tabs.Tab>
+    <Tabs.Tab value="logs">Logs</Tabs.Tab>
+  </Tabs.List>
+  <Tabs.Panel value="overview">Who is on it, and what is left.</Tabs.Panel>
+  <Tabs.Panel value="activity">What changed this week.</Tabs.Panel>
+  <Tabs.Panel value="members">Who is allowed in, and to do what.</Tabs.Panel>
+  <Tabs.Panel value="logs">Every build, newest first.</Tabs.Panel>
+</Tabs>`}
+            >
+              <Box py={6}>
+                <Tabs defaultValue="overview" indicator="sliding">
+                  <Tabs.List label="Project sections">
+                    <Tabs.Tab value="overview">Overview</Tabs.Tab>
+                    <Tabs.Tab value="activity">Activity</Tabs.Tab>
+                    <Tabs.Tab value="members">Members and permissions</Tabs.Tab>
+                    <Tabs.Tab value="logs">Logs</Tabs.Tab>
+                  </Tabs.List>
+                  <Tabs.Panel value="overview">Who is on it, and what is left.</Tabs.Panel>
+                  <Tabs.Panel value="activity">What changed this week.</Tabs.Panel>
+                  <Tabs.Panel value="members">Who is allowed in, and to do what.</Tabs.Panel>
+                  <Tabs.Panel value="logs">Every build, newest first.</Tabs.Panel>
+                </Tabs>
+              </Box>
+            </Code>
+            <Box mt={4}>
+              It turns with the list: a vertical one puts the bar on the inline end, which is the right-hand side of a left-to-right page
+              and the left of a right-to-left one.
+            </Box>
+            <Code
+              language="jsx"
+              mt={4}
+              code={`<Tabs defaultValue="activity" orientation="vertical" indicator="sliding">
+  <Tabs.List label="Views">
+    <Tabs.Tab value="overview">Overview</Tabs.Tab>
+    <Tabs.Tab value="activity">Activity</Tabs.Tab>
+    <Tabs.Tab value="logs">Logs</Tabs.Tab>
+  </Tabs.List>
+  <Tabs.Panel value="overview">Who is on it.</Tabs.Panel>
+  <Tabs.Panel value="activity">What changed.</Tabs.Panel>
+  <Tabs.Panel value="logs">Every build.</Tabs.Panel>
+</Tabs>`}
+            >
+              <Box py={6}>
+                <Tabs defaultValue="activity" orientation="vertical" indicator="sliding">
+                  <Tabs.List label="Vertical views">
+                    <Tabs.Tab value="overview">Overview</Tabs.Tab>
+                    <Tabs.Tab value="activity">Activity</Tabs.Tab>
+                    <Tabs.Tab value="logs">Logs</Tabs.Tab>
+                  </Tabs.List>
+                  <Tabs.Panel value="overview">Who is on it.</Tabs.Panel>
+                  <Tabs.Panel value="activity">What changed.</Tabs.Panel>
+                  <Tabs.Panel value="logs">Every build.</Tabs.Panel>
+                </Tabs>
+              </Box>
+            </Code>
+          </Section>
+
+          <Section id="resizing" title="Panels that resize smoothly">
+            <Box>
+              Panels of different heights make the page jump under them. Wrap them in a <Mono>Tabs.Panels</Mono> and that container takes
+              the height of the panel on screen, so the change is a transition instead. It is the only optional part — panels work as plain
+              siblings of the list without it.
+            </Box>
+            <Code
+              language="jsx"
+              mt={4}
+              code={`<Tabs defaultValue="short" indicator="sliding">
+  <Tabs.List label="Release">
+    <Tabs.Tab value="short">Summary</Tabs.Tab>
+    <Tabs.Tab value="long">Changelog</Tabs.Tab>
+  </Tabs.List>
+  <Tabs.Panels>
+    <Tabs.Panel value="short">One line, and the box is one line tall.</Tabs.Panel>
+    <Tabs.Panel value="long">
+      <Flex d="column" gap={2}>
+        <Box>The container measures whichever panel is showing.</Box>
+        <Box>It clips only while the height is travelling.</Box>
+        <Box>At rest nothing is clipped, so a focus ring at the edge survives.</Box>
+        <Box>And the wait is the CSS on the element, so reduced motion has none.</Box>
+      </Flex>
+    </Tabs.Panel>
+  </Tabs.Panels>
+</Tabs>`}
+            >
+              <Box py={6}>
+                <Tabs defaultValue="short" indicator="sliding">
+                  <Tabs.List label="Release notes">
+                    <Tabs.Tab value="short">Summary</Tabs.Tab>
+                    <Tabs.Tab value="long">Changelog</Tabs.Tab>
+                  </Tabs.List>
+                  <Tabs.Panels>
+                    <Tabs.Panel value="short">One line, and the box is one line tall.</Tabs.Panel>
+                    <Tabs.Panel value="long">
+                      <Flex d="column" gap={2}>
+                        <Box>The container measures whichever panel is showing.</Box>
+                        <Box>It clips only while the height is travelling.</Box>
+                        <Box>At rest nothing is clipped, so a focus ring at the edge survives.</Box>
+                        <Box>And the wait is the CSS on the element, so reduced motion has none.</Box>
+                      </Flex>
+                    </Tabs.Panel>
+                  </Tabs.Panels>
+                </Tabs>
+              </Box>
+            </Code>
+            <Flex d="column" gap={3} mt={6}>
+              <Note icon={Ruler} title="It measures the panel, never itself">
+                The container writes its own height, so watching that height would be the loop. What it watches is the panel — every reflow
+                of it, not only a switch — which is how a wrapped line or a late font moves the box with it.
+              </Note>
+              <Note icon={Scissors} title="Clipped only while it is moving">
+                A panel already at its full height inside a container still on the way there has to be clipped, or it paints over whatever
+                follows. At rest the clip is gone, because the container is exactly as tall as its panel and a permanent one would cut the
+                focus ring off everything sitting at that edge.
+              </Note>
+            </Flex>
           </Section>
 
           <Section id="disabled" title="Disabled tabs">
@@ -324,6 +456,8 @@ const sidebarLinks = [
   { id: 'keyboard', label: 'Selection follows focus' },
   { id: 'manual', label: 'Manual activation' },
   { id: 'vertical', label: 'Vertical' },
+  { id: 'indicator', label: 'A travelling indicator' },
+  { id: 'resizing', label: 'Panels that resize' },
   { id: 'disabled', label: 'Disabled tabs' },
   { id: 'mounting', label: 'Only one panel' },
   { id: 'controlled', label: 'Controlled' },

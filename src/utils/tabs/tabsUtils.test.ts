@@ -210,4 +210,106 @@ describe('TabsUtils', () => {
       expect(new Set(tokens).size).toBe(values.length);
     });
   });
+  describe('selectedTab', () => {
+    it('reads the selected tab off the attribute the component writes', () => {
+      const list = build(['one', 'two', 'three']);
+      TabsUtils.tabs(list)[1].setAttribute('aria-selected', 'true');
+
+      expect(TabsUtils.valueOf(TabsUtils.selectedTab(list)!)).toBe('two');
+    });
+
+    it('has no answer when nothing is selected', () => {
+      expect(TabsUtils.selectedTab(build(['one', 'two']))).toBeUndefined();
+      expect(TabsUtils.selectedTab(null)).toBeUndefined();
+    });
+
+    it('leaves the selection of a nested list to that list', () => {
+      const list = build(['one'], ['inner']);
+      const inner = list.querySelector('[role="tablist"]')!;
+      TabsUtils.tabs(inner)[0].setAttribute('aria-selected', 'true');
+
+      expect(TabsUtils.selectedTab(list)).toBeUndefined();
+      expect(TabsUtils.valueOf(TabsUtils.selectedTab(inner)!)).toBe('inner');
+    });
+  });
+
+  describe('bounds', () => {
+    /** No layout in this environment either, so the two rectangles *are* the input. */
+    function stub(element: Element, box: { top: number; left: number; width: number; height: number }) {
+      element.getBoundingClientRect = () => box as DOMRect;
+    }
+
+    it('measures the tab against its list rather than the page', () => {
+      const list = build(['one']);
+      const tab = TabsUtils.tabs(list)[0];
+      stub(list, { top: 40, left: 100, width: 600, height: 40 });
+      stub(tab, { top: 40, left: 180, width: 80, height: 40 });
+
+      // 80, not 180: an indicator placed from the origin of the viewport would sit off the end of its list.
+      expect(TabsUtils.bounds(list, tab, 'horizontal')).toEqual({ start: 80, size: 80 });
+    });
+
+    it('turns onto the block axis for a vertical list', () => {
+      const list = build(['one']);
+      const tab = TabsUtils.tabs(list)[0];
+      stub(list, { top: 40, left: 100, width: 200, height: 300 });
+      stub(tab, { top: 76, left: 100, width: 200, height: 36 });
+
+      expect(TabsUtils.bounds(list, tab, 'vertical')).toEqual({ start: 36, size: 36 });
+    });
+
+    it('adds back the offset of a list that scrolls, which is a list the consumer set up', () => {
+      const list = build(['one']);
+      const tab = TabsUtils.tabs(list)[0];
+      stub(list, { top: 0, left: 0, width: 300, height: 40 });
+      stub(tab, { top: 0, left: -120, width: 80, height: 40 });
+      Object.defineProperty(list, 'scrollLeft', { value: 200, configurable: true });
+
+      // A tab scrolled out to the left has a negative rectangle: without the scroll offset the indicator
+      // would follow it off the list instead of staying on the tab.
+      expect(TabsUtils.bounds(list, tab, 'horizontal').start).toBe(80);
+    });
+  });
+
+  describe('sameBounds', () => {
+    it('is what stops a reflow that moved nothing costing a render', () => {
+      expect(TabsUtils.sameBounds({ start: 8, size: 80 }, { start: 8, size: 80 })).toBe(true);
+      expect(TabsUtils.sameBounds({ start: 8, size: 80 }, { start: 8, size: 81 })).toBe(false);
+      expect(TabsUtils.sameBounds(undefined, undefined)).toBe(true);
+      expect(TabsUtils.sameBounds(undefined, { start: 0, size: 0 })).toBe(false);
+    });
+  });
+
+  describe('visiblePanel', () => {
+    /** A container of panels, where a value ending in `!` is one that is hidden. */
+    function panels(values: string[]): HTMLElement {
+      const container = document.createElement('div');
+
+      for (const value of values) {
+        const panel = document.createElement('div');
+        panel.setAttribute('role', 'tabpanel');
+        panel.dataset.value = value.replace('!', '');
+        if (value.endsWith('!')) panel.setAttribute('hidden', '');
+        container.appendChild(panel);
+      }
+
+      document.body.appendChild(container);
+
+      return container;
+    }
+
+    it('finds the only panel there is', () => {
+      expect(TabsUtils.visiblePanel(panels(['one']))?.dataset.value).toBe('one');
+    });
+
+    it('skips the panels a keepMounted widget is hiding', () => {
+      expect(TabsUtils.visiblePanel(panels(['one!', 'two', 'three!']))?.dataset.value).toBe('two');
+    });
+
+    it('has no answer when every panel is hidden, or there is none', () => {
+      expect(TabsUtils.visiblePanel(panels(['one!', 'two!']))).toBeUndefined();
+      expect(TabsUtils.visiblePanel(panels([]))).toBeUndefined();
+      expect(TabsUtils.visiblePanel(null)).toBeUndefined();
+    });
+  });
 });

@@ -2,7 +2,7 @@
 
 _Unreleased. A PR that changes what a consumer sees adds its section here — see CONTRIBUTING.md, "Release notes"._
 
-The package now carries instructions for the agent writing the code, the documentation site answers in markdown, the same rules install as a skill in about forty-five coding agents, and every component page states its own props, keys and accessibility — all of it generated from the sources the library is built from. A floating layer is also placed by the browser now rather than measured in JavaScript, all the way through: six props, one hook, and every popup the library ships standing on them. Three of those popups are now browser features rather than components: a popover on the Popover API, a modal dialog on `<dialog>`, and a menu button whose submenus are popovers nested inside it. Tabs arrive beside them, on nothing but the keyboard the pattern asks for.
+The package now carries instructions for the agent writing the code, the documentation site answers in markdown, the same rules install as a skill in about forty-five coding agents, and every component page states its own props, keys and accessibility — all of it generated from the sources the library is built from. A floating layer is also placed by the browser now rather than measured in JavaScript, all the way through: six props, one hook, and every popup the library ships standing on them. Three of those popups are now browser features rather than components: a popover on the Popover API, a modal dialog on `<dialog>`, and a menu button whose submenus are popovers nested inside it. Tabs arrive beside them, on nothing but the keyboard the pattern asks for — with an indicator that travels between them and a panel box that resizes to fit.
 
 ## Highlights
 
@@ -18,7 +18,7 @@ The package now carries instructions for the agent writing the code, the documen
 - **[Every floating layer is in the top layer](#every-floating-layer-is-in-the-top-layer-and-the-portal-is-gone)** — `Overlay`, and so `Tooltip`, the `Dropdown` popup and the DataGrid column menu: no portal anywhere in the library, so a popup inherits the theme around it and a dropdown inside a panel no longer dismisses it.
 - **[A modal dialog is a browser feature too](#a-modal-dialog-is-a-browser-feature-too)** — `<Dialog>` and `<AlertDialog>` on the native `<dialog>`: `showModal()` supplies the top layer, the backdrop, an inert page, Escape, focus containment and focus return, so the two together add 2.15 KB gz against Radix Dialog's 13.28.
 - **[A menu, and its submenus, are nested popovers](#a-menu-and-its-submenus-are-nested-popovers)** — `<Menu>` is APG's menu button on the Popover API: seven parts, the whole keyboard, submenus that nest as deeply as the markup, and 6.36 KB gz against Radix DropdownMenu's 30.85.
-- **[Tabs, where selection follows focus](#tabs-where-selection-follows-focus)** — the APG tabs pattern in four parts: one tab stop for the list, arrows that follow the reading order, both activation modes, and 1.87 KB gz against Radix Tabs 9.18.
+- **[Tabs, where selection follows focus](#tabs-where-selection-follows-focus)** — the APG tabs pattern in four parts: one tab stop for the list, arrows that follow the reading order, both activation modes, and 2.54 KB gz against Radix Tabs 9.18. An indicator that travels between tabs and a panel box that resizes between panels are each one opt-in away.
 
 ## The package tells an agent how to use it
 
@@ -358,7 +358,7 @@ One name had to move out of the way. The semantic `<menu>` element is **`MenuLis
 
 ## Tabs, where selection follows focus
 
-`<Tabs>` is APG's tabs pattern: one list of tabs over one panel at a time, with four parts and nothing to wire up.
+`<Tabs>` is APG's tabs pattern: one list of tabs over one panel at a time, with four parts, a fifth for when the panels should resize, and nothing to wire up.
 
 ```tsx
 import Tabs from '@box-kite/react/components/tabs';
@@ -391,9 +391,28 @@ Four things worth knowing:
 
 `onValueChange` reports the new tab and why it changed — `'click'` or `'keyboard'` — and the keyboard reason survives Enter and Space in manual activation, because the handler gets in front of the click a `<button>` would synthesize from the key.
 
-It is **smaller**: `@radix-ui/react-tabs` is 9.18 KB gz with React external, where `<Tabs>` and all three of its parts add **1.87 KB gz** on top of a `Box` an app already has. Both figures measured, minified and gzipped, the same way.
+**Two things move, and both are opt-in.** `indicator="sliding"` replaces the border each tab draws with one element for the whole list, which animates between tabs because it _is_ the same element. Wrapping the panels in a `Tabs.Panels` gives that container the height of the panel on screen, so a switch between panels of different heights is a transition rather than a jump.
 
-Every part is a Box, and the defaults are a style tree — `tabs`, with `tabs.list`, `tabs.tab` and `tabs.panel` beneath it. The selected state is `aria-selected`, so `ariaAttr={{ selected: … }}` styles it on a tab — inside a style tree the same state is the bare `selected` key, while as a _prop_ `selected` writes the attribute the component owns. The indicator is a border rather than a background, because a forced-colors mode throws every background away and selection would otherwise read identically on and off.
+```tsx
+<Tabs defaultValue="summary" indicator="sliding">
+  <Tabs.List label="Release">
+    <Tabs.Tab value="summary">Summary</Tabs.Tab>
+    <Tabs.Tab value="changelog">Changelog</Tabs.Tab>
+  </Tabs.List>
+  <Tabs.Panels>
+    <Tabs.Panel value="summary">One line, and the box is one line tall.</Tabs.Panel>
+    <Tabs.Panel value="changelog">Four, and it grows to fit them.</Tabs.Panel>
+  </Tabs.Panels>
+</Tabs>
+```
+
+Both are measured, which has three consequences worth knowing. The travelling indicator **appears once the widget has run**, so until then — every prerendered page, and any reader whose JavaScript never arrives — the tabs keep drawing their own border; the two sit in exactly the same place, so the handover is invisible and a static page is never left with no indicator at all. The panel container **watches the panel and never itself**, because its own height is what it writes: watching that would be the loop, and watching the panel catches a reflow — a line that wraps, a font that lands — as well as a switch. And both ride `--transitionTime`, so under `prefers-reduced-motion` each computes to `0s` and the bar and the box land on their new values in the same frame, with no opt-out to remember.
+
+The container is **clipped only while its height is travelling**. It has to be: a panel already at its full height inside a container still on the way there paints over whatever follows the tabs. But at rest the container is exactly as tall as its panel, so a permanent clip would cut the focus ring off every element sitting at that edge — and it would be a clip on _both_ axes whatever was asked for, since `overflow` computes a `visible` companion to a clipped axis up to `auto`.
+
+It is **smaller**: `@radix-ui/react-tabs` is 9.18 KB gz with React external, where `<Tabs>` and all four of its parts add **2.54 KB gz** on top of a `Box` an app already has — the whole `components/tabs` bundle less the `box` one, both minified and gzipped with React external. About a kilobyte of that is the two things that move, and it is there whether or not they are switched on: `Tabs.Panels` hangs off `Tabs` and the list measures from the same module, so neither shakes out.
+
+Every part is a Box, and the defaults are a style tree — `tabs`, with `tabs.list`, `tabs.tab`, `tabs.panel` beneath it, plus `tabs.indicator` for the travelling bar and `tabs.panels` for the resizing container. The selected state is `aria-selected`, so `ariaAttr={{ selected: … }}` styles it on a tab — inside a style tree the same state is the bare `selected` key, while as a _prop_ `selected` writes the attribute the component owns. The indicator is a border rather than a background, because a forced-colors mode throws every background away and selection would otherwise read identically on and off.
 
 ## Breaking changes
 

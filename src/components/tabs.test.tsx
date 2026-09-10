@@ -1,9 +1,9 @@
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { keyboard } from '../../dev/a11y/keyboard';
 import Button from './button';
-import Tabs, { TabsReason } from './tabs';
+import Tabs, { TabsOrientation, TabsReason } from './tabs';
 
 /**
  * What the component owns: the roles and the ARIA, the selection and its reasons, which panels are
@@ -285,6 +285,176 @@ describe('Tabs', () => {
     });
   });
 
+  describe('the travelling indicator', () => {
+    /**
+     * happy-dom lays nothing out, so the rectangles are the fixture. The list's own origin is deliberately
+     * not zero: an indicator measured against the viewport rather than its list shows up as that offset.
+     */
+    const rect = (top: number, left: number, width: number, height: number) => ({ top, left, width, height }) as DOMRect;
+    const LIST = { top: 4, left: 6 };
+    const BOXES: Record<string, { start: number; size: number }> = {
+      overview: { start: 8, size: 80 },
+      activity: { start: 92, size: 72 },
+      settings: { start: 168, size: 76 },
+    };
+
+    function stubRects(orientation: TabsOrientation = 'horizontal') {
+      vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (this: Element) {
+        if (this.getAttribute('role') === 'tablist') return rect(LIST.top, LIST.left, 600, 40);
+
+        const box = BOXES[(this as HTMLElement).dataset.value ?? ''];
+        if (!box) return rect(0, 0, 0, 0);
+
+        return orientation === 'vertical'
+          ? rect(LIST.top + box.start, LIST.left, 120, box.size)
+          : rect(LIST.top, LIST.left + box.start, box.size, 40);
+      });
+    }
+
+    const indicator = () => document.querySelector<HTMLElement>('[role="tablist"] [aria-hidden="true"]');
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it('leaves the indicator to each tab by default', () => {
+      stubRects();
+      render(<Example defaultValue="overview" />);
+
+      expect(indicator()).toBeNull();
+      expect(tab('Overview').className).toContain('selected-borderColor-indigo-500');
+    });
+
+    it('hands it to one element, measured against the list rather than the page', () => {
+      stubRects();
+      render(<Example defaultValue="overview" indicator="sliding" />);
+
+      // 8, not 14: the list's own left edge comes off the tab's, or every indicator on a page ends up
+      // placed from the viewport's origin instead of its own list's.
+      expect(indicator()).toHaveStyle({ left: '8px', width: '80px' });
+      expect(tab('Overview').className).not.toContain('selected-borderColor');
+    });
+
+    it('keeps each tab drawing its own until there is a measurement to draw', () => {
+      // Nothing has laid this list out — one inside a closed panel, or a page before its JavaScript. A
+      // zero-width bar with the tabs' own borders already off would leave no indicator at all.
+      render(<Example defaultValue="overview" indicator="sliding" />);
+
+      expect(indicator()).toBeNull();
+      expect(tab('Overview').className).toContain('selected-borderColor-indigo-500');
+    });
+
+    it('moves the one element rather than replacing it, which is what animates it', async () => {
+      const keys = keyboard();
+      stubRects();
+      render(<Example defaultValue="overview" indicator="sliding" />);
+
+      const before = indicator();
+      await keys.click(tab('Activity'));
+
+      expect(indicator()).toBe(before);
+      expect(indicator()).toHaveStyle({ left: '92px', width: '72px' });
+    });
+
+    it('measures along the block axis in a vertical list, and sits on its inline end', () => {
+      stubRects('vertical');
+      render(<Example defaultValue="activity" orientation="vertical" indicator="sliding" />);
+
+      expect(indicator()).toHaveStyle({ top: '92px', height: '72px' });
+      expect(indicator()?.style.left).toBe('');
+      expect(indicator()?.className).toContain('insetEnd--0.25');
+    });
+
+    it('says nothing to a screen reader, since aria-selected already has', () => {
+      stubRects();
+      render(<Example defaultValue="overview" indicator="sliding" />);
+
+      expect(indicator()).toHaveAttribute('aria-hidden', 'true');
+      expect(screen.getAllByRole('tab')).toHaveLength(3);
+      expect(screen.getByRole('tablist')).toHaveAccessibleName('Project');
+    });
+  });
+
+  describe('the resizing panel container', () => {
+    /** happy-dom lays nothing out either, so the two panels' heights are the fixture. */
+    function stubHeights(heights: Record<string, number>) {
+      vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockImplementation(function (this: HTMLElement) {
+        return heights[this.dataset.panel ?? ''] ?? 0;
+      });
+    }
+
+    function Wrapped(props: React.ComponentProps<typeof Tabs>) {
+      return (
+        <Tabs {...props}>
+          <Tabs.List label="Project">
+            <Tabs.Tab value="overview">Overview</Tabs.Tab>
+            <Tabs.Tab value="activity">Activity</Tabs.Tab>
+          </Tabs.List>
+          <Tabs.Panels props={{ 'data-testid': 'panels' }}>
+            <Tabs.Panel value="overview" props={{ 'data-panel': 'overview' }}>
+              Who is on it
+            </Tabs.Panel>
+            <Tabs.Panel value="activity" props={{ 'data-panel': 'activity' }}>
+              What changed
+            </Tabs.Panel>
+          </Tabs.Panels>
+        </Tabs>
+      );
+    }
+
+    const container = () => screen.getByTestId('panels');
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it('takes the height of the panel on screen', () => {
+      stubHeights({ overview: 120, activity: 260 });
+      render(<Wrapped defaultValue="overview" />);
+
+      expect(container()).toHaveStyle({ height: '120px' });
+    });
+
+    it('measures the panel showing rather than the first one written', () => {
+      stubHeights({ overview: 120, activity: 260 });
+      render(<Wrapped defaultValue="activity" keepMounted />);
+
+      expect(container()).toHaveStyle({ height: '260px' });
+    });
+
+    it('writes no height at all until there is a panel to measure', () => {
+      stubHeights({ overview: 120, activity: 260 });
+      render(<Wrapped />);
+
+      // Nothing selected, so no panel is rendered: the container stays `auto` rather than being pinned
+      // to a zero it measured off nothing.
+      expect(container().style.height).toBe('');
+    });
+
+    it('does not clip at rest, so a focus ring at a panel edge survives', () => {
+      stubHeights({ overview: 120, activity: 260 });
+      render(<Wrapped defaultValue="overview" />);
+
+      // The container is exactly as tall as its panel, so a permanent clip would cut the ring off every
+      // element sitting at that edge — and naming one axis clips both (#140).
+      expect(container().className).not.toMatch(/overflow/);
+    });
+
+    it('clips only while the height is travelling', async () => {
+      stubHeights({ overview: 120, activity: 260 });
+      render(<Wrapped defaultValue="overview" />);
+
+      fireEvent.click(tab('Activity'));
+
+      // The taller panel is already at its full height inside a container still on its way there, so for
+      // one transition's length it has to be clipped or it paints over whatever follows the tabs.
+      expect(container()).toHaveStyle({ height: '260px' });
+      expect(container().className).toContain('overflow-hidden');
+
+      await waitFor(() => expect(container().className).not.toMatch(/overflow/));
+    });
+  });
+
   describe('composition', () => {
     it('takes Box props on every part', () => {
       render(
@@ -359,6 +529,7 @@ describe('Tabs', () => {
 
     it('says which part was rendered outside a Tabs', () => {
       expect(() => render(<Tabs.Tab value="one">One</Tabs.Tab>)).toThrow(/inside a <Tabs>/);
+      expect(() => render(<Tabs.Panels>None</Tabs.Panels>)).toThrow(/inside a <Tabs>/);
     });
   });
 });

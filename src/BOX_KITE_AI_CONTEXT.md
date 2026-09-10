@@ -1575,12 +1575,14 @@ too expensive to render on the way past needs.
 | `activation`    | `'automatic'`  | `manual` moves focus without selecting.                                                     |
 | `loop`          | `true`         | Whether the arrows wrap at the ends.                                                        |
 | `keepMounted`   | `false`        | Render every panel rather than only the selected one, hiding the rest.                      |
+| `indicator`     | `'static'`     | `sliding` is one element for the whole list, travelling between tabs.                       |
 
-| Part         | Props                                  | Role                                           |
-| ------------ | -------------------------------------- | ---------------------------------------------- |
-| `Tabs.List`  | `label` / `labelledBy`, every Box prop | `tablist` + `aria-orientation`                 |
-| `Tabs.Tab`   | `value`, `disabled`, every Box prop    | `tab` + `aria-selected`, `aria-controls`       |
-| `Tabs.Panel` | `value`, every Box prop                | `tabpanel` + `aria-labelledby`, `tabindex="0"` |
+| Part          | Props                                  | Role                                              |
+| ------------- | -------------------------------------- | ------------------------------------------------- |
+| `Tabs.List`   | `label` / `labelledBy`, every Box prop | `tablist` + `aria-orientation`                    |
+| `Tabs.Tab`    | `value`, `disabled`, every Box prop    | `tab` + `aria-selected`, `aria-controls`          |
+| `Tabs.Panels` | `children`, every Box prop             | none — the optional box that resizes to its panel |
+| `Tabs.Panel`  | `value`, every Box prop                | `tabpanel` + `aria-labelledby`, `tabindex="0"`    |
 
 | Key           | What it does                                                                                         |
 | ------------- | ---------------------------------------------------------------------------------------------------- |
@@ -1592,6 +1594,34 @@ too expensive to render on the way past needs.
 
 The arrows follow the **reading order**, so in a right-to-left page ArrowLeft is the _next_ tab, read off
 the element's own resolved direction rather than an ancestor's `dir`.
+
+Two things move, and both are opt-in. `indicator="sliding"` swaps each tab's own border for one element
+for the whole list, which animates between tabs because it _is_ the same element; wrapping the panels in a
+`Tabs.Panels` gives that container the height of the panel on screen, so panels of different heights
+transition instead of jumping.
+
+```tsx
+<Tabs defaultValue="summary" indicator="sliding">
+  <Tabs.List label="Release">
+    <Tabs.Tab value="summary">Summary</Tabs.Tab>
+    <Tabs.Tab value="changelog">Changelog</Tabs.Tab>
+  </Tabs.List>
+  <Tabs.Panels>
+    <Tabs.Panel value="summary">One line, and the box is one line tall.</Tabs.Panel>
+    <Tabs.Panel value="changelog">Four, and it grows to fit them.</Tabs.Panel>
+  </Tabs.Panels>
+</Tabs>
+```
+
+Both are measured, which is where their three surprises come from. The travelling indicator **appears
+once the widget has run**, so until then the tabs keep drawing their own border — what a prerendered page
+paints, in exactly the same place, so the handover is invisible rather than a page with no indicator at
+all. The container **watches the panel and never itself**, since its own height is what it writes, and
+watching the panel catches a reflow as well as a switch. And both ride `--transitionTime`, so
+`prefers-reduced-motion` computes each to `0s` with no opt-out. The container is clipped **only while its
+height is travelling**: at rest it is exactly as tall as its panel, so a permanent clip would cut the
+focus ring off anything sitting at that edge — and `overflow` clips both axes whatever is asked for,
+computing a `visible` companion to a clipped axis up to `auto`.
 
 Four things to know:
 
@@ -1610,7 +1640,8 @@ Four things to know:
   the keyboard's entry point with it. Under `activation="manual"` it follows the focus instead, which is
   what APG's own example does.
 
-The style tree is `tabs` with `tabs.list`, `tabs.tab` and `tabs.panel` beneath it. The selected state is
+The style tree is `tabs` with `tabs.list`, `tabs.tab` and `tabs.panel` beneath it, plus
+`tabs.indicator` for the travelling bar and `tabs.panels` for the resizing container. The selected state is
 `aria-selected`: inside a style tree it is the bare `selected` key, and **on a tab it is
 `ariaAttr={{ selected: … }}`** — a top-level `selected` _prop_ writes the attribute the component owns
 rather than nesting styles under it, which is the rule for `selected`, `disabled` and `checked` alike.

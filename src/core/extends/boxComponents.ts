@@ -297,6 +297,10 @@ const boxComponents = {
         variants: {
           // The rule moves to the inline end, which mirrors in a right-to-left page where `br` would not.
           vertical: { d: 'column', ai: 'stretch', gap: 0.5, bb: 0, be: 1 },
+          // The travelling indicator is positioned against the list, and only this variant has one: a
+          // consumer's own absolutely positioned child inside a tab would otherwise start resolving
+          // against the list instead of whatever it was written under.
+          sliding: { position: 'relative' },
         },
       },
       tab: {
@@ -312,9 +316,9 @@ const boxComponents = {
           color: 'gray-600',
           bgColor: 'transparent',
           b: 0,
-          // The indicator, drawn as a border the selected tab colours in, pulled over the list's own 1px
-          // rule so the two read as one line. The margin is on the ÷4 scale — `-1` would be 4px and leave
-          // the indicator hanging below the rule with a gap, which only a browser shows.
+          // The border the indicator is drawn on, pulled over the list's own 1px rule so the two read as
+          // one line. Carried by every tab whichever indicator is in use, so the two measure the same. The
+          // margin is on the ÷4 scale — `-1` would be 4px and leave a gap only a browser shows.
           bb: 2,
           borderColor: 'transparent',
           mb: -0.25,
@@ -323,19 +327,19 @@ const boxComponents = {
           userSelect: 'none',
           transition: 'colors',
           hover: { color: 'gray-900' },
-          selected: { color: 'indigo-600', borderColor: 'indigo-500' },
+          selected: { color: 'indigo-600' },
           disabled: { color: 'gray-400', cursor: 'default', hover: { color: 'gray-400' } },
           // Inside the underline rather than around it: a ring drawn outside would sit under the
           // neighbouring tab, since the list scrolls and clips.
           focusVisible: { outline: 2, outlineColor: 'indigo-500', outlineOffset: -2, borderRadius: 1 },
-          // Every colour is gone in a forced-colors mode, so the indicator has to be one of the pair
-          // those modes keep — otherwise the selected tab reads exactly like the rest.
-          forcedColors: { selected: { color: 'Highlight', borderColor: 'Highlight' } },
+          // Every colour is gone in a forced-colors mode, so the selected tab has to be told apart with
+          // one of the pair those modes keep — otherwise it reads exactly like the rest.
+          forcedColors: { selected: { color: 'Highlight' } },
           theme: {
             dark: {
               color: 'gray-400',
               hover: { color: 'gray-100' },
-              selected: { color: 'indigo-400', borderColor: 'indigo-400' },
+              selected: { color: 'indigo-400' },
               disabled: { color: 'gray-600', hover: { color: 'gray-600' } },
             },
           },
@@ -343,6 +347,51 @@ const boxComponents = {
         variants: {
           // In a vertical list the indicator turns with it, onto the inline end the list's rule is on.
           vertical: { textAlign: 'start', bb: 0, be: 2, mb: 0, me: -0.25 },
+          // The tab colours its own border in. Declared here rather than in `selected` because the
+          // travelling indicator turns it off, and a colour declared once is better than three undone.
+          underline: {
+            selected: { borderColor: 'indigo-500' },
+            forcedColors: { selected: { borderColor: 'Highlight' } },
+            theme: { dark: { selected: { borderColor: 'indigo-400' } } },
+          },
+        },
+      },
+      // The one indicator for the whole list, travelling between tabs instead of being drawn by each.
+      // Nothing declares a transition: the base class already transitions every property on
+      // `--transitionTime`, which is also what stops the travel under `prefers-reduced-motion`.
+      indicator: {
+        styles: {
+          position: 'absolute',
+          // Exactly where the tab's own border sits: over the list's 1px rule, matching the tab's `mb`.
+          // Physical, because the block axis does not mirror — `be` would be wrong here and right below.
+          bottom: -0.25,
+          height: 0.5,
+          bgColor: 'indigo-500',
+          forcedColors: { bgColor: 'Highlight' },
+          theme: { dark: { bgColor: 'indigo-400' } },
+        },
+        variants: {
+          // The bar turns with the list: along the block axis, on the inline end. `bottom` goes back to
+          // `auto` because the instance sets `top` and `height`, and all three would over-constrain it.
+          vertical: { bottom: 'auto', insetEnd: -0.25, height: 'auto', width: 0.5 },
+        },
+      },
+      // The optional container that takes the height of the panel on screen, so a switch between panels
+      // of different heights is a transition rather than a jump.
+      panels: {
+        styles: {
+          width: 'fit',
+          // A flex container so the formatting context never changes: without one, the clip below would
+          // stop a consumer's margin collapsing out of the panel halfway through every transition.
+          display: 'flex',
+          d: 'column',
+          // Narrowed from the base class's `all`, which would animate a consumer's own padding with it.
+          transition: 'size',
+        },
+        variants: {
+          // Only while the height is actually travelling. A permanent clip would cut the focus ring off
+          // every element sitting at a panel's edge, since at rest the container is exactly that tall.
+          resizing: { overflow: 'hidden' },
         },
       },
       panel: {

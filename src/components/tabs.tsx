@@ -5,8 +5,9 @@ import useControllableState, { ChangeDetails, ChangeHandler } from '../react/a11
 import { useIsomorphicLayoutEffect } from '../react/effects';
 import useIdentifier from '../react/identity/useIdentifier';
 import { ComponentsAndVariants } from '../types';
+import AnimationUtils from '../utils/animation/animationUtils';
 import { isRtl } from '../utils/dom/domUtils';
-import TabsUtils, { TabsOrientation } from '../utils/tabs/tabsUtils';
+import TabsUtils, { TabsBounds, TabsOrientation } from '../utils/tabs/tabsUtils';
 
 export type { TabsOrientation };
 
@@ -20,6 +21,13 @@ export type TabsReason = 'click' | 'keyboard';
  */
 export type TabsActivation = 'automatic' | 'manual';
 
+/**
+ * Which indicator marks the selected tab. `static` is the tab's own border, which needs no JavaScript
+ * and is what a prerendered page paints. `sliding` is one element for the whole list that travels
+ * between tabs — measured, so the static one stays until the widget has run.
+ */
+export type TabsIndicator = 'static' | 'sliding';
+
 interface TabsContextValue {
   identifier: string;
   value: string | undefined;
@@ -27,6 +35,10 @@ interface TabsContextValue {
   activation: TabsActivation;
   loop: boolean;
   keepMounted: boolean;
+  indicator: TabsIndicator;
+  /** Whether the travelling indicator is measured and on screen — until it is, each tab draws its own. */
+  indicatorLive: boolean;
+  setIndicatorLive(live: boolean): void;
   /** Which tab is in the tab sequence: the last focused, else the selected, else the first the list found. */
   tabStop: string | undefined;
   setTabStop(value: string): void;
@@ -58,6 +70,11 @@ export interface TabsProps<TKey extends keyof ComponentsAndVariants = 'tabs'> ex
   /** Whether the arrows wrap around at the ends. Default `true`. */
   loop?: boolean;
   /**
+   * Which indicator marks the selected tab: the tab's own border (`'static'`, the default) or one
+   * element travelling between them (`'sliding'`), which animates because it is the same element.
+   */
+  indicator?: TabsIndicator;
+  /**
    * Render every panel rather than only the selected one, hiding the rest. What a panel holding a
    * half-filled form needs, since an unmounted panel loses its state.
    */
@@ -87,6 +104,11 @@ export interface TabsTabProps<TKey extends keyof ComponentsAndVariants = 'tabs.t
   disabled?: boolean;
 }
 
+export interface TabsPanelsProps<TKey extends keyof ComponentsAndVariants = 'tabs.panels'> extends BoxProps<'div', TKey> {
+  /** The panels. */
+  children?: React.ReactNode;
+}
+
 export interface TabsPanelProps<TKey extends keyof ComponentsAndVariants = 'tabs.panel'> extends BoxProps<'div', TKey> {
   /** The tab this panel belongs to. */
   value: string;
@@ -98,6 +120,7 @@ interface TabsType {
   <TKey extends keyof ComponentsAndVariants = 'tabs'>(props: TabsProps<TKey>): React.ReactNode;
   List: <TKey extends keyof ComponentsAndVariants = 'tabs.list'>(props: TabsListProps<TKey>) => React.ReactNode;
   Tab: <TKey extends keyof ComponentsAndVariants = 'tabs.tab'>(props: TabsTabProps<TKey>) => React.ReactNode;
+  Panels: <TKey extends keyof ComponentsAndVariants = 'tabs.panels'>(props: TabsPanelsProps<TKey>) => React.ReactNode;
   Panel: <TKey extends keyof ComponentsAndVariants = 'tabs.panel'>(props: TabsPanelProps<TKey>) => React.ReactNode;
   displayName?: string;
 }
@@ -138,6 +161,13 @@ function useTabs(part: string): TabsContextValue {
  * **The tabs are read off the DOM**, not out of a registry, so a tab a consumer wrapped, rendered from a
  * list or put behind a condition is in the order it was written and navigates like any other.
  *
+ * **Two things move, and both are opt-in.** `indicator="sliding"` replaces each tab's own border with one
+ * element for the whole list, which animates between tabs because it is the same element — measured, so
+ * the static border stays until the widget has run and a page with no JavaScript keeps an indicator.
+ * Wrapping the panels in a `Tabs.Panels` gives that container the height of the panel on screen, so a
+ * switch between panels of different heights is a transition rather than a jump. Both ride
+ * `--transitionTime`, which `prefers-reduced-motion` zeroes with no opt-out.
+ *
  * @pattern https://www.w3.org/WAI/ARIA/apg/patterns/tabs/
  * @a11y `role="tablist"` on the list, named by its own `label` — a page can hold several, and a tablist
  * has no name of its own.
@@ -147,6 +177,8 @@ function useTabs(part: string): TabsContextValue {
  * reachable from the keyboard whether or not anything inside it is focusable.
  * @a11y `aria-orientation` follows `orientation`, and the arrows follow the reading order: in a
  * right-to-left page ArrowLeft is the *next* tab.
+ * @a11y The travelling indicator is `aria-hidden`: it says what `aria-selected` already says, and it
+ * keeps a `Highlight` fill in a forced-colors mode, so it is decoration in every mode that has colour.
  * @keyboard Tab — Enters the list once, landing on the selected tab, and again leaves it for the panel.
  * @keyboard Right / Left — The next and previous tab in a horizontal list, wrapping at the ends and
  * stepping over disabled tabs. Mirrored in a right-to-left page.
@@ -166,6 +198,7 @@ function TabsImpl<TKey extends keyof ComponentsAndVariants = 'tabs'>(props: Tabs
     activation = 'automatic',
     loop = true,
     keepMounted = false,
+    indicator = 'static',
     props: tagProps,
     ...restProps
   } = props;
@@ -173,6 +206,9 @@ function TabsImpl<TKey extends keyof ComponentsAndVariants = 'tabs'>(props: Tabs
   const identifier = useIdentifier('tabs');
   const [selected, setSelected] = useControllableState<string | undefined, TabsReason>({ value, defaultValue, onChange: onValueChange });
   const [stop, setStop] = useState<string>();
+  // Set by the list once it has measured and read by every tab, so it lives here: a context change
+  // reaches children that the list re-rendering on its own never would.
+  const [indicatorLive, setIndicatorLive] = useState(false);
 
   // The tab sequence follows the selection: a panel showing while a different tab is the way in would
   // send Tab to the wrong place. Manual activation moves focus without selecting, so `stop` leads there.
@@ -188,6 +224,9 @@ function TabsImpl<TKey extends keyof ComponentsAndVariants = 'tabs'>(props: Tabs
       activation,
       loop,
       keepMounted,
+      indicator,
+      indicatorLive,
+      setIndicatorLive,
       tabStop: stop ?? selected,
       setTabStop: setStop,
       // `useControllableState`'s setter is already stable, and it drops a change resolving to the value
@@ -196,7 +235,7 @@ function TabsImpl<TKey extends keyof ComponentsAndVariants = 'tabs'>(props: Tabs
       tabId: (forValue) => `${identifier}-tab-${TabsUtils.token(forValue)}`,
       panelId: (forValue) => `${identifier}-panel-${TabsUtils.token(forValue)}`,
     }),
-    [identifier, selected, orientation, activation, loop, keepMounted, stop, setSelected],
+    [identifier, selected, orientation, activation, loop, keepMounted, indicator, indicatorLive, stop, setSelected],
   );
 
   return (
@@ -216,8 +255,44 @@ function TabsImpl<TKey extends keyof ComponentsAndVariants = 'tabs'>(props: Tabs
 /** The tabs themselves, and the keyboard: it sits on the list because roving tabindex puts one tab in the tab sequence. */
 function TabsList<TKey extends keyof ComponentsAndVariants = 'tabs.list'>(props: TabsListProps<TKey>) {
   const { children, label, labelledBy, props: tagProps, ...restProps } = props;
-  const { orientation, activation, loop, tabStop, setTabStop, select } = useTabs('Tabs.List');
+  const { value: selected, orientation, activation, loop, indicator, tabStop, setTabStop, setIndicatorLive, select } = useTabs('Tabs.List');
   const listRef = useRef<HTMLDivElement>(null);
+  const [bounds, setBounds] = useState<TabsBounds>();
+  const sliding = indicator === 'sliding';
+
+  // Where the travelling indicator has to be. Re-measured on a reflow as well as on a selection change:
+  // a label that wraps or a font that arrives moves a tab without the widget hearing about it.
+  useIsomorphicLayoutEffect(() => {
+    const list = listRef.current;
+    if (!sliding || !list) return;
+
+    const measure = () => {
+      const tab = TabsUtils.selectedTab(list);
+      const next = tab && TabsUtils.bounds(list, tab, orientation);
+
+      setBounds((current) => (TabsUtils.sameBounds(current, next) ? current : next));
+    };
+
+    measure();
+    if (typeof ResizeObserver === 'undefined') return;
+
+    // Every tab as well as the list: one of them growing moves all the ones after it.
+    const observer = new ResizeObserver(measure);
+    observer.observe(list);
+    for (const tab of TabsUtils.tabs(list)) observer.observe(tab);
+
+    return () => observer.disconnect();
+  }, [sliding, orientation, selected]);
+
+  // A zero-length measurement is a list nothing has laid out yet — one inside a closed panel, or one
+  // still waiting on a font. There is no bar worth drawing until there is a tab with a size.
+  const travelling = sliding && bounds && bounds.size > 0 ? bounds : undefined;
+
+  // A tab stops drawing its own indicator only once this one is really on screen, so a page rendered
+  // before its JavaScript — every prerendered one — still underlines the selected tab.
+  useIsomorphicLayoutEffect(() => {
+    setIndicatorLive(travelling !== undefined);
+  }, [travelling, setIndicatorLive]);
 
   // Nothing selected and nothing focused yet, so no tab is in the tab sequence: the first enabled one
   // becomes it, which only the DOM knows the order of.
@@ -269,7 +344,7 @@ function TabsList<TKey extends keyof ComponentsAndVariants = 'tabs.list'>(props:
       ref={listRef}
       component={'tabs.list' as TKey}
       {...(restProps as BoxProps<'div', TKey>)}
-      variant={[restProps.variant, { vertical: orientation === 'vertical' }] as never}
+      variant={[restProps.variant, { vertical: orientation === 'vertical', sliding }] as never}
       props={{
         role: 'tablist',
         'aria-label': label,
@@ -280,6 +355,21 @@ function TabsList<TKey extends keyof ComponentsAndVariants = 'tabs.list'>(props:
       }}
     >
       {children}
+      {travelling && (
+        <Box
+          tag="span"
+          component="tabs.indicator"
+          variant={{ vertical: orientation === 'vertical' }}
+          // A measured pixel is per instance, so it is an inline style rather than a class — the reason
+          // `useAnchorPosition` writes one too: a class would be a rule per position, never freed.
+          style={
+            orientation === 'vertical'
+              ? { top: `${travelling.start}px`, height: `${travelling.size}px` }
+              : { left: `${travelling.start}px`, width: `${travelling.size}px` }
+          }
+          props={{ 'aria-hidden': true }}
+        />
+      )}
     </Box>
   );
 }
@@ -289,7 +379,7 @@ TabsList.displayName = 'Tabs.List';
 /** One tab: a real `<button>`, so Enter and Space reach it the way the platform means them to. */
 function TabsTab<TKey extends keyof ComponentsAndVariants = 'tabs.tab'>(props: TabsTabProps<TKey>) {
   const { value, children, disabled, props: tagProps, ...restProps } = props;
-  const { value: selected, orientation, keepMounted, tabStop, setTabStop, select, tabId, panelId } = useTabs('Tabs.Tab');
+  const { value: selected, orientation, keepMounted, indicatorLive, tabStop, setTabStop, select, tabId, panelId } = useTabs('Tabs.Tab');
 
   const isSelected = selected === value;
   const handleClick = useEventCallback((event: React.MouseEvent) => select(value, { reason: 'click', event }));
@@ -301,8 +391,9 @@ function TabsTab<TKey extends keyof ComponentsAndVariants = 'tabs.tab'>(props: T
       component={'tabs.tab' as TKey}
       {...(restProps as BoxProps<'button', TKey>)}
       // The indicator turns with the list, so the tab needs the orientation too — without it a vertical
-      // list draws column tabs still wearing an underline.
-      variant={[restProps.variant, { vertical: orientation === 'vertical' }] as never}
+      // list draws column tabs still wearing an underline. `underline` is the indicator the tab draws
+      // itself, which is every list until a travelling one has measured its way onto the screen.
+      variant={[restProps.variant, { vertical: orientation === 'vertical', underline: !indicatorLive }] as never}
       // Box's own prop, not an attribute in `props`: it is the one that also styles the state.
       disabled={disabled}
       id={tabId(value)}
@@ -326,6 +417,85 @@ function TabsTab<TKey extends keyof ComponentsAndVariants = 'tabs.tab'>(props: T
 }
 
 TabsTab.displayName = 'Tabs.Tab';
+
+/**
+ * The panels' container, and the only optional part: it takes the height of the panel on screen, so a
+ * switch between panels of different heights is a transition rather than a jump. Panels work as plain
+ * siblings of the list without it.
+ */
+function TabsPanels<TKey extends keyof ComponentsAndVariants = 'tabs.panels'>(props: TabsPanelsProps<TKey>) {
+  const { children, props: tagProps, ...restProps } = props;
+  const { value } = useTabs('Tabs.Panels');
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [height, setHeight] = useState<number>();
+  const [resizing, setResizing] = useState(false);
+
+  const measure = useEventCallback(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const panel = TabsUtils.visiblePanel(container);
+    // `offsetHeight` rather than a rectangle: an integer, and free of the entrance transform. Nothing is
+    // clipped at rest, so the half pixel a rectangle would carry buys nothing.
+    const next = panel?.offsetHeight;
+    if (next === height) return;
+
+    // A first measurement has nothing to travel from, and neither has a height going back to `auto` with
+    // no panel on screen: `auto` does not interpolate either way, so there is nothing to clip for.
+    if (height !== undefined && next !== undefined) setResizing(true);
+    setHeight(next);
+  });
+
+  useIsomorphicLayoutEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    measure();
+    if (typeof ResizeObserver === 'undefined') return;
+
+    // The panel, never the container: the container's height is what this writes, so watching it is the
+    // loop. A selection change brings a different element, which is what this effect re-runs for.
+    const panel = TabsUtils.visiblePanel(container);
+    if (!panel) return;
+
+    const observer = new ResizeObserver(measure);
+    observer.observe(panel);
+
+    return () => observer.disconnect();
+  }, [value, measure]);
+
+  // The clip lasts as long as the element's own CSS says the travel does — `0` under
+  // `prefers-reduced-motion`, the same measured wait `<Presence>` takes and for the same reason:
+  // `transitionend` fires once per property, with no way to know how many are coming.
+  useIsomorphicLayoutEffect(() => {
+    const container = containerRef.current;
+    if (!container || !resizing) return;
+
+    const timer = setTimeout(
+      () => setResizing(false),
+      AnimationUtils.activeDuration(getComputedStyle(container)) + AnimationUtils.SETTLE_FRAME,
+    );
+
+    return () => clearTimeout(timer);
+  }, [resizing, height]);
+
+  return (
+    <Box
+      ref={containerRef}
+      component={'tabs.panels' as TKey}
+      {...(restProps as BoxProps<'div', TKey>)}
+      variant={[restProps.variant, { resizing }] as never}
+      // The measured height, with the consumer's own style over it — the same per-instance exception
+      // the indicator takes, for the same reason.
+      style={{ height: height === undefined ? undefined : `${height}px`, ...restProps.style }}
+      props={tagProps}
+    >
+      {children}
+    </Box>
+  );
+}
+
+TabsPanels.displayName = 'Tabs.Panels';
 
 /** One panel. Rendered only while its tab is selected, unless the widget was told to keep them all. */
 function TabsPanel<TKey extends keyof ComponentsAndVariants = 'tabs.panel'>(props: TabsPanelProps<TKey>) {
@@ -361,6 +531,7 @@ TabsPanel.displayName = 'Tabs.Panel';
 const Tabs = TabsImpl as TabsType;
 Tabs.List = TabsList;
 Tabs.Tab = TabsTab;
+Tabs.Panels = TabsPanels;
 Tabs.Panel = TabsPanel;
 (Tabs as FunctionComponent).displayName = 'Tabs';
 

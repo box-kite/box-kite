@@ -379,6 +379,21 @@ export const fixtures: A11yFixture[] = [
     ),
   },
   {
+    name: 'Tabs (travelling indicator, resizing panels)',
+    render: () => (
+      <Tabs defaultValue="overview" indicator="sliding">
+        <Tabs.List label="Project">
+          <Tabs.Tab value="overview">Overview</Tabs.Tab>
+          <Tabs.Tab value="activity">Activity</Tabs.Tab>
+        </Tabs.List>
+        <Tabs.Panels>
+          <Tabs.Panel value="overview">Who is on it</Tabs.Panel>
+          <Tabs.Panel value="activity">What changed</Tabs.Panel>
+        </Tabs.Panels>
+      </Tabs>
+    ),
+  },
+  {
     name: 'DataGrid',
     render: () => (
       <DataGrid<Person>

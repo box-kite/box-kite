@@ -8,14 +8,24 @@ export interface TabsMove {
   delta: number;
 }
 
+/** Where a tab sits inside its list, along the axis the tabs run on. Physical pixels: a measured length has no reading order. */
+export interface TabsBounds {
+  /** From the list's own start edge — its left horizontally, its top vertically. */
+  start: number;
+  /** The tab's own length on that axis. */
+  size: number;
+}
+
 /**
  * Which tab a tablist's keyboard lands on, read off the DOM rather than out of a registry: a tab is a real
  * focusable element and its position is where it was written — including one a consumer wrapped, put
- * behind a condition, or rendered from a list.
+ * behind a condition, or rendered from a list. The measurements the travelling indicator and the resizing
+ * panel container need are here for the same reason: what is on screen is the only thing that knows.
  */
 namespace TabsUtils {
   export const TAB_SELECTOR = '[role="tab"]';
   export const LIST_SELECTOR = '[role="tablist"]';
+  export const PANEL_SELECTOR = '[role="tabpanel"]';
 
   /** Whether this tablist is the one a node belongs to, rather than one nested inside it. */
   export function owns(list: Element, node: EventTarget | null): boolean {
@@ -106,6 +116,45 @@ namespace TabsUtils {
   /** The tab a move arrives at, or `undefined` when there is nowhere to go. */
   export function target(tabs: readonly HTMLElement[], from: number, move: TabsMove, loop: boolean): HTMLElement | undefined {
     return move.kind === 'edge' ? edge(tabs, move.delta) : step(tabs, from, move.delta, loop);
+  }
+
+  /** The tab whose panel is showing, read off the attribute the component writes rather than matched on a value. */
+  export function selectedTab(list: Element | null | undefined): HTMLElement | undefined {
+    if (!list) return undefined;
+
+    return tabs(list).find((tab) => tab.getAttribute('aria-selected') === 'true');
+  }
+
+  /**
+   * Where the travelling indicator has to be, measured off the two rectangles rather than `offsetLeft` —
+   * whose origin is the nearest positioned ancestor, which need not be the list. The scroll offset is
+   * added back because scrolling a list that outgrows its container is the consumer's to set up (#140),
+   * so a list that does scroll must not drag the indicator off its tab.
+   */
+  export function bounds(list: Element, tab: Element, orientation: TabsOrientation): TabsBounds {
+    const listBox = list.getBoundingClientRect();
+    const tabBox = tab.getBoundingClientRect();
+
+    return orientation === 'vertical'
+      ? { start: tabBox.top - listBox.top + list.scrollTop, size: tabBox.height }
+      : { start: tabBox.left - listBox.left + list.scrollLeft, size: tabBox.width };
+  }
+
+  /** Whether a fresh measurement says anything new, so a reflow that moved nothing costs no render. */
+  export function sameBounds(left: TabsBounds | undefined, right: TabsBounds | undefined): boolean {
+    if (!left || !right) return left === right;
+
+    return left.start === right.start && left.size === right.size;
+  }
+
+  /**
+   * The panel a container is showing: the one that is not hidden, so `keepMounted` measures the panel on
+   * screen rather than the first one written.
+   */
+  export function visiblePanel(container: Element | null | undefined): HTMLElement | undefined {
+    if (!container) return undefined;
+
+    return [...container.querySelectorAll<HTMLElement>(PANEL_SELECTOR)].find((panel) => !panel.hasAttribute('hidden'));
   }
 }
 

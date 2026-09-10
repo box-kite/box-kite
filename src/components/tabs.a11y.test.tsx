@@ -1,5 +1,5 @@
 import { cleanup, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectNoAxeViolations } from '../../dev/a11y/axe';
 import { expectFocusOn, keyboard } from '../../dev/a11y/keyboard';
 import Button from './button';
@@ -14,6 +14,7 @@ import Tabs from './tabs';
 describe('Tabs accessibility', () => {
   afterEach(() => {
     cleanup();
+    vi.restoreAllMocks();
   });
 
   function Example(props: React.ComponentProps<typeof Tabs>) {
@@ -51,6 +52,17 @@ describe('Tabs accessibility', () => {
   it('has no axe violations with a vertical list and every panel mounted', async () => {
     const { container } = render(<Example defaultValue="activity" orientation="vertical" keepMounted />);
 
+    await expectNoAxeViolations(container);
+  });
+
+  it('has no axe violations with the travelling indicator inside the tablist', async () => {
+    // The indicator is a `<span>` inside a `role="tablist"`, whose owned children axe checks — so it has
+    // to stay out of the accessibility tree. happy-dom lays nothing out, so it needs a rectangle to exist.
+    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockReturnValue({ top: 0, left: 0, width: 80, height: 40 } as DOMRect);
+
+    const { container } = render(<Example defaultValue="overview" indicator="sliding" />);
+
+    expect(container.querySelector('[role="tablist"] [aria-hidden="true"]')).not.toBeNull();
     await expectNoAxeViolations(container);
   });
 

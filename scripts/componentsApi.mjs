@@ -95,6 +95,7 @@ const CONFIG = [
     parts: [
       { name: 'Tabs.List', props: 'TabsListProps', doc: 'TabsList' },
       { name: 'Tabs.Tab', props: 'TabsTabProps', doc: 'TabsTab' },
+      { name: 'Tabs.Panels', props: 'TabsPanelsProps', doc: 'TabsPanels' },
       { name: 'Tabs.Panel', props: 'TabsPanelProps', doc: 'TabsPanel' },
     ],
   },
