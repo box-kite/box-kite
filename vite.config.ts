@@ -224,6 +224,14 @@ export default defineConfig(({ mode }) => {
                   // `<Presence>` and the timing model behind it, shared by the three layers that animate out
                   // and by nothing else. In `client` the whole library would carry an exit nobody asked for.
                   if (module.startsWith('src/react/animation/') || module.startsWith('src/utils/animation/')) return 'motion';
+                  // APG's typeahead, which `useRovingFocus` and the menu's keyboard both walk a list with. Its own group for the
+                  // reason `identity` has one: left in `client` the /a11y entry would import the styling binding, the theme
+                  // provider and the engine behind them to answer which item a letter points at.
+                  if (module.startsWith('src/utils/keyboard/')) return 'keyboard';
+                  // The Popover API glue `Popover` and `Menu` share — the open state, the platform mirror and the two
+                  // primitives the portal path needs. Two components reach it, so it is neither private to one nor
+                  // something the box entry should carry.
+                  if (module.startsWith('src/react/popover/')) return 'layer';
 
                   // A leaf only one component reaches goes in that component's own chunk: every group below is shared with
                   // something everybody imports, so a private leaf in one is paid for by consumers who cannot reach it.

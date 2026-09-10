@@ -52,9 +52,10 @@ NEVER use `<Box tag="...">` when a component exists. NEVER use `<Box display="fl
 | `<Box tag="section/article/aside">`  | `<Section>/<Article>/<Aside>`    | `components/semantics` |
 | `<Box tag="svg/path/circle/rect">`   | `<Svg>/<Path>/<Circle>/<Rect>`   | `components/svg`       |
 | `<Box tag="dialog">`                 | `<Dialog>/<AlertDialog>`         | `components/dialog`    |
+| a menu button and its menu           | `<Menu>`                         | `components/menu`      |
 | a lucide/Tabler icon, styled         | `<Icon>`                         | `components/icon`      |
 
-All imports from `@box-kite/react/components/...`. Semantics also export: `Mark`, `Figure`, `Figcaption`, `Details`, `Summary`, `Menu`, `Time`.
+All imports from `@box-kite/react/components/...`. Semantics also export: `Mark`, `Figure`, `Figcaption`, `Details`, `Summary`, `MenuList` (the semantic `<menu>`; the menu **button** is `Menu` from `components/menu`), `Time`.
 
 ---
 
@@ -1442,6 +1443,103 @@ dialog in the viewport and caps it at `calc(100% - 6px - 2em)`. The **one** exce
 which `Box.components('dialog')` has to declare because `._b` sets `margin: 0` and outranks the UA rule
 — without it the dialog sits in the corner. `display: none` while closed is declared for the same
 reason.
+
+---
+
+## Menu Component
+
+```tsx
+import Menu from '@box-kite/react/components/menu';
+
+<Menu trigger={(t) => <Button {...t}>Actions</Button>}>
+  <Menu.Item onSelect={duplicate}>Duplicate</Menu.Item>
+  <Menu.Item disabled>Move</Menu.Item>
+  <Menu.Separator />
+  <Menu.Group label="View">
+    <Menu.CheckboxItem checked={compact} onCheckedChange={setCompact}>
+      Compact rows
+    </Menu.CheckboxItem>
+  </Menu.Group>
+  <Menu.RadioGroup label="Sort by" value={sort} onValueChange={setSort}>
+    <Menu.RadioItem value="name">Name</Menu.RadioItem>
+    <Menu.RadioItem value="date">Date added</Menu.RadioItem>
+  </Menu.RadioGroup>
+  <Menu.Sub label="Share">
+    <Menu.Item onSelect={copyLink}>Copy link</Menu.Item>
+  </Menu.Sub>
+</Menu>;
+```
+
+APG's menu button on the platform's own Popover API, and **a submenu is a popover nested inside its
+menu**. The top layer, light dismiss and the toggle are the browser's: the menu paints over every
+stacking context with no portal and no `z-index`, Escape closes the innermost menu first — one layer per
+press — and a press outside closes the lot. What the component adds is the ARIA, the keyboard, and the
+two focus moves the platform does not make.
+
+| Prop                   | Default    | What it does                                                                                         |
+| ---------------------- | ---------- | ---------------------------------------------------------------------------------------------------- |
+| `trigger`              | —          | Render prop given `{ ref, props }`. It has to be a **button**.                                       |
+| `children`             | —          | The items. Rendered whether or not the menu is open.                                                 |
+| `open` / `defaultOpen` | —          | Controlled / uncontrolled open state.                                                                |
+| `onOpenChange`         | —          | `(open, { reason, event })` — `select`, `tab`, `trigger`, `escape`, `outside-pointer`, `imperative`. |
+| `label` / `labelledBy` | trigger    | The menu's name. Left out, it takes its trigger's, which is what APG asks for.                       |
+| `side`                 | `'bottom'` | `top`/`bottom` (block axis) or `start`/`end` (inline, so it mirrors in a right-to-left page).        |
+| `align`                | `'start'`  | Which of the trigger's edges to line the menu up with.                                               |
+| `offset`               | `1`        | The gap, on the ÷4 scale — 4px.                                                                      |
+| `flip`                 | `true`     | Whether a side with no room may be swapped for its opposite.                                         |
+| `matchWidth`           | `false`    | Whether the menu is at least as wide as its trigger.                                                 |
+
+| Part                | Props                                                                                       | Role                         |
+| ------------------- | ------------------------------------------------------------------------------------------- | ---------------------------- |
+| `Menu.Item`         | `onSelect`, `disabled`, `closeOnSelect` (default `true`)                                    | `menuitem`                   |
+| `Menu.CheckboxItem` | `checked`/`defaultChecked`/`onCheckedChange`, `disabled`, `closeOnSelect` (default `false`) | `menuitemcheckbox`           |
+| `Menu.RadioGroup`   | `label`, `value`/`defaultValue`/`onValueChange`                                             | `group`                      |
+| `Menu.RadioItem`    | `value`, `disabled`, `closeOnSelect` (default `false`)                                      | `menuitemradio`              |
+| `Menu.Group`        | `label` — names the group through `aria-labelledby`                                         | `group`                      |
+| `Menu.Separator`    | every Box prop                                                                              | `separator`                  |
+| `Menu.Sub`          | `label` (its item's content), `disabled`, `itemProps`, `side`/`align`/`offset`/`flip`       | `menuitem` + a nested `menu` |
+
+`Menu.Sub` renders both halves: the item that opens it — `aria-haspopup="menu"`, `aria-expanded`, a
+chevron — and the menu beside it, declared inside the menu it belongs to, which is what nests the two
+popovers. Its defaults are `side="end"` and `offset={0}`, so a submenu abuts the menu it came out of, and
+they nest as deeply as the markup does.
+
+| Key                   | What it does                                                                                                                                |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| Enter / Space         | On the trigger, opens with the first item focused. On an item, chooses it. On a submenu's item, opens it.                                   |
+| Down / Up             | On the trigger, opens at the first or last item. Inside, moves between items and **wraps**.                                                 |
+| Home / End            | The first or the last item.                                                                                                                 |
+| Right / Left          | Opens the submenu of the focused item, and closes the submenu focus is in — the **reading order**, so the two swap in a right-to-left menu. |
+| Escape                | Closes the innermost menu, and puts focus back on what opened it.                                                                           |
+| Tab                   | Closes the menu and moves focus on, as APG asks.                                                                                            |
+| A printable character | Typeahead. A longer buffer narrows; the same letter again cycles through the items starting with it.                                        |
+
+Four things to know, all measured in Chrome 152:
+
+- **A disabled item is `aria-disabled` and stays focusable.** APG asks for that, so a keyboard user can
+  find out the item is there at all; the `disabled` attribute would take it out of the keyboard's reach
+  and silence it. The arrows land on it and activating it does nothing.
+- **A command closes the menu and a state does not.** `Menu.Item` closes on select, because choosing a
+  command ends the visit; a checkbox or a radio item does not, so several boxes can be ticked in one go.
+  `closeOnSelect` swaps either default.
+- **The menu is always rendered**; closed is `display: none`, not unmounted — the same shape as
+  `Popover` and `Dialog`. The exit is a CSS transition (`transitionBehavior="allow-discrete"`, already in
+  the component styles) and **not** `<Presence>`. Gate expensive items yourself:
+  `{open ? <Items /> : null}`.
+- **The platform returns focus for the outermost layer only.** Closing a nested popover drops focus to
+  `<body>`, so a submenu puts focus back on its own item itself — and opening one moves focus into it,
+  hover included, which is what keeps the highlight and the keyboard in the same place. The top layer's
+  one cost applies as it does to `Popover`: a menu **keeps the side it opened on**.
+
+The style tree is `menu` with `menu.item` (plus a `sub` variant), `menu.group`, `menu.label`,
+`menu.separator`, and `menu.indicator`, `menu.check`, `menu.dot` and `menu.arrow` for the four marks a
+menu draws — all of them borders and a radius rather than an asset, since the library ships no icons.
+The highlight is drawn on `:focus` because in a menu focus **is** the highlight: the pointer moves it, so
+hover and the keyboard cannot disagree.
+
+**The semantic `<menu>` element is `MenuList`** (`components/semantics`) now. `Menu` is still exported
+there and still works, but it is deprecated: two exports of that name are one import away from the wrong
+component.
 
 ---
 

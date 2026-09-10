@@ -1,0 +1,329 @@
+{
+  "name": "Menu",
+  "route": "/menu",
+  "import": "import Menu from '@box-kite/react/components/menu';",
+  "description": "A menu button and its menu, on the platform's own Popover API: `<Menu>` is the button's menu, and every `Menu.Sub` inside it is another popover nested in that one.",
+  "pattern": "https://www.w3.org/WAI/ARIA/apg/patterns/menu-button/",
+  "props": [
+    {
+      "name": "trigger",
+      "type": "(trigger: MenuTrigger) => React.ReactNode",
+      "required": true,
+      "default": null,
+      "description": "The trigger, handed the ref and props that wire it to the menu. It has to be a button."
+    },
+    {
+      "name": "children",
+      "type": "React.ReactNode",
+      "required": false,
+      "default": null,
+      "description": "The items: `Menu.Item`, `Menu.CheckboxItem`, `Menu.RadioGroup`, `Menu.Group`, `Menu.Separator`, `Menu.Sub`."
+    },
+    {
+      "name": "open",
+      "type": "boolean",
+      "required": false,
+      "default": null,
+      "description": "Controlled open state. Leave it out and the menu owns it."
+    },
+    {
+      "name": "defaultOpen",
+      "type": "boolean",
+      "required": false,
+      "default": "false",
+      "description": "Whether it starts open, when the menu owns its own state."
+    },
+    {
+      "name": "onOpenChange",
+      "type": "ChangeHandler<boolean, MenuReason>",
+      "required": false,
+      "default": null,
+      "description": "Fires with the new state and why it changed — `'select'`, `'trigger'`, `'escape'`, `'outside-pointer'`, `'tab'` or `'imperative'`. A close cannot be refused: the browser has already done it by then."
+    },
+    {
+      "name": "label",
+      "type": "string",
+      "required": false,
+      "default": null,
+      "description": "The menu's accessible name. Left out, it takes its trigger's, which is what APG asks for."
+    },
+    {
+      "name": "labelledBy",
+      "type": "string",
+      "required": false,
+      "default": null,
+      "description": "Names the menu after an element already on the page, instead of `label`."
+    },
+    {
+      "name": "side",
+      "type": "AnchorSide",
+      "required": false,
+      "default": "'bottom'",
+      "description": "Which side of the trigger the menu sits on — `top`/`bottom` are the block axis, `start`/`end` the inline one, so a menu beside its trigger mirrors in a right-to-left page. Default `'bottom'`."
+    },
+    {
+      "name": "align",
+      "type": "AnchorAlign",
+      "required": false,
+      "default": "'start'",
+      "description": "Which of the trigger's edges to line the menu up with along the other axis. Default `'start'`."
+    },
+    {
+      "name": "offset",
+      "type": "number",
+      "required": false,
+      "default": "1",
+      "description": "The gap between trigger and menu, on the ÷4 spacing scale. Default 1 — 4px."
+    },
+    {
+      "name": "flip",
+      "type": "boolean",
+      "required": false,
+      "default": "true",
+      "description": "Whether a side with no room may be swapped for its opposite. Default `true`."
+    },
+    {
+      "name": "matchWidth",
+      "type": "boolean",
+      "required": false,
+      "default": "false",
+      "description": "Whether the menu is at least as wide as its trigger. Default `false` — a menu sizes to its content."
+    }
+  ],
+  "parts": [
+    {
+      "name": "Menu.Item",
+      "description": "One command in the menu. A `<button>`, so Enter and Space are the browser's.",
+      "props": [
+        { "name": "children", "type": "React.ReactNode", "required": false, "default": null, "description": "The item's content." },
+        {
+          "name": "onSelect",
+          "type": "?(event: React.MouseEvent): void;",
+          "required": false,
+          "default": null,
+          "description": "The item was chosen — by a press, or by Enter or Space, which the browser turns into one."
+        },
+        {
+          "name": "disabled",
+          "type": "boolean",
+          "required": false,
+          "default": null,
+          "description": "Focusable, announced, and not activatable. `aria-disabled` rather than the `disabled` attribute, because APG asks that a disabled item stay reachable: a keyboard user has to be able to find out it is there at all."
+        },
+        {
+          "name": "closeOnSelect",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "Whether choosing it closes the whole menu. Default `true`."
+        }
+      ]
+    },
+    {
+      "name": "Menu.CheckboxItem",
+      "description": "An item that carries a state of its own: `role=\"menuitemcheckbox\"` and a tick.",
+      "props": [
+        {
+          "name": "checked",
+          "type": "boolean",
+          "required": false,
+          "default": null,
+          "description": "Controlled checked state. Leave it out and the item owns it."
+        },
+        {
+          "name": "defaultChecked",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Whether it starts checked, when the item owns its own state."
+        },
+        {
+          "name": "onCheckedChange",
+          "type": "ChangeHandler<boolean, 'select'>",
+          "required": false,
+          "default": null,
+          "description": "Fires with the new state, and the press behind it."
+        },
+        {
+          "name": "closeOnSelect",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Whether toggling it closes the menu. Default `false`, so several boxes can be ticked in one visit."
+        }
+      ]
+    },
+    {
+      "name": "Menu.RadioGroup",
+      "description": "A set of items of which one is chosen: `role=\"group\"`, and `menuitemradio` inside it.",
+      "props": [
+        { "name": "children", "type": "React.ReactNode", "required": false, "default": null, "description": "The radio items." },
+        {
+          "name": "label",
+          "type": "React.ReactNode",
+          "required": false,
+          "default": null,
+          "description": "The group's heading. It names the group, so a screen reader reads the items as a set."
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "Controlled value — the `value` of whichever item is checked."
+        },
+        {
+          "name": "defaultValue",
+          "type": "string",
+          "required": false,
+          "default": "''",
+          "description": "The value checked to start with, when the group owns its own state."
+        },
+        {
+          "name": "onValueChange",
+          "type": "ChangeHandler<string, 'select'>",
+          "required": false,
+          "default": null,
+          "description": "Fires with the value chosen, and the press behind it."
+        }
+      ]
+    },
+    {
+      "name": "Menu.RadioItem",
+      "description": "One of a radio group's choices. Checked when its `value` is the group's.",
+      "props": [
+        {
+          "name": "value",
+          "type": "string",
+          "required": true,
+          "default": null,
+          "description": "What this item stands for, compared against the group's `value`."
+        },
+        {
+          "name": "closeOnSelect",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Whether choosing it closes the menu. Default `false`, the way a checkbox item behaves."
+        }
+      ]
+    },
+    {
+      "name": "Menu.Group",
+      "description": "A titled section. The heading names the group through `aria-labelledby`, so the items inside are read as a set rather than as a run of unrelated commands.",
+      "props": [
+        { "name": "children", "type": "React.ReactNode", "required": false, "default": null, "description": "The items in the section." },
+        {
+          "name": "label",
+          "type": "React.ReactNode",
+          "required": false,
+          "default": null,
+          "description": "The section's heading. It names the group rather than standing alone: a heading nothing is labelled by is read as a stray line of text, which is why there is no separate label part."
+        }
+      ]
+    },
+    {
+      "name": "Menu.Separator",
+      "description": "The line between two sections. `role=\"separator\"`, which a menu is allowed to own.",
+      "props": []
+    },
+    {
+      "name": "Menu.Sub",
+      "description": "A submenu: an item that opens a menu of its own. The panel is declared beside its item, *inside* the menu it belongs to, which is what makes it a nested popover — so opening it leaves the parent menu open and a press inside it is a press inside the parent (measured in Chrome 152).",
+      "props": [
+        {
+          "name": "label",
+          "type": "React.ReactNode",
+          "required": true,
+          "default": null,
+          "description": "The item's own content — what the submenu is called."
+        },
+        { "name": "children", "type": "React.ReactNode", "required": false, "default": null, "description": "The submenu's items." },
+        {
+          "name": "disabled",
+          "type": "boolean",
+          "required": false,
+          "default": null,
+          "description": "Focusable, announced, and it opens nothing. `aria-disabled`, for the reason `Menu.Item` gives."
+        },
+        {
+          "name": "side",
+          "type": "AnchorSide",
+          "required": false,
+          "default": "'end'",
+          "description": "Which side of its item the submenu sits on. Default `'end'` — beside it, on the side the text runs towards."
+        },
+        {
+          "name": "align",
+          "type": "AnchorAlign",
+          "required": false,
+          "default": "'start'",
+          "description": "Which of the item's edges to line the submenu up with. Default `'start'`."
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "required": false,
+          "default": "0",
+          "description": "The gap between item and submenu, on the ÷4 spacing scale. Default 0 — a submenu abuts its menu."
+        },
+        {
+          "name": "flip",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "Whether a side with no room may be swapped for its opposite. Default `true`."
+        },
+        {
+          "name": "itemProps",
+          "type": "React.ButtonHTMLAttributes<HTMLButtonElement>",
+          "required": false,
+          "default": null,
+          "description": "Attributes for the item that opens it — the submenu's own go in `props`."
+        }
+      ]
+    }
+  ],
+  "keyboard": [
+    {
+      "mode": null,
+      "keys": "Enter / Space",
+      "action": "On the trigger, opens the menu with the first item focused. On an item, chooses it. On a submenu's item, opens the submenu."
+    },
+    {
+      "mode": null,
+      "keys": "Down / Up",
+      "action": "On the trigger, opens the menu at its first or last item. Inside, moves between items and wraps at the ends."
+    },
+    { "mode": null, "keys": "Home / End", "action": "The first or the last item." },
+    {
+      "mode": null,
+      "keys": "Right / Left",
+      "action": "Opens the submenu of the item that has focus, and closes the submenu focus is in — the other way round in a right-to-left menu, which is APG's rule and the reading order's."
+    },
+    { "mode": null, "keys": "Escape", "action": "Closes the innermost menu and puts focus back on what opened it." },
+    { "mode": null, "keys": "Tab", "action": "Closes the menu and moves focus on, as APG asks." },
+    {
+      "mode": null,
+      "keys": "A printable character",
+      "action": "Typeahead: jumps to the item whose text starts with what was typed, and the same letter again cycles through the items starting with it."
+    }
+  ],
+  "a11y": [
+    "`role=\"menu\"` on the panel, named by `label`, `labelledBy` or its trigger; `menuitem`, `menuitemcheckbox` and `menuitemradio` on the items, with `aria-checked` on the last two, `role=\"group\"` around a titled section and `role=\"separator\"` between them.",
+    "The trigger carries `aria-haspopup=\"menu\"`, `aria-expanded` and `aria-controls`; a submenu's item carries the same three, which is what says it opens another menu.",
+    "A disabled item is `aria-disabled` and stays focusable, as APG asks — the `disabled` attribute would take it out of the keyboard's reach and silence it."
+  ],
+  "axe": { "fixtures": ["Menu (open)"], "knownViolations": [] },
+  "styleTree": [
+    { "path": "menu", "depth": 0, "extends": null, "variants": ["topLayer"] },
+    { "path": "menu.item", "depth": 1, "extends": null, "variants": ["sub"] },
+    { "path": "menu.indicator", "depth": 1, "extends": null, "variants": [] },
+    { "path": "menu.check", "depth": 1, "extends": null, "variants": [] },
+    { "path": "menu.dot", "depth": 1, "extends": null, "variants": [] },
+    { "path": "menu.arrow", "depth": 1, "extends": null, "variants": [] },
+    { "path": "menu.group", "depth": 1, "extends": null, "variants": [] },
+    { "path": "menu.label", "depth": 1, "extends": null, "variants": [] },
+    { "path": "menu.separator", "depth": 1, "extends": null, "variants": [] }
+  ]
+}

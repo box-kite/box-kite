@@ -59,6 +59,7 @@ const PROVIDED = {
   Form: "import Form from '@box-kite/react/components/form';",
   Grid: "import Grid from '@box-kite/react/components/grid';",
   Icon: "import Icon from '@box-kite/react/components/icon';",
+  Menu: "import Menu from '@box-kite/react/components/menu';",
   Overlay: "import Overlay from '@box-kite/react/components/overlay';",
   Popover: "import Popover from '@box-kite/react/components/popover';",
   Presence: "import Presence from '@box-kite/react/components/presence';",

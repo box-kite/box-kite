@@ -15,11 +15,12 @@ Which component replaces which `<Box tag>`, and the three that carry a pattern o
 | `<Box tag="section/article/aside">`  | `<Section>`/`<Article>`/`<Aside>`      | `components/semantics`                                           |
 | `<Box tag="form">`                   | `<Form>`                               | `components/form`                                                |
 | `<Box tag="svg/path/circle/rect">`   | `<Svg>`/`<Path>`/`<Circle>`/`<Rect>`   | `components/svg`                                                 |
+| a menu button and its menu           | `<Menu>`                               | `components/menu`                                                |
 | a lucide/Tabler icon, styled         | `<Icon>`                               | `components/icon`                                                |
 | a sparkline, ring, gauge or donut    | `<Sparkline>`/`<ProgressRing>`/…       | `components/chart`                                               |
 | a themed Recharts (or any) chart     | `<ChartContainer>`                     | `components/chart`                                               |
 
-Also: `Mark`, `Figure`, `Figcaption`, `Details`, `Summary`, `Menu`, `Time`. All from `@box-kite/react/components/...`.
+Also: `Mark`, `Figure`, `Figcaption`, `Details`, `Summary`, `MenuList` (the semantic `<menu>`; the menu **button** is `Menu` from `components/menu`), `Time`. All from `@box-kite/react/components/...`.
 
 `<Form<T> onSubmit={(values, e) => …}>` reads its own named fields on submit (after `preventDefault()`): a value per
 named input, a boolean for a lone checkbox/radio, an array for a repeated name, and `name="a.b"` nests. `T` is the shape you
