@@ -10,6 +10,7 @@ import {
   ChevronDown,
   Circle,
   Columns3,
+  ListCollapse,
   Highlighter,
   DoorOpen,
   Download,
@@ -260,6 +261,9 @@ export default function Sidebar({ toggleTheme, onClose }: SidebarProps) {
           </MenuItem>
           <MenuItem to="/tabs" icon={<Columns3 />}>
             Tabs
+          </MenuItem>
+          <MenuItem to="/accordion" icon={<ListCollapse />}>
+            Accordion
           </MenuItem>
           <MenuItem to="/overlay" icon={<Layers />}>
             Overlay

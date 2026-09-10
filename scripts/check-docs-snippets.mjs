@@ -52,6 +52,8 @@ const PROVIDED = {
   AlertDialog: "import { AlertDialog } from '@box-kite/react/components/dialog';",
   Button: "import Button from '@box-kite/react/components/button';",
   Checkbox: "import Checkbox from '@box-kite/react/components/checkbox';",
+  Accordion: "import Accordion from '@box-kite/react/components/accordion';",
+  Collapsible: "import { Collapsible } from '@box-kite/react/components/accordion';",
   DataGrid: "import DataGrid from '@box-kite/react/components/dataGrid';",
   Dialog: "import Dialog from '@box-kite/react/components/dialog';",
   Dropdown: "import Dropdown from '@box-kite/react/components/dropdown';",

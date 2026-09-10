@@ -1,0 +1,56 @@
+{
+  "name": "Collapsible",
+  "route": "/accordion",
+  "import": "import Collapsible from '@box-kite/react/components/accordion';",
+  "description": "One disclosure: a trigger, and the content it reveals.",
+  "pattern": null,
+  "props": [
+    {
+      "name": "children",
+      "type": "React.ReactNode",
+      "required": false,
+      "default": null,
+      "description": "The content the trigger reveals."
+    },
+    {
+      "name": "trigger",
+      "type": "(trigger: CollapsibleTrigger) => React.ReactNode",
+      "required": true,
+      "default": null,
+      "description": "The control that opens it, handed the props that wire it to the panel. It has to be a button."
+    },
+    {
+      "name": "open",
+      "type": "boolean",
+      "required": false,
+      "default": null,
+      "description": "Controlled open state. Leave it out and the widget owns it."
+    },
+    {
+      "name": "defaultOpen",
+      "type": "boolean",
+      "required": false,
+      "default": "false",
+      "description": "Whether it starts open. Default `false`."
+    },
+    {
+      "name": "onOpenChange",
+      "type": "ChangeHandler<boolean, DisclosureReason>",
+      "required": false,
+      "default": null,
+      "description": "Fires with the new state and why it changed."
+    }
+  ],
+  "parts": [],
+  "keyboard": [],
+  "a11y": [
+    "The trigger carries `aria-expanded` and `aria-controls`; the content has no role of its own, because a region wants a name and a trigger is not a heading. Use an `Accordion` where the sections are document structure."
+  ],
+  "axe": { "fixtures": ["Collapsible"], "knownViolations": [] },
+  "styleTree": [
+    { "path": "collapsible", "depth": 0, "extends": null, "variants": [] },
+    { "path": "collapsible.track", "depth": 1, "extends": null, "variants": ["closed"] },
+    { "path": "collapsible.clip", "depth": 1, "extends": null, "variants": [] },
+    { "path": "collapsible.panel", "depth": 1, "extends": null, "variants": [] }
+  ]
+}

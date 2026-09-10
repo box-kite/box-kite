@@ -100,6 +100,27 @@ const CONFIG = [
     ],
   },
   {
+    name: 'Accordion',
+    route: '/accordion',
+    file: 'src/components/accordion.tsx',
+    props: 'AccordionProps',
+    doc: 'AccordionImpl',
+    styles: 'accordion',
+    parts: [
+      { name: 'Accordion.Item', props: 'AccordionItemProps', doc: 'AccordionItem' },
+      { name: 'Accordion.Trigger', props: 'AccordionTriggerProps', doc: 'AccordionTrigger' },
+      { name: 'Accordion.Panel', props: 'AccordionPanelProps', doc: 'AccordionPanel' },
+    ],
+  },
+  {
+    name: 'Collapsible',
+    route: '/accordion',
+    file: 'src/components/accordion.tsx',
+    props: 'CollapsibleProps',
+    doc: 'Collapsible',
+    styles: 'collapsible',
+  },
+  {
     name: 'Dropdown',
     route: '/dropdown',
     file: 'src/components/dropdown.tsx',

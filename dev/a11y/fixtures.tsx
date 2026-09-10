@@ -1,5 +1,6 @@
 import { fireEvent, screen } from '@testing-library/react';
 import { Sun } from 'lucide-react';
+import Accordion, { Collapsible } from '../../src/components/accordion';
 import BaseSvg from '../../src/components/baseSvg';
 import Button from '../../src/components/button';
 import { ChartContainer, Gauge, MiniDonut, ProgressRing, Sparkline } from '../../src/components/chart';
@@ -344,6 +345,35 @@ export const fixtures: A11yFixture[] = [
           <Menu.Item>Copy link</Menu.Item>
         </Menu.Sub>
       </Menu>
+    ),
+  },
+  {
+    // Open and shut at once: a closed panel is hidden rather than unmounted, so it is the one that
+    // could leave a region in the accessibility tree with nothing reachable in it.
+    name: 'Accordion',
+    render: () => (
+      <Accordion defaultValue={['shipping']}>
+        <Accordion.Item value="shipping">
+          <Accordion.Trigger>Shipping</Accordion.Trigger>
+          <Accordion.Panel>Two to four working days</Accordion.Panel>
+        </Accordion.Item>
+        <Accordion.Item value="returns">
+          <Accordion.Trigger>Returns</Accordion.Trigger>
+          <Accordion.Panel>Thirty days</Accordion.Panel>
+        </Accordion.Item>
+        <Accordion.Item value="warranty" disabled>
+          <Accordion.Trigger>Warranty</Accordion.Trigger>
+          <Accordion.Panel>Two years</Accordion.Panel>
+        </Accordion.Item>
+      </Accordion>
+    ),
+  },
+  {
+    name: 'Collapsible',
+    render: () => (
+      <Collapsible defaultOpen trigger={(trigger) => <Button {...trigger}>What is in the box</Button>}>
+        A kite
+      </Collapsible>
     ),
   },
   {
