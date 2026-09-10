@@ -269,6 +269,97 @@ const boxComponents = {
       },
     },
   },
+  // The tabs widget: the wrapper, the `role="tablist"`, one tab and one panel. Underlined tabs rather
+  // than a segmented control, because the underline is the one indicator that survives a forced-colors
+  // mode — a background would be thrown away and selection would read identically on and off.
+  tabs: {
+    styles: { display: 'flex', d: 'column', gap: 4 },
+    variants: {
+      // A vertical list sits beside its panels instead of over them, so the axis of the whole widget turns.
+      vertical: { d: 'row', gap: 6, ai: 'start' },
+    },
+    children: {
+      list: {
+        styles: {
+          display: 'flex',
+          d: 'row',
+          gap: 1,
+          ai: 'center',
+          bb: 1,
+          borderColor: 'gray-200',
+          // A list that outruns its container scrolls rather than wrapping: a tab on a second row is a
+          // tab the arrows walk in an order nobody can see.
+          overflowX: 'auto',
+          theme: { dark: { borderColor: 'gray-700' } },
+        },
+        variants: {
+          // The rule moves to the inline end, which mirrors in a right-to-left page where `br` would not.
+          vertical: { d: 'column', ai: 'stretch', gap: 0.5, bb: 0, be: 1, overflowX: 'visible' },
+        },
+      },
+      tab: {
+        styles: {
+          display: 'flex',
+          ai: 'center',
+          gap: 2,
+          px: 3,
+          py: 2,
+          fontSize: 14,
+          lineHeight: 20,
+          fontWeight: 500,
+          color: 'gray-600',
+          bgColor: 'transparent',
+          b: 0,
+          // The indicator, drawn as a border the selected tab colours in, pulled over the list's own 1px
+          // rule so the two read as one line. The margin is on the ÷4 scale — `-1` would be 4px and leave
+          // the indicator hanging below the rule with a gap, which only a browser shows.
+          bb: 2,
+          borderColor: 'transparent',
+          mb: -0.25,
+          cursor: 'pointer',
+          whiteSpace: 'nowrap',
+          userSelect: 'none',
+          transition: 'colors',
+          hover: { color: 'gray-900' },
+          selected: { color: 'indigo-600', borderColor: 'indigo-500' },
+          disabled: { color: 'gray-400', cursor: 'default', hover: { color: 'gray-400' } },
+          // Inside the underline rather than around it: a ring drawn outside would sit under the
+          // neighbouring tab, since the list scrolls and clips.
+          focusVisible: { outline: 2, outlineColor: 'indigo-500', outlineOffset: -2, borderRadius: 1 },
+          // Every colour is gone in a forced-colors mode, so the indicator has to be one of the pair
+          // those modes keep — otherwise the selected tab reads exactly like the rest.
+          forcedColors: { selected: { color: 'Highlight', borderColor: 'Highlight' } },
+          theme: {
+            dark: {
+              color: 'gray-400',
+              hover: { color: 'gray-100' },
+              selected: { color: 'indigo-400', borderColor: 'indigo-400' },
+              disabled: { color: 'gray-600', hover: { color: 'gray-600' } },
+            },
+          },
+        },
+        variants: {
+          // In a vertical list the indicator turns with it, onto the inline end the list's rule is on.
+          vertical: { textAlign: 'start', bb: 0, be: 2, mb: 0, me: -0.25 },
+        },
+      },
+      panel: {
+        styles: {
+          width: 'fit',
+          fontSize: 14,
+          lineHeight: 20,
+          // The panel is a tab stop of its own (APG), and a container is not what a focus ring is for.
+          focusVisible: { outline: 2, outlineColor: 'indigo-500', outlineOffset: 2, borderRadius: 1 },
+          startingStyle: { opacity: 0, translateY: 1 },
+        },
+        variants: {
+          // A panel kept mounted while another is selected. Declared rather than left to the UA's
+          // `[hidden]` rule, because every Box carries `display: block` and any author rule outranks it.
+          hidden: { display: 'none' },
+        },
+      },
+    },
+  },
   // The `role="tooltip"` bubble. Inverted against the page on purpose: a tooltip is a temporary
   // overlay and has to read as one at a glance, whichever theme is underneath it.
   tooltip: {

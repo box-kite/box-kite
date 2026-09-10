@@ -20,6 +20,7 @@ import Select from '../../src/components/select';
 import { H1, Img, Link, Nav, P } from '../../src/components/semantics';
 import { Circle, Polyline, Svg, SvgText } from '../../src/components/svg';
 import Switch from '../../src/components/switch';
+import Tabs from '../../src/components/tabs';
 import Textarea from '../../src/components/textarea';
 import Textbox from '../../src/components/textbox';
 import Tooltip from '../../src/components/tooltip';
@@ -343,6 +344,38 @@ export const fixtures: A11yFixture[] = [
           <Menu.Item>Copy link</Menu.Item>
         </Menu.Sub>
       </Menu>
+    ),
+  },
+  {
+    // Both axes and both mounting modes, since a kept-mounted panel is the one that can leave a
+    // reference dangling or a hidden panel in the accessibility tree.
+    name: 'Tabs',
+    render: () => (
+      <Tabs defaultValue="overview">
+        <Tabs.List label="Project">
+          <Tabs.Tab value="overview">Overview</Tabs.Tab>
+          <Tabs.Tab value="activity">Activity</Tabs.Tab>
+          <Tabs.Tab value="settings" disabled>
+            Settings
+          </Tabs.Tab>
+        </Tabs.List>
+        <Tabs.Panel value="overview">Who is on it</Tabs.Panel>
+        <Tabs.Panel value="activity">What changed</Tabs.Panel>
+        <Tabs.Panel value="settings">Who may change it</Tabs.Panel>
+      </Tabs>
+    ),
+  },
+  {
+    name: 'Tabs (vertical, every panel mounted)',
+    render: () => (
+      <Tabs defaultValue="activity" orientation="vertical" keepMounted>
+        <Tabs.List label="Views">
+          <Tabs.Tab value="overview">Overview</Tabs.Tab>
+          <Tabs.Tab value="activity">Activity</Tabs.Tab>
+        </Tabs.List>
+        <Tabs.Panel value="overview">Who is on it</Tabs.Panel>
+        <Tabs.Panel value="activity">What changed</Tabs.Panel>
+      </Tabs>
     ),
   },
   {

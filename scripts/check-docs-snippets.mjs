@@ -67,6 +67,7 @@ const PROVIDED = {
   RadioGroup: "import RadioGroup from '@box-kite/react/components/radioGroup';",
   Select: "import Select from '@box-kite/react/components/select';",
   Switch: "import Switch from '@box-kite/react/components/switch';",
+  Tabs: "import Tabs from '@box-kite/react/components/tabs';",
   Textarea: "import Textarea from '@box-kite/react/components/textarea';",
   Textbox: "import Textbox from '@box-kite/react/components/textbox';",
   Tooltip: "import Tooltip from '@box-kite/react/components/tooltip';",

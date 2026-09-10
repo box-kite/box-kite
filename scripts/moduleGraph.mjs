@@ -57,6 +57,7 @@ export const CLIENT_ONLY_COMPONENTS = [
   'radioGroup',
   'select',
   'switch',
+  'tabs',
   'tooltip',
 ];
 

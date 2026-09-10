@@ -191,6 +191,12 @@ export const siteRoutes = [
       "A menu button and its menu on the Popover API: APG's roles and keys, submenus as nested popovers, and no portal or focus trap.",
   },
   {
+    path: '/tabs',
+    name: 'Tabs',
+    description:
+      'The APG tabs pattern: one list of tabs over one panel at a time, selection following focus, and arrows that follow the reading order.',
+  },
+  {
     path: '/overlay',
     name: 'Overlay',
     description:

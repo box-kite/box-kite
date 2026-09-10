@@ -53,6 +53,7 @@ NEVER use `<Box tag="...">` when a component exists. NEVER use `<Box display="fl
 | `<Box tag="svg/path/circle/rect">`   | `<Svg>/<Path>/<Circle>/<Rect>`   | `components/svg`       |
 | `<Box tag="dialog">`                 | `<Dialog>/<AlertDialog>`         | `components/dialog`    |
 | a menu button and its menu           | `<Menu>`                         | `components/menu`      |
+| a tablist over one panel at a time   | `<Tabs>`                         | `components/tabs`      |
 | a lucide/Tabler icon, styled         | `<Icon>`                         | `components/icon`      |
 
 All imports from `@box-kite/react/components/...`. Semantics also export: `Mark`, `Figure`, `Figcaption`, `Details`, `Summary`, `MenuList` (the semantic `<menu>`; the menu **button** is `Menu` from `components/menu`), `Time`.
@@ -1540,6 +1541,81 @@ hover and the keyboard cannot disagree.
 **The semantic `<menu>` element is `MenuList`** (`components/semantics`) now. `Menu` is still exported
 there and still works, but it is deprecated: two exports of that name are one import away from the wrong
 component.
+
+---
+
+## Tabs Component
+
+```tsx
+import Tabs from '@box-kite/react/components/tabs';
+
+<Tabs defaultValue="overview" onValueChange={(value, { reason }) => log(value, reason)}>
+  <Tabs.List label="Project">
+    <Tabs.Tab value="overview">Overview</Tabs.Tab>
+    <Tabs.Tab value="activity">Activity</Tabs.Tab>
+    <Tabs.Tab value="audit" disabled>
+      Audit log
+    </Tabs.Tab>
+  </Tabs.List>
+  <Tabs.Panel value="overview">Who is on it, and what is left.</Tabs.Panel>
+  <Tabs.Panel value="activity">What changed this week.</Tabs.Panel>
+</Tabs>;
+```
+
+APG's tabs pattern, where **selection follows focus**: one arrow key moves to a tab and shows its panel.
+`activation="manual"` splits the two — the arrows move, Enter or Space chooses — which is what a panel
+too expensive to render on the way past needs.
+
+| Prop            | Default        | What it does                                                                                |
+| --------------- | -------------- | ------------------------------------------------------------------------------------------- |
+| `value`         | —              | Controlled selection.                                                                       |
+| `defaultValue`  | —              | Which tab starts selected. Left out, nothing is selected and no panel is shown.             |
+| `onValueChange` | —              | `(value, { reason, event })` — `click` or `keyboard`.                                       |
+| `orientation`   | `'horizontal'` | `vertical` turns the axis, moves the arrows to Down/Up and the indicator to the inline end. |
+| `activation`    | `'automatic'`  | `manual` moves focus without selecting.                                                     |
+| `loop`          | `true`         | Whether the arrows wrap at the ends.                                                        |
+| `keepMounted`   | `false`        | Render every panel rather than only the selected one, hiding the rest.                      |
+
+| Part         | Props                                  | Role                                           |
+| ------------ | -------------------------------------- | ---------------------------------------------- |
+| `Tabs.List`  | `label` / `labelledBy`, every Box prop | `tablist` + `aria-orientation`                 |
+| `Tabs.Tab`   | `value`, `disabled`, every Box prop    | `tab` + `aria-selected`, `aria-controls`       |
+| `Tabs.Panel` | `value`, every Box prop                | `tabpanel` + `aria-labelledby`, `tabindex="0"` |
+
+| Key           | What it does                                                                                         |
+| ------------- | ---------------------------------------------------------------------------------------------------- |
+| Tab           | Enters the list once, landing on the selected tab; again, leaves it for the panel.                   |
+| Right / Left  | The next and previous tab in a horizontal list, wrapping and stepping over disabled tabs.            |
+| Down / Up     | The same in a vertical list. The off-axis pair is left to the page, so a list does not eat a scroll. |
+| Home / End    | The first and last selectable tab.                                                                   |
+| Enter / Space | Chooses the focused tab. Only `activation="manual"` needs them.                                      |
+
+The arrows follow the **reading order**, so in a right-to-left page ArrowLeft is the _next_ tab, read off
+the element's own resolved direction rather than an ancestor's `dir`.
+
+Four things to know:
+
+- **A disabled tab is not selectable and the arrows step over it** — the opposite of `Menu.Item`, which
+  APG asks stay reachable. Selection follows focus here, so a tab focus could reach but selection could
+  not would leave the widget with no state to be in.
+- **Only the selected panel is rendered.** An unmounted panel costs nothing and gets an entrance from
+  `startingStyle` for free, but it loses whatever state it held — `keepMounted` renders them all and
+  hides the rest, which is what a half-filled form needs. A hidden panel carries the `hidden` attribute
+  **and** a `display: none` of its own, since every Box carries `display: block` and any author rule
+  outranks the UA's `[hidden]` one.
+- **The tabs are read off the DOM**, not out of a registry, so a tab wrapped in a layout of your own,
+  rendered from a list or put behind a condition navigates like any other — and a nested set of tabs
+  belongs to its own list rather than the one around it.
+- **The tab sequence follows the selection**, so a controlled `value` changed elsewhere on the page moves
+  the keyboard's entry point with it. Under `activation="manual"` it follows the focus instead, which is
+  what APG's own example does.
+
+The style tree is `tabs` with `tabs.list`, `tabs.tab` and `tabs.panel` beneath it. The selected state is
+`aria-selected`: inside a style tree it is the bare `selected` key, and **on a tab it is
+`ariaAttr={{ selected: … }}`** — a top-level `selected` _prop_ writes the attribute the component owns
+rather than nesting styles under it, which is the rule for `selected`, `disabled` and `checked` alike.
+The indicator is a border rather than a background: a forced-colors mode keeps one and throws the other
+away, so selection would otherwise read identically on and off.
 
 ---
 

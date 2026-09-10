@@ -86,6 +86,19 @@ const CONFIG = [
     ],
   },
   {
+    name: 'Tabs',
+    route: '/tabs',
+    file: 'src/components/tabs.tsx',
+    props: 'TabsProps',
+    doc: 'TabsImpl',
+    styles: 'tabs',
+    parts: [
+      { name: 'Tabs.List', props: 'TabsListProps', doc: 'TabsList' },
+      { name: 'Tabs.Tab', props: 'TabsTabProps', doc: 'TabsTab' },
+      { name: 'Tabs.Panel', props: 'TabsPanelProps', doc: 'TabsPanel' },
+    ],
+  },
+  {
     name: 'Dropdown',
     route: '/dropdown',
     file: 'src/components/dropdown.tsx',

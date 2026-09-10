@@ -1,0 +1,149 @@
+{
+  "name": "Tabs",
+  "route": "/tabs",
+  "import": "import Tabs from '@box-kite/react/components/tabs';",
+  "description": "The APG tabs pattern: one list of tabs over one panel at a time. Pattern: https://www.w3.org/WAI/ARIA/apg/patterns/tabs/",
+  "pattern": "https://www.w3.org/WAI/ARIA/apg/patterns/tabs/",
+  "props": [
+    {
+      "name": "children",
+      "type": "React.ReactNode",
+      "required": false,
+      "default": null,
+      "description": "The tabs and their panels: a `Tabs.List` of `Tabs.Tab`, then one `Tabs.Panel` per tab."
+    },
+    {
+      "name": "value",
+      "type": "string",
+      "required": false,
+      "default": null,
+      "description": "Controlled selection. Leave it out and the widget owns it."
+    },
+    {
+      "name": "defaultValue",
+      "type": "string",
+      "required": false,
+      "default": null,
+      "description": "Which tab starts selected. Left out, nothing is selected and no panel is shown until one is chosen."
+    },
+    {
+      "name": "onValueChange",
+      "type": "ChangeHandler<string | undefined, TabsReason>",
+      "required": false,
+      "default": null,
+      "description": "Fires with the newly selected tab and why it changed — `'click'` or `'keyboard'`."
+    },
+    {
+      "name": "orientation",
+      "type": "TabsOrientation",
+      "required": false,
+      "default": "'horizontal'",
+      "description": "Which way the tabs run. Horizontal is the reading axis, so its arrows mirror in a right-to-left page."
+    },
+    {
+      "name": "activation",
+      "type": "TabsActivation",
+      "required": false,
+      "default": "'automatic'",
+      "description": "Whether moving to a tab selects it. Default `'automatic'`, which is what APG asks for."
+    },
+    {
+      "name": "loop",
+      "type": "boolean",
+      "required": false,
+      "default": "true",
+      "description": "Whether the arrows wrap around at the ends. Default `true`."
+    },
+    {
+      "name": "keepMounted",
+      "type": "boolean",
+      "required": false,
+      "default": "false",
+      "description": "Render every panel rather than only the selected one, hiding the rest. What a panel holding a half-filled form needs, since an unmounted panel loses its state."
+    }
+  ],
+  "parts": [
+    {
+      "name": "Tabs.List",
+      "description": "The tabs themselves, and the keyboard: it sits on the list because roving tabindex puts one tab in the tab sequence.",
+      "props": [
+        { "name": "children", "type": "React.ReactNode", "required": false, "default": null, "description": "The tabs." },
+        {
+          "name": "label",
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "The list's accessible name. A tablist has none of its own, and one page can hold several."
+        },
+        {
+          "name": "labelledBy",
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "Names the list after an element already on the page, instead of `label`."
+        }
+      ]
+    },
+    {
+      "name": "Tabs.Tab",
+      "description": "One tab: a real `<button>`, so Enter and Space reach it the way the platform means them to.",
+      "props": [
+        {
+          "name": "value",
+          "type": "string",
+          "required": true,
+          "default": null,
+          "description": "Which panel this tab shows, and what the widget reports when it is chosen."
+        },
+        { "name": "children", "type": "React.ReactNode", "required": false, "default": null, "description": "The tab's label." },
+        {
+          "name": "disabled",
+          "type": "boolean",
+          "required": false,
+          "default": null,
+          "description": "Not selectable, and stepped over by the arrows — unlike a disabled `Menu.Item`, which APG asks stay reachable. Selection follows focus here, so a tab focus could reach and selection could not would leave the widget with no state to be in."
+        }
+      ]
+    },
+    {
+      "name": "Tabs.Panel",
+      "description": "One panel. Rendered only while its tab is selected, unless the widget was told to keep them all.",
+      "props": [
+        { "name": "value", "type": "string", "required": true, "default": null, "description": "The tab this panel belongs to." },
+        { "name": "children", "type": "React.ReactNode", "required": false, "default": null, "description": "The panel's content." }
+      ]
+    }
+  ],
+  "keyboard": [
+    { "mode": null, "keys": "Tab", "action": "Enters the list once, landing on the selected tab, and again leaves it for the panel." },
+    {
+      "mode": null,
+      "keys": "Right / Left",
+      "action": "The next and previous tab in a horizontal list, wrapping at the ends and stepping over disabled tabs. Mirrored in a right-to-left page."
+    },
+    {
+      "mode": null,
+      "keys": "Down / Up",
+      "action": "The same in a vertical list. The off-axis pair is left to the page, so a horizontal list does not eat a scroll."
+    },
+    { "mode": null, "keys": "Home / End", "action": "The first and last tab." },
+    {
+      "mode": null,
+      "keys": "Enter, Space",
+      "action": "Chooses the focused tab. Only `activation=\"manual\"` needs them; automatic activation has already chosen it."
+    }
+  ],
+  "a11y": [
+    "`role=\"tablist\"` on the list, named by its own `label` — a page can hold several, and a tablist has no name of its own.",
+    "`role=\"tab\"` with `aria-selected` on each tab, and `aria-controls` naming the panel it shows — written only while that panel is mounted, since a dangling reference names nothing.",
+    "`role=\"tabpanel\"` on the panel, `aria-labelledby` its tab, and `tabindex=\"0\"` so the content is reachable from the keyboard whether or not anything inside it is focusable.",
+    "`aria-orientation` follows `orientation`, and the arrows follow the reading order: in a right-to-left page ArrowLeft is the *next* tab."
+  ],
+  "axe": { "fixtures": ["Tabs", "Tabs (vertical, every panel mounted)"], "knownViolations": [] },
+  "styleTree": [
+    { "path": "tabs", "depth": 0, "extends": null, "variants": ["vertical"] },
+    { "path": "tabs.list", "depth": 1, "extends": null, "variants": ["vertical"] },
+    { "path": "tabs.tab", "depth": 1, "extends": null, "variants": ["vertical"] },
+    { "path": "tabs.panel", "depth": 1, "extends": null, "variants": ["hidden"] }
+  ]
+}
