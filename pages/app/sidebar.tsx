@@ -8,6 +8,8 @@ import {
   ChartSpline,
   CheckSquare,
   ChevronDown,
+  SlidersVertical,
+  LoaderCircle,
   Circle,
   Columns3,
   ListCollapse,
@@ -264,6 +266,12 @@ export default function Sidebar({ toggleTheme, onClose }: SidebarProps) {
           </MenuItem>
           <MenuItem to="/accordion" icon={<ListCollapse />}>
             Accordion
+          </MenuItem>
+          <MenuItem to="/slider" icon={<SlidersVertical />}>
+            Slider
+          </MenuItem>
+          <MenuItem to="/progress" icon={<LoaderCircle />}>
+            Progress
           </MenuItem>
           <MenuItem to="/overlay" icon={<Layers />}>
             Overlay

@@ -36,10 +36,11 @@ const presetKeyframes: Keyframes = {
   ping: { '75%': { scale: 2, opacity: 0 }, to: { scale: 2, opacity: 0 } },
 };
 
-/** The DataGrid's indeterminate sweep: a bar crossing the track and starting over. */
-const componentKeyframes: Keyframes = {
-  'rb-datagrid-loader': { from: { translateX: '-1/1' }, to: { translateX: '250%' } },
-};
+/** A bar crossing its track and starting over: what a component draws when it has no figure to draw. */
+const sweep: KeyframeStops = { from: { translateX: '-1/1' }, to: { translateX: '250%' } };
+
+/** Two names for it, so neither component's CSS depends on the other's still being called that. */
+const componentKeyframes: Keyframes = { 'rb-datagrid-loader': sweep, 'rb-progress-sweep': sweep };
 
 const cssIdentifier = /^-?[_a-zA-Z][-_a-zA-Z0-9]*$/;
 

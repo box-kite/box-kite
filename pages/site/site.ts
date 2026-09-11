@@ -196,6 +196,18 @@ export const siteRoutes = [
     description: "APG's accordion and the disclosure under it, whose height animation is a shared class rather than a measured pixel.",
   },
   {
+    path: '/slider',
+    name: 'Slider',
+    description:
+      "APG's slider and its multi-thumb sibling: the value's own shape decides how many thumbs there are, and the geometry is logical.",
+  },
+  {
+    path: '/progress',
+    name: 'Progress',
+    description:
+      'A progress bar that reports the value it really has, sweeps when there is none, and renders on a server with no JavaScript.',
+  },
+  {
     path: '/tabs',
     name: 'Tabs',
     description:

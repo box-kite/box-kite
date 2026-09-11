@@ -535,6 +535,126 @@ const boxComponents = {
       },
     },
   },
+  // Everything a slider paints is a shared class; where its thumbs *are* is the one thing that is not,
+  // and that lives in an inline style. The geometry is logical throughout (`insetStart`, `ms`), so a
+  // right-to-left page draws the minimum on the right with nothing declared twice.
+  slider: {
+    styles: {
+      position: 'relative',
+      display: 'flex',
+      ai: 'center',
+      width: 'fit',
+      // Taller than the track, so the thumb has somewhere to be and the press target is a finger's worth.
+      height: 5,
+      cursor: 'pointer',
+      // A drag on a touch screen must not also scroll the page. No prop for it, and one element wants it.
+      css: { touchAction: 'none' },
+      // A drag that highlights the label beside it reads as broken; the press is cancelled too, and this
+      // covers the pointer that arrives already down.
+      userSelect: 'none',
+    },
+    variants: {
+      vertical: { d: 'column', jc: 'flex-end', width: 5, height: 40 },
+      disabled: { cursor: 'default', opacity: 0.5 },
+    },
+    children: {
+      track: {
+        styles: {
+          position: 'relative',
+          width: 'fit',
+          height: 1.5,
+          borderRadius: 1,
+          bgColor: 'gray-200',
+          // The fill's own corners are square, so the track is what rounds both ends of it.
+          overflow: 'hidden',
+          theme: { dark: { bgColor: 'gray-700' } },
+        },
+        variants: {
+          vertical: { width: 1.5, height: 'fit' },
+        },
+      },
+      fill: {
+        styles: {
+          position: 'absolute',
+          insetY: 0,
+          bgColor: 'indigo-500',
+          theme: { dark: { bgColor: 'indigo-400' } },
+        },
+        variants: {
+          // A vertical slider fills from the bottom, so the axis the inline style writes swaps with it.
+          vertical: { insetY: 'auto', insetX: 0 },
+        },
+      },
+      thumb: {
+        styles: {
+          position: 'absolute',
+          width: 4,
+          height: 4,
+          // Half its own width back along the axis, so the thumb is centred on its value rather than
+          // starting at it. Logical, so it mirrors with the inset the inline style writes.
+          ms: -2,
+          borderRadius: 4,
+          bgColor: 'white',
+          b: 2,
+          borderColor: 'indigo-500',
+          shadow: 'xs',
+          // A measured position must not animate: the thumb has to be under the pointer, not behind it.
+          transition: 'none',
+          hover: { borderColor: 'indigo-600' },
+          focusVisible: { outline: 2, outlineColor: 'indigo-500', outlineOffset: 2 },
+          theme: { dark: { bgColor: 'gray-900', borderColor: 'indigo-400', hover: { borderColor: 'indigo-300' } } },
+          // A thumb whose only signal is its fill disappears in a forced-colors mode.
+          forcedColors: { bgColor: 'ButtonFace', borderColor: 'ButtonText' },
+        },
+        variants: {
+          vertical: { ms: 0, mb: -2 },
+          disabled: { cursor: 'default', borderColor: 'gray-400', hover: { borderColor: 'gray-400' } },
+        },
+      },
+    },
+  },
+  // The bar itself is the track — there is nothing to put between them — so the component is two
+  // elements and the outer one carries `role="progressbar"`.
+  progress: {
+    styles: {
+      position: 'relative',
+      width: 'fit',
+      height: 2,
+      borderRadius: 1,
+      bgColor: 'gray-200',
+      overflow: 'hidden',
+      theme: { dark: { bgColor: 'gray-700' } },
+    },
+    children: {
+      fill: {
+        styles: {
+          position: 'absolute',
+          insetY: 0,
+          insetStart: 0,
+          bgColor: 'indigo-500',
+          // The width is the value, so it is the one thing here that moves.
+          transition: 'size',
+          theme: { dark: { bgColor: 'indigo-400' } },
+          forcedColors: { bgColor: 'Highlight' },
+        },
+        variants: {
+          // Nothing to fill: a bar that crosses the track and starts over. Its duration is named in
+          // milliseconds, so it sits outside the `--transitionTime` the reduced-motion default zeroes
+          // and has to stop itself.
+          indeterminate: {
+            width: '2/5',
+            animationName: 'rb-progress-sweep',
+            animationDuration: 1100,
+            animationTimingFunction: 'linear',
+            animationIterationCount: 'infinite',
+            transition: 'none',
+            rtl: { animationDirection: 'reverse' },
+            motionReduce: { animationName: 'none', width: 'fit', opacity: 0.5 },
+          },
+        },
+      },
+    },
+  },
   // The `role="tooltip"` bubble. Inverted against the page on purpose: a tooltip is a temporary
   // overlay and has to read as one at a glance, whichever theme is underneath it.
   tooltip: {

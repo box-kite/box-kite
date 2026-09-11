@@ -2,7 +2,7 @@
 
 _Unreleased. A PR that changes what a consumer sees adds its section here — see CONTRIBUTING.md, "Release notes"._
 
-The package now carries instructions for the agent writing the code, the documentation site answers in markdown, the same rules install as a skill in about forty-five coding agents, and every component page states its own props, keys and accessibility — all of it generated from the sources the library is built from. A floating layer is also placed by the browser now rather than measured in JavaScript, all the way through: six props, one hook, and every popup the library ships standing on them. Three of those popups are now browser features rather than components: a popover on the Popover API, a modal dialog on `<dialog>`, and a menu button whose submenus are popovers nested inside it. Tabs arrive beside them, on nothing but the keyboard the pattern asks for — with an indicator that travels between them and a panel box that resizes to fit. An accordion arrives with them, opening its panels on a grid track nobody had to measure.
+The package now carries instructions for the agent writing the code, the documentation site answers in markdown, the same rules install as a skill in about forty-five coding agents, and every component page states its own props, keys and accessibility — all of it generated from the sources the library is built from. A floating layer is also placed by the browser now rather than measured in JavaScript, all the way through: six props, one hook, and every popup the library ships standing on them. Three of those popups are now browser features rather than components: a popover on the Popover API, a modal dialog on `<dialog>`, and a menu button whose submenus are popovers nested inside it. Tabs arrive beside them, on nothing but the keyboard the pattern asks for — with an indicator that travels between them and a panel box that resizes to fit. An accordion arrives with them, opening its panels on a grid track nobody had to measure, and a slider and a progress bar close the set — the two places the platform’s own control cannot be styled or given a second thumb.
 
 ## Highlights
 
@@ -20,6 +20,7 @@ The package now carries instructions for the agent writing the code, the documen
 - **[A menu, and its submenus, are nested popovers](#a-menu-and-its-submenus-are-nested-popovers)** — `<Menu>` is APG's menu button on the Popover API: seven parts, the whole keyboard, submenus that nest as deeply as the markup, and 6.36 KB gz against Radix DropdownMenu's 30.85.
 - **[Tabs, where selection follows focus](#tabs-where-selection-follows-focus)** — the APG tabs pattern in four parts: one tab stop for the list, arrows that follow the reading order, both activation modes, and 3.03 KB gz against Radix Tabs 9.18. An indicator that travels between tabs and a panel box that resizes between panels are each one opt-in away.
 - **[An accordion whose animation is a class](#an-accordion-whose-animation-is-a-class)** — `<Accordion>` and `Collapsible`, where a panel opens in a grid track rather than a measured pixel: no `ResizeObserver`, nothing written per instance, and 1.80 KB gz for both against Radix's 8.78.
+- **[A slider whose value keeps its own shape](#a-slider-whose-value-keeps-its-own-shape)** — `<Slider>` takes a number for one thumb and an array for a range, so nothing at the call site has to narrow; `<Progress>` is the bar beside it, and renders on a server. 2.14 KB gz and 0.31 against Radix’s 9.71 and 2.86.
 
 ## The package tells an agent how to use it
 
@@ -455,6 +456,68 @@ The consequence to know is the other side of it: **the panel is always in the DO
 It is **smaller**: `@radix-ui/react-accordion` and `@radix-ui/react-collapsible` are 8.78 KB gz together with React external, where `<Accordion>`, all three of its parts and `Collapsible` add **1.80 KB gz** on top of a `Box` an app already has. Both figures measured the same way, by a harness that ships in the repo — `npm run size:published`, so the number in this paragraph can be re-derived rather than believed. Not measuring is most of the difference.
 
 Every part is a Box, and the defaults are a style tree — `accordion`, with `accordion.item`, `accordion.heading`, `accordion.trigger`, `accordion.arrow` and `accordion.panel` beneath it, plus `collapsible` for the lone one. The open state on a header is its own `aria-expanded`, so `ariaAttr={{ expanded: … }}` styles it and no variant is needed: the attribute the pattern already has to write is the selector. Two parts are not yours: `accordion.track`, the grid whose row animates, and `accordion.clip` inside it, the bare item that clips. Bare is the point — **padding cannot be squeezed**, so a grid item carrying any floors the `0fr` track at exactly that much, and the panel you pad therefore sits inside the clip rather than being it. The panel's own padding is also the room a focus ring at its edge needs, since the clip is permanent.
+
+## A slider whose value keeps its own shape
+
+`<Slider>` is APG's slider and its multi-thumb sibling in one component, and `<Progress>` is the bar beside it. **2.14 KB gz and 0.31 KB gz** on top of Box, against Radix Slider's 9.71 and Radix Progress's 2.86 — 2.31 against 10.43 for both together, measured the same way for all four.
+
+```tsx
+import Slider from '@box-kite/react/components/slider';
+import Progress from '@box-kite/react/components/progress';
+
+<Slider label="Volume" defaultValue={40} onValueChange={(value) => setVolume(value)} />;
+<Slider label="Price" defaultValue={[20, 80]} thumbLabels={['Lowest', 'Highest']} format={(value) => `${value} lei`} />;
+<Progress label="Upload" value={62} />;
+```
+
+### A number in is a number out
+
+The number of thumbs is the value's own shape. `defaultValue={40}` is one thumb whose `onValueChange` hands back a `number`; `defaultValue={[20, 80]}` is a range whose handler takes a `number[]`. TypeScript infers which from the value you wrote, so there is no second prop saying which kind of slider this is and nothing to narrow at the call site — where a library that always takes an array makes every single-value slider read `value={[volume]}` and `onValueChange={([v]) => …}`.
+
+A thumb may meet the one beside it and never pass it: crossing would renumber the thumbs under the focus that is on one of them. Three and more work the same way, each held between its neighbours.
+
+`onValueChange` fires on every step of a drag, which is what a live preview wants and what a network request does not; `onValueCommit` fires once, when the pointer is let go or the key comes back up. Both report `{ reason: 'pointer' | 'keyboard' }` beside the event.
+
+### Neither is the native element, and that is the one place the platform loses
+
+Every other control in this library is a real form element with a role over it — a `Switch` is a checkbox, a `RadioGroup` is a set of radios, a `Dialog` is a `<dialog>`. A slider is where that stops. `<input type="range">` cannot hold two thumbs, and it and `<progress>` both draw themselves with vendor pseudo-elements — `::-webkit-slider-thumb`, `::-moz-range-track` — that no typed prop can reach, so a styled one is a rewrite of every part and the native element is left supplying only the keyboard.
+
+The half worth keeping is kept: `name` writes one hidden input per thumb, so a range posts two values under that name and a plain `FormData` reads them.
+
+### The position is an inline style, and it is the only thing that is not a class
+
+Everything a slider paints is a shared rule except where its thumbs are. That one value is per _frame_ of a drag, so a class for it would be a rule per frame — written into the stylesheet and never freed. So it is an inline `inset-inline-start`, the exception `useAnchorPosition`'s anchor name and the travelling `Tabs` indicator already take.
+
+It is also the line between these two and `ProgressRing` from `components/chart`, which rounds its fraction to half a percent and puts it in a shared class: nobody drags a ring. Round a thumb that far and a wide track visibly stair-steps under the pointer. A dashboard of a hundred figures still wants the ring.
+
+### It mirrors for free
+
+The fill and the thumbs are placed with `inset-inline-start` and centred with a logical margin, so a right-to-left page draws the minimum on the right with nothing declared twice and no re-render. The half that is not free is the keyboard: the sideways arrows swap — `ArrowLeft` is the increase when the maximum is on the left — and `ArrowUp` never does, because the block axis has no reading order. The direction is read off the element when the key arrives, so a slider inside a `dir="auto"` subtree behaves the way it looks.
+
+Both arrow pairs work on both orientations, `PageUp`/`PageDown` move by `largeStep`, and `Home`/`End` go to the ends themselves — on the step grid or off it. Every thumb is its own tab stop.
+
+### No value on a Progress is a state, not a zero
+
+Leave `value` out and the bar is indeterminate: `aria-valuenow` is omitted entirely rather than written as `0`, because a position nobody measured is the one thing a reader must not be told. The bar sweeps instead, and the sweep names its duration in milliseconds, so it sits outside the `--transitionTime` that `prefers-reduced-motion` zeroes and stops itself.
+
+`Progress` holds no state, runs no effect and measures nothing, so it **renders in a Server Component** — a page paints a real figure before any JavaScript arrives.
+
+### Naming, and the parts
+
+A `role="slider"` has to be named. `label` names the thumb on a single slider; on a range it names the `role="group"` around the thumbs and `thumbLabels` names them one at a time. `format` writes `aria-valuetext` wherever the bare number is not the value — a currency, a rating, a duration. `disabled` is `aria-disabled` rather than the attribute: a value nobody can reach is a value nobody can read, and a `<div>` takes no `disabled` anyway.
+
+Styling is `slider`, `slider.track`, `slider.fill` and `slider.thumb`, every part carrying the `vertical` variant, plus `progress` and `progress.fill`, whose `indeterminate` variant is the sweep.
+
+```tsx
+Box.components({
+  slider: {
+    children: {
+      fill: { styles: { bgGradient: { linear: 'r', colors: ['sky-400', 'indigo-500'] } } },
+      thumb: { styles: { borderColor: 'sky-500' } },
+    },
+  },
+});
+```
 
 ## Breaking changes
 

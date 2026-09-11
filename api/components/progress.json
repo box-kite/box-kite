@@ -1,0 +1,57 @@
+{
+  "name": "Progress",
+  "route": "/progress",
+  "import": "import Progress from '@box-kite/react/components/progress';",
+  "description": "How far a task has got.",
+  "pattern": null,
+  "props": [
+    {
+      "name": "value",
+      "type": "number",
+      "required": false,
+      "default": null,
+      "description": "How far along it is. Leave it out for a task with no measurable end — the bar sweeps and reports nothing."
+    },
+    { "name": "min", "type": "number", "required": false, "default": "0", "description": "The bottom of the range. Default `0`." },
+    {
+      "name": "max",
+      "type": "number",
+      "required": false,
+      "default": "100",
+      "description": "The top of the range, and so what \"full\" means. Default `100`."
+    },
+    {
+      "name": "label",
+      "type": "string",
+      "required": false,
+      "default": null,
+      "description": "What the bar is called. A progress bar has to be named — nothing about it is readable otherwise."
+    },
+    {
+      "name": "labelledBy",
+      "type": "string",
+      "required": false,
+      "default": null,
+      "description": "The same, naming an element that already says it."
+    },
+    {
+      "name": "format",
+      "type": "(value: number) => string",
+      "required": false,
+      "default": null,
+      "description": "The value as it should be read out: \"3 of 10 files\", \"eleven minutes left\"."
+    }
+  ],
+  "parts": [],
+  "keyboard": [],
+  "a11y": [
+    "`role=\"progressbar\"` with `aria-valuemin`, `aria-valuemax` and, when there is one, `aria-valuenow`.",
+    "`label` or `labelledBy` is what names it. A bar with neither is a percentage nobody can attach to anything.",
+    "`format` writes `aria-valuetext`, for a value the number alone does not read as."
+  ],
+  "axe": { "fixtures": ["Progress"], "knownViolations": [] },
+  "styleTree": [
+    { "path": "progress", "depth": 0, "extends": null, "variants": [] },
+    { "path": "progress.fill", "depth": 1, "extends": null, "variants": ["indeterminate"] }
+  ]
+}

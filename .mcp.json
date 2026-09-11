@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@playwright/mcp@0.0.80",
+        "--headless",
+        "--isolated",
+        "--allow-unrestricted-file-access",
+        "--output-dir=.playwright-mcp"
+      ]
+    }
+  }
+}

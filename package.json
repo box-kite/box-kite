@@ -91,7 +91,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "28.30 KB"
+      "limit": "28.57 KB"
     },
     {
       "name": "Box in a Server Component (react-server entry)",
@@ -101,7 +101,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "26.82 KB"
+      "limit": "27.08 KB"
     },
     {
       "name": "Behavior primitives (a11y entry)",
@@ -127,7 +127,7 @@
       "name": "Core engine (@box-kite/core, no React)",
       "path": "dist-core/core.mjs",
       "gzip": true,
-      "limit": "26.09 KB"
+      "limit": "26.36 KB"
     },
     {
       "name": "Dialog",
@@ -137,7 +137,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "30.45 KB"
+      "limit": "30.71 KB"
     },
     {
       "name": "Popover",
@@ -147,7 +147,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "31.92 KB"
+      "limit": "32.19 KB"
     },
     {
       "name": "Menu",
@@ -157,7 +157,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "34.17 KB"
+      "limit": "34.44 KB"
     },
     {
       "name": "Accordion",
@@ -167,7 +167,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "29.66 KB"
+      "limit": "29.93 KB"
     },
     {
       "name": "Tabs",
@@ -177,7 +177,27 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "30.85 KB"
+      "limit": "31.11 KB"
+    },
+    {
+      "name": "Slider",
+      "path": "dist/components/slider.mjs",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "gzip": true,
+      "limit": "30.27 KB"
+    },
+    {
+      "name": "Progress",
+      "path": "dist/components/progress.mjs",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "gzip": true,
+      "limit": "28.45 KB"
     },
     {
       "name": "DataGrid",
@@ -187,7 +207,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "57.92 KB"
+      "limit": "58.20 KB"
     },
     {
       "name": "Full library (Box + ssg + every component)",
@@ -197,7 +217,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "71.98 KB"
+      "limit": "74.00 KB"
     }
   ],
   "repository": {
