@@ -1,0 +1,126 @@
+{
+  "name": "Slider",
+  "route": "/slider",
+  "import": "import Slider from '@box-kite/react/components/slider';",
+  "description": "A value chosen by dragging a thumb along a track. Pattern: https://www.w3.org/WAI/ARIA/apg/patterns/slider/ and .../slider-multithumb/",
+  "pattern": "https://www.w3.org/WAI/ARIA/apg/patterns/slider/",
+  "props": [
+    {
+      "name": "value",
+      "type": "TValue",
+      "required": false,
+      "default": null,
+      "description": "Controlled value. A number is one thumb and an array is one per entry; leave it out and the widget owns it."
+    },
+    {
+      "name": "defaultValue",
+      "type": "TValue",
+      "required": false,
+      "default": null,
+      "description": "What it starts at, and what decides how many thumbs there are. Default `min`."
+    },
+    {
+      "name": "onValueChange",
+      "type": "ChangeHandler<TValue, SliderReason>",
+      "required": false,
+      "default": null,
+      "description": "Fires on every step of a drag and every arrow key, in the shape the value was given in."
+    },
+    {
+      "name": "onValueCommit",
+      "type": "ChangeHandler<TValue, SliderReason>",
+      "required": false,
+      "default": null,
+      "description": "Fires once when the interaction ends — the place for a request the live value is too noisy for."
+    },
+    { "name": "min", "type": "number", "required": false, "default": "0", "description": "The bottom of the range. Default `0`." },
+    { "name": "max", "type": "number", "required": false, "default": "100", "description": "The top of the range. Default `100`." },
+    {
+      "name": "step",
+      "type": "number",
+      "required": false,
+      "default": "1",
+      "description": "The grid every value lands on. Default `1`; `0` is a continuous slider."
+    },
+    {
+      "name": "largeStep",
+      "type": "number",
+      "required": false,
+      "default": "step * 10",
+      "description": "What Page Up and Page Down move by. Default ten steps."
+    },
+    {
+      "name": "orientation",
+      "type": "SliderOrientation",
+      "required": false,
+      "default": "'horizontal'",
+      "description": "Which way the thumbs run. Default `horizontal`, whose arrows follow the reading order."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "required": false,
+      "default": "false",
+      "description": "Not adjustable, by pointer or by key. It is `aria-disabled`, so the thumb keeps its place in the tab order and stays readable."
+    },
+    {
+      "name": "label",
+      "type": "string",
+      "required": false,
+      "default": null,
+      "description": "What the slider is called. On one thumb it names the thumb; on several it names the group around them."
+    },
+    {
+      "name": "labelledBy",
+      "type": "string",
+      "required": false,
+      "default": null,
+      "description": "The same, naming an element that already says it."
+    },
+    {
+      "name": "thumbLabels",
+      "type": "readonly string[]",
+      "required": false,
+      "default": null,
+      "description": "One name per thumb — \"Minimum\", \"Maximum\". A range wants them: `label` names the group, not the thumbs."
+    },
+    {
+      "name": "format",
+      "type": "(value: number) => string",
+      "required": false,
+      "default": null,
+      "description": "The value as it should be read out, when the number alone is not it: a currency, a date, a rating."
+    },
+    {
+      "name": "name",
+      "type": "string",
+      "required": false,
+      "default": null,
+      "description": "What the value submits under. One hidden input per thumb, so a range posts two values of that name."
+    }
+  ],
+  "parts": [],
+  "keyboard": [
+    { "mode": null, "keys": "Tab", "action": "Every thumb is its own tab stop, so a range is two of them." },
+    {
+      "mode": null,
+      "keys": "Right / Up",
+      "action": "One step towards the maximum. In a right-to-left page Left is the increase, and Up never changes: the block axis has no reading order."
+    },
+    { "mode": null, "keys": "Left / Down", "action": "One step towards the minimum." },
+    { "mode": null, "keys": "PageUp / PageDown", "action": "`largeStep`, ten steps unless it says otherwise." },
+    { "mode": null, "keys": "Home / End", "action": "The minimum and the maximum themselves, on or off the step grid." }
+  ],
+  "a11y": [
+    "Each thumb is a `role=\"slider\"` carrying `aria-valuemin`, `aria-valuemax`, `aria-valuenow` and `aria-orientation`; `format` writes `aria-valuetext` for a value a bare number does not read as.",
+    "A thumb has to be named, so `label` names the one on a single slider — and on a range it names the `role=\"group\"` around the thumbs, where `thumbLabels` names them one at a time.",
+    "`disabled` is `aria-disabled` rather than the attribute: a slider a reader cannot reach is a value they cannot read, and a div takes no `disabled` anyway."
+  ],
+  "axe": { "fixtures": ["Slider"], "knownViolations": [] },
+  "styleTree": [
+    { "path": "slider", "depth": 0, "extends": null, "variants": ["vertical", "disabled"] },
+    { "path": "slider.track", "depth": 1, "extends": null, "variants": ["vertical"] },
+    { "path": "slider.fill", "depth": 1, "extends": null, "variants": ["vertical", "tracking"] },
+    { "path": "slider.thumb", "depth": 1, "extends": null, "variants": ["vertical", "disabled", "tracking"] }
+  ]
+}

@@ -121,6 +121,22 @@ const CONFIG = [
     styles: 'collapsible',
   },
   {
+    name: 'Slider',
+    route: '/slider',
+    file: 'src/components/slider.tsx',
+    props: 'SliderProps',
+    doc: 'SliderImpl',
+    styles: 'slider',
+  },
+  {
+    name: 'Progress',
+    route: '/progress',
+    file: 'src/components/progress.tsx',
+    props: 'ProgressProps',
+    doc: 'Progress',
+    styles: 'progress',
+  },
+  {
     name: 'Dropdown',
     route: '/dropdown',
     file: 'src/components/dropdown.tsx',

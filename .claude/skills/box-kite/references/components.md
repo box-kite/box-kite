@@ -18,6 +18,8 @@ Which component replaces which `<Box tag>`, and the three that carry a pattern o
 | a menu button and its menu           | `<Menu>`                               | `components/menu`                                                |
 | sections that open one at a time     | `<Accordion>`                          | `components/accordion`                                           |
 | one "show more" disclosure           | `<Collapsible>`                        | `components/accordion`                                           |
+| a value dragged along a track        | `<Slider>`                             | `components/slider`                                              |
+| how far a task has got               | `<Progress>`                           | `components/progress`                                            |
 | a lucide/Tabler icon, styled         | `<Icon>`                               | `components/icon`                                                |
 | a sparkline, ring, gauge or donut    | `<Sparkline>`/`<ProgressRing>`/…       | `components/chart`                                               |
 | a themed Recharts (or any) chart     | `<ChartContainer>`                     | `components/chart`                                               |
@@ -58,6 +60,42 @@ DOM, which is what keeps its state and what gives the exit a value to animate fr
 own tab stop; Down/Up/Home/End are a shortcut. Style the open state with `ariaAttr={{ expanded: … }}`,
 never a variant, and leave `accordion.track`/`accordion.clip` alone: padding on a grid item cannot be
 squeezed, so it floors the `0fr` track — which is why your padded panel sits inside the clip (#142).
+
+## Slider and Progress
+
+```tsx
+import Slider from '@box-kite/react/components/slider';
+import Progress from '@box-kite/react/components/progress';
+
+<Slider label="Volume" defaultValue={40} onValueChange={(value) => setVolume(value)} />;
+<Slider label="Price" defaultValue={[20, 80]} thumbLabels={['Lowest', 'Highest']} format={(v) => `${v} lei`} />;
+<Progress label="Upload" value={62} />;
+<Progress label="Preparing" />;
+```
+
+**A number in is a number out.** `defaultValue={40}` is one thumb and `onValueChange` hands back a
+`number`; `defaultValue={[20, 80]}` is a range and it hands back a `number[]`. The value's own shape is
+how many thumbs there are — there is no second prop for it, and no narrowing at the call site.
+
+`Slider`: `value`/`defaultValue`, `onValueChange(value, { reason })` on every step and
+`onValueCommit(value, { reason })` once at the end of the interaction (`'pointer'` or `'keyboard'`),
+`min`/`max`/`step`/`largeStep`, `orientation`, `disabled`, `label`/`labelledBy`/`thumbLabels`, `format`
+(writes `aria-valuetext`) and `name`, which submits one hidden input per thumb. Parts:
+`slider`/`slider.track`/`slider.fill`/`slider.thumb`.
+
+`Progress`: `value` (leave it out for indeterminate), `min`/`max`, `label`/`labelledBy`, `format`. Parts:
+`progress` (the track, and it carries the role) and `progress.fill`, whose `indeterminate` variant sweeps.
+It renders on a **server** — no state, no effect, no measurement.
+
+Four things to know. **Neither is an `<input type="range">` or a `<progress>`**: a range input holds one
+thumb and both draw themselves with vendor pseudo-elements no typed prop reaches — `name` is what keeps
+the form working. **The position is an inline style**, the one thing here that is not a shared class: a
+thumb's offset is per frame of a drag, so a class for it would be a rule per frame, never freed — where a
+`ProgressRing` rounds its fraction into a class because nobody drags a ring. **No `value` is a state, not
+a zero**: an indeterminate bar omits `aria-valuenow` rather than reporting `0`. And a `role="slider"`
+**has to be named** — `label` names one thumb, and on a range it names the `role="group"` while
+`thumbLabels` names the thumbs. The geometry is logical, so a right-to-left page mirrors for free; only
+the sideways arrows swap, and Up/Down never do.
 
 ## Dropdown
 

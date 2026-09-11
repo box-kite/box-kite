@@ -25,9 +25,11 @@ import * as menu from '../dist/components/menu.mjs';
 import * as overlay from '../dist/components/overlay.mjs';
 import * as popover from '../dist/components/popover.mjs';
 import * as presence from '../dist/components/presence.mjs';
+import * as progress from '../dist/components/progress.mjs';
 import * as radioButton from '../dist/components/radioButton.mjs';
 import * as radioGroup from '../dist/components/radioGroup.mjs';
 import * as select from '../dist/components/select.mjs';
+import * as slider from '../dist/components/slider.mjs';
 import * as semantics from '../dist/components/semantics.mjs';
 import * as svg from '../dist/components/svg.mjs';
 import * as switchControl from '../dist/components/switch.mjs';
@@ -59,9 +61,11 @@ console.log(
   overlay,
   popover,
   presence,
+  progress,
   radioButton,
   radioGroup,
   select,
+  slider,
   semantics,
   svg,
   switchControl,

@@ -9,3 +9,4 @@ dist-pages-ssr
 .claude/settings.local.json
 coverage
 examples/vanilla/dist
+.playwright-mcp

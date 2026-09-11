@@ -1741,6 +1741,110 @@ on something at the panel's edge needs, since the clip is permanent.
 
 ---
 
+## Slider & Progress
+
+```tsx
+import Slider from '@box-kite/react/components/slider';
+import Progress from '@box-kite/react/components/progress';
+
+<Slider label="Volume" defaultValue={40} onValueChange={(value) => setVolume(value)} />;
+<Slider label="Price" defaultValue={[20, 80]} thumbLabels={['Lowest', 'Highest']} format={(value) => `${value} lei`} />;
+<Progress label="Upload" value={62} />;
+<Progress label="Preparing" />;
+```
+
+APG's slider and its multi-thumb sibling, plus the `role="progressbar"` beside them. **A number in is a
+number out**: `defaultValue={40}` is one thumb whose `onValueChange` hands back a `number`, and
+`defaultValue={[20, 80]}` is a range whose handler takes a `number[]`. The value's own shape is how many
+thumbs there are, so there is no second prop saying which kind this is and nothing to narrow at the call
+site.
+
+| Prop (`Slider`) | Default        | What it does                                                                  |
+| --------------- | -------------- | ----------------------------------------------------------------------------- |
+| `value`         | —              | Controlled. A `number` is one thumb, a `number[]` is one per entry.           |
+| `defaultValue`  | `min`          | What it starts at, and what decides how many thumbs there are.                |
+| `onValueChange` | —              | `(value, { reason, event })` on every step. `reason` is `pointer`/`keyboard`. |
+| `onValueCommit` | —              | The same, once, when the interaction ends. The place for a request.           |
+| `min` / `max`   | `0` / `100`    | The range.                                                                    |
+| `step`          | `1`            | The grid every value lands on, counted from `min`. `0` is continuous.         |
+| `largeStep`     | `step * 10`    | What PageUp and PageDown move by.                                             |
+| `orientation`   | `'horizontal'` | `'vertical'` counts up from the bottom edge, in either reading order.         |
+| `disabled`      | `false`        | `aria-disabled`, so the thumb stays readable and in the tab order.            |
+| `label`         | —              | Names the thumb on one, and the `role="group"` on a range.                    |
+| `labelledBy`    | —              | The same, naming an element that already says it.                             |
+| `thumbLabels`   | —              | One name per thumb. A range wants them — `label` names the group.             |
+| `format`        | —              | `(value) => string`, written as `aria-valuetext`.                             |
+| `name`          | —              | Submits: one hidden input per thumb, so a range posts two values.             |
+
+| Prop (`Progress`)      | Default     | What it does                                                     |
+| ---------------------- | ----------- | ---------------------------------------------------------------- |
+| `value`                | —           | Leave it out for indeterminate: it reports no position at all.   |
+| `min` / `max`          | `0` / `100` | What "full" means.                                               |
+| `label` / `labelledBy` | —           | What names it. A bar with neither is a percentage about nothing. |
+| `format`               | —           | `(value) => string`, written as `aria-valuetext`.                |
+
+| Key               | What it does                                                                    |
+| ----------------- | ------------------------------------------------------------------------------- |
+| Tab               | Every thumb is its own tab stop, so a range is two of them.                     |
+| Right / Up        | One step towards the maximum. In a right-to-left page **Left** is the increase. |
+| Left / Down       | One step towards the minimum.                                                   |
+| PageUp / PageDown | `largeStep`.                                                                    |
+| Home / End        | The minimum and the maximum themselves, on the step grid or off it.             |
+
+**Neither is the native element, and that is the one place the platform loses.** Every other control here
+is a real form element with a role over it — a `Switch` is a checkbox, a `RadioGroup` is a set of radios.
+But `<input type="range">` cannot hold two thumbs, and it and `<progress>` both draw themselves with
+vendor pseudo-elements (`::-webkit-slider-thumb`, `::-moz-range-track`) that no typed prop reaches, so a
+styled one is a rewrite of every part. `name` is what keeps the half worth keeping: the value submits.
+
+**The position is an inline style, and it is the only thing here that is not a class.** A thumb's offset
+is a per-frame value, so a class for it would be a rule per frame of a drag, written into the stylesheet
+and never freed — the same exception `useAnchorPosition`'s anchor name and the travelling `Tabs`
+indicator take. Where the value is data rather than an animation, a `ProgressRing` (`components/chart`)
+rounds its fraction to half a percent and puts it in a shared class instead: nobody drags a ring.
+
+**No `value` on a `Progress` is a state, not a zero.** `aria-valuenow` is omitted entirely rather than
+reported as `0` — a position nobody measured is the one thing a reader must not be told — and the bar
+sweeps instead. The sweep names its duration in milliseconds, so it is outside what `--transitionTime`
+zeroes and stops itself under `prefers-reduced-motion`.
+
+**A press travels; a nudge does not.** A press on the track is the one move the eye has to follow, so the
+thumb animates the whole way. Every other move — a drag, an arrow key, a held arrow — is the `tracking`
+variant instead: 60ms `ease-out` on both the thumb and the fill, which must both carry it or they come
+apart. **Short rather than off, because off is exact and steps**: a value on a grid can only be at its grid
+positions, so a 1-in-100 slider moves 3.2px at a time on a 320px track. **Eased out rather than linear or
+eased**: a repeat restarts the transition every 33ms, so only its first half is ever seen, and on this curve
+that half is the straight part — it glides while held and still decelerates on the last transition, the one
+allowed to finish. Linear rode 1.4 steps behind the value and stopped at full speed; this rides 0.9 behind
+and lands at 0.6 of cruising. An arrow key taking the 250ms travel for one
+3.2px step was itself the lag: a tap arrives in 60ms now. `step` is the real dial:
+`step={0}` is continuous and interpolates nothing. And **a controlled slider re-renders whatever component
+owns its `useState`**, thirty times a second while an arrow is held — the slider costs 0.3ms a keystroke, so
+keep the value beside it rather than at the top of a page, or use `defaultValue` with `onValueCommit`.
+
+**It mirrors for free.** The fill and the thumbs are placed with `inset-inline-start` and centred with a
+logical margin, so a right-to-left page draws the minimum on the right with nothing declared twice and no
+re-render. The half that is not free is the keyboard: the sideways arrows swap, read off the element's
+resolved direction when one arrives, and Up/Down never do.
+
+Styling is `slider`/`slider.track`/`slider.fill`/`slider.thumb`, every part carrying the `vertical`
+variant, plus `progress`/`progress.fill`, whose `indeterminate` variant is the sweep. `Progress` renders
+on a **server** — no state, no effect, no measurement — so a page paints a real figure before any
+JavaScript arrives.
+
+```tsx
+Box.components({
+  slider: {
+    children: {
+      fill: { styles: { bgGradient: { linear: 'r', colors: ['sky-400', 'indigo-500'] } } },
+      thumb: { styles: { borderColor: 'sky-500' } },
+    },
+  },
+});
+```
+
+---
+
 ## Tooltip Component
 
 ```tsx

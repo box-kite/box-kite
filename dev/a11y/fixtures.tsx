@@ -15,10 +15,12 @@ import Icon from '../../src/components/icon';
 import Menu from '../../src/components/menu';
 import Overlay from '../../src/components/overlay';
 import Popover from '../../src/components/popover';
+import Progress from '../../src/components/progress';
 import RadioButton from '../../src/components/radioButton';
 import RadioGroup from '../../src/components/radioGroup';
 import Select from '../../src/components/select';
 import { H1, Img, Link, Nav, P } from '../../src/components/semantics';
+import Slider from '../../src/components/slider';
 import { Circle, Polyline, Svg, SvgText } from '../../src/components/svg';
 import Switch from '../../src/components/switch';
 import Tabs from '../../src/components/tabs';
@@ -374,6 +376,29 @@ export const fixtures: A11yFixture[] = [
       <Collapsible defaultOpen trigger={(trigger) => <Button {...trigger}>What is in the box</Button>}>
         A kite
       </Collapsible>
+    ),
+  },
+  {
+    // Both shapes at once: the single thumb names itself, and the range names a group whose thumbs are
+    // named one at a time — the naming rule a role="slider" cannot do without.
+    name: 'Slider',
+    render: () => (
+      <>
+        <Slider label="Volume" defaultValue={40} />
+        <Slider label="Price" defaultValue={[20, 80]} thumbLabels={['Lowest', 'Highest']} format={(value) => `${value} lei`} />
+        <Slider label="Bitrate" orientation="vertical" defaultValue={60} disabled />
+      </>
+    ),
+  },
+  {
+    // The indeterminate one is the fixture that matters: a bar reporting a position it never measured
+    // is the violation waiting to happen.
+    name: 'Progress',
+    render: () => (
+      <>
+        <Progress label="Upload" value={62} />
+        <Progress label="Preparing" />
+      </>
     ),
   },
   {
