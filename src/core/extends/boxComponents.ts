@@ -583,10 +583,12 @@ const boxComponents = {
         variants: {
           // A vertical slider fills from the bottom, so the axis the inline style writes swaps with it.
           vertical: { insetY: 'auto', insetX: 0 },
-          // Short and linear while the value is being moved: off is exact and *steps* (3.2px at a time
-          // on a 1-in-100 slider), and an eased travel restarted 30 times a second throbs, because each
-          // repeat replays the slow-in — the speed inside a step swings 2.9x eased against 1.15x linear (#146).
-          tracking: { transitionDuration: 60, transitionTimingFunction: 'linear', motionReduce: { transition: 'none' } },
+          // Short while the value is being moved: off is exact and *steps* (3.2px at a time on a
+          // 1-in-100 slider). Eased *out* rather than linear or eased — a restarted transition only ever
+          // shows its first half, which on this curve is the straight part, so it glides while held and
+          // still decelerates on the one transition that finishes. Linear rode 1.4 steps behind the
+          // value and stopped dead; this is 0.9 and lands at 0.6 of cruising speed (#146).
+          tracking: { transitionDuration: 60, transitionTimingFunction: 'ease-out', motionReduce: { transition: 'none' } },
         },
       },
       thumb: {
@@ -613,7 +615,7 @@ const boxComponents = {
           disabled: { cursor: 'default', borderColor: 'gray-400', hover: { borderColor: 'gray-400' } },
           // The same on the thumb, and both parts must carry it or they come apart (#144). A named
           // duration is outside the reduced-motion default, which only zeroes `--transitionTime`.
-          tracking: { transitionDuration: 60, transitionTimingFunction: 'linear', motionReduce: { transition: 'none' } },
+          tracking: { transitionDuration: 60, transitionTimingFunction: 'ease-out', motionReduce: { transition: 'none' } },
         },
       },
     },

@@ -91,7 +91,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "28.58 KB"
+      "limit": "28.59 KB"
     },
     {
       "name": "Box in a Server Component (react-server entry)",
@@ -157,7 +157,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "34.45 KB"
+      "limit": "34.46 KB"
     },
     {
       "name": "Accordion",
@@ -167,7 +167,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "29.94 KB"
+      "limit": "29.95 KB"
     },
     {
       "name": "Tabs",
@@ -207,7 +207,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "58.21 KB"
+      "limit": "58.22 KB"
     },
     {
       "name": "Full library (Box + ssg + every component)",

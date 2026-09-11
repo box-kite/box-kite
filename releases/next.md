@@ -496,7 +496,7 @@ A press on the track is the one move the eye has to follow, so the thumb animate
 
 Short rather than **off**, because off is exact and steps. A value on a grid can only ever be at its grid positions, so a slider of 1 in 100 moves `3.2px` at a time on a 320px track: nothing is dropped and nothing lags, and it still reads as jumpy next to a press that eases.
 
-Linear rather than eased, because an eased travel restarted thirty times a second replays its slow-in on every repeat, and a held arrow pulses instead of gliding. Measured on a held arrow, the speed inside each step swings `2.9×` eased and `1.15×` linear, and the thumb wobbles 0.12px around an even glide where ease wobbles 0.19px — for 4.4px of lag against ease's 3.3px.
+Eased **out**, which is neither linear nor eased. A repeat restarts the transition every 33ms, so only its first half is ever seen — and on `ease-out` that half is the straight part, so the thumb glides while the key is held and still decelerates on the last transition, the one allowed to finish. Plain `ease` replays its slow-in on every repeat and pulses: a `2.7×` swing in speed inside each step, against `1.6×`. `linear` is the smoothest of the three while held (`1.15×`) and loses on the other two counts — it rides `1.4 steps` behind the value where `ease-out` rides `0.9`, and it arrives at full speed where `ease-out` lands at `0.6` of cruising. A 33ms wobble is below what the eye resolves as a change of speed; a thumb a whole step stale and a dead stop are not.
 
 And an arrow key is a nudge, not a jump, so it never takes the press travel at all: one tap spent 250ms crossing 3.2px, which is the lag it read as. A tap now arrives in 60ms.
 

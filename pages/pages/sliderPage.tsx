@@ -164,10 +164,14 @@ export default function SliderPage() {
                   A value on a grid can only ever be at its grid positions, so a slider of 1 in 100 moves <Mono>3.2px</Mono> at a time on a
                   320px track — exact, and visibly steppy. 60ms interpolates between the steps, for 4.4px of average lag.
                 </Note>
-                <Note icon={Waves} title="Linear rather than eased, or it throbs">
-                  An eased travel restarted thirty times a second replays its slow-in on every repeat, so a held arrow pulses instead of
-                  gliding. The speed inside each step swings <Mono>2.9×</Mono> eased and <Mono>1.15×</Mono> linear, and the thumb wobbles
-                  0.12px around an even glide where ease wobbles 0.19px.
+                <Note icon={Waves} title="Eased out, which is neither linear nor eased">
+                  A repeat restarts the transition every 33ms, so only its first half is ever seen — and on <Mono>ease-out</Mono> that half
+                  is the straight part, so the thumb glides while the key is held and still decelerates on the last transition, the one
+                  allowed to finish. Plain <Mono>ease</Mono> replays its slow-in on every repeat and pulses (a <Mono>2.7×</Mono> swing in
+                  speed inside each step, against <Mono>1.6×</Mono>). <Mono>linear</Mono> is the smoothest of the three while held (
+                  <Mono>1.15×</Mono>) and loses on the other two counts: it rides <Mono>1.4 steps</Mono> behind the value where{' '}
+                  <Mono>ease-out</Mono> rides 0.9, and it arrives at full speed where <Mono>ease-out</Mono> lands at 0.6 of cruising. A 33ms
+                  wobble is below what the eye resolves as a speed change; a stale thumb and a dead stop are not.
                 </Note>
                 <Note icon={MousePointer2} title="Both parts, or neither">
                   Every Box carries a 250ms <Mono>all</Mono> transition, so a fill left with the default eased towards a thumb that had

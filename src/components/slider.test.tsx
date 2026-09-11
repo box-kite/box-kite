@@ -433,13 +433,13 @@ describe('Slider', () => {
       expect(moving()).toEqual({ fill: true, thumb: true });
     });
 
-    it('glides rather than eases while tracking, so a restarted curve cannot throb', () => {
+    it('eases out while tracking, so the travel glides while held and still lands softly', () => {
       render(<Slider label="Volume" defaultValue={50} props={{ 'data-testid': 'slider' }} />);
       const thumb = thumbs()[0];
 
       fireEvent.keyDown(thumb, { key: 'ArrowRight' });
       const [, , fill, moved] = [...screen.getByTestId('slider').parentElement!.querySelectorAll('[class]')];
-      for (const part of [fill, moved]) expect(part.className).toContain('transitionTimingFunction-linear');
+      for (const part of [fill, moved]) expect(part.className).toContain('transitionTimingFunction-ease-out');
     });
   });
 });

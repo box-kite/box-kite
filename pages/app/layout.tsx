@@ -1,4 +1,4 @@
-import { Menu, Moon, Sun, X } from 'lucide-react';
+import { Box as BoxIcon, Menu, Moon, Sun, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import Box from '../../src/box';
@@ -76,10 +76,12 @@ export default function Layout({ children }: LayoutProps) {
             </Button>
             <NavLink to="/">
               <Flex ai="center" gap={2}>
+                {/* The same mark the sidebar carries — this header is the whole logo on a phone,
+                    where the sidebar is closed, so a bare letter was the brand on every small screen. */}
                 <Box width={8} height={8} borderRadius={2} bgImage="gradient-primary" display="flex" ai="center" jc="center">
-                  <Box color="white" fontWeight={700} fontSize={14}>
-                    B
-                  </Box>
+                  <Icon size={4} color="white" strokeWidth={2.5}>
+                    <BoxIcon />
+                  </Icon>
                 </Box>
                 <Box fontWeight={600} fontSize={18}>
                   Box Kite

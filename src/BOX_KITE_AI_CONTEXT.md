@@ -1810,11 +1810,13 @@ zeroes and stops itself under `prefers-reduced-motion`.
 
 **A press travels; a nudge does not.** A press on the track is the one move the eye has to follow, so the
 thumb animates the whole way. Every other move — a drag, an arrow key, a held arrow — is the `tracking`
-variant instead: 60ms, _linear_, on both the thumb and the fill, which must both carry it or they come
+variant instead: 60ms `ease-out` on both the thumb and the fill, which must both carry it or they come
 apart. **Short rather than off, because off is exact and steps**: a value on a grid can only be at its grid
-positions, so a 1-in-100 slider moves 3.2px at a time on a 320px track. **Linear rather than eased**,
-because a curve restarted 30 times a second replays its slow-in and throbs — the speed inside a step
-swings 2.9x eased against 1.15x linear, for 4.4px of lag. An arrow key taking the 250ms travel for one
+positions, so a 1-in-100 slider moves 3.2px at a time on a 320px track. **Eased out rather than linear or
+eased**: a repeat restarts the transition every 33ms, so only its first half is ever seen, and on this curve
+that half is the straight part — it glides while held and still decelerates on the last transition, the one
+allowed to finish. Linear rode 1.4 steps behind the value and stopped at full speed; this rides 0.9 behind
+and lands at 0.6 of cruising. An arrow key taking the 250ms travel for one
 3.2px step was itself the lag: a tap arrives in 60ms now. `step` is the real dial:
 `step={0}` is continuous and interpolates nothing. And **a controlled slider re-renders whatever component
 owns its `useState`**, thirty times a second while an arrow is held — the slider costs 0.3ms a keystroke, so

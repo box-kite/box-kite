@@ -108,11 +108,13 @@ function fillStyle(values: readonly number[], scale: SliderScale, vertical: bool
  *
  * **A press travels; a nudge does not.** A press on the track is the one move the eye has to follow, so
  * the thumb animates the whole way. Every other move — a drag, an arrow key, a held arrow — is the
- * `tracking` variant instead: 60ms, *linear*, on both the thumb and the fill, which must both carry it
+ * `tracking` variant instead: 60ms `ease-out` on both the thumb and the fill, which must both carry it
  * or they come apart (#144). Short rather than *off*, because off is exact and steps — a 1-in-100 slider
- * moves 3.2px at a time on a 320px track — and linear rather than eased, because a curve restarted 30
- * times a second replays its slow-in and throbs: the speed inside a step swings 2.9x eased and 1.15x
- * linear, for 4.4px of lag. An arrow taking the 250ms travel for one 3.2px step was the lag itself (#146).
+ * moves 3.2px at a time on a 320px track. **Eased out rather than linear or eased**: a repeat restarts
+ * the transition every 33ms, so only its first half is ever seen, and on this curve that half is the
+ * straight part — it glides while the key is held and still decelerates on the last transition, the one
+ * allowed to finish. Measured against linear, which rode **1.4 steps** behind the value and stopped at
+ * full speed, this rides 0.9 behind and lands at 0.6 of cruising (#146).
  *
  * @pattern https://www.w3.org/WAI/ARIA/apg/patterns/slider/
  * @a11y Each thumb is a `role="slider"` carrying `aria-valuemin`, `aria-valuemax`, `aria-valuenow` and
