@@ -490,11 +490,15 @@ Everything a slider paints is a shared rule except where its thumbs are. That on
 
 It is also the line between these two and `ProgressRing` from `components/chart`, which rounds its fraction to half a percent and puts it in a shared class: nobody drags a ring. Round a thumb that far and a wide track visibly stair-steps under the pointer. A dashboard of a hundred figures still wants the ring.
 
-### A press travels, and a drag is smoothed
+### A press travels, and a nudge does not
 
-Sending the thumb somewhere animates it the whole way — a press on the track, or one arrow key. The moment the value is _being_ moved, a drag or a held arrow, the travel shortens to 80ms on both the thumb and the fill, so they keep up with the pointer and stay locked together.
+A press on the track is the one move the eye has to follow, so the thumb animates the whole way. Every other move — a drag, an arrow key, a held arrow — takes a short `60ms` linear travel on both the thumb and the fill instead, so they keep up and stay locked together.
 
-Short rather than **off**, because off is exact and steps. A value on a grid can only ever be at its grid positions, so a slider of 1 in 100 moves `3.2px` at a time on a 320px track: nothing is dropped and nothing lags, and it still reads as jumpy next to a press that eases. 80ms interpolates between the steps — measured against a real drag, the thumb moves on 72% of frames rather than 22%, for 6.6px of average lag, where 120ms would cost 42px.
+Short rather than **off**, because off is exact and steps. A value on a grid can only ever be at its grid positions, so a slider of 1 in 100 moves `3.2px` at a time on a 320px track: nothing is dropped and nothing lags, and it still reads as jumpy next to a press that eases.
+
+Linear rather than eased, because an eased travel restarted thirty times a second replays its slow-in on every repeat, and a held arrow pulses instead of gliding. Measured on a held arrow, the speed inside each step swings `2.9×` eased and `1.15×` linear, and the thumb wobbles 0.12px around an even glide where ease wobbles 0.19px — for 4.4px of lag against ease's 3.3px.
+
+And an arrow key is a nudge, not a jump, so it never takes the press travel at all: one tap spent 250ms crossing 3.2px, which is the lag it read as. A tap now arrives in 60ms.
 
 Both parts have to carry it or they come apart, which is the other half: every Box has a 250ms `all` transition, so a fill left with the default eased towards a thumb that had already arrived — up to 59px behind it mid-drag, and still moving for ~190ms after the pointer stopped.
 

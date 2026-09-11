@@ -1,4 +1,4 @@
-import { Gauge, Keyboard, Languages, MousePointer2, Rows3, Ruler, SlidersHorizontal, Zap } from 'lucide-react';
+import { Gauge, Keyboard, Languages, MousePointer2, Rows3, Ruler, SlidersHorizontal, Waves, Zap } from 'lucide-react';
 import { ReactNode, useState } from 'react';
 import sliderApi from '../../api/components/slider.json';
 import Box from '../../src/box';
@@ -122,26 +122,30 @@ export default function SliderPage() {
             </Box>
           </Section>
 
-          <Section id="travel" title="A press travels, and a drag is smoothed">
+          <Section id="travel" title="A press travels, and a nudge does not">
             <Box>
-              Sending the thumb somewhere animates it the whole way: a press on the track, or one arrow key. The moment the value is
-              <em> being</em> moved — a drag, a held arrow — the travel shortens to 80ms on both the thumb and the fill, so they keep up
-              with the pointer and stay locked together.
+              A press on the track is the one move the eye has to follow, so the thumb animates the whole way. Every other move — a drag, an
+              arrow key, a held arrow — takes a short 60ms <em>linear</em> travel on both the thumb and the fill instead, so they keep up
+              and stay locked together.
             </Box>
             <Box mt={4}>
               <Flex d="column" gap={3}>
                 <Note icon={Ruler} title="Short rather than off, because off steps">
                   A value on a grid can only ever be at its grid positions, so a slider of 1 in 100 moves <Mono>3.2px</Mono> at a time on a
-                  320px track — exact, and visibly steppy. 80ms interpolates between the steps: measured against a real drag, the thumb
-                  moves on 72% of frames rather than 22%, for 6.6px of average lag. 120ms would smooth it further and cost 42px.
+                  320px track — exact, and visibly steppy. 60ms interpolates between the steps, for 4.4px of average lag.
+                </Note>
+                <Note icon={Waves} title="Linear rather than eased, or it throbs">
+                  An eased travel restarted thirty times a second replays its slow-in on every repeat, so a held arrow pulses instead of
+                  gliding. The speed inside each step swings <Mono>2.9×</Mono> eased and <Mono>1.15×</Mono> linear, and the thumb wobbles
+                  0.12px around an even glide where ease wobbles 0.19px.
                 </Note>
                 <Note icon={MousePointer2} title="Both parts, or neither">
                   Every Box carries a 250ms <Mono>all</Mono> transition, so a fill left with the default eased towards a thumb that had
                   already arrived — up to 59px behind it mid-drag, and still moving for ~190ms after the pointer stopped.
                 </Note>
-                <Note icon={Keyboard} title="A held arrow is a drag too">
-                  One press travels the whole way; the repeats are smoothed, because a quarter-second animation per repeat leaves the thumb
-                  a long way behind the value it reports. It is <Mono>event.repeat</Mono> that tells them apart.
+                <Note icon={Keyboard} title="An arrow is a nudge, not a jump">
+                  One tap used to spend the full 250ms travel crossing <Mono>3.2px</Mono>, which is the lag it read as — and holding the key
+                  began with it, before the repeats arrived. Every arrow is short now, held or not: a tap arrives in 60ms.
                 </Note>
               </Flex>
             </Box>
@@ -270,7 +274,7 @@ const sidebarLinks = [
   { id: 'shape', label: 'A number in, a number out' },
   { id: 'platform', label: 'Why not an input' },
   { id: 'inline', label: 'The position is inline' },
-  { id: 'travel', label: 'A press travels, a drag is smoothed' },
+  { id: 'travel', label: 'A press travels, a nudge does not' },
   { id: 'rtl', label: 'It mirrors for free' },
   { id: 'orientation', label: 'Vertical' },
   { id: 'commit', label: 'Change and commit' },

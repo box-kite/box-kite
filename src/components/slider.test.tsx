@@ -392,7 +392,7 @@ describe('Slider', () => {
     const moving = () => {
       const [, , fill, thumb] = [...screen.getByTestId('slider').parentElement!.querySelectorAll('[class]')];
       // The tracking variant shortens the transition rather than removing it: off is exact and steps.
-      const short = (element: Element) => element.className.includes('transitionDuration-80');
+      const short = (element: Element) => element.className.includes('transitionDuration-60');
       return { fill: !short(fill), thumb: !short(thumb) };
     };
 
@@ -417,20 +417,29 @@ describe('Slider', () => {
       expect(moving()).toEqual({ fill: true, thumb: true });
     });
 
-    it('travels at full length for one key press and shortens it for a held one', () => {
+    it('shortens the travel for an arrow key, held or not, and restores it on the way up', () => {
       render(<Slider label="Volume" defaultValue={50} props={{ 'data-testid': 'slider' }} />);
       const thumb = thumbs()[0];
 
+      // An arrow is a nudge rather than a jump, so it never takes the press travel: 250ms spent
+      // on one 3.2px step is the lag it reads as (#146).
       fireEvent.keyDown(thumb, { key: 'ArrowRight' });
-      expect(moving()).toEqual({ fill: true, thumb: true });
+      expect(moving()).toEqual({ fill: false, thumb: false });
 
-      // A held arrow repeats every few milliseconds, and a quarter-second animation each would leave
-      // the thumb a long way behind the value it is reporting.
       fireEvent.keyDown(thumb, { key: 'ArrowRight', repeat: true });
       expect(moving()).toEqual({ fill: false, thumb: false });
 
       fireEvent.keyUp(thumb, { key: 'ArrowRight' });
       expect(moving()).toEqual({ fill: true, thumb: true });
+    });
+
+    it('glides rather than eases while tracking, so a restarted curve cannot throb', () => {
+      render(<Slider label="Volume" defaultValue={50} props={{ 'data-testid': 'slider' }} />);
+      const thumb = thumbs()[0];
+
+      fireEvent.keyDown(thumb, { key: 'ArrowRight' });
+      const [, , fill, moved] = [...screen.getByTestId('slider').parentElement!.querySelectorAll('[class]')];
+      for (const part of [fill, moved]) expect(part.className).toContain('transitionTimingFunction-linear');
     });
   });
 });

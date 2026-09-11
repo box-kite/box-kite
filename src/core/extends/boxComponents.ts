@@ -583,11 +583,10 @@ const boxComponents = {
         variants: {
           // A vertical slider fills from the bottom, so the axis the inline style writes swaps with it.
           vertical: { insetY: 'auto', insetX: 0 },
-          // Short rather than off while the value is being moved. Off is exact and *steps*: a value on
-          // a grid can only be at its grid positions, so a 1-in-100 slider moves 3.2px at a time on a
-          // 320px track and reads as jumpy (#145). 80ms interpolates between them — measured at 79% of
-          // frames moving against 22%, for 5.6px of average lag, where 120ms costs 42px.
-          tracking: { transitionDuration: 80, motionReduce: { transition: 'none' } },
+          // Short and linear while the value is being moved: off is exact and *steps* (3.2px at a time
+          // on a 1-in-100 slider), and an eased travel restarted 30 times a second throbs, because each
+          // repeat replays the slow-in — the speed inside a step swings 2.9x eased against 1.15x linear (#146).
+          tracking: { transitionDuration: 60, transitionTimingFunction: 'linear', motionReduce: { transition: 'none' } },
         },
       },
       thumb: {
@@ -614,7 +613,7 @@ const boxComponents = {
           disabled: { cursor: 'default', borderColor: 'gray-400', hover: { borderColor: 'gray-400' } },
           // The same on the thumb, and both parts must carry it or they come apart (#144). A named
           // duration is outside the reduced-motion default, which only zeroes `--transitionTime`.
-          tracking: { transitionDuration: 80, motionReduce: { transition: 'none' } },
+          tracking: { transitionDuration: 60, transitionTimingFunction: 'linear', motionReduce: { transition: 'none' } },
         },
       },
     },

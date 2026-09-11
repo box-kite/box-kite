@@ -106,13 +106,13 @@ function fillStyle(values: readonly number[], scale: SliderScale, vertical: bool
  * right-to-left page draws the minimum on the right with no second stylesheet. The half that is not free
  * is the keyboard, which is why the sideways arrows swap and Up and Down never do.
  *
- * **A press travels and a drag is smoothed.** Sending the thumb somewhere — a press on the track, one
- * arrow key — animates it the whole way; the moment the value is *being* moved (a drag, a held arrow)
- * the travel shortens to 80ms on both the thumb and the fill. That is the `tracking` variant, and both
- * parts must carry it or they come apart (#144). Short rather than *off*, because off is exact and
- * steps: a value on a grid can only be at its grid positions, so a 1-in-100 slider moves 3.2px at a time
- * on a 320px track. Measured against a real drag, 80ms moves on 79% of frames rather than 22% and costs
- * 5.6px of average lag, where 120ms costs 42px (#145).
+ * **A press travels; a nudge does not.** A press on the track is the one move the eye has to follow, so
+ * the thumb animates the whole way. Every other move — a drag, an arrow key, a held arrow — is the
+ * `tracking` variant instead: 60ms, *linear*, on both the thumb and the fill, which must both carry it
+ * or they come apart (#144). Short rather than *off*, because off is exact and steps — a 1-in-100 slider
+ * moves 3.2px at a time on a 320px track — and linear rather than eased, because a curve restarted 30
+ * times a second replays its slow-in and throbs: the speed inside a step swings 2.9x eased and 1.15x
+ * linear, for 4.4px of lag. An arrow taking the 250ms travel for one 3.2px step was the lag itself (#146).
  *
  * @pattern https://www.w3.org/WAI/ARIA/apg/patterns/slider/
  * @a11y Each thumb is a `role="slider"` carrying `aria-valuemin`, `aria-valuemax`, `aria-valuenow` and
@@ -249,9 +249,9 @@ function SliderImpl<TKey extends keyof ComponentsAndVariants = 'slider', TValue 
     // Arrows scroll whatever the slider is in, and Home and End scroll the page.
     event.preventDefault();
     keyingRef.current = true;
-    // A held arrow repeats every few milliseconds, so an animated one trails a quarter of a second
-    // behind the value it is showing. One press still travels.
-    if (event.repeat) setTracking(true);
+    // An arrow is a nudge, not a jump, so it never takes the press travel: 250ms spent on 3.2px read
+    // as lag, and a held arrow began with it (#146).
+    setTracking(true);
 
     const held = SliderUtils.thumbs(latest.current);
     apply(SliderUtils.move(held, index, SliderUtils.moved(held[index], move, scale, largeStep), scale), { reason: 'keyboard', event });
