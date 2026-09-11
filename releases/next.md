@@ -490,11 +490,15 @@ Everything a slider paints is a shared rule except where its thumbs are. That on
 
 It is also the line between these two and `ProgressRing` from `components/chart`, which rounds its fraction to half a percent and puts it in a shared class: nobody drags a ring. Round a thumb that far and a wide track visibly stair-steps under the pointer. A dashboard of a hundred figures still wants the ring.
 
-### A press travels and a drag does not
+### A press travels, and a drag is smoothed
 
-Sending the thumb somewhere animates it there — a press on the track, or one arrow key. The moment the value is _being_ moved, a drag or a held arrow, the transition comes off both the thumb and the fill, so they stay under the pointer and stay together.
+Sending the thumb somewhere animates it the whole way — a press on the track, or one arrow key. The moment the value is _being_ moved, a drag or a held arrow, the travel shortens to 80ms on both the thumb and the fill, so they keep up with the pointer and stay locked together.
 
-Both parts have to agree about this, which is the whole point: every Box carries a 250ms `all` transition, so a fill left with the default eases towards a thumb that has already arrived — measured at up to 59px behind it mid-drag, and still moving for ~190ms after the pointer stopped. It is one variant, `tracking`, on `slider.fill` and `slider.thumb`, so a style tree of your own can make the travel longer or take it off.
+Short rather than **off**, because off is exact and steps. A value on a grid can only ever be at its grid positions, so a slider of 1 in 100 moves `3.2px` at a time on a 320px track: nothing is dropped and nothing lags, and it still reads as jumpy next to a press that eases. 80ms interpolates between the steps — measured against a real drag, the thumb moves on 72% of frames rather than 22%, for 6.6px of average lag, where 120ms would cost 42px.
+
+Both parts have to carry it or they come apart, which is the other half: every Box has a 250ms `all` transition, so a fill left with the default eased towards a thumb that had already arrived — up to 59px behind it mid-drag, and still moving for ~190ms after the pointer stopped.
+
+The real dial is `step`, which is what a slider can be smoother than: `step={0}` is continuous, and the thumb then follows the pointer with nothing to interpolate. The smoothing is one variant, `tracking`, on `slider.fill` and `slider.thumb`.
 
 ### It mirrors for free
 

@@ -1808,11 +1808,13 @@ reported as `0` — a position nobody measured is the one thing a reader must no
 sweeps instead. The sweep names its duration in milliseconds, so it is outside what `--transitionTime`
 zeroes and stops itself under `prefers-reduced-motion`.
 
-**A press travels and a drag does not.** Sending the thumb somewhere — a press on the track, one arrow
-key — animates it there; the moment the value is _being_ moved (a drag, a held arrow) the transition
-comes off both the thumb and the fill, so they stay under the pointer and stay together. That is the
-`tracking` variant on `slider.fill` and `slider.thumb`. Every Box carries a 250ms `all` transition, so
-a fill left with the default eases towards a thumb that has already arrived.
+**A press travels and a drag is smoothed.** Sending the thumb somewhere — a press on the track, one
+arrow key — animates it the whole way; the moment the value is _being_ moved (a drag, a held arrow)
+the travel shortens to 80ms on both the thumb and the fill. That is the `tracking` variant, and both parts
+must carry it or they come apart. **Short rather than off, because off is exact and steps**: a value on
+a grid can only be at its grid positions, so a 1-in-100 slider moves 3.2px at a time on a 320px track.
+Measured against a real drag, 80ms moves on 72% of frames rather than 22% for 6.6px of average lag,
+where 120ms costs 42px. `step` is the real dial: `step={0}` is continuous and interpolates nothing.
 
 **It mirrors for free.** The fill and the thumbs are placed with `inset-inline-start` and centred with a
 logical margin, so a right-to-left page draws the minimum on the right with nothing declared twice and no

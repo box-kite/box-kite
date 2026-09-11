@@ -391,10 +391,12 @@ describe('Slider', () => {
   describe('what moves and what does not', () => {
     const moving = () => {
       const [, , fill, thumb] = [...screen.getByTestId('slider').parentElement!.querySelectorAll('[class]')];
-      return { fill: !fill.className.includes('transition-none'), thumb: !thumb.className.includes('transition-none') };
+      // The tracking variant shortens the transition rather than removing it: off is exact and steps.
+      const short = (element: Element) => element.className.includes('transitionDuration-80');
+      return { fill: !short(fill), thumb: !short(thumb) };
     };
 
-    it('travels for a press on the track, with the fill and the thumb agreeing', () => {
+    it('travels at full length for a press on the track, with the fill and the thumb agreeing', () => {
       render(<Slider label="Volume" defaultValue={10} props={{ 'data-testid': 'slider' }} />);
       measureTrack();
 
@@ -402,7 +404,7 @@ describe('Slider', () => {
       expect(moving()).toEqual({ fill: true, thumb: true });
     });
 
-    it('stops travelling on the first move, and starts again when the pointer is let go', () => {
+    it('shortens the travel on the first move, and restores it when the pointer is let go', () => {
       render(<Slider label="Volume" defaultValue={10} props={{ 'data-testid': 'slider' }} />);
       const root = screen.getByTestId('slider');
       measureTrack();
@@ -415,7 +417,7 @@ describe('Slider', () => {
       expect(moving()).toEqual({ fill: true, thumb: true });
     });
 
-    it('travels for one key press and not for a held one', () => {
+    it('travels at full length for one key press and shortens it for a held one', () => {
       render(<Slider label="Volume" defaultValue={50} props={{ 'data-testid': 'slider' }} />);
       const thumb = thumbs()[0];
 

@@ -1,4 +1,4 @@
-import { Gauge, Keyboard, Languages, MousePointer2, Rows3, SlidersHorizontal, Zap } from 'lucide-react';
+import { Gauge, Keyboard, Languages, MousePointer2, Rows3, Ruler, SlidersHorizontal, Zap } from 'lucide-react';
 import { ReactNode, useState } from 'react';
 import sliderApi from '../../api/components/slider.json';
 import Box from '../../src/box';
@@ -122,27 +122,33 @@ export default function SliderPage() {
             </Box>
           </Section>
 
-          <Section id="travel" title="A press travels and a drag does not">
+          <Section id="travel" title="A press travels, and a drag is smoothed">
             <Box>
-              Sending the thumb somewhere animates it there: a press on the track, or one arrow key. The moment the value is
-              <em> being</em> moved — a drag, a held arrow — the transition comes off both the thumb and the fill, so they stay under the
-              pointer and stay together.
+              Sending the thumb somewhere animates it the whole way: a press on the track, or one arrow key. The moment the value is
+              <em> being</em> moved — a drag, a held arrow — the travel shortens to 80ms on both the thumb and the fill, so they keep up
+              with the pointer and stay locked together.
             </Box>
             <Box mt={4}>
               <Flex d="column" gap={3}>
+                <Note icon={Ruler} title="Short rather than off, because off steps">
+                  A value on a grid can only ever be at its grid positions, so a slider of 1 in 100 moves <Mono>3.2px</Mono> at a time on a
+                  320px track — exact, and visibly steppy. 80ms interpolates between the steps: measured against a real drag, the thumb
+                  moves on 72% of frames rather than 22%, for 6.6px of average lag. 120ms would smooth it further and cost 42px.
+                </Note>
                 <Note icon={MousePointer2} title="Both parts, or neither">
                   Every Box carries a 250ms <Mono>all</Mono> transition, so a fill left with the default eased towards a thumb that had
                   already arrived — up to 59px behind it mid-drag, and still moving for ~190ms after the pointer stopped.
                 </Note>
                 <Note icon={Keyboard} title="A held arrow is a drag too">
-                  One press travels; the repeats do not, because a quarter-second animation per repeat leaves the thumb a long way behind
-                  the value it is reporting. It is <Mono>event.repeat</Mono> that tells them apart.
+                  One press travels the whole way; the repeats are smoothed, because a quarter-second animation per repeat leaves the thumb
+                  a long way behind the value it reports. It is <Mono>event.repeat</Mono> that tells them apart.
                 </Note>
               </Flex>
             </Box>
             <Box mt={4}>
-              It is one variant, <Mono>tracking</Mono>, on <Mono>slider.fill</Mono> and <Mono>slider.thumb</Mono> — so a style tree of your
-              own can make the travel longer, or take it off altogether.
+              The real dial is <Mono>step</Mono>: it is what a slider can be smoother than, and <Mono>step={'{0}'}</Mono> is continuous, so
+              the thumb follows the pointer with nothing to interpolate. The smoothing is one variant, <Mono>tracking</Mono>, on{' '}
+              <Mono>slider.fill</Mono> and <Mono>slider.thumb</Mono> — a style tree of your own can lengthen it or take it off.
             </Box>
           </Section>
           <Section id="rtl" title="It mirrors for free">
@@ -264,7 +270,7 @@ const sidebarLinks = [
   { id: 'shape', label: 'A number in, a number out' },
   { id: 'platform', label: 'Why not an input' },
   { id: 'inline', label: 'The position is inline' },
-  { id: 'travel', label: 'A press travels, a drag does not' },
+  { id: 'travel', label: 'A press travels, a drag is smoothed' },
   { id: 'rtl', label: 'It mirrors for free' },
   { id: 'orientation', label: 'Vertical' },
   { id: 'commit', label: 'Change and commit' },

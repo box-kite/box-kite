@@ -91,7 +91,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "28.57 KB"
+      "limit": "28.58 KB"
     },
     {
       "name": "Box in a Server Component (react-server entry)",
@@ -101,7 +101,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "27.08 KB"
+      "limit": "27.10 KB"
     },
     {
       "name": "Behavior primitives (a11y entry)",
@@ -127,7 +127,7 @@
       "name": "Core engine (@box-kite/core, no React)",
       "path": "dist-core/core.mjs",
       "gzip": true,
-      "limit": "26.36 KB"
+      "limit": "26.37 KB"
     },
     {
       "name": "Dialog",
@@ -137,7 +137,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "30.72 KB"
+      "limit": "30.73 KB"
     },
     {
       "name": "Popover",
@@ -147,7 +147,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "32.20 KB"
+      "limit": "32.21 KB"
     },
     {
       "name": "Menu",
@@ -177,7 +177,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "31.12 KB"
+      "limit": "31.13 KB"
     },
     {
       "name": "Slider",
@@ -187,7 +187,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "30.31 KB"
+      "limit": "30.32 KB"
     },
     {
       "name": "Progress",
@@ -197,7 +197,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "28.45 KB"
+      "limit": "28.46 KB"
     },
     {
       "name": "DataGrid",

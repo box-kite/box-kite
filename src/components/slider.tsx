@@ -106,11 +106,13 @@ function fillStyle(values: readonly number[], scale: SliderScale, vertical: bool
  * right-to-left page draws the minimum on the right with no second stylesheet. The half that is not free
  * is the keyboard, which is why the sideways arrows swap and Up and Down never do.
  *
- * **A press travels and a drag does not.** Sending the thumb somewhere — a press on the track, one arrow
- * key — animates it there, and the moment the value is *being* moved (a drag, a held arrow) the
- * transition comes off both the thumb and the fill, so they stay under the pointer and stay together.
- * That is the `tracking` variant, and it is the whole of it: a fill still easing towards a thumb that
- * has already arrived is bug #144.
+ * **A press travels and a drag is smoothed.** Sending the thumb somewhere — a press on the track, one
+ * arrow key — animates it the whole way; the moment the value is *being* moved (a drag, a held arrow)
+ * the travel shortens to 80ms on both the thumb and the fill. That is the `tracking` variant, and both
+ * parts must carry it or they come apart (#144). Short rather than *off*, because off is exact and
+ * steps: a value on a grid can only be at its grid positions, so a 1-in-100 slider moves 3.2px at a time
+ * on a 320px track. Measured against a real drag, 80ms moves on 79% of frames rather than 22% and costs
+ * 5.6px of average lag, where 120ms costs 42px (#145).
  *
  * @pattern https://www.w3.org/WAI/ARIA/apg/patterns/slider/
  * @a11y Each thumb is a `role="slider"` carrying `aria-valuemin`, `aria-valuemax`, `aria-valuenow` and
