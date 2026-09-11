@@ -1816,7 +1816,9 @@ positions, so a 1-in-100 slider moves 3.2px at a time on a 320px track. **Linear
 because a curve restarted 30 times a second replays its slow-in and throbs — the speed inside a step
 swings 2.9x eased against 1.15x linear, for 4.4px of lag. An arrow key taking the 250ms travel for one
 3.2px step was itself the lag: a tap arrives in 60ms now. `step` is the real dial:
-`step={0}` is continuous and interpolates nothing.
+`step={0}` is continuous and interpolates nothing. And **a controlled slider re-renders whatever component
+owns its `useState`**, thirty times a second while an arrow is held — the slider costs 0.3ms a keystroke, so
+keep the value beside it rather than at the top of a page, or use `defaultValue` with `onValueCommit`.
 
 **It mirrors for free.** The fill and the thumbs are placed with `inset-inline-start` and centred with a
 logical margin, so a right-to-left page draws the minimum on the right with nothing declared twice and no

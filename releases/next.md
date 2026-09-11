@@ -500,6 +500,8 @@ Linear rather than eased, because an eased travel restarted thirty times a secon
 
 And an arrow key is a nudge, not a jump, so it never takes the press travel at all: one tap spent 250ms crossing 3.2px, which is the lag it read as. A tap now arrives in 60ms.
 
+One thing to know when you reach for `value` rather than `defaultValue`: **a controlled slider re-renders whatever component owns its `useState`, thirty times a second while an arrow is held**, so keep the value next to the slider rather than at the top of a page. The slider itself costs `0.3ms` a keystroke; this documentation page was holding three demo values in the page component, and a single arrow key re-rendered all eight sliders, every code block and the API table — `4.2ms` a keystroke and 32ms to paint, against 0.8ms and one frame once each demo held its own.
+
 Both parts have to carry it or they come apart, which is the other half: every Box has a 250ms `all` transition, so a fill left with the default eased towards a thumb that had already arrived — up to 59px behind it mid-drag, and still moving for ~190ms after the pointer stopped.
 
 The real dial is `step`, which is what a slider can be smoother than: `step={0}` is continuous, and the thumb then follows the pointer with nothing to interpolate. The smoothing is one variant, `tracking`, on `slider.fill` and `slider.thumb`.
