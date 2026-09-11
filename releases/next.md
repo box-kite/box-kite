@@ -490,6 +490,12 @@ Everything a slider paints is a shared rule except where its thumbs are. That on
 
 It is also the line between these two and `ProgressRing` from `components/chart`, which rounds its fraction to half a percent and puts it in a shared class: nobody drags a ring. Round a thumb that far and a wide track visibly stair-steps under the pointer. A dashboard of a hundred figures still wants the ring.
 
+### A press travels and a drag does not
+
+Sending the thumb somewhere animates it there — a press on the track, or one arrow key. The moment the value is _being_ moved, a drag or a held arrow, the transition comes off both the thumb and the fill, so they stay under the pointer and stay together.
+
+Both parts have to agree about this, which is the whole point: every Box carries a 250ms `all` transition, so a fill left with the default eases towards a thumb that has already arrived — measured at up to 59px behind it mid-drag, and still moving for ~190ms after the pointer stopped. It is one variant, `tracking`, on `slider.fill` and `slider.thumb`, so a style tree of your own can make the travel longer or take it off.
+
 ### It mirrors for free
 
 The fill and the thumbs are placed with `inset-inline-start` and centred with a logical margin, so a right-to-left page draws the minimum on the right with nothing declared twice and no re-render. The half that is not free is the keyboard: the sideways arrows swap — `ArrowLeft` is the increase when the maximum is on the left — and `ArrowUp` never does, because the block axis has no reading order. The direction is read off the element when the key arrives, so a slider inside a `dir="auto"` subtree behaves the way it looks.

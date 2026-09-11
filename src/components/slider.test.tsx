@@ -382,4 +382,53 @@ describe('Slider', () => {
       expect(thumb).toContain('mb--2');
     });
   });
+
+  /**
+   * A press sends the thumb somewhere and it travels there; a drag holds it under the pointer and it
+   * must not. Both parts have to agree, which is bug #144: the fill transitioned while the thumb did
+   * not, so it trailed the thumb by up to 59px and kept moving for ~190ms after the drag had stopped.
+   */
+  describe('what moves and what does not', () => {
+    const moving = () => {
+      const [, , fill, thumb] = [...screen.getByTestId('slider').parentElement!.querySelectorAll('[class]')];
+      return { fill: !fill.className.includes('transition-none'), thumb: !thumb.className.includes('transition-none') };
+    };
+
+    it('travels for a press on the track, with the fill and the thumb agreeing', () => {
+      render(<Slider label="Volume" defaultValue={10} props={{ 'data-testid': 'slider' }} />);
+      measureTrack();
+
+      pressAt(0.85);
+      expect(moving()).toEqual({ fill: true, thumb: true });
+    });
+
+    it('stops travelling on the first move, and starts again when the pointer is let go', () => {
+      render(<Slider label="Volume" defaultValue={10} props={{ 'data-testid': 'slider' }} />);
+      const root = screen.getByTestId('slider');
+      measureTrack();
+
+      pressAt(0.1);
+      fireEvent.pointerMove(root, { pointerId: 1, clientX: 100 + 0.4 * 200, clientY: 0 });
+      expect(moving()).toEqual({ fill: false, thumb: false });
+
+      fireEvent.pointerUp(root, { pointerId: 1 });
+      expect(moving()).toEqual({ fill: true, thumb: true });
+    });
+
+    it('travels for one key press and not for a held one', () => {
+      render(<Slider label="Volume" defaultValue={50} props={{ 'data-testid': 'slider' }} />);
+      const thumb = thumbs()[0];
+
+      fireEvent.keyDown(thumb, { key: 'ArrowRight' });
+      expect(moving()).toEqual({ fill: true, thumb: true });
+
+      // A held arrow repeats every few milliseconds, and a quarter-second animation each would leave
+      // the thumb a long way behind the value it is reporting.
+      fireEvent.keyDown(thumb, { key: 'ArrowRight', repeat: true });
+      expect(moving()).toEqual({ fill: false, thumb: false });
+
+      fireEvent.keyUp(thumb, { key: 'ArrowRight' });
+      expect(moving()).toEqual({ fill: true, thumb: true });
+    });
+  });
 });

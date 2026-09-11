@@ -1,4 +1,4 @@
-import { Gauge, Keyboard, Languages, Rows3, SlidersHorizontal, Zap } from 'lucide-react';
+import { Gauge, Keyboard, Languages, MousePointer2, Rows3, SlidersHorizontal, Zap } from 'lucide-react';
 import { ReactNode, useState } from 'react';
 import sliderApi from '../../api/components/slider.json';
 import Box from '../../src/box';
@@ -122,6 +122,29 @@ export default function SliderPage() {
             </Box>
           </Section>
 
+          <Section id="travel" title="A press travels and a drag does not">
+            <Box>
+              Sending the thumb somewhere animates it there: a press on the track, or one arrow key. The moment the value is
+              <em> being</em> moved — a drag, a held arrow — the transition comes off both the thumb and the fill, so they stay under the
+              pointer and stay together.
+            </Box>
+            <Box mt={4}>
+              <Flex d="column" gap={3}>
+                <Note icon={MousePointer2} title="Both parts, or neither">
+                  Every Box carries a 250ms <Mono>all</Mono> transition, so a fill left with the default eased towards a thumb that had
+                  already arrived — up to 59px behind it mid-drag, and still moving for ~190ms after the pointer stopped.
+                </Note>
+                <Note icon={Keyboard} title="A held arrow is a drag too">
+                  One press travels; the repeats do not, because a quarter-second animation per repeat leaves the thumb a long way behind
+                  the value it is reporting. It is <Mono>event.repeat</Mono> that tells them apart.
+                </Note>
+              </Flex>
+            </Box>
+            <Box mt={4}>
+              It is one variant, <Mono>tracking</Mono>, on <Mono>slider.fill</Mono> and <Mono>slider.thumb</Mono> — so a style tree of your
+              own can make the travel longer, or take it off altogether.
+            </Box>
+          </Section>
           <Section id="rtl" title="It mirrors for free">
             <Box>
               The fill and the thumbs are placed with <Mono>inset-inline-start</Mono> and centred with a logical margin, so a right-to-left
@@ -241,6 +264,7 @@ const sidebarLinks = [
   { id: 'shape', label: 'A number in, a number out' },
   { id: 'platform', label: 'Why not an input' },
   { id: 'inline', label: 'The position is inline' },
+  { id: 'travel', label: 'A press travels, a drag does not' },
   { id: 'rtl', label: 'It mirrors for free' },
   { id: 'orientation', label: 'Vertical' },
   { id: 'commit', label: 'Change and commit' },

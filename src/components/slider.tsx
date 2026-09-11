@@ -1,4 +1,4 @@
-import { FunctionComponent, useRef } from 'react';
+import { FunctionComponent, useRef, useState } from 'react';
 import Box, { BoxProps } from '../box';
 import { useEventCallback, useLatest } from '../react/a11y/callbacks';
 import useControllableState, { ChangeDetails, ChangeHandler } from '../react/a11y/useControllableState';
@@ -106,6 +106,12 @@ function fillStyle(values: readonly number[], scale: SliderScale, vertical: bool
  * right-to-left page draws the minimum on the right with no second stylesheet. The half that is not free
  * is the keyboard, which is why the sideways arrows swap and Up and Down never do.
  *
+ * **A press travels and a drag does not.** Sending the thumb somewhere — a press on the track, one arrow
+ * key — animates it there, and the moment the value is *being* moved (a drag, a held arrow) the
+ * transition comes off both the thumb and the fill, so they stay under the pointer and stay together.
+ * That is the `tracking` variant, and it is the whole of it: a fill still easing towards a thumb that
+ * has already arrived is bug #144.
+ *
  * @pattern https://www.w3.org/WAI/ARIA/apg/patterns/slider/
  * @a11y Each thumb is a `role="slider"` carrying `aria-valuemin`, `aria-valuemax`, `aria-valuenow` and
  * `aria-orientation`; `format` writes `aria-valuetext` for a value a bare number does not read as.
@@ -149,6 +155,10 @@ function SliderImpl<TKey extends keyof ComponentsAndVariants = 'slider', TValue 
   // markup shows, so neither is state.
   const draggingRef = useRef<number | null>(null);
   const keyingRef = useRef(false);
+
+  // Whether the value is *being* moved rather than having moved — the one interaction fact the markup
+  // does show, because a thumb under a pointer must not animate and a thumb sent somewhere must.
+  const [tracking, setTracking] = useState(false);
 
   const [current, setCurrent] = useControllableState<TValue, SliderReason>({
     value,
@@ -209,6 +219,9 @@ function SliderImpl<TKey extends keyof ComponentsAndVariants = 'slider', TValue 
     const target = valueUnder(event);
     if (target === undefined) return;
 
+    // Here rather than on the press: a press is a jump to somewhere and travels, and it is the first
+    // move that means the thumb has to be under the pointer instead.
+    setTracking(true);
     apply(SliderUtils.move(SliderUtils.thumbs(latest.current), index, target, scale), { reason: 'pointer', event });
   });
 
@@ -216,6 +229,7 @@ function SliderImpl<TKey extends keyof ComponentsAndVariants = 'slider', TValue 
     if (draggingRef.current === null) return;
 
     draggingRef.current = null;
+    setTracking(false);
     event.currentTarget.releasePointerCapture?.(event.pointerId);
     commitHandler(latest.current, { reason: 'pointer', event });
   });
@@ -233,6 +247,9 @@ function SliderImpl<TKey extends keyof ComponentsAndVariants = 'slider', TValue 
     // Arrows scroll whatever the slider is in, and Home and End scroll the page.
     event.preventDefault();
     keyingRef.current = true;
+    // A held arrow repeats every few milliseconds, so an animated one trails a quarter of a second
+    // behind the value it is showing. One press still travels.
+    if (event.repeat) setTracking(true);
 
     const held = SliderUtils.thumbs(latest.current);
     apply(SliderUtils.move(held, index, SliderUtils.moved(held[index], move, scale, largeStep), scale), { reason: 'keyboard', event });
@@ -243,6 +260,7 @@ function SliderImpl<TKey extends keyof ComponentsAndVariants = 'slider', TValue 
     if (!keyingRef.current) return;
 
     keyingRef.current = false;
+    setTracking(false);
     commitHandler(latest.current, { reason: 'keyboard', event });
   });
 
@@ -269,13 +287,13 @@ function SliderImpl<TKey extends keyof ComponentsAndVariants = 'slider', TValue 
       }}
     >
       <Box ref={trackRef} component="slider.track" variant={{ vertical }}>
-        <Box component="slider.fill" variant={{ vertical }} style={fillStyle(values, scale, vertical)} />
+        <Box component="slider.fill" variant={{ vertical, tracking }} style={fillStyle(values, scale, vertical)} />
       </Box>
       {values.map((thumb, index) => (
         <Box
           key={index}
           component="slider.thumb"
-          variant={{ vertical, disabled }}
+          variant={{ vertical, disabled, tracking }}
           style={offset(SliderUtils.percentage(thumb, min, max), vertical)}
           props={{
             role: 'slider',

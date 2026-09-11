@@ -583,6 +583,9 @@ const boxComponents = {
         variants: {
           // A vertical slider fills from the bottom, so the axis the inline style writes swaps with it.
           vertical: { insetY: 'auto', insetX: 0 },
+          // Nothing may travel while the value is being moved: the base class transitions everything,
+          // so the fill used to ease towards a thumb that had already arrived (#144).
+          tracking: { transition: 'none' },
         },
       },
       thumb: {
@@ -598,8 +601,6 @@ const boxComponents = {
           b: 2,
           borderColor: 'indigo-500',
           shadow: 'xs',
-          // A measured position must not animate: the thumb has to be under the pointer, not behind it.
-          transition: 'none',
           hover: { borderColor: 'indigo-600' },
           focusVisible: { outline: 2, outlineColor: 'indigo-500', outlineOffset: 2 },
           theme: { dark: { bgColor: 'gray-900', borderColor: 'indigo-400', hover: { borderColor: 'indigo-300' } } },
@@ -609,6 +610,9 @@ const boxComponents = {
         variants: {
           vertical: { ms: 0, mb: -2 },
           disabled: { cursor: 'default', borderColor: 'gray-400', hover: { borderColor: 'gray-400' } },
+          // The other half of the same rule: a press sends the thumb somewhere and it travels there, a
+          // drag holds it under the pointer and it must not.
+          tracking: { transition: 'none' },
         },
       },
     },

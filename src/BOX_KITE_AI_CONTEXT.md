@@ -1808,6 +1808,12 @@ reported as `0` — a position nobody measured is the one thing a reader must no
 sweeps instead. The sweep names its duration in milliseconds, so it is outside what `--transitionTime`
 zeroes and stops itself under `prefers-reduced-motion`.
 
+**A press travels and a drag does not.** Sending the thumb somewhere — a press on the track, one arrow
+key — animates it there; the moment the value is _being_ moved (a drag, a held arrow) the transition
+comes off both the thumb and the fill, so they stay under the pointer and stay together. That is the
+`tracking` variant on `slider.fill` and `slider.thumb`. Every Box carries a 250ms `all` transition, so
+a fill left with the default eases towards a thumb that has already arrived.
+
 **It mirrors for free.** The fill and the thumbs are placed with `inset-inline-start` and centred with a
 logical margin, so a right-to-left page draws the minimum on the right with nothing declared twice and no
 re-render. The half that is not free is the keyboard: the sideways arrows swap, read off the element's

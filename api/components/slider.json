@@ -120,7 +120,7 @@
   "styleTree": [
     { "path": "slider", "depth": 0, "extends": null, "variants": ["vertical", "disabled"] },
     { "path": "slider.track", "depth": 1, "extends": null, "variants": ["vertical"] },
-    { "path": "slider.fill", "depth": 1, "extends": null, "variants": ["vertical"] },
-    { "path": "slider.thumb", "depth": 1, "extends": null, "variants": ["vertical", "disabled"] }
+    { "path": "slider.fill", "depth": 1, "extends": null, "variants": ["vertical", "tracking"] },
+    { "path": "slider.thumb", "depth": 1, "extends": null, "variants": ["vertical", "disabled", "tracking"] }
   ]
 }
