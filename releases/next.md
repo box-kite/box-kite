@@ -22,6 +22,7 @@ The package now carries instructions for the agent writing the code, the documen
 - **[An accordion whose animation is a class](#an-accordion-whose-animation-is-a-class)** — `<Accordion>` and `Collapsible`, where a panel opens in a grid track rather than a measured pixel: no `ResizeObserver`, nothing written per instance, and 1.80 KB gz for both against Radix's 8.78.
 - **[A slider whose value keeps its own shape](#a-slider-whose-value-keeps-its-own-shape)** — `<Slider>` takes a number for one thumb and an array for a range, so nothing at the call site has to narrow; `<Progress>` is the bar beside it, and renders on a server. 2.14 KB gz and 0.31 against Radix’s 9.71 and 2.86.
 - **[A message you send rather than render](#a-message-you-send-rather-than-render)** — `<Toaster />` once, then `toast()` from anywhere at all: a live region that exists before there is anything in it, a queue rather than a cap, and timers that stop on hover, on focus and off screen. 4.14 KB gz against sonner's 9.86 plus a stylesheet.
+- **[A combobox whose value is your own row](#a-combobox-whose-value-is-your-own-row)** — the component Radix never shipped: `<Combobox>` takes your rows and hands one back, the filter composes, the selection can be chips, and a query nothing answers can become a row. 8.65 KB gz on top of Box.
 
 ## The package tells an agent how to use it
 
@@ -582,6 +583,46 @@ Which raises the problem a fixed strip across a corner always raises, and it was
 Two more things the UA stylesheet's own `[popover]` rule decides, both found in Chrome 153 and worth knowing before overriding the style tree. `inset: 0` leaves a corner-pinned stack over-constrained — `top` and `left` win over the two sides a `position` variant sets, and the stack lands in the top-left corner whatever you asked for — so all four sides are declared `auto` first. And `overflow: auto` quietly makes the viewport a scroll container, which clips the toasts' own shadows, so it is declared `visible`.
 
 `position` is one of six corners and its inline half is logical, so `'bottom-start'` is the bottom left of a left-to-right page and the bottom right of a right-to-left one. The newest toast is always the one nearest the screen edge, which is why a stack pinned to the top is drawn in the opposite order to one pinned to the bottom.
+
+## A combobox whose value is your own row
+
+`<Combobox>` is APG's editable combobox over a list you already have — a text field that filters a `role="listbox"`, one tab stop however many options are open, and DOM focus that never leaves the input.
+
+```tsx
+import Combobox from '@box-kite/react/components/combobox';
+
+<Combobox
+  data={people}
+  def={{ label: 'name', key: 'id' }}
+  label="Assignee"
+  onValueChange={(person) => assign(person)}
+/>;
+```
+
+**A row in is a row out.** `data` is the list of objects you already hold, and the value is one of *those rows* rather than a string dug out of one — `onValueChange` hands the object straight back, typed, so there is no lookup table on the other side of the handler. `def` says how to read a row: `label` is its text (searched, displayed and read out) and `key` is what makes two rows the same row, so a list refetched from the server still shows the selection as chosen. Both take a key of the row or a function, and `disabled` and `display` are the other two.
+
+**`multiple` turns the selection into chips and the value into an array.** It is a prop rather than something inferred from the value, which is the one place this differs from `<Slider>`: a slider always has a value to read the shape off, and a combobox usually starts with nothing in it. Choosing a row that is already chosen takes it off again.
+
+A chip's remove button is deliberately **not** a tab stop — twenty selections would otherwise cost twenty presses to Tab past. Backspace on an empty field removes the last one and the listbox toggles any row back off, so removal is reachable from the keyboard without them, and each button still carries a name for anyone reading the control rather than tabbing through it.
+
+**The filter composes.** The built-in one folds case and strips accents, so `jose` finds `José`, and matches anywhere in the label rather than only at the front. `filter` replaces it and takes the *whole list*, so it can rank as well as reject — and it is handed the label reader, so starting from the built-in one costs nothing:
+
+```tsx
+<Combobox
+  data={people}
+  def={{ label: 'name', key: 'id' }}
+  label="Assignee"
+  filter={(rows, query, labelOf) => ComboboxUtils.filterRows(rows, query, labelOf).slice(0, 20)}
+/>
+```
+
+`filter={false}` says the data arrived filtered, which is what a server that already searched needs; `onQueryChange` is the hook that request hangs off, and `loading` makes the popup say the rows are coming rather than that there are none — the difference between "still looking" and "nothing here".
+
+**`createRow` turns what was typed into a row.** Return the row, or `null` to refuse the query. Its presence is what offers the create row at all, and one is never offered for a query a row already answers by name — offering "Create Design" beside Design is how a list grows twins. The change arrives with its own reason, `create`, beside `select`, `deselect` and `remove`.
+
+Typing filters and never highlights a suggestion: that is *list* autocomplete rather than inline, and a highlight nobody asked for is one Tab away from being committed. The arrows move through what the filter left, Home/End and the sideways arrows move the caret and hand the highlight back to the field, Enter chooses the highlighted row and does nothing when there is none, and Escape closes the listbox keeping what was typed before a second one clears the field.
+
+**8.65 KB gz on top of Box** — the model, the listbox, the chips and the APG keyboard, on top of the anchoring and dismissal every other layer in the library already shares. Radix has never shipped a combobox at all — [radix-ui/primitives#1342](https://github.com/radix-ui/primitives/issues/1342) has been open since 2022 — and `downshift`, the headless library people reach for instead, measures 17.68 KB gz for its own package alone, before the markup, the styling and the ARIA you still have to write around it.
 
 ## Breaking changes
 

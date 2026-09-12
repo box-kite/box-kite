@@ -30,6 +30,7 @@ import {
   Proportions,
   Rocket,
   Rows3,
+  Search,
   Server,
   Shapes,
   SlidersHorizontal,
@@ -279,6 +280,9 @@ export default function Sidebar({ toggleTheme, onClose }: SidebarProps) {
           </MenuItem>
           <MenuItem to="/overlay" icon={<Layers />}>
             Overlay
+          </MenuItem>
+          <MenuItem to="/combobox" icon={<Search />}>
+            Combobox
           </MenuItem>
           <MenuItem to="/dropdown" icon={<ChevronDown />}>
             Dropdown

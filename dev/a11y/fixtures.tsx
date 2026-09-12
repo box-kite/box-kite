@@ -5,6 +5,7 @@ import BaseSvg from '../../src/components/baseSvg';
 import Button from '../../src/components/button';
 import { ChartContainer, Gauge, MiniDonut, ProgressRing, Sparkline } from '../../src/components/chart';
 import Checkbox from '../../src/components/checkbox';
+import Combobox from '../../src/components/combobox';
 import DataGrid from '../../src/components/dataGrid';
 import Dialog, { AlertDialog } from '../../src/components/dialog';
 import Dropdown from '../../src/components/dropdown';
@@ -251,6 +252,18 @@ export const fixtures: A11yFixture[] = [
         <Button type="submit">Send</Button>
       </Form>
     ),
+  },
+  {
+    name: 'Combobox (open)',
+    render: () => <Combobox<Person> label="Person" data={people} def={{ label: 'name', key: 'id' }} />,
+    setup: openPopup,
+  },
+  {
+    // The chips are the half a single-select never exercises: each remove button has to be named
+    // after what it removes, and it is not a tab stop, which axe checks differently.
+    name: 'Combobox (multiple, open)',
+    render: () => <Combobox<Person> label="People" data={people} def={{ label: 'name', key: 'id' }} multiple defaultValue={[people[0]]} />,
+    setup: openPopup,
   },
   {
     name: 'Dropdown (closed)',

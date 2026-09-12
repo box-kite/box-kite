@@ -43,6 +43,7 @@ const loaders: Record<SiteRoutePath, () => Promise<{ default: ComponentType }>> 
   '/slider': () => import('../pages/sliderPage'),
   '/progress': () => import('../pages/progressPage'),
   '/toaster': () => import('../pages/toasterPage'),
+  '/combobox': () => import('../pages/comboboxPage'),
   '/dropdown': () => import('../pages/dropdownPage'),
   '/datagrid': () => import('../pages/dataGridPage'),
   '/flex': () => import('../pages/flexPage'),

@@ -214,6 +214,12 @@ export const siteRoutes = [
       'Toasts in the top layer with no portal: one live region that was there before its content, and timers that stop on hover, on focus and off screen.',
   },
   {
+    path: '/combobox',
+    name: 'Combobox',
+    description:
+      "APG's editable combobox over your own rows: the value is the object, the filter composes, and the selection can be chips.",
+  },
+  {
     path: '/tabs',
     name: 'Tabs',
     description:

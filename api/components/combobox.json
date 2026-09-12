@@ -1,0 +1,284 @@
+{
+  "name": "Combobox",
+  "route": "/combobox",
+  "import": "import Combobox from '@box-kite/react/components/combobox';",
+  "description": "The APG editable combobox over a list of your own rows: https://www.w3.org/WAI/ARIA/apg/patterns/combobox/",
+  "pattern": null,
+  "props": [
+    {
+      "name": "data",
+      "type": "TRow[]",
+      "required": true,
+      "default": null,
+      "description": "Every row the combobox can offer. Filtered by the query unless `filter` is `false`."
+    },
+    {
+      "name": "def",
+      "type": "ComboboxDef<TRow>",
+      "required": true,
+      "default": null,
+      "description": "How to read a row: its `label` (the text, which is searched and read out), its `key` (what makes two rows the same row), and optionally `disabled` and `display`. A key of the row, or a function."
+    },
+    {
+      "name": "label",
+      "type": "React.ReactNode",
+      "required": false,
+      "default": null,
+      "description": "The combobox's name, rendered above it in a real `<label>`. A combobox is not named by what it contains, so without this (or an `aria-label` of your own in `props`) it has no accessible name."
+    },
+    {
+      "name": "labelProps",
+      "type": "BoxProps<'label'>",
+      "required": false,
+      "default": null,
+      "description": "Styles for the `<label>` itself — it sits above the control rather than wrapping it."
+    },
+    {
+      "name": "placeholder",
+      "type": "string",
+      "required": false,
+      "default": null,
+      "description": "The field's placeholder. Not a name — it is gone on the first keystroke. See `label`."
+    },
+    {
+      "name": "name",
+      "type": "string",
+      "required": false,
+      "default": null,
+      "description": "What the selection submits under: one hidden input per selected row, carrying its key."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "required": false,
+      "default": null,
+      "description": "Not editable and not openable, but still read out. The real attribute, on the field itself."
+    },
+    {
+      "name": "props",
+      "type": "Record<string, unknown>",
+      "required": false,
+      "default": null,
+      "description": "Attributes for the `<input>` that *is* the combobox — an `aria-label`, an `inputMode`, an `id`."
+    },
+    {
+      "name": "itemsProps",
+      "type": "BoxStyleProps",
+      "required": false,
+      "default": null,
+      "description": "Styles for the popup (`combobox.items`)."
+    },
+    {
+      "name": "hideIcon",
+      "type": "boolean",
+      "required": false,
+      "default": null,
+      "description": "Drop the chevron. It is decoration either way: `aria-hidden` and never focusable."
+    },
+    {
+      "name": "filter",
+      "type": "ComboboxFilter<TRow> | false",
+      "required": false,
+      "default": "ComboboxUtils.filterRows",
+      "description": "Which rows a query leaves, and in what order — it takes the whole list so it can rank as well as reject, and is handed the label reader so composing it with the built-in one costs nothing. `false` means the data is already filtered, which is what a server that searched needs."
+    },
+    {
+      "name": "loading",
+      "type": "boolean",
+      "required": false,
+      "default": null,
+      "description": "Rows are on their way. The popup says so rather than claiming there are none."
+    },
+    {
+      "name": "loadingText",
+      "type": "React.ReactNode",
+      "required": false,
+      "default": "'Loading...'",
+      "description": "What the popup shows while `loading` and there is nothing to show yet."
+    },
+    {
+      "name": "emptyText",
+      "type": "React.ReactNode",
+      "required": false,
+      "default": "'No results'",
+      "description": "What the popup shows when the query matched nothing."
+    },
+    {
+      "name": "createRow",
+      "type": "(query: string) => TRow | null",
+      "required": false,
+      "default": null,
+      "description": "Turns the query into the row it would create, or `null` to refuse it. Its presence is what offers a create row at all, and one is never offered for a query a row already answers by name."
+    },
+    {
+      "name": "createLabel",
+      "type": "(query: string) => React.ReactNode",
+      "required": false,
+      "default": "(query: string) => `Create \"${query}\"`",
+      "description": "What the create row reads. Given the query, since the row it would make is not the one shown."
+    },
+    {
+      "name": "removeLabel",
+      "type": "(label: string) => string",
+      "required": false,
+      "default": "(text: string) => `Remove ${text}`",
+      "description": "A chip's remove button's accessible name, given the row's label."
+    },
+    {
+      "name": "query",
+      "type": "string",
+      "required": false,
+      "default": null,
+      "description": "The typed text. Controlled — pair it with `onQueryChange`, which is also the hook an async search uses."
+    },
+    {
+      "name": "defaultQuery",
+      "type": "string",
+      "required": false,
+      "default": null,
+      "description": "The text the field starts with when the combobox owns its own query."
+    },
+    {
+      "name": "onQueryChange",
+      "type": "ChangeHandler<string, ComboboxQueryReason>",
+      "required": false,
+      "default": null,
+      "description": "Fires with the text and why it changed. Only `input` came from a keystroke."
+    },
+    {
+      "name": "open",
+      "type": "boolean",
+      "required": false,
+      "default": null,
+      "description": "Whether the listbox is showing. Controlled — pair it with `onOpenChange`."
+    },
+    {
+      "name": "defaultOpen",
+      "type": "boolean",
+      "required": false,
+      "default": null,
+      "description": "Whether it starts open, when the combobox owns that itself."
+    },
+    {
+      "name": "onOpenChange",
+      "type": "ChangeHandler<boolean, ComboboxOpenReason>",
+      "required": false,
+      "default": null,
+      "description": "Fires with the new state and why: a press, a keystroke, a choice, Escape, or a press outside."
+    }
+  ],
+  "parts": [
+    {
+      "name": "Combobox (single-select)",
+      "description": "One row at a time, which is the default: the value is a row or `null`, and the field shows the selected row's label whenever nothing is being typed.",
+      "props": [
+        {
+          "name": "multiple",
+          "type": "false",
+          "required": false,
+          "default": null,
+          "description": "Leave it off, or `false`. See the multiple half for the other shape."
+        },
+        {
+          "name": "value",
+          "type": "TRow | null",
+          "required": false,
+          "default": null,
+          "description": "The selected row, or `null`. Controlled — pair it with `onValueChange`."
+        },
+        {
+          "name": "defaultValue",
+          "type": "TRow | null",
+          "required": false,
+          "default": null,
+          "description": "What is selected to begin with, when the combobox owns its own value."
+        },
+        {
+          "name": "onValueChange",
+          "type": "ChangeHandler<TRow | null, ComboboxValueReason>",
+          "required": false,
+          "default": null,
+          "description": "Fires with the row itself — the object out of `data`, not a key dug out of it — and why."
+        }
+      ]
+    },
+    {
+      "name": "Combobox (multiple)",
+      "description": "Several rows, shown as chips in front of the field, and the value is an array. Choosing a row that is already chosen takes it off again, which is the keyboard's way to a chip its own button cannot reach.",
+      "props": [
+        {
+          "name": "multiple",
+          "type": "true",
+          "required": true,
+          "default": null,
+          "description": "`true` is what turns the value into an array — the one shape a combobox cannot read off its value."
+        },
+        {
+          "name": "value",
+          "type": "TRow[]",
+          "required": false,
+          "default": null,
+          "description": "The selected rows. Controlled — pair it with `onValueChange`."
+        },
+        {
+          "name": "defaultValue",
+          "type": "TRow[]",
+          "required": false,
+          "default": null,
+          "description": "What is selected to begin with, when the combobox owns its own value."
+        },
+        {
+          "name": "onValueChange",
+          "type": "ChangeHandler<TRow[], ComboboxValueReason>",
+          "required": false,
+          "default": null,
+          "description": "Fires with the whole selection, as rows, and why it changed."
+        }
+      ]
+    }
+  ],
+  "keyboard": [
+    {
+      "mode": null,
+      "keys": "A printable character",
+      "action": "Types, which opens the listbox and filters it. Filtering never moves the highlight: that is list autocomplete, not inline, and a highlight nobody asked for gets committed."
+    },
+    {
+      "mode": null,
+      "keys": "Down / Up",
+      "action": "Opens, or moves the highlight through what the filter left, wrapping and skipping disabled rows."
+    },
+    { "mode": null, "keys": "Alt + Down", "action": "Opens without moving the highlight. Alt + Up — chooses and closes." },
+    { "mode": null, "keys": "Home / End, Left / Right", "action": "Move the caret, and hand the highlight back to the field." },
+    {
+      "mode": null,
+      "keys": "Enter",
+      "action": "Chooses the highlighted row. With nothing highlighted it does nothing, so a typed query is never committed by accident."
+    },
+    { "mode": null, "keys": "Escape", "action": "Closes the listbox, keeping what was typed. Pressed again on a closed one, clears it." },
+    {
+      "mode": null,
+      "keys": "Tab",
+      "action": "Commits the highlighted row, then moves on. Nothing is highlighted until an arrow key put it there, so this only ever commits a deliberate choice."
+    },
+    { "mode": null, "keys": "Backspace (multiple, empty field)", "action": "Removes the last chip." }
+  ],
+  "a11y": [
+    "The `<input>` carries `role=\"combobox\"`, `aria-autocomplete=\"list\"` and `aria-expanded`; the popup is `role=\"listbox\"` with `role=\"option\"` rows, named by `aria-activedescendant` rather than by focus, so one Tab enters and one leaves however many options there are.",
+    "Nothing names a combobox for you: pass `label`, or an `aria-label` in `props`.",
+    "A chip's remove button is deliberately not a tab stop — twenty selections would otherwise cost twenty presses to Tab past. Backspace on an empty field removes the last, and the listbox toggles a row back off, so removal is reachable from the keyboard without them.",
+    "The popup is a sibling of the field in the browser's top layer, so it needs no portal and keeps the theme, the custom properties and the direction around it."
+  ],
+  "axe": { "fixtures": ["Combobox (open)", "Combobox (multiple, open)"], "knownViolations": [] },
+  "styleTree": [
+    { "path": "combobox", "depth": 0, "extends": null, "variants": ["compact"] },
+    { "path": "combobox.label", "depth": 1, "extends": null, "variants": [] },
+    { "path": "combobox.field", "depth": 1, "extends": null, "variants": [] },
+    { "path": "combobox.chip", "depth": 1, "extends": null, "variants": [] },
+    { "path": "combobox.remove", "depth": 1, "extends": null, "variants": [] },
+    { "path": "combobox.icon", "depth": 1, "extends": null, "variants": [] },
+    { "path": "combobox.items", "depth": 1, "extends": null, "variants": ["closed", "closedUp"] },
+    { "path": "combobox.item", "depth": 1, "extends": null, "variants": ["highlighted", "create"] },
+    { "path": "combobox.message", "depth": 1, "extends": null, "variants": [] }
+  ]
+}
