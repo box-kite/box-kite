@@ -35,5 +35,10 @@
     "A chart is not a substitute for the values: where the shape *is* the information, give it a `label` saying what it shows, and keep the numbers reachable in text."
   ],
   "axe": { "fixtures": ["Sparkline", "Sparkline (decoration)"], "knownViolations": [] },
-  "styleTree": []
+  "styleTree": [
+    { "path": "sparkline", "depth": 0, "extends": null, "variants": [] },
+    { "path": "sparkline.line", "depth": 1, "extends": null, "variants": [] },
+    { "path": "sparkline.area", "depth": 1, "extends": null, "variants": [] },
+    { "path": "sparkline.bar", "depth": 1, "extends": null, "variants": [] }
+  ]
 }

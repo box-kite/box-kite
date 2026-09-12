@@ -663,14 +663,57 @@ about one keystroke. `Menu.Item`'s `onSelect` is a command with no value to repo
 `onSideChange` reports what the browser did, and `Icon` is the one component that clones its child —
 it styles an icon somebody else drew, so there is no render prop to offer.
 
-Both ledgers in the check **fail two ways**: on a new break, and on a listed exception that has
+Every ledger in the check **fails two ways**: on a new break, and on a listed exception that has
 stopped being true. That is the rule the accessibility sweep's `knownViolations` already follows,
 and it is what keeps an exception list from becoming a place things go to be forgotten. The debt it
-currently names is `Dropdown` and `DataGrid`, the two components older than the contract.
+now names is `DataGrid` alone — the one component still older than the contract.
 
 - **`RadioGroup` reports through `onValueChange`.** `onChange` still works and still fires — pass
   either, or both — but it was the one `ChangeHandler` in the library under a DOM event's name, on a
   component that is not an `<input>`. It is deprecated and will go in a future major.
+
+### `Dropdown` and `Select` report through `onValueChange` too
+
+The library's oldest component now holds its selection in `useControllableState` like every other
+one, and reports it the way every other one does:
+
+```tsx
+<Dropdown<string> label="Fruit" value={fruit} onValueChange={(next, { reason }) => setFruit(next as string)}>
+  <Dropdown.Item value="apple">Apple</Dropdown.Item>
+</Dropdown>
+```
+
+`onValueChange` hands back **the selection in whatever shape `value` takes** — the array in
+`multiple` mode, the one chosen option otherwise — and a reason you can `switch` on exhaustively:
+`'select'`, `'deselect'`, `'select-all'` and `'clear'`, the last two being the `Dropdown.SelectAll`
+and `Dropdown.Unselect` rows, which act on the whole list rather than on one option. `onChange` is
+deprecated and still fires with its old `(value, values)` pair, where the first argument is the
+option _acted on_; pass either, or both, and nothing needs changing today.
+
+Moving the pair onto the hook is also where a quiet bug went: `defaultValue={0}` and `value={''}`
+were read as "nothing selected", because the old code tested the value for truthiness rather than
+for being there. A falsy value is a value somebody can pick.
+
+### `RadioGroup` and the chart primitives have style trees
+
+`Box.components()` now reaches all six: `radioGroup` (with a `horizontal` variant) and its `label`,
+`sparkline` and its `line`/`area`/`bar` paths, `progressRing` and `gauge` with their `track` and
+`arc`, `miniDonut` and its `segment`, and `chartContainer`. What used to be a default written into
+the component is a node you can replace, so one override restyles every drawing in an app:
+
+```tsx
+Box.components({ sparkline: { styles: { stroke: 'emerald-500', strokeWidth: 2 } } });
+```
+
+`ChartContainer`'s node is the interesting one: it holds the `--chart-1` … `--chart-6` palette and
+its dark twin, so re-skinning every chart on a page — including a Recharts one that names no colour
+of its own — is one override rather than a prop on every container. A `series` prop and a `vars` of
+your own still win over it, exactly as before.
+
+One thing to look at when you upgrade: a `RadioGroup`'s `label` now wears the same type as a
+`Combobox`'s — `14px` in `gray-700`, `gray-300` in the dark theme — where it used to inherit
+whatever was around it. `Box.components({ radioGroup: { children: { label: { styles: … } } } })` is
+where to say otherwise.
 
 ## Breaking changes
 
@@ -690,3 +733,4 @@ currently names is `Dropdown` and `DataGrid`, the two components older than the 
 - **The docs site's own keyboard access, in the two places it was a clickable `<div>`.** The nine category switchers on [/box](https://www.box-kite.dev/box) — the largest prop reference on the site — could only be reached with a mouse, so eight of its nine panels were unreachable and a screen reader was told nothing about them. They are a `role="tablist"` of real buttons over the library's own `useRovingFocus` now, with arrow keys, Home/End and a `role="tabpanel"` that says which tab named it; the forty "Show code" toggles below them are buttons with `aria-expanded`. One caption on the same page also failed contrast at 3.74:1 and does not now.
 - **Every table on the docs site rendered as a stack of full-width blocks.** `display: block` on a `<Box tag="table">` costs the table its layout _and_ its semantics, and five pages had written their own copy of the same broken table. There is one shared table now, carrying the display values each element needs — and the props above are what let it stop reaching for the escape hatch to collapse its borders.
 - **Inline code in the prose of ten documentation pages was rendered as a block.** Each `<code>` took a line of its own, breaking the paragraph around it into stripes — the local helper was missing `display="inline"`, which is the trap the library's own rules warn about: a `Box` is `display: block` whatever element it renders. Nothing in the library changed; the pages read as paragraphs again. The same pages' tables also lost their last nine inline `style` attributes to `css={{ borderCollapse: 'collapse' }}`, which is what the escape hatch is for.
+- **A `Dropdown` could not be given a value of `0` or an empty string.** Both `value` and `defaultValue` were tested for truthiness on the way in, so `<Dropdown<number> defaultValue={0}>` started with nothing selected and `value={0}` selected nothing however many times it was set — while `value={1}` worked, which is what made it read as a puzzle rather than a bug. The test is against `undefined` and `null` now, and a falsy value is a value somebody can pick.

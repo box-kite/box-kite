@@ -23,8 +23,8 @@
       "name": "trackOpacity",
       "type": "NonNullable<BoxStyleProps['strokeOpacity']>",
       "required": false,
-      "default": "0.2",
-      "description": "The unfilled part of the ring, as the same colour faded — so the track follows the theme too."
+      "default": null,
+      "description": "The unfilled part of the ring, as the same colour faded — so the track follows the theme too. Default `0.2`, from the style node."
     }
   ],
   "parts": [],
@@ -33,5 +33,9 @@
     "`aria-hidden` with no `label`, and a `label` makes it `role=\"img\"`. For progress a user is *waiting* on, put the value in text or in a `role=\"progressbar\"` of your own — an image role does not announce a change."
   ],
   "axe": { "fixtures": ["ProgressRing"], "knownViolations": [] },
-  "styleTree": []
+  "styleTree": [
+    { "path": "progressRing", "depth": 0, "extends": null, "variants": [] },
+    { "path": "progressRing.track", "depth": 1, "extends": null, "variants": [] },
+    { "path": "progressRing.arc", "depth": 1, "extends": null, "variants": [] }
+  ]
 }

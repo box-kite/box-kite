@@ -152,7 +152,7 @@ by hand; the component supplies the whole pattern.
 
 ```tsx
 import Dropdown from '@box-kite/react/components/dropdown';
-<Dropdown<string> label="Fruit" defaultValue="a" onChange={(value, values) => {}}>
+<Dropdown<string> label="Fruit" defaultValue="a" onValueChange={(fruit, { reason }) => {}}>
   <Dropdown.Unselect>Pick...</Dropdown.Unselect>
   <Dropdown.Item value="a">Alpha</Dropdown.Item>
 </Dropdown>;
@@ -161,7 +161,7 @@ import Dropdown from '@box-kite/react/components/dropdown';
 //   <Dropdown.Display>{(values) => `${values.length} selected`}</Dropdown.Display>
 ```
 
-**Props**: `label`/`labelProps`, `value`/`defaultValue`, `multiple`, `isSearchable`, `searchPlaceholder`, `hideIcon`, `showCheckbox`, `name`, `onChange`, `itemsProps`, `iconProps`, `variant` (propagates to children). All BoxProps.
+**Props**: `label`/`labelProps`, `value`/`defaultValue`, `multiple`, `isSearchable`, `searchPlaceholder`, `hideIcon`, `showCheckbox`, `name`, `onValueChange` (`(selection, { reason })` — `select`, `deselect`, `select-all`, `clear`; the selection is an array in `multiple` mode), `itemsProps`, `iconProps`, `variant` (propagates to children). All BoxProps. `onChange` is the deprecated `(value, values)` spelling and still fires.
 **Sub-components**: `Item<T>` (requires `value`; `disabled` is skipped by the arrows), `Unselect`, `SelectAll`, `EmptyItem`, `Display` (static or `(values, isOpen) => ReactNode`).
 **Keyboard (select-only)**: closed — Down/Up/Enter/Space/Home/End open, a printable character opens at the first match. Open — arrows move, Home/End jump, typing searches, Enter/Space choose, Escape closes unchanged, Tab chooses then leaves. DOM focus stays on the trigger throughout (`aria-activedescendant`).
 **Keyboard (`isSearchable`)**: the `<input>` is the combobox, so printable keys type (no typeahead), Space types a space, Home/End and Left/Right move the caret and drop the highlight, only Down/Up reach the listbox, Enter chooses the highlighted option, and Escape closes before a second Escape clears the field. The field shows the selection as its value, unless a `Dropdown.Display` is drawing it.
@@ -178,12 +178,12 @@ import Select from '@box-kite/react/components/select';
   data={users}
   def={{ valueKey: 'id', displayKey: 'name', placeholder: 'Pick...' }}
   value={selected}
-  onChange={(value) => setSelected(value!)}
+  onValueChange={(value) => setSelected(value as number)}
 />;
 ```
 
 **SelectDef**: `valueKey` (required), `displayKey`, `display` (`(row) => ReactNode`), `selectedDisplay` (`(rows, isOpen) => ReactNode`), `placeholder`, `selectAllText`, `emptyText`.
-Also: `data`, `label`/`labelProps`, `value`/`defaultValue`, `multiple`, `isSearchable`, `searchPlaceholder`, `showCheckbox`, `hideIcon`, `name`, `onChange`, `itemsProps`, `iconProps`, `variant`, BoxProps. Same combobox pattern as Dropdown — including needing a name, and `isSearchable` switching it to the editable one.
+Also: `data`, `label`/`labelProps`, `value`/`defaultValue`, `multiple`, `isSearchable`, `searchPlaceholder`, `showCheckbox`, `hideIcon`, `name`, `onValueChange` (and the deprecated `onChange`), `itemsProps`, `iconProps`, `variant`, BoxProps. Same combobox pattern as Dropdown — including needing a name, and `isSearchable` switching it to the editable one.
 
 ## DataGrid
 

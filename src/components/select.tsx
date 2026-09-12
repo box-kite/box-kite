@@ -1,7 +1,8 @@
 import { forwardRef, Ref, RefAttributes, useMemo } from 'react';
 import { BoxProps } from '../box';
+import { ChangeHandler } from '../react/a11y/useControllableState';
 import { BoxStyleProps, ComponentsAndVariants } from '../types';
-import Dropdown from './dropdown';
+import Dropdown, { DropdownValueReason } from './dropdown';
 
 interface SelectDef<TRow> {
   /** Key of TRow to use as the option value */
@@ -39,6 +40,13 @@ interface Props<TRow, TVal extends TRow[keyof TRow], TKey extends keyof Componen
   labelProps?: BoxProps<'div'>;
   itemsProps?: BoxStyleProps;
   iconProps?: BoxStyleProps;
+  /** Fires with the selection in whatever shape `value` takes, and why it changed — see `Dropdown`. */
+  onValueChange?: ChangeHandler<TVal | TVal[] | undefined, DropdownValueReason>;
+  /**
+   * The older callback, whose first argument is the option *acted on*. Both fire.
+   * @deprecated `onValueChange` is what every component reports a value change under, and it carries the
+   * reason. This spelling still works.
+   */
   onChange?: (value: TVal | undefined, values: TVal[]) => void;
 }
 

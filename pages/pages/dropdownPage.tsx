@@ -93,14 +93,14 @@ export default function DropdownPage() {
             language="jsx"
             code={`const [selectedValue, setSelectedValue] = useState<number>(2);
 
-<Dropdown value={selectedValue} onChange={(value) => setSelectedValue(value!)}>
+<Dropdown value={selectedValue} onValueChange={(value) => setSelectedValue(value as number)}>
   <Dropdown.Item value={1}>Option 1</Dropdown.Item>
   <Dropdown.Item value={2}>Option 2</Dropdown.Item>
   <Dropdown.Item value={3}>Option 3</Dropdown.Item>
 </Dropdown>`}
           >
             <Flex gap={4}>
-              <Dropdown value={selectedValue} onChange={(value) => setSelectedValue(value!)} width={50}>
+              <Dropdown value={selectedValue} onValueChange={(value) => setSelectedValue(value as number)} width={50}>
                 <Dropdown.Item value={1}>Option 1</Dropdown.Item>
                 <Dropdown.Item value={2}>Option 2</Dropdown.Item>
                 <Dropdown.Item value={3}>Option 3</Dropdown.Item>

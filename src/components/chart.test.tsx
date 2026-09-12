@@ -2,6 +2,7 @@ import { cleanup, render } from '@testing-library/react';
 import { createRef } from 'react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { expectNoAxeViolations } from '../../dev/a11y/axe';
+import BoxExtends from '../core/extends/boxExtends';
 import { StylesContext } from '../react/useStyles';
 import { ChartContainer, Gauge, MiniDonut, ProgressRing, Sparkline } from './chart';
 
@@ -318,5 +319,39 @@ describe('ChartContainer', () => {
     expect(ref.current).toBe(container.firstElementChild);
     expect(container.firstElementChild!.tagName).toBe('SECTION');
     expect(container.firstElementChild!.getAttribute('role')).toBeNull();
+  });
+});
+
+/**
+ * The style tree each primitive names — the point of it being that an app restyles every chart it has
+ * in one place. Last in the file on purpose: `components()` writes to the shared registry.
+ */
+describe('the chart style trees', () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  it('takes its paint from the node, so one override reaches every drawing', () => {
+    BoxExtends.components({ sparkline: { styles: { stroke: 'emerald-500' } } });
+
+    const { container } = render(<Sparkline data={[1, 2]} />);
+
+    expect(container.querySelector('svg')!.getAttribute('class')).toContain('stroke-emerald-500');
+  });
+
+  it('reaches the parts a drawing is made of', () => {
+    BoxExtends.components({ progressRing: { children: { track: { styles: { strokeOpacity: 0.5 } } } } });
+
+    const { container } = render(<ProgressRing value={0.4} />);
+
+    expect(container.querySelectorAll('circle')[0].getAttribute('class')).toContain('strokeOpacity-0.5');
+  });
+
+  it('still lets a prop on the element win', () => {
+    BoxExtends.components({ miniDonut: { styles: { strokeLinecap: 'round' } } });
+
+    const { container } = render(<MiniDonut data={[1, 1]} strokeLinecap="butt" />);
+
+    expect(container.querySelector('svg')!.getAttribute('class')).toContain('strokeLinecap-butt');
   });
 });

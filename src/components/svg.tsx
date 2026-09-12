@@ -24,11 +24,13 @@ type SvgElementProps<
   TKey extends keyof ComponentsAndVariants,
 > = Omit<BoxProps<TTag, TKey>, 'tag' | TAttribute> & Pick<React.JSX.IntrinsicElements[TTag], TAttribute>;
 
-type SvgElementType<
-  TTag extends keyof React.JSX.IntrinsicElements,
-  TAttribute extends Attribute<TTag>,
+// `TKey` is a parameter of the *call*, not of the alias: an SVG element is a Box, so it can name a
+// style node (`<Path component="sparkline.line">`) and have its `variant` typed against that node.
+type SvgElementType<TTag extends keyof React.JSX.IntrinsicElements, TAttribute extends Attribute<TTag>> = <
   TKey extends keyof ComponentsAndVariants = never,
-> = (props: SvgElementProps<TTag, TAttribute, TKey> & RefAttributes<ExtractElementFromTag<TTag>>) => React.ReactNode;
+>(
+  props: SvgElementProps<TTag, TAttribute, TKey> & RefAttributes<ExtractElementFromTag<TTag>>,
+) => React.ReactNode;
 
 /**
  * Split the claimed attributes out of a component's props: the style props with those names removed, and
@@ -51,11 +53,11 @@ function liftAttributes(source: object, names: readonly string[]) {
   return { styleProps, tagProps: lifted ? { ...tagProps, ...lifted } : tagProps };
 }
 
-function svgElement<
-  TTag extends keyof React.JSX.IntrinsicElements,
-  TAttribute extends Attribute<TTag>,
-  TKey extends keyof ComponentsAndVariants,
->(tagName: TTag, attributes: readonly TAttribute[] = [], displayName?: string): SvgElementType<TTag, TAttribute, TKey> {
+function svgElement<TTag extends keyof React.JSX.IntrinsicElements, TAttribute extends Attribute<TTag>>(
+  tagName: TTag,
+  attributes: readonly TAttribute[] = [],
+  displayName?: string,
+): SvgElementType<TTag, TAttribute> {
   const names = attributes as unknown as readonly string[];
 
   // Typed loosely inside and asserted once on the way out: while the tag is still a type parameter,
@@ -67,9 +69,9 @@ function svgElement<
       <Box
         tag={tagName}
         ref={ref as Ref<ExtractElementFromTag<TTag>>}
-        component={tagName as unknown as TKey}
-        {...(styleProps as BoxProps<TTag, TKey>)}
-        props={tagProps as BoxTagProps<TTag, TKey>}
+        component={tagName as unknown as never}
+        {...(styleProps as BoxProps<TTag>)}
+        props={tagProps as BoxTagProps<TTag>}
       />
     );
   });
@@ -79,7 +81,7 @@ function svgElement<
   // These are Boxes, so their attributes live in `props` — `Icon` has to know before it clones one.
   withAttributesInProps(comp);
 
-  return comp as unknown as SvgElementType<TTag, TAttribute, TKey>;
+  return comp as unknown as SvgElementType<TTag, TAttribute>;
 }
 
 const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
@@ -98,7 +100,7 @@ interface SvgOwnProps {
 }
 
 /** The `width`/`height` here are the SVG attributes, not the ÷4 layout props they are on a `<div>`. */
-type Props = Omit<BoxProps<'svg'>, 'tag' | 'width' | 'height'> & SvgOwnProps;
+type Props<TKey extends keyof ComponentsAndVariants = never> = Omit<BoxProps<'svg', TKey>, 'tag' | 'width' | 'height'> & SvgOwnProps;
 
 const SVG_ATTRIBUTES = ['viewBox', 'preserveAspectRatio', 'width', 'height'];
 
@@ -118,10 +120,12 @@ function SvgImpl(props: Props, ref: Ref<SVGSVGElement>) {
 }
 
 /** The root `<svg>`: the coordinate system, the size, and whether a screen reader is told about it. */
-export const Svg = /* @__PURE__ */ withAttributesInProps(forwardRef(SvgImpl));
+export const Svg = /* @__PURE__ */ withAttributesInProps(forwardRef(SvgImpl)) as (<TKey extends keyof ComponentsAndVariants = never>(
+  props: Props<TKey> & RefAttributes<SVGSVGElement>,
+) => React.ReactNode) & { displayName?: string };
 Svg.displayName = 'Svg';
 
-export type SvgProps = React.ComponentProps<typeof Svg>;
+export type SvgProps = Props & RefAttributes<SVGSVGElement>;
 
 /**
  * The rest of the elements, each with the attributes it owns — everything CSS styles on it stays a Box

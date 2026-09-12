@@ -26,5 +26,9 @@
     "`aria-hidden` with no `label`, and a `label` makes it `role=\"img\"`. The value itself belongs in text: a dial's angle is not readable by anyone who cannot see it."
   ],
   "axe": { "fixtures": ["Gauge"], "knownViolations": [] },
-  "styleTree": []
+  "styleTree": [
+    { "path": "gauge", "depth": 0, "extends": "progressRing", "variants": [] },
+    { "path": "gauge.track", "depth": 1, "extends": null, "variants": [] },
+    { "path": "gauge.arc", "depth": 1, "extends": null, "variants": [] }
+  ]
 }
