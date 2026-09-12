@@ -104,17 +104,41 @@ function deprecatedProps() {
   return found;
 }
 
-/** Every component entry whose source says it is deprecated, named the way a consumer imports it. */
+/**
+ * Every deprecation in a component's source, named the way a consumer meets it. A tag sitting above a
+ * prop signature deprecates that **prop** and a tag anywhere else deprecates the module — telling an
+ * agent to stop importing `components/radioGroup` because one of its props was renamed is the failure
+ * this distinction exists to prevent (bug #152).
+ */
 function deprecatedComponents() {
   return componentEntries().flatMap((entry) => {
-    const source = read(`src/components/${entry}.tsx`);
-    const tag = source.indexOf('@deprecated');
+    const lines = read(`src/components/${entry}.tsx`).split('\n');
+    const module = `${PACKAGE_NAME}/components/${entry}`;
+    const found = [];
 
-    if (tag < 0) return [];
+    lines.forEach((line, index) => {
+      if (!line.includes('@deprecated')) return;
 
-    const text = source.slice(tag + '@deprecated'.length, source.indexOf('*/', tag));
+      let end = index;
+      while (end < lines.length && !lines[end].includes('*/')) end += 1;
 
-    return [{ name: `${PACKAGE_NAME}/components/${entry}`, instead: firstSentence(text) }];
+      // Each continuation line's ` * ` goes before the join, or it lands in the middle of the prose —
+      // a component's tag wraps where a prop's in `boxStyles.ts` fits on one line.
+      const text = lines
+        .slice(index, end + 1)
+        .map((row) => row.replace(/^\s*\*\s?/, ''))
+        .join(' ')
+        .replace(/^[\s*/]*@deprecated/, '')
+        .replace(/\*\/.*$/, '');
+
+      // The identifier the comment sits above, when the line after it declares a prop rather than the
+      // component: `onChange?: ChangeHandler<…>` is a prop, `function TextboxImpl(` is not.
+      const prop = /^\s*([A-Za-z]\w*)\s*\??:/.exec(lines[end + 1] ?? '')?.[1];
+
+      found.push({ name: prop ? `${module}#${prop}` : module, instead: firstSentence(text) });
+    });
+
+    return found;
   });
 }
 

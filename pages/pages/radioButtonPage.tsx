@@ -93,7 +93,7 @@ const [plan, setPlan] = useState<string | undefined>('free');
 <RadioGroup
   label="Plan"
   value={plan}
-  onChange={(next, { reason }) => {
+  onValueChange={(next, { reason }) => {
     setPlan(next);
     console.log(reason); // 'click' | 'keyboard'
   }}
@@ -107,7 +107,7 @@ const [plan, setPlan] = useState<string | undefined>('free');
                 label="Plan"
                 name="plan-controlled"
                 value={plan}
-                onChange={(next, { reason }) => {
+                onValueChange={(next, { reason }) => {
                   setPlan(next);
                   setLastReason(reason);
                 }}

@@ -40,6 +40,10 @@ jobs:
       # a prop with no prose, a documented key no test presses, and a component whose page shows none of it.
       - name: Check the component reference is current 🔧
         run: npm run check:components
+      # The five conventions in docs/component-conventions.md, with both exception ledgers failing two
+      # ways — so a component cannot drift out of the contract, and the debt cannot quietly grow.
+      - name: Check the component contract 🔧
+        run: npm run check:conventions
       # The skill, the Cursor rule and the marketplace entry are generated from the rules file and the
       # prop reference, and an install command reads them out of this repository — so a hand-edit of one
       # is a claim nothing holds up.

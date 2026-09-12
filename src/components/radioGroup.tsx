@@ -8,7 +8,7 @@ import Flex from './flex';
 import RadioButton from './radioButton';
 import { Span } from './semantics';
 
-/** Why the selection changed — `onChange` gets this alongside the event that did it. */
+/** Why the selection changed — `onValueChange` gets this alongside the event that did it. */
 export type RadioGroupReason = 'click' | 'keyboard';
 
 interface RadioGroupContextValue {
@@ -32,6 +32,12 @@ interface Props<TKey extends keyof ComponentsAndVariants> extends RadioGroupBoxP
   defaultValue?: string;
   /** Fires with the new value and why it changed — `'click'` or `'keyboard'`. A group can also hold
    * nothing, so the value is `string | undefined`. */
+  onValueChange?: ChangeHandler<string | undefined, RadioGroupReason>;
+  /**
+   * The same callback under its old name. Both fire, so either one can be passed.
+   * @deprecated `onValueChange` is what every other component reports a value change under, and a group
+   * is not an `<input>` — this spelling still works and means the same thing.
+   */
   onChange?: ChangeHandler<string | undefined, RadioGroupReason>;
   /** Which way the radios stack. Both arrow pairs navigate either way, as APG specifies. */
   orientation?: 'vertical' | 'horizontal';
@@ -80,7 +86,7 @@ function directionOf(key: string): number {
  * as they go. Pattern: https://www.w3.org/WAI/ARIA/apg/patterns/radio/
  *
  * ```tsx
- * <RadioGroup label="Plan" defaultValue="free" onChange={(plan) => setPlan(plan)}>
+ * <RadioGroup label="Plan" defaultValue="free" onValueChange={(plan) => setPlan(plan)}>
  *   <RadioGroup.Item value="free" label="Free" />
  * </RadioGroup>
  * ```
@@ -106,7 +112,18 @@ function directionOf(key: string): number {
  * @keyboard Space — Chooses the focused option. The platform supplies this one.
  */
 function RadioGroupImpl<TKey extends keyof ComponentsAndVariants = never>(props: Props<TKey>) {
-  const { label, name, value, defaultValue, onChange, orientation = 'vertical', children, props: tagProps, ...restProps } = props;
+  const {
+    label,
+    name,
+    value,
+    defaultValue,
+    onValueChange,
+    onChange,
+    orientation = 'vertical',
+    children,
+    props: tagProps,
+    ...restProps
+  } = props;
 
   const identifier = useIdentifier('radiogroup');
   const groupRef = useRef<HTMLDivElement>(null);
@@ -114,7 +131,17 @@ function RadioGroupImpl<TKey extends keyof ComponentsAndVariants = never>(props:
   // radio with a real click, so by the time the change arrives the keystroke behind it is gone.
   const source = useRef<RadioGroupReason>('click');
 
-  const [selected, setSelected] = useControllableState<string | undefined, RadioGroupReason>({ value, defaultValue, onChange });
+  // Both names reach the same handler, so a caller mid-migration can pass either and neither is dropped.
+  const report: ChangeHandler<string | undefined, RadioGroupReason> = useEventCallback((next, details) => {
+    onValueChange?.(next, details);
+    onChange?.(next, details);
+  });
+
+  const [selected, setSelected] = useControllableState<string | undefined, RadioGroupReason>({
+    value,
+    defaultValue,
+    onChange: report,
+  });
 
   const handleKeyDown = useEventCallback((event: React.KeyboardEvent) => {
     const direction = directionOf(event.key);
