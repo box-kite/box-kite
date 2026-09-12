@@ -1336,6 +1336,279 @@ const boxComponents = {
       },
     },
   },
+  combobox: {
+    styles: {
+      display: 'flex',
+      width: 'fit-content',
+      minWidth: 48,
+      gap: 1,
+      px: 2,
+      py: 1.5,
+      // The whole shell is the field's hit area, which is what the pointer handler makes true.
+      cursor: 'text',
+      bgColor: 'white',
+      color: 'gray-900',
+      b: 1,
+      borderColor: 'gray-300',
+      borderRadius: 2,
+      lineHeight: 20,
+      transition: 'none',
+      hover: {
+        borderColor: 'gray-400',
+      },
+      // `focus` is `:focus-within`, so the shell lights up for the field inside it.
+      focus: {
+        outline: 2,
+        outlineOffset: 0,
+        borderColor: 'indigo-500',
+        outlineColor: 'indigo-200',
+      },
+      // The shell is a `<div>` and takes no `disabled` of its own: the state belongs to the field in it.
+      hasDisabled: {
+        cursor: 'not-allowed',
+        bgColor: 'gray-100',
+        color: 'gray-400',
+        borderColor: 'gray-300',
+      },
+      theme: {
+        dark: {
+          bgColor: 'gray-800',
+          color: 'gray-100',
+          borderColor: 'gray-700',
+          hover: {
+            borderColor: 'gray-600',
+          },
+          focus: {
+            borderColor: 'indigo-400',
+            outlineColor: 'indigo-900',
+          },
+          hasDisabled: {
+            bgColor: 'gray-900',
+            color: 'gray-500',
+            borderColor: 'gray-700',
+          },
+        },
+      },
+    },
+    variants: {
+      compact: {
+        px: 1.5,
+        py: 0.5,
+        fontSize: 13,
+      },
+    },
+    children: {
+      label: {
+        styles: {
+          fontSize: 14,
+          color: 'gray-700',
+          theme: {
+            dark: {
+              color: 'gray-300',
+            },
+          },
+        },
+      },
+      field: {
+        styles: {
+          // A zero basis that then grows is what lets chips wrap without the field pushing them around;
+          // the minimum is what stops it collapsing to nothing once they have.
+          width: 0,
+          flexGrow: 1,
+          minWidth: 12,
+          b: 0,
+          p: 0,
+          bgColor: 'transparent',
+          color: 'currentColor',
+          outline: 0,
+          lineHeight: 20,
+          placeholder: {
+            color: 'gray-400',
+          },
+          disabled: {
+            cursor: 'not-allowed',
+          },
+          theme: {
+            dark: {
+              placeholder: {
+                color: 'gray-500',
+              },
+            },
+          },
+        },
+      },
+      chip: {
+        styles: {
+          display: 'flex',
+          gap: 1,
+          ps: 2,
+          pe: 1,
+          py: 0.5,
+          fontSize: 13,
+          lineHeight: 18,
+          borderRadius: 1,
+          bgColor: 'gray-100',
+          color: 'gray-800',
+          whiteSpace: 'nowrap',
+          theme: {
+            dark: {
+              bgColor: 'gray-700',
+              color: 'gray-100',
+            },
+          },
+        },
+      },
+      remove: {
+        styles: {
+          display: 'flex',
+          width: 4,
+          height: 4,
+          b: 0,
+          p: 0,
+          borderRadius: 1,
+          bgColor: 'transparent',
+          color: 'gray-500',
+          cursor: 'pointer',
+          hover: {
+            bgColor: 'gray-300',
+            color: 'gray-900',
+          },
+          theme: {
+            dark: {
+              color: 'gray-400',
+              hover: {
+                bgColor: 'gray-600',
+                color: 'white',
+              },
+            },
+          },
+        },
+      },
+      icon: {
+        styles: {
+          display: 'flex',
+          ai: 'center',
+          color: 'gray-500',
+          theme: {
+            dark: {
+              color: 'gray-400',
+            },
+          },
+        },
+      },
+      items: {
+        styles: {
+          display: 'flex',
+          d: 'column',
+          gap: 1,
+          p: 1,
+          b: 1,
+          borderRadius: 2,
+          bgColor: 'white',
+          overflow: 'auto',
+          maxHeight: 62,
+          borderColor: 'gray-300',
+          color: 'gray-900',
+          shadow: 'medium',
+          theme: {
+            dark: {
+              bgColor: 'gray-800',
+              borderColor: 'gray-700',
+              color: 'gray-100',
+            },
+          },
+          // Mounted when it opens, so `@starting-style` is the whole entrance — no state and no effect.
+          startingStyle: { opacity: 0, translateY: -1 },
+        },
+        // A popup collapses back into the field it came out of, so the 4px the exit covers changes sign
+        // with the direction it opened in. The exit runs long after the flip is settled, which is why it
+        // can be sure of the side and the entrance cannot.
+        variants: {
+          closed: { opacity: 0, translateY: -1, pointerEvents: 'none' },
+          closedUp: { opacity: 0, translateY: 1, pointerEvents: 'none' },
+        },
+      },
+      item: {
+        styles: {
+          display: 'flex',
+          px: 2,
+          py: 1.5,
+          cursor: 'pointer',
+          borderRadius: 1,
+          lineHeight: 20,
+          hover: {
+            bgColor: 'gray-100',
+          },
+          selected: {
+            bgColor: 'indigo-50',
+          },
+          ariaAttr: {
+            disabled: {
+              cursor: 'not-allowed',
+              color: 'gray-400',
+              hover: {
+                bgColor: 'transparent',
+              },
+            },
+          },
+          theme: {
+            dark: {
+              hover: {
+                bgColor: 'gray-700',
+              },
+              selected: {
+                bgColor: 'indigo-900',
+              },
+              ariaAttr: {
+                disabled: {
+                  color: 'gray-500',
+                },
+              },
+            },
+          },
+        },
+        variants: {
+          // Where the keyboard is. A listbox driven by `aria-activedescendant` holds no DOM focus
+          // anywhere, so `:focus-within` never fires and the highlight has to be drawn from state. An
+          // inset outline rather than a background: it reads over the selected row's own colour instead
+          // of fighting it for the same declaration.
+          highlighted: {
+            outline: 2,
+            // Without a style there is no outline at all: `outline-style` starts at `none`.
+            outlineStyle: 'solid',
+            outlineOffset: -2,
+            outlineColor: 'indigo-500',
+            theme: {
+              dark: {
+                outlineColor: 'indigo-400',
+              },
+            },
+          },
+          create: {
+            color: 'indigo-600',
+            theme: {
+              dark: {
+                color: 'indigo-300',
+              },
+            },
+          },
+        },
+      },
+      message: {
+        styles: {
+          px: 2,
+          py: 1.5,
+          color: 'gray-500',
+          lineHeight: 20,
+          theme: {
+            dark: {
+              color: 'gray-400',
+            },
+          },
+        },
+      },
+    },
+  },
   dropdown: {
     styles: {
       display: 'inline-block',

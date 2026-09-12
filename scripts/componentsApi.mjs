@@ -154,6 +154,20 @@ const CONFIG = [
     parts: [{ name: 'Dropdown.Display', props: 'DropdownDisplayProps', doc: 'DropdownDisplayProps' }],
   },
   {
+    name: 'Combobox',
+    route: '/combobox',
+    file: 'src/components/combobox.tsx',
+    // The props interface, not the exported `Props`: that one is an intersection with a union, which
+    // has no members to read. The two halves of that union are parts of their own below.
+    props: 'BaseProps',
+    doc: 'ComboboxImpl',
+    styles: 'combobox',
+    parts: [
+      { name: 'Combobox (single-select)', props: 'SingleProps', doc: 'SingleProps' },
+      { name: 'Combobox (multiple)', props: 'MultipleProps', doc: 'MultipleProps' },
+    ],
+  },
+  {
     name: 'DataGrid',
     route: '/datagrid',
     file: 'src/components/dataGrid.tsx',
