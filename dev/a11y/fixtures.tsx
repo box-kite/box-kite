@@ -63,6 +63,13 @@ interface Person {
   age: number;
 }
 
+/** Long enough to be windowed by default, so the fixture exercises the slice rather than the whole list. */
+const manyPeople: Person[] = Array.from({ length: 500 }, (_, index) => ({
+  id: index + 1,
+  name: `Person ${index + 1}`,
+  age: 20 + (index % 50),
+}));
+
 const people: Person[] = [
   { id: 1, name: 'Ada', age: 36 },
   { id: 2, name: 'Grace', age: 45 },
@@ -263,6 +270,13 @@ export const fixtures: A11yFixture[] = [
     // after what it removes, and it is not a tab stop, which axe checks differently.
     name: 'Combobox (multiple, open)',
     render: () => <Combobox<Person> label="People" data={people} def={{ label: 'name', key: 'id' }} multiple defaultValue={[people[0]]} />,
+    setup: openPopup,
+  },
+  {
+    // A windowed listbox holds a slice of its rows, so every option has to carry the size of the whole
+    // list and its own place in it — the one thing axe can check about virtualization.
+    name: 'Combobox (virtualized, open)',
+    render: () => <Combobox<Person> label="Person" data={manyPeople} def={{ label: 'name', key: 'id' }} />,
     setup: openPopup,
   },
   {

@@ -1528,6 +1528,23 @@ const boxComponents = {
           closedUp: { opacity: 0, translateY: 1, pointerEvents: 'none' },
         },
       },
+      // The part that is not yours: what a windowed listbox renders its rows into. Its height is the
+      // whole list's and its top padding is where the slice starts, both written as inline styles
+      // because they change with the scroll — a class per pixel is a rule per frame that is never freed.
+      window: {
+        styles: {
+          display: 'flex',
+          d: 'column',
+          gap: 1,
+          // A flex item with a declared height still shrinks, and the padding sits inside it, not on top.
+          flexShrink: 0,
+          boxSizing: 'border-box',
+          // Both numbers change on every scroll event, and every Box otherwise carries a 250ms `all`
+          // transition — which animates the slice towards where it belongs and leaves it behind the
+          // scroll the whole way there. Measured in Chrome: 165px of an asked-for 3456.
+          transition: 'none',
+        },
+      },
       item: {
         styles: {
           display: 'flex',

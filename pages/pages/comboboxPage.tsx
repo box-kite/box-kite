@@ -36,6 +36,16 @@ const people: Person[] = [
 
 const def = { label: 'name', key: 'id', disabled: 'away' } as const;
 
+interface City {
+  id: number;
+  name: string;
+}
+
+/** Ten thousand rows, built rather than shipped: the point of the demo is the count, not the names. */
+const cities: City[] = Array.from({ length: 10_000 }, (_, index) => ({ id: index + 1, name: `City ${index + 1}` }));
+
+const cityDef = { label: 'name', key: 'id' } as const;
+
 export default function ComboboxPage() {
   useTableOfContents(sidebarLinks);
 
@@ -224,6 +234,46 @@ export default function ComboboxPage() {
             </Box>
           </Section>
 
+          <Section id="scale" title="Ten thousand options">
+            <Box>
+              A list past a hundred rows is windowed: the popup renders the dozen on screen and a few either side, so it opens in one frame
+              whether it holds a hundred rows or ten thousand. Nothing about the rest of the component changes — the filter still runs over
+              the whole list, the arrows still walk all of it, and the value is still the row you passed in.
+            </Box>
+            <Box mt={4}>
+              <Code
+                language="jsx"
+                code={`<Combobox
+  data={cities}
+  def={{ label: 'name', key: 'id' }}
+  label="City"
+/>`}
+              >
+                <Box py={6} maxWidth={80}>
+                  <Combobox<City> data={cities} def={cityDef} label="City" placeholder="Start typing…" />
+                  <Box mt={4} fontSize={13} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
+                    <Mono>{cities.length.toLocaleString('en-US')}</Mono> rows. Open it and scroll: the DOM holds about fifteen options at a
+                    time.
+                  </Box>
+                </Box>
+              </Code>
+            </Box>
+            <Box mt={4}>
+              The row height is measured rather than declared, so a restyled option windows correctly on its own. What windowing assumes is
+              that rows are all the <em>same</em> height — a <Mono>display</Mono> that varies one wants <Mono>{'virtualize={false}'}</Mono>,
+              which renders every row however many there are. <Mono>virtualize</Mono> also takes <Mono>true</Mono> to window a short list
+              and an object to tune it: <Mono>threshold</Mono> is the row count it starts at, <Mono>overscan</Mono> how many rows are kept
+              either side, and <Mono>itemHeight</Mono> the pitch, when it should be stated rather than measured.
+            </Box>
+            <Box mt={4}>
+              The half of this that is not performance is the ARIA. A windowed listbox holds a slice of its rows, so every option carries{' '}
+              <Mono>aria-setsize</Mono> and <Mono>aria-posinset</Mono> — without them a screen reader would announce &ldquo;Person 1 of
+              15&rdquo; on a list of ten thousand. And the row the keyboard is on is always rendered, whatever the scroll position says:{' '}
+              <Mono>aria-activedescendant</Mono> naming a row that was never put in the DOM names nothing at all, so the window goes where
+              the keyboard is and lets the scroll catch up.
+            </Box>
+          </Section>
+
           <Section id="keyboard" title="What the keyboard does">
             <Box>
               It is APG's editable combobox. Typing filters and never highlights a suggestion — that is <em>list</em> autocomplete, not
@@ -242,9 +292,10 @@ export default function ComboboxPage() {
             <Box>
               Every part is a node of the <Mono>combobox</Mono> style tree: <Mono>combobox.label</Mono>, <Mono>combobox.field</Mono>,{' '}
               <Mono>combobox.chip</Mono> and its <Mono>combobox.remove</Mono>, <Mono>combobox.icon</Mono>, <Mono>combobox.items</Mono>,{' '}
-              <Mono>combobox.item</Mono> and <Mono>combobox.message</Mono>. A row's chosen state is its own <Mono>aria-selected</Mono>, and
-              where the keyboard is is the <Mono>highlighted</Mono> variant — a listbox driven by <Mono>aria-activedescendant</Mono> holds
-              DOM focus nowhere, so <Mono>:focus-within</Mono> never fires and the highlight has to be drawn from state.
+              <Mono>combobox.item</Mono> and <Mono>combobox.message</Mono>. The one that is not yours is <Mono>combobox.window</Mono>, what
+              a windowed listbox renders its slice into. A row's chosen state is its own <Mono>aria-selected</Mono>, and where the keyboard
+              is is the <Mono>highlighted</Mono> variant — a listbox driven by <Mono>aria-activedescendant</Mono> holds DOM focus nowhere,
+              so <Mono>:focus-within</Mono> never fires and the highlight has to be drawn from state.
             </Box>
             <Box mt={4}>
               <Code
@@ -255,6 +306,31 @@ export default function ComboboxPage() {
                   <Combobox<Person> data={people} def={def} label="Assignee" borderRadius={4} itemsProps={{ p: 2 }} />
                 </Box>
               </Code>
+            </Box>
+          </Section>
+
+          <Section id="comparison" title="The combobox Radix never had">
+            <Box>
+              Radix has never shipped one. <Mono>radix-ui/primitives#1342</Mono> asked for it in 2022 and is still open, which is why a
+              Radix-based app reaches for <Mono>downshift</Mono> or <Mono>cmdk</Mono> and then writes the markup, the styling and the ARIA
+              around it. <Mono>downshift</Mono> alone is 17.68 KB gz before any of that; this is 8.65 KB on top of Box, with the listbox,
+              the chips, the create row and the windowing in it.
+            </Box>
+            <Box mt={4}>
+              <Code
+                language="jsx"
+                code={`<Combobox
+  data={cities}
+  def={{ label: 'name', key: 'id' }}
+  label="City"
+  multiple
+  createRow={(query) => ({ id: query, name: query })}
+/>`}
+              />
+            </Box>
+            <Box mt={4}>
+              Ten thousand rows, several selected as chips, a query that can become a row, and the value that comes back is one of the
+              objects that went in. The three things a string-only API cannot do are the three complaints that issue collects.
             </Box>
           </Section>
 
@@ -293,8 +369,10 @@ const sidebarLinks = [
   { id: 'filter', label: 'The filter is yours' },
   { id: 'async', label: 'A server that searched' },
   { id: 'create', label: 'A row that is not there' },
+  { id: 'scale', label: 'Ten thousand options' },
   { id: 'keyboard', label: 'What the keyboard does' },
   { id: 'styling', label: 'Styling' },
+  { id: 'comparison', label: 'The one Radix never had' },
   ...apiSections(comboboxApi),
 ];
 

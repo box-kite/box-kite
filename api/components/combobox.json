@@ -118,6 +118,13 @@
       "description": "What the create row reads. Given the query, since the row it would make is not the one shown."
     },
     {
+      "name": "virtualize",
+      "type": "boolean | ComboboxVirtualize",
+      "required": false,
+      "default": null,
+      "description": "Render only the rows on screen, which is what a list of thousands needs to open in one frame. On by default above a hundred rows; an object tunes it (`threshold` is what turns it on earlier), `false` never windows and `true` always does. Rows have to be a uniform height for it, which is measured rather than declared — a `display` that varies one wants `false`."
+    },
+    {
       "name": "removeLabel",
       "type": "(label: string) => string",
       "required": false,
@@ -269,7 +276,7 @@
     "A chip's remove button is deliberately not a tab stop — twenty selections would otherwise cost twenty presses to Tab past. Backspace on an empty field removes the last, and the listbox toggles a row back off, so removal is reachable from the keyboard without them.",
     "The popup is a sibling of the field in the browser's top layer, so it needs no portal and keeps the theme, the custom properties and the direction around it."
   ],
-  "axe": { "fixtures": ["Combobox (open)", "Combobox (multiple, open)"], "knownViolations": [] },
+  "axe": { "fixtures": ["Combobox (open)", "Combobox (multiple, open)", "Combobox (virtualized, open)"], "knownViolations": [] },
   "styleTree": [
     { "path": "combobox", "depth": 0, "extends": null, "variants": ["compact"] },
     { "path": "combobox.label", "depth": 1, "extends": null, "variants": [] },
@@ -278,6 +285,7 @@
     { "path": "combobox.remove", "depth": 1, "extends": null, "variants": [] },
     { "path": "combobox.icon", "depth": 1, "extends": null, "variants": [] },
     { "path": "combobox.items", "depth": 1, "extends": null, "variants": ["closed", "closedUp"] },
+    { "path": "combobox.window", "depth": 1, "extends": null, "variants": [] },
     { "path": "combobox.item", "depth": 1, "extends": null, "variants": ["highlighted", "create"] },
     { "path": "combobox.message", "depth": 1, "extends": null, "variants": [] }
   ]

@@ -9,7 +9,7 @@ import useIdentifier from '../react/identity/useIdentifier';
 import { BoxStyleProps, ComponentsAndVariants } from '../types';
 import ComboboxUtils, { ComboboxFilter, ComboboxRow, ComboboxRowDef } from '../utils/combobox/comboboxUtils';
 import ComboboxChips from './combobox/comboboxChips';
-import ComboboxListbox from './combobox/comboboxListbox';
+import ComboboxListbox, { ComboboxVirtualize } from './combobox/comboboxListbox';
 import Flex from './flex';
 import Presence from './presence';
 import { Path, Svg } from './svg';
@@ -78,6 +78,13 @@ interface BaseProps<TRow, TKey extends keyof ComponentsAndVariants = 'combobox'>
   createRow?: (query: string) => TRow | null;
   /** What the create row reads. Given the query, since the row it would make is not the one shown. */
   createLabel?: (query: string) => React.ReactNode;
+  /**
+   * Render only the rows on screen, which is what a list of thousands needs to open in one frame. On by
+   * default above a hundred rows; an object tunes it (`threshold` is what turns it on earlier),
+   * `false` never windows and `true` always does. Rows have to be a uniform height for it, which is
+   * measured rather than declared — a `display` that varies one wants `false`.
+   */
+  virtualize?: boolean | ComboboxVirtualize;
   /** A chip's remove button's accessible name, given the row's label. */
   removeLabel?: (label: string) => string;
   /** The typed text. Controlled — pair it with `onQueryChange`, which is also the hook an async search uses. */
@@ -200,6 +207,7 @@ function ComboboxImpl<TRow>(props: Props<TRow>, ref: Ref<HTMLInputElement>): Rea
     createRow,
     createLabel = (query: string) => `Create "${query}"`,
     removeLabel = (text: string) => `Remove ${text}`,
+    virtualize,
     query: queryProp,
     defaultQuery,
     onQueryChange,
@@ -504,6 +512,7 @@ function ComboboxImpl<TRow>(props: Props<TRow>, ref: Ref<HTMLInputElement>): Rea
           loadingText={loadingText}
           emptyText={emptyText}
           createLabel={createLabel}
+          virtualize={virtualize}
           variant={restProps.variant}
           itemsProps={itemsProps}
         />
@@ -570,4 +579,4 @@ const Combobox = forwardRef(ComboboxImpl) as unknown as ComboboxType;
 export default Combobox;
 // The filter the component uses when a caller names none, so a caller who names one can start from it.
 export { default as ComboboxUtils } from '../utils/combobox/comboboxUtils';
-export type { ComboboxFilter, ComboboxRow, ComboboxRowDef };
+export type { ComboboxFilter, ComboboxRow, ComboboxRowDef, ComboboxVirtualize };
