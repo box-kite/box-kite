@@ -1083,6 +1083,33 @@ entry: {
 },
 ```
 
+### API review
+
+Every component keeps the five conventions in [docs/component-conventions.md](docs/component-conventions.md),
+and `npm run check:conventions` enforces four of them. Before opening a PR that adds or changes a
+component's props, walk this:
+
+- [ ] **State.** Is there a `value`/`defaultValue` (or `open`/`defaultOpen`) pair? It is held by
+      `useControllableState`, not by a `useState` of your own.
+- [ ] **Changes.** Is every callback `onXChange(value, { reason })` — a `ChangeHandler` whose reason
+      is a **named union** exported beside the component? Reuse an existing reason where the mechanic
+      is the same (`'escape'`, `'outside-pointer'`, `'imperative'`). The exception is a component
+      rendering a real form control, which forwards the DOM event instead.
+- [ ] **Effects.** Does any effect set state from a prop? Derive the value in render instead. This is
+      the rule the script cannot check, so it is the one to read the diff for.
+- [ ] **Composition.** Does the component put attributes on something the caller rendered? It hands
+      out a bag to spread (`trigger`, the `Presence` handle) and never clones the child.
+- [ ] **Styling.** Does every part extend `BoxProps`, and does the component have a node in
+      `boxComponents.ts` for `Box.components()` to replace?
+- [ ] **The reference.** Is the component in `scripts/componentsApi.mjs`? That is what puts it in
+      front of both this check and the generated API page.
+
+A break the contract genuinely does not cover goes in the `SANCTIONED` ledger in
+`scripts/check-component-conventions.mjs`, **with the reason written out** — that prose is what the
+next reviewer weighs the one after it against. A break that is simply not fixed yet goes in `OWED`,
+named after the step that clears it. Neither ledger tolerates a stale entry: the check fails on an
+exception that has stopped being true, so paying a debt means deleting its line in the same commit.
+
 ---
 
 ## Type System

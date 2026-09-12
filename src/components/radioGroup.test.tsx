@@ -65,22 +65,33 @@ describe('RadioGroup', () => {
   });
 
   it('moves the selection when an item is clicked, and reports the value with a reason', () => {
-    const onChange = vi.fn<(value: string | undefined, details: { reason: RadioGroupReason }) => void>();
-    renderGroup({ defaultValue: 'free', onChange });
+    const onValueChange = vi.fn<(value: string | undefined, details: { reason: RadioGroupReason }) => void>();
+    renderGroup({ defaultValue: 'free', onValueChange });
 
     fireEvent.click(radios()[2]);
 
     expect(radios().map((radio) => radio.checked)).toEqual([false, false, true]);
+    expect(onValueChange).toHaveBeenCalledWith('team', expect.objectContaining({ reason: 'click' }));
+  });
+
+  it('still reports through the deprecated onChange, and through both at once', () => {
+    const onValueChange = vi.fn();
+    const onChange = vi.fn();
+    renderGroup({ defaultValue: 'free', onValueChange, onChange });
+
+    fireEvent.click(radios()[2]);
+
+    expect(onValueChange).toHaveBeenCalledWith('team', expect.objectContaining({ reason: 'click' }));
     expect(onChange).toHaveBeenCalledWith('team', expect.objectContaining({ reason: 'click' }));
   });
 
   it('obeys a controlled value and does not move on its own', () => {
-    const onChange = vi.fn();
-    renderGroup({ value: 'free', onChange });
+    const onValueChange = vi.fn();
+    renderGroup({ value: 'free', onValueChange });
 
     fireEvent.click(radios()[1]);
 
-    expect(onChange).toHaveBeenCalledWith('pro', expect.objectContaining({ reason: 'click' }));
+    expect(onValueChange).toHaveBeenCalledWith('pro', expect.objectContaining({ reason: 'click' }));
     expect(radios().map((radio) => radio.checked)).toEqual([true, false, false]);
   });
 

@@ -75,6 +75,7 @@
     "docs:props": "node scripts/check-props-api.mjs --fix",
     "check:components": "node scripts/check-components-api.mjs",
     "docs:components": "node scripts/check-components-api.mjs --fix",
+    "check:conventions": "node scripts/check-component-conventions.mjs",
     "check:agents": "node scripts/check-agent-files.mjs",
     "docs:agents": "node scripts/check-agent-files.mjs --fix",
     "check:package": "publint dist && attw --pack dist --ignore-rules false-esm cjs-resolves-to-esm internal-resolution-error && publint dist-core && attw --pack dist-core --ignore-rules false-esm cjs-resolves-to-esm internal-resolution-error",

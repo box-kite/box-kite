@@ -34,11 +34,18 @@
       "description": "The option chosen to begin with, when the group owns its value."
     },
     {
-      "name": "onChange",
+      "name": "onValueChange",
       "type": "ChangeHandler<string | undefined, RadioGroupReason>",
       "required": false,
       "default": null,
       "description": "Fires with the new value and why it changed — `'click'` or `'keyboard'`. A group can also hold nothing, so the value is `string | undefined`."
+    },
+    {
+      "name": "onChange",
+      "type": "ChangeHandler<string | undefined, RadioGroupReason>",
+      "required": false,
+      "default": null,
+      "description": "The same callback under its old name. Both fire, so either one can be passed."
     },
     {
       "name": "orientation",

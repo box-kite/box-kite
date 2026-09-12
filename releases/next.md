@@ -23,6 +23,7 @@ The package now carries instructions for the agent writing the code, the documen
 - **[A slider whose value keeps its own shape](#a-slider-whose-value-keeps-its-own-shape)** — `<Slider>` takes a number for one thumb and an array for a range, so nothing at the call site has to narrow; `<Progress>` is the bar beside it, and renders on a server. 2.14 KB gz and 0.31 against Radix’s 9.71 and 2.86.
 - **[A message you send rather than render](#a-message-you-send-rather-than-render)** — `<Toaster />` once, then `toast()` from anywhere at all: a live region that exists before there is anything in it, a queue rather than a cap, and timers that stop on hover, on focus and off screen. 4.14 KB gz against sonner's 9.86 plus a stylesheet.
 - **[A combobox whose value is your own row](#a-combobox-whose-value-is-your-own-row)** — the component Radix never shipped: `<Combobox>` takes your rows and hands one back, the filter composes, the selection can be chips, a query nothing answers can become a row, and a list of ten thousand opens in one frame. 9.53 KB gz on top of Box.
+- **[The component contract, written down and enforced](#the-component-contract-written-down-and-enforced)** — five rules every component keeps: state in `useControllableState`, every change reported with a named reason, Box props on every part, a style tree to replace, and a render prop instead of `asChild`. A check with two ledgers that both fail on a stale entry is what keeps them true.
 
 ## The package tells an agent how to use it
 
@@ -634,6 +635,43 @@ The row height is measured rather than declared — the *pitch*, taken from two 
 
 **9.53 KB gz on top of Box** — the model, the listbox, the chips, the windowing and the APG keyboard, on top of the anchoring and dismissal every other layer in the library already shares. Radix has never shipped a combobox at all — [radix-ui/primitives#1342](https://github.com/radix-ui/primitives/issues/1342) has been open since 2022 — and `downshift`, the headless library people reach for instead, measures 17.68 KB gz for its own package alone, before the markup, the styling and the ARIA you still have to write around it.
 
+## The component contract, written down and enforced
+
+Twenty components have arrived in this release, and the thing you cannot see from any one of them is
+that their APIs were decisions rather than accidents. [The component
+contract](https://github.com/box-kite/box-kite/blob/main/docs/component-conventions.md) is those
+decisions, in five rules — and `npm run check:conventions` is what stops the library drifting out of
+them.
+
+**What a consumer can now rely on.** Every piece of state you may own is held by
+`useControllableState`, so controlling a value behaves exactly like not controlling it — including
+when you stop, which carries on from the last value you asked for rather than snapping back to the
+default. Every change is `onXChange(value, { reason })` with the reason a **named union** you can
+`switch` on exhaustively, so no handler has to guess whether a popup closed because something was
+picked, Escape was pressed or the page was clicked. Every part takes Box style props and every
+component has a node in `boxComponents.ts`, so `<Menu.Item px={3}>` works and the defaults can be
+replaced wholesale. And composition is a **render prop** — the answer to `asChild`: a component
+hands you a bag to spread and never reaches into the element you rendered, because cloning has to
+guess whether a DOM attribute belongs in a Box's `props` bag or on top of a plain element, and a
+wrong guess is silent.
+
+**The exceptions are the interesting part, so they are a ledger rather than a habit.** The biggest
+is deliberate: a component rendering a real form control — `Checkbox`, `Switch`, `RadioButton`,
+`Textbox`, `Textarea`, `Button` — forwards React's own `onChange`/`onInput`/`onClick` unchanged,
+because the DOM event *is* the API there and a second channel beside it would mean two ways to hear
+about one keystroke. `Menu.Item`'s `onSelect` is a command with no value to report, `Overlay`'s
+`onSideChange` reports what the browser did, and `Icon` is the one component that clones its child —
+it styles an icon somebody else drew, so there is no render prop to offer.
+
+Both ledgers in the check **fail two ways**: on a new break, and on a listed exception that has
+stopped being true. That is the rule the accessibility sweep's `knownViolations` already follows,
+and it is what keeps an exception list from becoming a place things go to be forgotten. The debt it
+currently names is `Dropdown` and `DataGrid`, the two components older than the contract.
+
+- **`RadioGroup` reports through `onValueChange`.** `onChange` still works and still fires — pass
+  either, or both — but it was the one `ChangeHandler` in the library under a DOM event's name, on a
+  component that is not an `<input>`. It is deprecated and will go in a future major.
+
 ## Breaking changes
 
 - **`Overlay` places a layer instead of translating one, so its four positioning props are gone.** `anchorSide` is `side` (`anchorSide="bottom"` is the default `side="bottom"`; the old `'top'` overlapped the anchor, which `side="bottom" offset={0}` does not — use a negative margin if you need the overlap). `adjustTranslateX`/`adjustTranslateY` are `offset` on the ÷4 scale for the gap and `align` for the sideways nudge (`adjustTranslateY="4px"` is `offset={1}`). `onPositionChange` is `onSideChange`, which reports the side rather than page coordinates — nothing measures a position any more, so there are none to report.
@@ -646,6 +684,8 @@ The row height is measured rather than declared — the *pitch*, taken from two 
 ## Fixes
 
 <!-- One bullet per fix: **What was wrong.** What it does now. -->
+
+- **A deprecated *prop* would have told forty-five coding agents to stop importing the whole component.** The scan behind the skill's "no longer the spelling to write" list took the first `@deprecated` in a component's source and named the **module** after it — fine while every deprecation in `src/components/` was a whole component, and wrong the moment one was a prop: `RadioGroup`'s renamed `onChange` came out as `@box-kite/react/components/radioGroup`, which an agent reads as "do not import this". A tag above a prop signature now names the prop (`…/radioGroup#onChange`) and only a tag elsewhere names the module, and every deprecation in a file is listed rather than just the first.
 
 - **The docs site's own keyboard access, in the two places it was a clickable `<div>`.** The nine category switchers on [/box](https://www.box-kite.dev/box) — the largest prop reference on the site — could only be reached with a mouse, so eight of its nine panels were unreachable and a screen reader was told nothing about them. They are a `role="tablist"` of real buttons over the library's own `useRovingFocus` now, with arrow keys, Home/End and a `role="tabpanel"` that says which tab named it; the forty "Show code" toggles below them are buttons with `aria-expanded`. One caption on the same page also failed contrast at 3.74:1 and does not now.
 - **Every table on the docs site rendered as a stack of full-width blocks.** `display: block` on a `<Box tag="table">` costs the table its layout _and_ its semantics, and five pages had written their own copy of the same broken table. There is one shared table now, carrying the display values each element needs — and the props above are what let it stop reaching for the escape hatch to collapse its borders.

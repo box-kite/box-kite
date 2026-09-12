@@ -67,6 +67,7 @@ Detect the package manager from the lock file rather than asking:
 - `disabledGroup` — `group={{ 'card/disabled': … }}`.
 - `selectedGroup` — `group={{ 'card/selected': … }}`.
 - `@box-kite/react/components/baseSvg` — Since SV3 every SVG element has a component, and `Svg` is this one without the presets: `<Svg viewBox="0 0 24 24" width="1.5rem">`.
+- `@box-kite/react/components/radioGroup#onChange` — `onValueChange` is what every other component reports a value change under, and a group is not an `<input>` — this spelling still works and means the same thing.
 - `@box-kite/react/components/semantics` — `MenuList` is this element now.
 
 ## The rules
