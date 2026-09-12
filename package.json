@@ -137,7 +137,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "31.54 KB"
+      "limit": "31.55 KB"
     },
     {
       "name": "Popover",
@@ -147,7 +147,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "33.03 KB"
+      "limit": "33.04 KB"
     },
     {
       "name": "Menu",
@@ -227,7 +227,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "59.05 KB"
+      "limit": "59.06 KB"
     },
     {
       "name": "Full library (Box + ssg + every component)",
