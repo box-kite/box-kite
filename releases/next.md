@@ -22,7 +22,7 @@ The package now carries instructions for the agent writing the code, the documen
 - **[An accordion whose animation is a class](#an-accordion-whose-animation-is-a-class)** — `<Accordion>` and `Collapsible`, where a panel opens in a grid track rather than a measured pixel: no `ResizeObserver`, nothing written per instance, and 1.80 KB gz for both against Radix's 8.78.
 - **[A slider whose value keeps its own shape](#a-slider-whose-value-keeps-its-own-shape)** — `<Slider>` takes a number for one thumb and an array for a range, so nothing at the call site has to narrow; `<Progress>` is the bar beside it, and renders on a server. 2.14 KB gz and 0.31 against Radix’s 9.71 and 2.86.
 - **[A message you send rather than render](#a-message-you-send-rather-than-render)** — `<Toaster />` once, then `toast()` from anywhere at all: a live region that exists before there is anything in it, a queue rather than a cap, and timers that stop on hover, on focus and off screen. 4.14 KB gz against sonner's 9.86 plus a stylesheet.
-- **[A combobox whose value is your own row](#a-combobox-whose-value-is-your-own-row)** — the component Radix never shipped: `<Combobox>` takes your rows and hands one back, the filter composes, the selection can be chips, and a query nothing answers can become a row. 8.65 KB gz on top of Box.
+- **[A combobox whose value is your own row](#a-combobox-whose-value-is-your-own-row)** — the component Radix never shipped: `<Combobox>` takes your rows and hands one back, the filter composes, the selection can be chips, a query nothing answers can become a row, and a list of ten thousand opens in one frame. 9.53 KB gz on top of Box.
 
 ## The package tells an agent how to use it
 
@@ -622,7 +622,17 @@ A chip's remove button is deliberately **not** a tab stop — twenty selections 
 
 Typing filters and never highlights a suggestion: that is *list* autocomplete rather than inline, and a highlight nobody asked for is one Tab away from being committed. The arrows move through what the filter left, Home/End and the sideways arrows move the caret and hand the highlight back to the field, Enter chooses the highlighted row and does nothing when there is none, and Escape closes the listbox keeping what was typed before a second one clears the field.
 
-**8.65 KB gz on top of Box** — the model, the listbox, the chips and the APG keyboard, on top of the anchoring and dismissal every other layer in the library already shares. Radix has never shipped a combobox at all — [radix-ui/primitives#1342](https://github.com/radix-ui/primitives/issues/1342) has been open since 2022 — and `downshift`, the headless library people reach for instead, measures 17.68 KB gz for its own package alone, before the markup, the styling and the ARIA you still have to write around it.
+### Ten thousand options
+
+A list past a hundred rows is windowed: the popup renders the dozen on screen and a few either side, so it opens in one frame whether it holds a hundred rows or ten thousand. Measured in Chrome on the ten-thousand-row demo — fifteen options in the DOM, 49 ms from the press to the open listbox, and sixty consecutive frames of scrolling with none of them over the frame budget. Nothing else about the component changes: the filter still runs over the whole list, the arrows still walk all of it, and the value is still the row you passed in.
+
+The row height is measured rather than declared — the *pitch*, taken from two rendered rows, so a gap or a border between them is part of the step — which means a restyled option windows correctly with nothing to configure. What windowing assumes is that rows are all the **same** height, so a `display` that varies one wants `virtualize={false}`, which renders every row however many there are. `virtualize` also takes `true` to window a short list, and an object to tune it: `threshold` is the row count it starts at, `overscan` how many rows are kept either side, and `itemHeight` the pitch, when it should be stated rather than measured.
+
+**The half of this that is not performance is the ARIA.** A windowed listbox holds a slice of its rows, so every option carries `aria-setsize` and `aria-posinset` — without them a screen reader announces "City 1 of 15" on a list of ten thousand. And **the row the keyboard is on is always rendered**, whatever the scroll position says: `aria-activedescendant` naming a row that was never put in the DOM names nothing at all, so the window goes where the keyboard is and lets the scroll catch up. It does not stay pinned there — a wheel scroll away from the highlight moves the list, or a combobox opened on its first row could never be scrolled at all.
+
+`combobox.window` is the one new style key, the element the slice is rendered into. Its height and its top padding are inline styles rather than classes, because they change with every scroll event and a class per pixel is a rule per frame that is never freed — the same exception a slider's thumb and an anchor's name already take.
+
+**9.53 KB gz on top of Box** — the model, the listbox, the chips, the windowing and the APG keyboard, on top of the anchoring and dismissal every other layer in the library already shares. Radix has never shipped a combobox at all — [radix-ui/primitives#1342](https://github.com/radix-ui/primitives/issues/1342) has been open since 2022 — and `downshift`, the headless library people reach for instead, measures 17.68 KB gz for its own package alone, before the markup, the styling and the ARIA you still have to write around it.
 
 ## Breaking changes
 

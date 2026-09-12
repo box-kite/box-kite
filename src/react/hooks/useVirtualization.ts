@@ -1,128 +1,108 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
+import VirtualUtils, { VirtualWindow } from '../../utils/virtual/virtualUtils';
+import { useEventCallback } from '../a11y/callbacks';
+import { useIsomorphicLayoutEffect } from '../effects';
 
 export interface UseVirtualizationOptions {
-  /** Total number of items */
-  itemCount: number;
-  /** Height of each item in pixels */
-  itemHeight: number;
-  /** Height of the visible container in pixels */
-  containerHeight: number;
-  /** Number of items to render outside visible area (default: 3) */
+  /** How many rows there are in total — not how many are rendered. */
+  count: number;
+  /** The scrolling element: what it shows at once is the viewport, and its own rows are the pitch. */
+  scrollerRef: React.RefObject<HTMLElement | null>;
+  /** The pitch of a row, when it should be declared rather than measured. */
+  itemHeight?: number;
+  /** What the scroller shows, when it should be declared rather than measured. */
+  viewHeight?: number;
   overscan?: number;
-  /** Whether virtualization is enabled (default: true when itemCount > threshold) */
-  enabled?: boolean;
-  /** Threshold for enabling virtualization (default: 50) */
   threshold?: number;
+  /** Forces windowing on or off. Left off, it follows the row count against `threshold`. */
+  enabled?: boolean;
+  /** The row the keyboard is on. Always rendered, whatever the scroll position says. */
+  activeIndex?: number;
 }
 
-export interface UseVirtualizationResult {
-  /** First item index to render */
-  startIndex: number;
-  /** Last item index to render (inclusive) */
-  endIndex: number;
-  /** Total height of all items (for scroll container) */
-  totalHeight: number;
-  /** Y offset for positioning visible items */
-  offsetY: number;
-  /** Number of visible items */
-  visibleCount: number;
-  /** Whether virtualization is active */
-  isVirtualized: boolean;
-  /** Scroll event handler - attach to container's onScroll */
-  handleScroll: (e: React.UIEvent<HTMLElement>) => void;
-  /** Current scroll position */
-  scrollTop: number;
-  /** Container style for the scroll area */
-  containerStyle: React.CSSProperties;
-  /** Inner wrapper style (total height) */
-  innerStyle: React.CSSProperties;
-  /** Content style (transform offset) */
-  contentStyle: React.CSSProperties;
+export interface UseVirtualizationResult extends VirtualWindow {
+  /** Whether the list is being windowed at all. `false` means render every row and ignore the rest. */
+  virtualized: boolean;
+  /** Goes on the element that holds the rendered rows — the one the pitch is measured from. */
+  contentRef: (element: HTMLElement | null) => void;
+  /** Goes on the scrolling element. */
+  onScroll: (event: React.UIEvent<HTMLElement>) => void;
 }
 
 /**
- * Hook for virtualizing large lists.
- * Only renders items that are visible in the viewport plus overscan buffer.
+ * Renders a window of a long list instead of all of it, over the framework-free arithmetic in
+ * `VirtualUtils`. The two measurements it needs are taken from the DOM rather than declared, so a row
+ * restyled by the caller still windows correctly; until something has been laid out (a first render, or
+ * a test environment that computes none) the defaults in the model stand in.
  */
 export default function useVirtualization(options: UseVirtualizationOptions): UseVirtualizationResult {
-  const { itemCount, itemHeight, containerHeight, overscan = 3, enabled, threshold = 50 } = options;
+  const { count, scrollerRef, itemHeight, viewHeight, overscan, threshold, enabled, activeIndex } = options;
 
-  const [scrollTop, setScrollTop] = useState(0);
-  const rafRef = useRef<number | null>(null);
+  // Where the list is scrolled to, and which row was highlighted when it got there. The second half is
+  // what stops the highlight pinning the window: a wheel scroll away from the active row has to move the
+  // list, and only a highlight that has moved *since* the scroll gets to drag the window back to it.
+  const [scroll, setScroll] = useState({ top: 0, at: -1 });
+  const [measured, setMeasured] = useState({ itemHeight: 0, viewHeight: 0 });
+  const contentEl = useRef<HTMLElement | null>(null);
 
-  // Determine if virtualization should be active
-  const isVirtualized = enabled ?? itemCount > threshold;
-
-  // Calculate visible range
-  const { startIndex, endIndex, visibleCount } = useMemo(() => {
-    if (!isVirtualized) {
-      return { startIndex: 0, endIndex: itemCount - 1, visibleCount: itemCount };
-    }
-
-    const visible = Math.ceil(containerHeight / itemHeight);
-    const start = Math.max(0, Math.floor(scrollTop / itemHeight) - overscan);
-    const end = Math.min(itemCount - 1, start + visible + overscan * 2);
-
-    return { startIndex: start, endIndex: end, visibleCount: visible };
-  }, [isVirtualized, itemCount, itemHeight, containerHeight, scrollTop, overscan]);
-
-  const totalHeight = itemCount * itemHeight;
-  const offsetY = startIndex * itemHeight;
-
-  // Use requestAnimationFrame for smooth scrolling
-  const handleScroll = useCallback((e: React.UIEvent<HTMLElement>) => {
-    const target = e.target as HTMLElement;
-
-    if (rafRef.current !== null) {
-      cancelAnimationFrame(rafRef.current);
-    }
-
-    rafRef.current = requestAnimationFrame(() => {
-      setScrollTop(target.scrollTop);
-      rafRef.current = null;
-    });
+  const contentRef = useCallback((element: HTMLElement | null) => {
+    contentEl.current = element;
   }, []);
 
-  // Styles for the virtualized container structure
-  const containerStyle: React.CSSProperties = useMemo(
-    () =>
-      isVirtualized
-        ? {
-            maxHeight: containerHeight,
-            overflowY: 'auto',
-            willChange: 'scroll-position',
-          }
-        : { maxHeight: containerHeight, overflowY: 'auto' },
-    [isVirtualized, containerHeight],
-  );
+  const virtualized = VirtualUtils.shouldVirtualize(count, enabled, threshold);
 
-  const innerStyle: React.CSSProperties = useMemo(
-    () => (isVirtualized ? { height: totalHeight, position: 'relative' } : {}),
-    [isVirtualized, totalHeight],
-  );
+  const measure = useEventCallback(() => {
+    const scroller = scrollerRef.current;
+    const content = contentEl.current;
+    if (!scroller || !content) return;
 
-  const contentStyle: React.CSSProperties = useMemo(
-    () =>
-      isVirtualized
-        ? {
-            transform: `translate3d(0, ${offsetY}px, 0)`,
-            willChange: 'transform',
-          }
-        : {},
-    [isVirtualized, offsetY],
-  );
+    const rows = content.children;
+    const first = rows[0] as HTMLElement | undefined;
+    const second = rows[1] as HTMLElement | undefined;
 
-  return {
-    startIndex,
-    endIndex,
-    totalHeight,
-    offsetY,
-    visibleCount,
-    isVirtualized,
-    handleScroll,
-    scrollTop,
-    containerStyle,
-    innerStyle,
-    contentStyle,
-  };
+    // The *pitch*, not the height: a gap, a margin or a border between two rows is part of the step the
+    // window is sliced on, and two adjacent rows are what read it back whatever drew it.
+    const pitch = second ? second.offsetTop - first!.offsetTop : (first?.offsetHeight ?? 0);
+    const view = scroller.clientHeight;
+
+    // Returning the same object when nothing moved is what keeps a measurement out of a render loop.
+    setMeasured((current) =>
+      current.itemHeight === pitch && current.viewHeight === view ? current : { itemHeight: pitch, viewHeight: view },
+    );
+  });
+
+  useIsomorphicLayoutEffect(() => {
+    if (!virtualized) return;
+
+    measure();
+    if (typeof ResizeObserver === 'undefined') return;
+
+    const scroller = scrollerRef.current;
+    if (!scroller) return;
+
+    // The scroller, whose height is the viewport. Not the content, whose height this hook writes.
+    const observer = new ResizeObserver(measure);
+    observer.observe(scroller);
+
+    return () => observer.disconnect();
+  }, [virtualized, count, measure, scrollerRef]);
+
+  const onScroll = useEventCallback((event: React.UIEvent<HTMLElement>) => {
+    setScroll({ top: event.currentTarget.scrollTop, at: activeIndex ?? -1 });
+  });
+
+  const slice = VirtualUtils.windowFor({
+    count,
+    itemHeight: itemHeight ?? (measured.itemHeight > 0 ? measured.itemHeight : VirtualUtils.DEFAULT_ITEM_HEIGHT),
+    viewHeight: viewHeight ?? (measured.viewHeight > 0 ? measured.viewHeight : VirtualUtils.DEFAULT_VIEW_HEIGHT),
+    scrollTop: scroll.top,
+    overscan,
+    activeIndex: activeIndex === scroll.at ? -1 : activeIndex,
+  });
+
+  if (!virtualized) {
+    return { startIndex: 0, endIndex: count, offsetY: 0, totalHeight: 0, virtualized, contentRef, onScroll };
+  }
+
+  return { ...slice, virtualized, contentRef, onScroll };
 }
