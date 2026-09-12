@@ -592,21 +592,16 @@ Two more things the UA stylesheet's own `[popover]` rule decides, both found in 
 ```tsx
 import Combobox from '@box-kite/react/components/combobox';
 
-<Combobox
-  data={people}
-  def={{ label: 'name', key: 'id' }}
-  label="Assignee"
-  onValueChange={(person) => assign(person)}
-/>;
+<Combobox data={people} def={{ label: 'name', key: 'id' }} label="Assignee" onValueChange={(person) => assign(person)} />;
 ```
 
-**A row in is a row out.** `data` is the list of objects you already hold, and the value is one of *those rows* rather than a string dug out of one — `onValueChange` hands the object straight back, typed, so there is no lookup table on the other side of the handler. `def` says how to read a row: `label` is its text (searched, displayed and read out) and `key` is what makes two rows the same row, so a list refetched from the server still shows the selection as chosen. Both take a key of the row or a function, and `disabled` and `display` are the other two.
+**A row in is a row out.** `data` is the list of objects you already hold, and the value is one of _those rows_ rather than a string dug out of one — `onValueChange` hands the object straight back, typed, so there is no lookup table on the other side of the handler. `def` says how to read a row: `label` is its text (searched, displayed and read out) and `key` is what makes two rows the same row, so a list refetched from the server still shows the selection as chosen. Both take a key of the row or a function, and `disabled` and `display` are the other two.
 
 **`multiple` turns the selection into chips and the value into an array.** It is a prop rather than something inferred from the value, which is the one place this differs from `<Slider>`: a slider always has a value to read the shape off, and a combobox usually starts with nothing in it. Choosing a row that is already chosen takes it off again.
 
 A chip's remove button is deliberately **not** a tab stop — twenty selections would otherwise cost twenty presses to Tab past. Backspace on an empty field removes the last one and the listbox toggles any row back off, so removal is reachable from the keyboard without them, and each button still carries a name for anyone reading the control rather than tabbing through it.
 
-**The filter composes.** The built-in one folds case and strips accents, so `jose` finds `José`, and matches anywhere in the label rather than only at the front. `filter` replaces it and takes the *whole list*, so it can rank as well as reject — and it is handed the label reader, so starting from the built-in one costs nothing:
+**The filter composes.** The built-in one folds case and strips accents, so `jose` finds `José`, and matches anywhere in the label rather than only at the front. `filter` replaces it and takes the _whole list_, so it can rank as well as reject — and it is handed the label reader, so starting from the built-in one costs nothing:
 
 ```tsx
 <Combobox
@@ -621,13 +616,13 @@ A chip's remove button is deliberately **not** a tab stop — twenty selections 
 
 **`createRow` turns what was typed into a row.** Return the row, or `null` to refuse the query. Its presence is what offers the create row at all, and one is never offered for a query a row already answers by name — offering "Create Design" beside Design is how a list grows twins. The change arrives with its own reason, `create`, beside `select`, `deselect` and `remove`.
 
-Typing filters and never highlights a suggestion: that is *list* autocomplete rather than inline, and a highlight nobody asked for is one Tab away from being committed. The arrows move through what the filter left, Home/End and the sideways arrows move the caret and hand the highlight back to the field, Enter chooses the highlighted row and does nothing when there is none, and Escape closes the listbox keeping what was typed before a second one clears the field.
+Typing filters and never highlights a suggestion: that is _list_ autocomplete rather than inline, and a highlight nobody asked for is one Tab away from being committed. The arrows move through what the filter left, Home/End and the sideways arrows move the caret and hand the highlight back to the field, Enter chooses the highlighted row and does nothing when there is none, and Escape closes the listbox keeping what was typed before a second one clears the field.
 
 ### Ten thousand options
 
 A list past a hundred rows is windowed: the popup renders the dozen on screen and a few either side, so it opens in one frame whether it holds a hundred rows or ten thousand. Measured in Chrome on the ten-thousand-row demo — fifteen options in the DOM, 49 ms from the press to the open listbox, and sixty consecutive frames of scrolling with none of them over the frame budget. Nothing else about the component changes: the filter still runs over the whole list, the arrows still walk all of it, and the value is still the row you passed in.
 
-The row height is measured rather than declared — the *pitch*, taken from two rendered rows, so a gap or a border between them is part of the step — which means a restyled option windows correctly with nothing to configure. What windowing assumes is that rows are all the **same** height, so a `display` that varies one wants `virtualize={false}`, which renders every row however many there are. `virtualize` also takes `true` to window a short list, and an object to tune it: `threshold` is the row count it starts at, `overscan` how many rows are kept either side, and `itemHeight` the pitch, when it should be stated rather than measured.
+The row height is measured rather than declared — the _pitch_, taken from two rendered rows, so a gap or a border between them is part of the step — which means a restyled option windows correctly with nothing to configure. What windowing assumes is that rows are all the **same** height, so a `display` that varies one wants `virtualize={false}`, which renders every row however many there are. `virtualize` also takes `true` to window a short list, and an object to tune it: `threshold` is the row count it starts at, `overscan` how many rows are kept either side, and `itemHeight` the pitch, when it should be stated rather than measured.
 
 **The half of this that is not performance is the ARIA.** A windowed listbox holds a slice of its rows, so every option carries `aria-setsize` and `aria-posinset` — without them a screen reader announces "City 1 of 15" on a list of ten thousand. And **the row the keyboard is on is always rendered**, whatever the scroll position says: `aria-activedescendant` naming a row that was never put in the DOM names nothing at all, so the window goes where the keyboard is and lets the scroll catch up. It does not stay pinned there — a wheel scroll away from the highlight moves the list, or a combobox opened on its first row could never be scrolled at all.
 
@@ -658,15 +653,15 @@ wrong guess is silent.
 **The exceptions are the interesting part, so they are a ledger rather than a habit.** The biggest
 is deliberate: a component rendering a real form control — `Checkbox`, `Switch`, `RadioButton`,
 `Textbox`, `Textarea`, `Button` — forwards React's own `onChange`/`onInput`/`onClick` unchanged,
-because the DOM event *is* the API there and a second channel beside it would mean two ways to hear
+because the DOM event _is_ the API there and a second channel beside it would mean two ways to hear
 about one keystroke. `Menu.Item`'s `onSelect` is a command with no value to report, `Overlay`'s
 `onSideChange` reports what the browser did, and `Icon` is the one component that clones its child —
 it styles an icon somebody else drew, so there is no render prop to offer.
 
 Every ledger in the check **fails two ways**: on a new break, and on a listed exception that has
 stopped being true. That is the rule the accessibility sweep's `knownViolations` already follows,
-and it is what keeps an exception list from becoming a place things go to be forgotten. The debt it
-now names is `DataGrid` alone — the one component still older than the contract.
+and it is what keeps an exception list from becoming a place things go to be forgotten. Its list of
+debts is now empty: `DataGrid`, the last component older than the contract, is on it too.
 
 - **`RadioGroup` reports through `onValueChange`.** `onChange` still works and still fires — pass
   either, or both — but it was the one `ChangeHandler` in the library under a DOM event's name, on a
@@ -715,6 +710,45 @@ One thing to look at when you upgrade: a `RadioGroup`'s `label` now wears the sa
 whatever was around it. `Box.components({ radioGroup: { children: { label: { styles: … } } } })` is
 where to say otherwise.
 
+### `DataGrid` takes Box props, and says why each thing changed
+
+The grid is a Box now, so the element wrapping the bars, the rows and the pager takes the same props
+as anything else — `<DataGrid b={1} borderRadius={2} shadow="medium" props={{ 'data-testid': 'orders' }}>`
+— with no wrapper `<Box>` around it and no style tree override for a border. A `style` of your own
+sits on top of the column-width variables the grid writes there rather than replacing them.
+
+Its eight callbacks report a reason now. Four kept their names, because a handler written
+`(value) => …` is still assignable to one that hands it a second argument — so this is additive and
+nothing needs changing today:
+
+```tsx
+<DataGrid
+  data={rows}
+  def={def}
+  onGlobalFilterChange={(text, { reason }) => reason === 'clear' && resetSearch()}
+  onServerStateChange={(state, { reason }) => refetch(state, { debounce: reason === 'filter' })}
+/>
+```
+
+`onGlobalFilterChange` and `onColumnFiltersChange` say `'filter'` or `'clear'`,
+`onExpandedRowKeysChange` says `'expand'` or `'collapse'`, and `onServerStateChange` — the one most
+people wire an API to — says which of `'page'`, `'page-size'`, `'sort'`, `'filter'` or `'clear'`
+moved. That last one is worth having: the grid sends the pager back to the first page whenever a
+query changes underneath it, and until now nothing said whether a page-1 snapshot was a navigation
+or a reset.
+
+The other four could not grow a details argument where their second argument already meant something
+else, so each has a new name beside it and the old one is deprecated and still fires:
+
+- **`onSelectionChange(event)` → `onSelectedRowKeysChange(keys, { reason })`** — the selection
+  itself, and the event's `action` as a named reason: `'select'`, `'deselect'`, `'select-all'` or
+  `'clear'`, which are the four `Dropdown` already reports a selection under. The old event's
+  `affectedRowKeys` is what it is still for.
+- **`onSortChange(columnKey, direction)` → `onSortingChange(sort, { reason })`**, where `sort` is
+  `{ columnKey, direction }` or `undefined` once the third press clears it.
+- **`onPageChange(page, pageSize)` and `onPageSizeChange(size)` → `onPaginationChange({ page, pageSize }, { reason })`**
+  — one callback, because the two always moved together: a new page size always returns to page 1.
+
 ## Breaking changes
 
 - **`Overlay` places a layer instead of translating one, so its four positioning props are gone.** `anchorSide` is `side` (`anchorSide="bottom"` is the default `side="bottom"`; the old `'top'` overlapped the anchor, which `side="bottom" offset={0}` does not — use a negative margin if you need the overlap). `adjustTranslateX`/`adjustTranslateY` are `offset` on the ÷4 scale for the gap and `align` for the sideways nudge (`adjustTranslateY="4px"` is `offset={1}`). `onPositionChange` is `onSideChange`, which reports the side rather than page coordinates — nothing measures a position any more, so there are none to report.
@@ -728,9 +762,10 @@ where to say otherwise.
 
 <!-- One bullet per fix: **What was wrong.** What it does now. -->
 
-- **A deprecated *prop* would have told forty-five coding agents to stop importing the whole component.** The scan behind the skill's "no longer the spelling to write" list took the first `@deprecated` in a component's source and named the **module** after it — fine while every deprecation in `src/components/` was a whole component, and wrong the moment one was a prop: `RadioGroup`'s renamed `onChange` came out as `@box-kite/react/components/radioGroup`, which an agent reads as "do not import this". A tag above a prop signature now names the prop (`…/radioGroup#onChange`) and only a tag elsewhere names the module, and every deprecation in a file is listed rather than just the first.
+- **A deprecated _prop_ would have told forty-five coding agents to stop importing the whole component.** The scan behind the skill's "no longer the spelling to write" list took the first `@deprecated` in a component's source and named the **module** after it — fine while every deprecation in `src/components/` was a whole component, and wrong the moment one was a prop: `RadioGroup`'s renamed `onChange` came out as `@box-kite/react/components/radioGroup`, which an agent reads as "do not import this". A tag above a prop signature now names the prop (`…/radioGroup#onChange`) and only a tag elsewhere names the module, and every deprecation in a file is listed rather than just the first.
 
 - **The docs site's own keyboard access, in the two places it was a clickable `<div>`.** The nine category switchers on [/box](https://www.box-kite.dev/box) — the largest prop reference on the site — could only be reached with a mouse, so eight of its nine panels were unreachable and a screen reader was told nothing about them. They are a `role="tablist"` of real buttons over the library's own `useRovingFocus` now, with arrow keys, Home/End and a `role="tabpanel"` that says which tab named it; the forty "Show code" toggles below them are buttons with `aria-expanded`. One caption on the same page also failed contrast at 3.74:1 and does not now.
 - **Every table on the docs site rendered as a stack of full-width blocks.** `display: block` on a `<Box tag="table">` costs the table its layout _and_ its semantics, and five pages had written their own copy of the same broken table. There is one shared table now, carrying the display values each element needs — and the props above are what let it stop reaching for the escape hatch to collapse its borders.
 - **Inline code in the prose of ten documentation pages was rendered as a block.** Each `<code>` took a line of its own, breaking the paragraph around it into stripes — the local helper was missing `display="inline"`, which is the trap the library's own rules warn about: a `Box` is `display: block` whatever element it renders. Nothing in the library changed; the pages read as paragraphs again. The same pages' tables also lost their last nine inline `style` attributes to `css={{ borderCollapse: 'collapse' }}`, which is what the escape hatch is for.
 - **A `Dropdown` could not be given a value of `0` or an empty string.** Both `value` and `defaultValue` were tested for truthiness on the way in, so `<Dropdown<number> defaultValue={0}>` started with nothing selected and `value={0}` selected nothing however many times it was set — while `value={1}` worked, which is what made it read as a puzzle rather than a bug. The test is against `undefined` and `null` now, and a falsy value is a value somebody can pick.
+- **A `DataGrid` given a callback but no value prop did nothing at all.** `<DataGrid onPageChange={track}>` without a `page` beside it fired the callback on every press of the pager and never moved — and the same for `onGlobalFilterChange` without `globalFilterValue`, `onColumnFiltersChange`, `onPageSizeChange` and `onExpandedRowKeysChange`. The grid read the _handler_ as "the caller owns this state", so a grid wired up only to watch its user was left with a pager, a filter box and a set of expanders that could not change anything. A handler is a listener; ownership is the value prop, which still wins wherever it is passed.

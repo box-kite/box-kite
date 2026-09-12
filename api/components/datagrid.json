@@ -34,19 +34,26 @@
       "description": "Show the loading sweep over the rows. The grid keeps whatever it is already showing underneath."
     },
     {
+      "name": "onSelectedRowKeysChange",
+      "type": "ChangeHandler<Key[], DataGridSelectionReason>",
+      "required": false,
+      "default": null,
+      "description": "Fires with every selected row key and why the selection changed."
+    },
+    {
       "name": "onSelectionChange",
       "type": "(event: SelectionChangeEvent<TRow>) => void",
       "required": false,
       "default": null,
-      "description": "Fires when rows are selected or deselected, with the keys affected and whether all are now selected."
+      "description": "The older callback, whose event carries the keys *acted on* beside the selection. Both fire."
     },
     { "name": "globalFilterValue", "type": "string", "required": false, "default": null, "description": "Controlled global filter value" },
     {
       "name": "onGlobalFilterChange",
-      "type": "(value: string) => void",
+      "type": "ChangeHandler<string, DataGridFilterReason>",
       "required": false,
       "default": null,
-      "description": "Callback when global filter changes"
+      "description": "Fires with the global filter's new text, and whether it was typed or emptied."
     },
     {
       "name": "columnFilters",
@@ -57,10 +64,10 @@
     },
     {
       "name": "onColumnFiltersChange",
-      "type": "(filters: ColumnFilters<TRow>) => void",
+      "type": "ChangeHandler<ColumnFilters<TRow>, DataGridFilterReason>",
       "required": false,
       "default": null,
-      "description": "Callback when column filters change"
+      "description": "Fires with every column filter still set, and whether one was set or cleared."
     },
     {
       "name": "filters",
@@ -78,10 +85,10 @@
     },
     {
       "name": "onExpandedRowKeysChange",
-      "type": "(keys: Key[]) => void",
+      "type": "ChangeHandler<Key[], DataGridExpandReason>",
       "required": false,
       "default": null,
-      "description": "Callback when expanded detail rows change"
+      "description": "Fires with every expanded detail row key, and whether one was opened or shut."
     },
     {
       "name": "page",
@@ -91,13 +98,6 @@
       "description": "Controlled current page (1-indexed). Used with pagination."
     },
     {
-      "name": "onPageChange",
-      "type": "(page: number, pageSize: number) => void",
-      "required": false,
-      "default": null,
-      "description": "Callback when page changes. Receives page (1-indexed) and pageSize."
-    },
-    {
       "name": "pageSize",
       "type": "number",
       "required": false,
@@ -105,25 +105,46 @@
       "description": "Controlled page size. Used with pagination and pageSizeOptions."
     },
     {
+      "name": "onPaginationChange",
+      "type": "ChangeHandler<DataGridPagination, DataGridChangeReason>",
+      "required": false,
+      "default": null,
+      "description": "Fires with both pager values and why they changed — the page and the size move together, and a filter or a sort is what sends the grid back to the first page."
+    },
+    {
+      "name": "onPageChange",
+      "type": "(page: number, pageSize: number) => void",
+      "required": false,
+      "default": null,
+      "description": "The older page callback, whose second argument is the page size rather than the reason. Both fire."
+    },
+    {
       "name": "onPageSizeChange",
       "type": "(pageSize: number) => void",
       "required": false,
       "default": null,
-      "description": "Callback when the user changes the page size."
+      "description": "The older page-size callback. Both fire."
+    },
+    {
+      "name": "onSortingChange",
+      "type": "ChangeHandler<DataGridSort | undefined, DataGridSortReason>",
+      "required": false,
+      "default": null,
+      "description": "Fires with the column and direction the grid is sorted by, or `undefined` once the sort is cleared."
     },
     {
       "name": "onSortChange",
       "type": "(columnKey: Key | undefined, direction: SortDirection | undefined) => void",
       "required": false,
       "default": null,
-      "description": "Callback when sort changes. For server-side sorting with pagination."
+      "description": "The older sort callback, whose two arguments are the column and the direction. Both fire."
     },
     {
       "name": "onServerStateChange",
-      "type": "(state: ServerState<TRow>) => void",
+      "type": "ChangeHandler<ServerState<TRow>, DataGridChangeReason>",
       "required": false,
       "default": null,
-      "description": "Fires on any server-relevant state change (page, sort, filter). Provides full state snapshot for API calls."
+      "description": "Fires on any server-relevant state change with the full snapshot for an API call, and what moved."
     }
   ],
   "parts": [],

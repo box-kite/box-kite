@@ -1117,7 +1117,8 @@ const [page, setPage] = useState(1);
 const [totalCount, setTotalCount] = useState(0);
 const pageSize = 8;
 
-// onServerStateChange fires on every page/sort/filter change.
+// onServerStateChange fires on every page/sort/filter change, with what moved beside the snapshot:
+// (state, { reason }), where reason is 'page' | 'page-size' | 'sort' | 'filter' | 'clear'.
 // state = { page, pageSize, sortColumn, sortDirection, globalFilterValue, columnFilters }
 // columnFilters example: { first_name: { type: 'text', value: 'Jo' }, age: { type: 'number', operator: 'gte', value: 30 }, country: { type: 'multiselect', values: ['Brazil'] } }
 const fetchData = useCallback((state) => {

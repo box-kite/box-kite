@@ -45,6 +45,34 @@ export default function DataGrid<TRow extends object>(props: DataGridProps<TRow>
   const grid = useGrid(props);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // Everything the grid reads itself comes off here, so what is left is the Box half — style props, the
+  // `props` bag, a className — and a new grid prop cannot leak onto the element by being forgotten.
+  const {
+    component,
+    data,
+    def,
+    loading,
+    filters,
+    globalFilterValue,
+    columnFilters,
+    expandedRowKeys,
+    page,
+    pageSize,
+    onSelectedRowKeysChange,
+    onSelectionChange,
+    onGlobalFilterChange,
+    onColumnFiltersChange,
+    onExpandedRowKeysChange,
+    onPaginationChange,
+    onPageChange,
+    onPageSizeChange,
+    onSortingChange,
+    onSortChange,
+    onServerStateChange,
+    style,
+    ...boxProps
+  } = props;
+
   // Track container width for flexible column sizing, and expose the container element so
   // the resize drag can write width CSS variables straight to it (no React re-render per move).
   useLayoutEffect(() => {
@@ -66,7 +94,14 @@ export default function DataGrid<TRow extends object>(props: DataGridProps<TRow>
   }, [grid]);
 
   return (
-    <Box ref={containerRef} component={grid.componentName as never} style={grid.sizes.value}>
+    <Box
+      ref={containerRef}
+      component={grid.componentName as never}
+      {...boxProps}
+      // The column widths are variables the grid writes per layout, so a caller's own style sits on top
+      // of them rather than replacing them.
+      style={{ ...grid.sizes.value, ...style }}
+    >
       {grid.props.def.topBar && <DataGridTopBar grid={grid} />}
 
       <DataGridContent grid={grid} />

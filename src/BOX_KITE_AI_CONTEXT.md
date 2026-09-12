@@ -1253,16 +1253,16 @@ the association needs no `htmlFor`/`id` pair and the whole row is a click target
 nothing wraps the input — the markup is what it always was. `labelProps` styles that `<label>`;
 every other Box prop styles the control itself.
 
-| Component    | Prop                     | What it does                                                                            |
-| ------------ | ------------------------ | --------------------------------------------------------------------------------------- |
-| all three    | `label` / `labelProps`   | The wrapping `<label>` and its styles.                                                  |
-| `Checkbox`   | `indeterminate`          | Sets the DOM property **and** `aria-checked="mixed"`, which is what is announced.       |
-| `Switch`     | —                        | `role="switch"` over the same input; Space **and** Enter toggle, Enter does not submit. |
-| `RadioGroup` | `label`                  | `role="radiogroup"` named by it — a set of radios with nothing over it is a flat list.  |
-| `RadioGroup` | `name`                   | The field every item submits under. Generated when left out.                            |
-| `RadioGroup` | `value` / `defaultValue` | The selected item's value (a string — the platform's own model for a radio).            |
+| Component    | Prop                     | What it does                                                                                 |
+| ------------ | ------------------------ | -------------------------------------------------------------------------------------------- |
+| all three    | `label` / `labelProps`   | The wrapping `<label>` and its styles.                                                       |
+| `Checkbox`   | `indeterminate`          | Sets the DOM property **and** `aria-checked="mixed"`, which is what is announced.            |
+| `Switch`     | —                        | `role="switch"` over the same input; Space **and** Enter toggle, Enter does not submit.      |
+| `RadioGroup` | `label`                  | `role="radiogroup"` named by it — a set of radios with nothing over it is a flat list.       |
+| `RadioGroup` | `name`                   | The field every item submits under. Generated when left out.                                 |
+| `RadioGroup` | `value` / `defaultValue` | The selected item's value (a string — the platform's own model for a radio).                 |
 | `RadioGroup` | `onValueChange`          | `(value, { reason, event })` — `click` or `keyboard`. `onChange` is the deprecated spelling. |
-| `RadioGroup` | `orientation`            | `vertical` (default) or `horizontal`. Both arrow pairs navigate either way.             |
+| `RadioGroup` | `orientation`            | `vertical` (default) or `horizontal`. Both arrow pairs navigate either way.                  |
 
 Arrow keys move **and select** inside a group, wrapping at both ends and skipping disabled items;
 Tab enters the group once and leaves it once, because a native radio set is already a single tab
@@ -2184,26 +2184,34 @@ import DataGrid from '@box-kite/react/components/dataGrid';
     contextMenu: { sort: true, pin: true, group: false },
     resizerStyle: 'hover',
   }}
-  onSelectionChange={(e) => console.log(e.selectedRowKeys)}
+  onSelectedRowKeysChange={(keys, { reason }) => console.log(keys, reason)}
 />;
 ```
 
 ### DataGridProps
 
-| Prop                                          | Type                                  | Description                                                                                |
-| --------------------------------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------ |
-| `data`                                        | `TRow[]`                              | Row data (required)                                                                        |
-| `def`                                         | `GridDefinition`                      | Grid config (required)                                                                     |
-| `component`                                   | `string`                              | Style tree name (default: `'datagrid'`)                                                    |
-| `loading`                                     | `boolean`                             | Loading state                                                                              |
-| `filters`                                     | `((row) => boolean)[]`                | External predicate filters (applied before column/global filters)                          |
-| `page` / `onPageChange`                       | `number` / `(page, size) => void`     | Controlled pagination (1-indexed)                                                          |
-| `onSortChange`                                | `(columnKey, direction) => void`      | Sort callback (`direction`: `'ASC'`/`'DESC'`/`undefined`)                                  |
-| `onServerStateChange`                         | `(state) => void`                     | Unified: `{ page, pageSize, sortColumn, sortDirection, columnFilters, globalFilterValue }` |
-| `onSelectionChange`                           | `(event) => void`                     | `event`: `{ action, selectedRowKeys, affectedRowKeys, isAllSelected }`                     |
-| `expandedRowKeys` / `onExpandedRowKeysChange` | `Key[]` / `(keys) => void`            | Controlled expanded rows                                                                   |
-| `globalFilterValue` / `onGlobalFilterChange`  | `string` / `(value) => void`          | Controlled global filter                                                                   |
-| `columnFilters` / `onColumnFiltersChange`     | `ColumnFilters` / `(filters) => void` | Controlled column filters                                                                  |
+Box style props too: `DataGridProps` extends them, so `<DataGrid b={1} borderRadius={2} p={4}>` styles
+the element wrapping the bars, the rows and the pager. Every callback below is a `ChangeHandler` —
+`(value, { reason }) => void`, the shape every component in the library reports a change under.
+
+| Prop                                          | Type                                                     | Description                                                                                |
+| --------------------------------------------- | -------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `data`                                        | `TRow[]`                                                 | Row data (required)                                                                        |
+| `def`                                         | `GridDefinition`                                         | Grid config (required)                                                                     |
+| `component`                                   | `string`                                                 | Style tree name (default: `'datagrid'`)                                                    |
+| `loading`                                     | `boolean`                                                | Loading state                                                                              |
+| `filters`                                     | `((row) => boolean)[]`                                   | External predicate filters (applied before column/global filters)                          |
+| `page` / `pageSize` / `onPaginationChange`    | `number` / `number` / `({ page, pageSize }, { reason })` | Controlled pagination (1-indexed). Reason: `page`/`page-size`/`sort`/`filter`/`clear`      |
+| `onSortingChange`                             | `({ columnKey, direction } \| undefined, { reason })`    | Sort. `undefined` once cleared; reason: `sort`/`clear`                                     |
+| `onServerStateChange`                         | `(state, { reason })`                                    | Unified: `{ page, pageSize, sortColumn, sortDirection, columnFilters, globalFilterValue }` |
+| `onSelectedRowKeysChange`                     | `(keys, { reason })`                                     | Every selected key; reason: `select`/`deselect`/`select-all`/`clear`                       |
+| `expandedRowKeys` / `onExpandedRowKeysChange` | `Key[]` / `(keys, { reason })`                           | Controlled expanded rows; reason: `expand`/`collapse`                                      |
+| `globalFilterValue` / `onGlobalFilterChange`  | `string` / `(value, { reason })`                         | Controlled global filter; reason: `filter`/`clear`                                         |
+| `columnFilters` / `onColumnFiltersChange`     | `ColumnFilters` / `(filters, { reason })`                | Controlled column filters; reason: `filter`/`clear`                                        |
+
+`onSelectionChange(event)`, `onSortChange(key, dir)`, `onPageChange(page, size)` and
+`onPageSizeChange(size)` are the pre-contract spellings of the four above. They still fire; the
+named ones carry the reason.
 
 ### GridDefinition
 
@@ -2266,8 +2274,9 @@ import DataGrid from '@box-kite/react/components/dataGrid';
 ```tsx
 <DataGrid
   data={pageData} page={page} loading={loading}
-  onServerStateChange={(state) => {
+  onServerStateChange={(state, { reason }) => {
     // state = { page, pageSize, sortColumn, sortDirection, columnFilters, globalFilterValue }
+    // reason = what moved: 'page' | 'page-size' | 'sort' | 'filter' | 'clear'
     setPage(state.page); refetch(state);
   }}
   def={{ columns: [...], bottomBar: true, pagination: { totalCount, pageSize: 25 }, globalFilter: true }}
@@ -2408,22 +2417,22 @@ import Dropdown from '@box-kite/react/components/dropdown';
 
 ### Props
 
-| Prop                     | Type                                                 | Description                                                               |
-| ------------------------ | ---------------------------------------------------- | ------------------------------------------------------------------------- |
-| `value` / `defaultValue` | `TVal \| TVal[]`                                     | Controlled / uncontrolled selected value(s)                               |
-| `label`                  | `ReactNode`                                          | The control's name, rendered above it and wired with `aria-labelledby`    |
-| `labelProps`             | `BoxProps<'div'>`                                    | Styles for the wrapper the label and the trigger share                    |
-| `multiple`               | `boolean`                                            | Multi-select mode                                                         |
-| `isSearchable`           | `boolean`                                            | Editable combobox: a text field that filters the list (see Accessibility) |
-| `searchPlaceholder`      | `string`                                             | Search input placeholder                                                  |
-| `hideIcon`               | `boolean`                                            | Hide chevron icon                                                         |
-| `showCheckbox`           | `boolean`                                            | Show checkboxes in multiple mode                                          |
-| `name`                   | `string`                                             | Form field name (renders hidden `<input>` elements)                       |
+| Prop                     | Type                                                 | Description                                                                                        |
+| ------------------------ | ---------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `value` / `defaultValue` | `TVal \| TVal[]`                                     | Controlled / uncontrolled selected value(s)                                                        |
+| `label`                  | `ReactNode`                                          | The control's name, rendered above it and wired with `aria-labelledby`                             |
+| `labelProps`             | `BoxProps<'div'>`                                    | Styles for the wrapper the label and the trigger share                                             |
+| `multiple`               | `boolean`                                            | Multi-select mode                                                                                  |
+| `isSearchable`           | `boolean`                                            | Editable combobox: a text field that filters the list (see Accessibility)                          |
+| `searchPlaceholder`      | `string`                                             | Search input placeholder                                                                           |
+| `hideIcon`               | `boolean`                                            | Hide chevron icon                                                                                  |
+| `showCheckbox`           | `boolean`                                            | Show checkboxes in multiple mode                                                                   |
+| `name`                   | `string`                                             | Form field name (renders hidden `<input>` elements)                                                |
 | `onValueChange`          | `ChangeHandler<TVal \| TVal[] \| undefined, …>`      | The selection — an array in `multiple` mode — and why: `select`, `deselect`, `select-all`, `clear` |
-| `onChange`               | `(value: TVal \| undefined, values: TVal[]) => void` | **Deprecated**, still firing. The option acted on, and the selection beside it |
-| `itemsProps`             | `BoxStyleProps`                                      | Style overrides for the opened items container (`dropdown.items`)         |
-| `iconProps`              | `BoxStyleProps`                                      | Style overrides for the chevron icon container (`dropdown.icon`)          |
-| `variant`                | `ClassNameType`                                      | Propagates to root **and all child sub-components**                       |
+| `onChange`               | `(value: TVal \| undefined, values: TVal[]) => void` | **Deprecated**, still firing. The option acted on, and the selection beside it                     |
+| `itemsProps`             | `BoxStyleProps`                                      | Style overrides for the opened items container (`dropdown.items`)                                  |
+| `iconProps`              | `BoxStyleProps`                                      | Style overrides for the chevron icon container (`dropdown.icon`)                                   |
+| `variant`                | `ClassNameType`                                      | Propagates to root **and all child sub-components**                                                |
 
 Also accepts all `BoxProps` (styling props), which apply to the root element — a `<button>`, or the wrapper around the text field when `isSearchable`. Anything in `props` goes to the combobox itself: the button, or that field.
 
