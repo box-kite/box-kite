@@ -5,6 +5,7 @@ import { renderToString } from 'react-dom/server';
 import { afterEach, beforeEach, describe, expect, it, MockInstance, vi } from 'vitest';
 import Box from './box';
 import Flex from './components/flex';
+import Toaster from './components/toaster';
 import { DEFAULT_STYLE_ELEMENT_ID } from './core/engine/styleEngine';
 import { StylesContext } from './react/useStyles';
 
@@ -107,6 +108,17 @@ describe('hydration', () => {
     } finally {
       vi.unstubAllGlobals();
     }
+  });
+
+  it('hydrates a Toaster, whose viewport a server renders in the shape the top layer gives it', async () => {
+    const { serverHtml, unmount } = await hydrate(<Toaster />);
+
+    // The one that bit: reading the capability during render answered false on the server (no
+    // HTMLElement) and true in the browser, so the server emitted nothing where the client put the
+    // region — React #418 on every load of the page. The viewport has to be in the server markup.
+    expect(serverHtml).toContain('aria-live="polite"');
+    expect(hydrationErrors(errorSpy)).toEqual([]);
+    await unmount();
   });
 
   it('keeps the server CSS valid for the hydrated markup', async () => {

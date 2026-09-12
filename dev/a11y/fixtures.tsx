@@ -26,6 +26,7 @@ import Switch from '../../src/components/switch';
 import Tabs from '../../src/components/tabs';
 import Textarea from '../../src/components/textarea';
 import Textbox from '../../src/components/textbox';
+import Toaster, { createToastStore } from '../../src/components/toaster';
 import Tooltip from '../../src/components/tooltip';
 import VisuallyHidden from '../../src/components/visuallyHidden';
 
@@ -48,6 +49,12 @@ export interface A11yFixture {
    */
   knownViolations?: Record<string, string>;
 }
+
+/**
+ * A store of its own, so the sweep neither shares state with a test nor starts a real timer: every toast
+ * here stays until something dismisses it.
+ */
+const toastFixtureStore = createToastStore<React.ReactNode>({ limit: 2, duration: Number.POSITIVE_INFINITY });
 
 interface Person {
   id: number;
@@ -282,6 +289,19 @@ export const fixtures: A11yFixture[] = [
     name: 'Select (open)',
     render: () => <Select<Person, number> label="Person" data={people} def={{ valueKey: 'id', displayKey: 'name' }} />,
     setup: openPopup,
+  },
+  {
+    // Seeded before the viewport mounts, which is also the real case: a message sent before the page
+    // finished rendering waits in the store rather than being lost.
+    name: 'Toaster',
+    render: () => {
+      toastFixtureStore.reset();
+      toastFixtureStore.add('Saved', { description: 'Your changes are live.', action: { label: 'Undo', onClick: () => {} } });
+      toastFixtureStore.add('Could not save', { kind: 'error' });
+      toastFixtureStore.add('Waiting its turn', { kind: 'info' });
+
+      return <Toaster store={toastFixtureStore} />;
+    },
   },
   {
     name: 'Tooltip',

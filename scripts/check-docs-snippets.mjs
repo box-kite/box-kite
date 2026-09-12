@@ -74,6 +74,8 @@ const PROVIDED = {
   Tabs: "import Tabs from '@box-kite/react/components/tabs';",
   Textarea: "import Textarea from '@box-kite/react/components/textarea';",
   Textbox: "import Textbox from '@box-kite/react/components/textbox';",
+  Toaster: "import Toaster from '@box-kite/react/components/toaster';",
+  toast: "import { toast } from '@box-kite/react/components/toaster';",
   Tooltip: "import Tooltip from '@box-kite/react/components/tooltip';",
   VisuallyHidden: "import VisuallyHidden from '@box-kite/react/components/visuallyHidden';",
   // The semantic tags a snippet writes prose with, all from the one entry.

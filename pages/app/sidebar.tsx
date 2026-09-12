@@ -1,6 +1,7 @@
 import {
   AlignLeft,
   Anchor,
+  BellRing,
   Blend,
   BookOpen,
   Bot,
@@ -8,18 +9,17 @@ import {
   ChartSpline,
   CheckSquare,
   ChevronDown,
-  SlidersVertical,
-  LoaderCircle,
   Circle,
   Columns3,
-  ListCollapse,
-  Highlighter,
   DoorOpen,
   Download,
+  Highlighter,
+  Languages,
   Layers,
   LayoutGrid,
-  Languages,
   ListChecks,
+  ListCollapse,
+  LoaderCircle,
   MessageSquare,
   Moon,
   MousePointer2,
@@ -33,6 +33,7 @@ import {
   Server,
   Shapes,
   SlidersHorizontal,
+  SlidersVertical,
   Sparkles,
   Spline,
   SquareMenu,
@@ -272,6 +273,9 @@ export default function Sidebar({ toggleTheme, onClose }: SidebarProps) {
           </MenuItem>
           <MenuItem to="/progress" icon={<LoaderCircle />}>
             Progress
+          </MenuItem>
+          <MenuItem to="/toaster" icon={<BellRing />}>
+            Toaster
           </MenuItem>
           <MenuItem to="/overlay" icon={<Layers />}>
             Overlay

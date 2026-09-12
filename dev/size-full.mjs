@@ -36,6 +36,7 @@ import * as switchControl from '../dist/components/switch.mjs';
 import * as tabs from '../dist/components/tabs.mjs';
 import * as textarea from '../dist/components/textarea.mjs';
 import * as textbox from '../dist/components/textbox.mjs';
+import * as toaster from '../dist/components/toaster.mjs';
 import * as tooltip from '../dist/components/tooltip.mjs';
 import * as visuallyHidden from '../dist/components/visuallyHidden.mjs';
 
@@ -72,6 +73,7 @@ console.log(
   tabs,
   textarea,
   textbox,
+  toaster,
   tooltip,
   visuallyHidden,
 );

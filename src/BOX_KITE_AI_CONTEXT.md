@@ -54,6 +54,7 @@ NEVER use `<Box tag="...">` when a component exists. NEVER use `<Box display="fl
 | `<Box tag="dialog">`                 | `<Dialog>/<AlertDialog>`         | `components/dialog`    |
 | a menu button and its menu           | `<Menu>`                         | `components/menu`      |
 | a tablist over one panel at a time   | `<Tabs>`                         | `components/tabs`      |
+| a message sent from anywhere         | `<Toaster>` + `toast()`          | `components/toaster`   |
 | a lucide/Tabler icon, styled         | `<Icon>`                         | `components/icon`      |
 
 All imports from `@box-kite/react/components/...`. Semantics also export: `Mark`, `Figure`, `Figcaption`, `Details`, `Summary`, `MenuList` (the semantic `<menu>`; the menu **button** is `Menu` from `components/menu`), `Time`.
@@ -1842,6 +1843,109 @@ Box.components({
   },
 });
 ```
+
+---
+
+## Toaster (`toast()` + `<Toaster>`)
+
+```tsx
+import Toaster, { toast } from '@box-kite/react/components/toaster';
+
+// once, near the root of the app
+<Toaster position="bottom-end" limit={3} />;
+
+// then from anywhere at all — an event handler, a fetch, a module with no React in it
+toast.success('Saved');
+toast.error('Could not save', { action: { label: 'Retry', onClick: save } });
+toast('Row deleted', { description: 'Ada Lovelace, added in March.', action: { label: 'Undo', onClick: restore } });
+toast.promise(save(), { loading: 'Saving…', success: (saved) => `Saved as ${saved.name}`, error: 'Could not save' });
+```
+
+Messages the app sends rather than renders. The store behind `toast()` is framework-free, so a call made
+**before** the viewport mounts is queued rather than lost, and `<Toaster>` only draws what is there.
+
+### The imperative API
+
+| Call                                           | What it does                                                                    |
+| ---------------------------------------------- | ------------------------------------------------------------------------------- |
+| `toast(message, options?)`                     | Adds one and returns its id. `message` is any `ReactNode`.                      |
+| `toast.success` / `error` / `warning` / `info` | The same with a `kind`. `error` is the assertive one — `role="alert"`.          |
+| `toast.loading(message, options?)`             | `duration: Infinity` by default: a spinner that timed out would report nothing. |
+| `toast.promise(promise, messages, options?)`   | One toast for the whole call. The promise comes back untouched.                 |
+| `toast.update(id, message, options?)`          | Changes one already on screen. An unknown id is ignored rather than added.      |
+| `toast.dismiss(id?)`                           | Starts the exit for one, or for all of them with no id.                         |
+
+An `options.id` that is already on screen is an **update**, not a second toast — which is exactly how
+`toast.promise` turns into one toast rather than two.
+
+| Option        | Default       | What it does                                                                                                         |
+| ------------- | ------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `id`          | generated     | Name it to update it later.                                                                                          |
+| `kind`        | `'default'`   | `success` / `error` / `warning` / `info` / `loading`. Decides the accent and the role.                               |
+| `description` | —             | A second line under the message. Any `ReactNode`.                                                                    |
+| `duration`    | `<Toaster>`'s | **Milliseconds.** `Infinity` waits for a dismissal.                                                                  |
+| `action`      | —             | `{ label, onClick, closeOnClick }` — one button, which dismisses the toast it answered unless `closeOnClick: false`. |
+| `dismissible` | `true`        | Whether the close button is drawn.                                                                                   |
+| `onDismiss`   | —             | `(reason)` — `'timeout'` / `'close'` / `'action'` / `'imperative'`.                                                  |
+
+### The viewport
+
+| Prop            | Default                   | What it does                                                                    |
+| --------------- | ------------------------- | ------------------------------------------------------------------------------- |
+| `position`      | `'bottom-end'`            | Six corners. The inline half is logical, so `start`/`end` mirror with the page. |
+| `limit`         | `3`                       | How many are on screen. The rest **queue**, timers and all.                     |
+| `duration`      | `5000`                    | Milliseconds for a toast that names none of its own.                            |
+| `label`         | `'Notifications'`         | Names the region. It is never labelled visually.                                |
+| `closeLabel`    | `'Close'`                 | Names the close button.                                                         |
+| `overflowLabel` | `` (n) => `+${n} more` `` | What the counter at the far end of the stack says.                              |
+| `hotkey`        | `'F6'`                    | Moves focus to the stack. Takes `'alt+t'` and the like, or `false`.             |
+| `store`         | the default one           | A second, independent stack — or a test that must not share state.              |
+
+**The limit is a queue, not a cap.** Past it a toast waits _with its timer unstarted_, so nothing expires
+that was never on screen.
+
+### Four things to know, all measured in Chrome 153
+
+1. **The region exists before there is anything in it.** The viewport is a `<section>` carrying
+   `aria-live="polite"` from the moment it mounts — a live region inserted together with its content is
+   not reliably announced. An error toast is `role="alert"`, which is assertive and is the one
+   announcement pattern every screen reader implements; **nothing else carries a region of its own**,
+   because the nearest region to a change is the one that speaks, and a second would only take the
+   first's head start away.
+2. **The top layer, and no portal.** `popover="manual"`, shown as it mounts, so it paints over every
+   stacking context and outside every clipped or transformed ancestor while staying where it was
+   declared — it inherits the theme, the custom properties and the direction around it. `manual` rather
+   than `auto` because a stack of messages owns no dismissal: a press outside has to reach the page. The
+   viewport takes **no pointer events at all** and the toasts take them back, or a corner-sized fixed
+   strip would swallow every press in its gaps.
+3. **Four things stop the clock**: the pointer over the stack, focus inside it, a background tab, and a
+   dismissal. A paused timer resumes where it left off rather than restarting. WCAG 2.2.1, and the only
+   reason a toast is allowed to carry a control at all.
+4. **A toast never takes focus.** `F6` moves focus to the viewport, Tab walks the toasts in the order
+   they are on screen, and Escape dismisses the toast focus is in — handing focus back where it came
+   from once the stack is empty.
+
+### Styling
+
+```tsx
+Box.components({
+  toaster: {
+    children: {
+      toast: { styles: { borderRadius: 4, shadow: 'large' } },
+      action: { styles: { borderColor: 'indigo-500' } },
+    },
+  },
+});
+```
+
+Parts: `toaster` (the viewport), `toaster.toast` — the kind is a **variant** on it, as is `fromTop` —
+`toaster.message`, `toaster.description`, `toaster.action`, `toaster.close` and `toaster.overflow`. The
+accent bar the kind paints is never the only signal: the message itself is what says what happened.
+
+The viewport's own style tree has to answer the UA's `[popover]` rule, which is worth knowing before
+overriding it: `inset: 0` leaves a corner-pinned stack over-constrained (`top`/`left` win and it lands in
+the wrong corner) and `overflow: auto` makes it a scroll container, so all four sides are declared `auto`
+and `overflow: visible` before a `position` variant names the two it wants.
 
 ---
 

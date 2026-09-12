@@ -2,7 +2,7 @@
 
 _Unreleased. A PR that changes what a consumer sees adds its section here — see CONTRIBUTING.md, "Release notes"._
 
-The package now carries instructions for the agent writing the code, the documentation site answers in markdown, the same rules install as a skill in about forty-five coding agents, and every component page states its own props, keys and accessibility — all of it generated from the sources the library is built from. A floating layer is also placed by the browser now rather than measured in JavaScript, all the way through: six props, one hook, and every popup the library ships standing on them. Three of those popups are now browser features rather than components: a popover on the Popover API, a modal dialog on `<dialog>`, and a menu button whose submenus are popovers nested inside it. Tabs arrive beside them, on nothing but the keyboard the pattern asks for — with an indicator that travels between them and a panel box that resizes to fit. An accordion arrives with them, opening its panels on a grid track nobody had to measure, and a slider and a progress bar close the set — the two places the platform’s own control cannot be styled or given a second thumb.
+The package now carries instructions for the agent writing the code, the documentation site answers in markdown, the same rules install as a skill in about forty-five coding agents, and every component page states its own props, keys and accessibility — all of it generated from the sources the library is built from. A floating layer is also placed by the browser now rather than measured in JavaScript, all the way through: six props, one hook, and every popup the library ships standing on them. Three of those popups are now browser features rather than components: a popover on the Popover API, a modal dialog on `<dialog>`, and a menu button whose submenus are popovers nested inside it. Tabs arrive beside them, on nothing but the keyboard the pattern asks for — with an indicator that travels between them and a panel box that resizes to fit. An accordion arrives with them, opening its panels on a grid track nobody had to measure, and a slider and a progress bar close the set — the two places the platform’s own control cannot be styled or given a second thumb. Last in are the messages an app sends rather than renders: one `<Toaster />`, and `toast()` from anywhere at all.
 
 ## Highlights
 
@@ -21,6 +21,7 @@ The package now carries instructions for the agent writing the code, the documen
 - **[Tabs, where selection follows focus](#tabs-where-selection-follows-focus)** — the APG tabs pattern in four parts: one tab stop for the list, arrows that follow the reading order, both activation modes, and 3.03 KB gz against Radix Tabs 9.18. An indicator that travels between tabs and a panel box that resizes between panels are each one opt-in away.
 - **[An accordion whose animation is a class](#an-accordion-whose-animation-is-a-class)** — `<Accordion>` and `Collapsible`, where a panel opens in a grid track rather than a measured pixel: no `ResizeObserver`, nothing written per instance, and 1.80 KB gz for both against Radix's 8.78.
 - **[A slider whose value keeps its own shape](#a-slider-whose-value-keeps-its-own-shape)** — `<Slider>` takes a number for one thumb and an array for a range, so nothing at the call site has to narrow; `<Progress>` is the bar beside it, and renders on a server. 2.14 KB gz and 0.31 against Radix’s 9.71 and 2.86.
+- **[A message you send rather than render](#a-message-you-send-rather-than-render)** — `<Toaster />` once, then `toast()` from anywhere at all: a live region that exists before there is anything in it, a queue rather than a cap, and timers that stop on hover, on focus and off screen. 4.14 KB gz against sonner's 9.86 plus a stylesheet.
 
 ## The package tells an agent how to use it
 
@@ -534,6 +535,53 @@ Box.components({
   },
 });
 ```
+
+## A message you send rather than render
+
+`<Toaster />` goes in once, near the root of the app. Everything after that is `toast()`, from wherever the message actually comes from.
+
+```tsx
+import Toaster, { toast } from '@box-kite/react/components/toaster';
+
+<Toaster position="bottom-end" limit={3} />;
+
+// an event handler, a fetch, a router guard, a module with no React in it
+toast.success('Saved');
+toast('Row deleted', { description: 'Ada Lovelace, added in March.', action: { label: 'Undo', onClick: restore } });
+toast.promise(save(), { loading: 'Saving…', success: (saved) => `Saved as ${saved.name}`, error: 'Could not save' });
+```
+
+**4.14 KB gz** on top of Box, styled, against sonner's 9.86 KB of JavaScript plus 3.28 KB of stylesheet, react-hot-toast's 4.95 and Radix Toast's 12.06 — which is unstyled, so the CSS for it is still yours to write. All four measured with the same harness — this one as what it adds to an app that already has Box, the other three as the whole package, since that is what installing one costs. The style tree behind it also costs **0.50 KB gz** on every entry that carries the engine, whether or not the app renders a toast: the built-in component styles ship with Box, and this is the largest of them.
+
+### The store has no React in it
+
+`toast()` writes to a plain observable store; `<Toaster>` subscribes and draws what is there. Nothing about a message is a rendering question, so nothing about it needs a component in scope — and a call made _before_ the viewport mounts is queued rather than lost.
+
+`toast(message, options)` returns an id, with `success`, `error`, `warning`, `info` and `loading` beside it, plus `toast.update(id, …)` and `toast.dismiss(id?)`. An `options.id` that is already on screen is an **update**, which is what makes `toast.promise` one toast for the whole call rather than a spinner and then a second message under it. The promise is handed back untouched, so it can still be awaited.
+
+A message is any `ReactNode`, and so is a `description`. `action` is one button, `{ label, onClick }`, and it dismisses the toast it answered unless `closeOnClick: false` says otherwise — an undo that left its own toast standing would invite a second press.
+
+### The limit is a queue, not a cap
+
+Past `limit` (three, by default) a toast waits its turn **with its timer unstarted**, and a counter at the far end of the stack says how many are still to come. A cap would throw the fifth message away; a queue with running timers would expire it unread. Neither is what somebody who fired five requests at once meant.
+
+### The region was already there
+
+The viewport is a `<section aria-live="polite">` from the moment it mounts, empty — because a live region inserted together with its content is not reliably announced, which is the single most common way a toast system is silent to a screen reader. An error toast is `role="alert"`, assertive, and the one announcement pattern every screen reader implements. **Nothing else carries a region of its own**: the nearest live region to a change is the one that speaks, so a second inside the first would take the first's head start away rather than adding anything.
+
+A toast never takes focus when it arrives — an announcement is not an interruption. `F6` (or `hotkey`, which takes `'alt+t'` and the like, or `false`) moves focus to the stack from anywhere on the page, Tab walks the toasts in the order they are on screen, and Escape dismisses the toast focus is in and hands focus back where it came from once there is nothing left to read. The `<section>` is a region landmark too, so a screen reader has a second way in.
+
+Timers stop while the pointer is over the stack, while anything in it has focus, and while the tab is in the background — and resume where they left off rather than starting again. That is WCAG 2.2.1, and it is the only reason a toast is allowed to carry a control at all: a button that can vanish mid-reach is not operable.
+
+### The top layer, and no portal
+
+The viewport carries `popover="manual"` and is shown the moment it mounts, so it paints over every stacking context and outside every clipped or transformed ancestor — and because it never leaves the place it was declared, it inherits the theme, the custom properties and the text direction around it. `manual` rather than `auto`, because a stack of messages owns no dismissal: a press outside has to reach the page.
+
+Which raises the problem a fixed strip across a corner always raises, and it was measured rather than assumed: the viewport takes **no pointer events at all** and the toasts take them back, so a press in the gaps between them goes through to whatever is underneath.
+
+Two more things the UA stylesheet's own `[popover]` rule decides, both found in Chrome 153 and worth knowing before overriding the style tree. `inset: 0` leaves a corner-pinned stack over-constrained — `top` and `left` win over the two sides a `position` variant sets, and the stack lands in the top-left corner whatever you asked for — so all four sides are declared `auto` first. And `overflow: auto` quietly makes the viewport a scroll container, which clips the toasts' own shadows, so it is declared `visible`.
+
+`position` is one of six corners and its inline half is logical, so `'bottom-start'` is the bottom left of a left-to-right page and the bottom right of a right-to-left one. The newest toast is always the one nearest the screen edge, which is why a stack pinned to the top is drawn in the opposite order to one pinned to the bottom.
 
 ## Breaking changes
 

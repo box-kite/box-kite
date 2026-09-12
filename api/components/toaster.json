@@ -1,0 +1,96 @@
+{
+  "name": "Toaster",
+  "route": "/toaster",
+  "import": "import Toaster from '@box-kite/react/components/toaster';",
+  "description": "The viewport every toast is drawn in, and the live region they are announced from. Render one, once, near the root of the app; everything after that is `toast()`, from wherever the message comes from.",
+  "pattern": null,
+  "props": [
+    {
+      "name": "position",
+      "type": "ToastPosition",
+      "required": false,
+      "default": "'bottom-end'",
+      "description": "Which corner the stack is pinned to. Default `'bottom-end'`."
+    },
+    {
+      "name": "limit",
+      "type": "number",
+      "required": false,
+      "default": "3",
+      "description": "How many toasts are on screen at once. The rest wait their turn, timers and all. Default `3`."
+    },
+    {
+      "name": "duration",
+      "type": "number",
+      "required": false,
+      "default": "5000",
+      "description": "Milliseconds a toast that names no duration of its own stays. Default `5000`."
+    },
+    {
+      "name": "label",
+      "type": "string",
+      "required": false,
+      "default": "'Notifications'",
+      "description": "The region's accessible name. `role=\"region\"` has none of its own, and this one is never labelled visually."
+    },
+    {
+      "name": "closeLabel",
+      "type": "string",
+      "required": false,
+      "default": "'Close'",
+      "description": "The close button's accessible name."
+    },
+    {
+      "name": "overflowLabel",
+      "type": "?(count: number): React.ReactNode;",
+      "required": false,
+      "default": "(count: number) => `+${count} more`",
+      "description": "What the counter at the end of the stack says when the limit is holding toasts back."
+    },
+    {
+      "name": "hotkey",
+      "type": "string | false",
+      "required": false,
+      "default": "'F6'",
+      "description": "A key that moves focus to the stack from anywhere on the page, since toasts steal none. Default `'F6'`; `'alt+t'` and the like also work, and `false` turns it off."
+    },
+    {
+      "name": "store",
+      "type": "ToastStore<Content>",
+      "required": false,
+      "default": "defaultToastStore",
+      "description": "A store of your own — for a second, independent stack, or for a test that must not share state."
+    }
+  ],
+  "parts": [],
+  "keyboard": [
+    { "mode": null, "keys": "F6", "action": "Moves focus to the stack from anywhere on the page. Configurable through `hotkey`." },
+    { "mode": null, "keys": "Tab", "action": "Through the toasts and their controls, in the order they are on screen." },
+    {
+      "mode": null,
+      "keys": "Escape",
+      "action": "Dismisses the toast focus is in, and hands focus back to where it came from once the stack is empty."
+    }
+  ],
+  "a11y": [
+    "The viewport is a polite live region that exists from the moment it mounts, **before there is anything in it** — an `aria-live` element inserted together with its content is not reliably announced.",
+    "An error toast is `role=\"alert\"`, which is assertive; every other kind is announced politely by the region around it. A toast is never focused on arrival, so nothing is taken away from the keyboard.",
+    "Timers stop while the pointer is over the stack, while anything in it has focus, and while the tab is in the background — WCAG 2.2.1, and the reason a toast may carry a control at all.",
+    "The accent bar says the kind a second time; it is never the only signal, since the message itself is what says what happened."
+  ],
+  "axe": { "fixtures": ["Toaster"], "knownViolations": [] },
+  "styleTree": [
+    {
+      "path": "toaster",
+      "depth": 0,
+      "extends": null,
+      "variants": ["topStart", "topEnd", "topCenter", "bottomStart", "bottomEnd", "bottomCenter"]
+    },
+    { "path": "toaster.toast", "depth": 1, "extends": null, "variants": ["fromTop", "success", "error", "warning", "info", "loading"] },
+    { "path": "toaster.message", "depth": 1, "extends": null, "variants": [] },
+    { "path": "toaster.description", "depth": 1, "extends": null, "variants": [] },
+    { "path": "toaster.action", "depth": 1, "extends": null, "variants": [] },
+    { "path": "toaster.close", "depth": 1, "extends": null, "variants": [] },
+    { "path": "toaster.overflow", "depth": 1, "extends": null, "variants": [] }
+  ]
+}

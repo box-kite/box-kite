@@ -85,6 +85,15 @@ export default tseslint.config(
     },
   },
   {
+    // The one module that ships a component and an API together, and has to: `toast()` is callable from
+    // anywhere at all, which is the whole point of it, and splitting it into a second entry would make a
+    // consumer import two modules to use one feature.
+    files: ['src/components/toaster.tsx'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
+    },
+  },
+  {
     // The Next.js example is not a Vite app: Next's own convention is a route file exporting both a
     // component and its metadata, which is exactly what this rule exists to prevent elsewhere.
     files: ['examples/next-app/**/*.tsx'],
