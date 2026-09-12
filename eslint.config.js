@@ -31,7 +31,9 @@ export default tseslint.config(
         'warn',
         { allowConstantExport: true, extraHOCs: ['semantic', 'svgElement', 'withAttributesInProps'] },
       ],
-      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+      // `ignoreRestSiblings` is the omit idiom: `const { data, def, ...boxProps } = props` names what to
+      // take off so the rest can be spread, and naming a prop there is the point rather than an oversight.
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_', ignoreRestSiblings: true }],
       '@typescript-eslint/no-namespace': 'off',
       'no-unused-expressions': 'off',
       '@typescript-eslint/no-unused-expressions': [

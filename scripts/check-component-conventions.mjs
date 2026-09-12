@@ -69,23 +69,17 @@ const SANCTIONED = {
  */
 const DEPRECATED = {
   'Dropdown.onChange': 'the pre-contract `(value, values)` pair, still firing beside `onValueChange`',
+  'DataGrid.onSelectionChange': 'the event object, still firing beside `onSelectedRowKeysChange`',
+  'DataGrid.onPageChange': 'the `(page, pageSize)` pair, still firing beside `onPaginationChange`',
+  'DataGrid.onPageSizeChange': 'half of one change, still firing beside `onPaginationChange`',
+  'DataGrid.onSortChange': 'the `(columnKey, direction)` pair, still firing beside `onSortingChange`',
 };
 
 /**
- * Where a convention applies and the component has not been brought to it yet — B10 stage 3. An entry here
- * is a promise with a name on it, and emptying this object is what closes the step.
+ * Where a convention applies and the component has not been brought to it yet. Empty since B10 stage 3,
+ * and an entry here is a promise with a step number on it.
  */
-const OWED = {
-  'DataGrid.onSelectionChange': 'B10 stage 3: an event object whose `action` is a reason under another name',
-  'DataGrid.onGlobalFilterChange': 'B10 stage 3: no details argument',
-  'DataGrid.onColumnFiltersChange': 'B10 stage 3: no details argument',
-  'DataGrid.onExpandedRowKeysChange': 'B10 stage 3: no details argument',
-  'DataGrid.onPageChange': 'B10 stage 3: two positional arguments',
-  'DataGrid.onPageSizeChange': 'B10 stage 3: no details argument',
-  'DataGrid.onSortChange': 'B10 stage 3: two positional arguments',
-  'DataGrid.onServerStateChange': 'B10 stage 3: a snapshot with no reason for it',
-  'DataGrid.box': 'B10 stage 3: `DataGridProps` is the whole prop type and takes no Box props at all',
-};
+const OWED = {};
 
 /**
  * Every callback prop, not just the `…Change` ones: `onChange` on a `Checkbox` is a DOM passthrough and
@@ -235,5 +229,5 @@ if (problems.length) {
 
 console.log(
   `✔ ${COMPONENTS.length} components conform: ${sanctioned.length} sanctioned exception(s), ` +
-    `${deprecated.length} deprecated spelling(s), ${owed.length} owed (B10 stage 3)`,
+    `${deprecated.length} deprecated spelling(s), ${owed.length} owed`,
 );

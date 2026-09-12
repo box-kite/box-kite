@@ -5,6 +5,7 @@
 // these are exactly the files an agent believes.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { COMPONENTS } from './componentsApi.mjs';
 import { PACKAGE_NAME, componentEntries } from './moduleGraph.mjs';
 
 const root = join(import.meta.dirname, '..');
@@ -105,41 +106,55 @@ function deprecatedProps() {
 }
 
 /**
+ * Where a component's public API is written: its own file, plus the props file the API reference reads
+ * when the interface lives somewhere else. `DataGrid`'s props are in a contracts module, so a scan of
+ * `src/components/*.tsx` alone would report that it deprecates nothing (bug #155).
+ */
+function componentSources(entry) {
+  const own = `src/components/${entry}.tsx`;
+  const elsewhere = COMPONENTS.filter((component) => component.file === own && component.propsFile).map((c) => c.propsFile);
+
+  return [...new Set([own, ...elsewhere])];
+}
+
+/**
  * Every deprecation in a component's source, named the way a consumer meets it. A tag sitting above a
  * prop signature deprecates that **prop** and a tag anywhere else deprecates the module — telling an
  * agent to stop importing `components/radioGroup` because one of its props was renamed is the failure
  * this distinction exists to prevent (bug #152).
  */
 function deprecatedComponents() {
-  return componentEntries().flatMap((entry) => {
-    const lines = read(`src/components/${entry}.tsx`).split('\n');
-    const module = `${PACKAGE_NAME}/components/${entry}`;
-    const found = [];
+  return componentEntries().flatMap((entry) =>
+    componentSources(entry).flatMap((file) => {
+      const module = `${PACKAGE_NAME}/components/${entry}`;
+      const lines = read(file).split('\n');
+      const found = [];
 
-    lines.forEach((line, index) => {
-      if (!line.includes('@deprecated')) return;
+      lines.forEach((line, index) => {
+        if (!line.includes('@deprecated')) return;
 
-      let end = index;
-      while (end < lines.length && !lines[end].includes('*/')) end += 1;
+        let end = index;
+        while (end < lines.length && !lines[end].includes('*/')) end += 1;
 
-      // Each continuation line's ` * ` goes before the join, or it lands in the middle of the prose —
-      // a component's tag wraps where a prop's in `boxStyles.ts` fits on one line.
-      const text = lines
-        .slice(index, end + 1)
-        .map((row) => row.replace(/^\s*\*\s?/, ''))
-        .join(' ')
-        .replace(/^[\s*/]*@deprecated/, '')
-        .replace(/\*\/.*$/, '');
+        // Each continuation line's ` * ` goes before the join, or it lands in the middle of the prose —
+        // a component's tag wraps where a prop's in `boxStyles.ts` fits on one line.
+        const text = lines
+          .slice(index, end + 1)
+          .map((row) => row.replace(/^\s*\*\s?/, ''))
+          .join(' ')
+          .replace(/^[\s*/]*@deprecated/, '')
+          .replace(/\*\/.*$/, '');
 
-      // The identifier the comment sits above, when the line after it declares a prop rather than the
-      // component: `onChange?: ChangeHandler<…>` is a prop, `function TextboxImpl(` is not.
-      const prop = /^\s*([A-Za-z]\w*)\s*\??:/.exec(lines[end + 1] ?? '')?.[1];
+        // The identifier the comment sits above, when the line after it declares a prop rather than the
+        // component: `onChange?: ChangeHandler<…>` is a prop, `function TextboxImpl(` is not.
+        const prop = /^\s*([A-Za-z]\w*)\s*\??:/.exec(lines[end + 1] ?? '')?.[1];
 
-      found.push({ name: prop ? `${module}#${prop}` : module, instead: firstSentence(text) });
-    });
+        found.push({ name: prop ? `${module}#${prop}` : module, instead: firstSentence(text) });
+      });
 
-    return found;
-  });
+      return found;
+    }),
+  );
 }
 
 /**

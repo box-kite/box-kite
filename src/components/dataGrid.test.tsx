@@ -236,6 +236,20 @@ describe('DataGrid', () => {
     });
   });
 
+  it('takes Box props on the element wrapping the grid', () => {
+    render(
+      <DataGrid data={sampleData} def={basicGridDef} p={4} className="mine" style={{ zIndex: 3 }} props={{ 'data-testid': 'grid-root' }} />,
+    );
+
+    const root = screen.getByTestId('grid-root');
+
+    expect(window.getComputedStyle(root).padding).toBe('16px');
+    expect(root.className).toContain('mine');
+    // A caller's own style sits on top of the column-width variables rather than replacing them.
+    expect(root.style.zIndex).toBe('3');
+    expect(root.style.getPropertyValue('--row-height')).not.toBe('');
+  });
+
   it('renders with pinned columns', () => {
     const pinnedGridDef = {
       rowKey: 'id' as keyof Person,

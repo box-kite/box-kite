@@ -67,6 +67,10 @@ Detect the package manager from the lock file rather than asking:
 - `disabledGroup` — `group={{ 'card/disabled': … }}`.
 - `selectedGroup` — `group={{ 'card/selected': … }}`.
 - `@box-kite/react/components/baseSvg` — Since SV3 every SVG element has a component, and `Svg` is this one without the presets: `<Svg viewBox="0 0 24 24" width="1.5rem">`.
+- `@box-kite/react/components/dataGrid#onSelectionChange` — `onSelectedRowKeysChange` is the selection itself, with the `action` as a named reason — the spelling every component reports a change under.
+- `@box-kite/react/components/dataGrid#onPageChange` — `onPaginationChange` reports both pager values with a reason, which is what says whether the page changed because the user navigated or because a filter reset it.
+- `@box-kite/react/components/dataGrid#onPageSizeChange` — `onPaginationChange` covers it: a new page size always returns to page 1, so the two were never separate changes.
+- `@box-kite/react/components/dataGrid#onSortChange` — `onSortingChange` reports the sort as one value with a reason beside it.
 - `@box-kite/react/components/dropdown#onChange` — `onValueChange` is what every component reports a value change under, and it carries the reason — which is the thing a `(value, values)` pair cannot say.
 - `@box-kite/react/components/radioGroup#onChange` — `onValueChange` is what every other component reports a value change under, and a group is not an `<input>` — this spelling still works and means the same thing.
 - `@box-kite/react/components/select#onChange` — `onValueChange` is what every component reports a value change under, and it carries the reason.

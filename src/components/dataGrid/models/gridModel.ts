@@ -7,7 +7,10 @@ import DataGridCellRowDetail from '../components/dataGridCellRowDetail';
 import DataGridCellRowSelection from '../components/dataGridCellRowSelection';
 import {
   ColumnFilters,
+  DataGridChangeReason,
+  DataGridFilterReason,
   DataGridProps,
+  DataGridSelectionReason,
   FilterValue,
   Key,
   NO_PIN,
@@ -381,38 +384,53 @@ export default class GridModel<TRow> {
     return data;
   }
 
-  private fireServerStateChange(overrides?: Partial<ServerState<TRow>>): void {
-    this.props.onServerStateChange?.({
-      page: overrides?.page ?? this.page,
-      pageSize: overrides?.pageSize ?? this.pageSize,
-      sortColumn: 'sortColumn' in (overrides ?? {}) ? overrides!.sortColumn : this._sortColumn,
-      sortDirection: 'sortDirection' in (overrides ?? {}) ? overrides!.sortDirection : this._sortDirection,
-      columnFilters: overrides?.columnFilters ?? this.columnFilters,
-      globalFilterValue: overrides?.globalFilterValue ?? this.globalFilterValue,
-    });
+  private fireServerStateChange(reason: DataGridChangeReason, overrides?: Partial<ServerState<TRow>>): void {
+    this.props.onServerStateChange?.(
+      {
+        page: overrides?.page ?? this.page,
+        pageSize: overrides?.pageSize ?? this.pageSize,
+        sortColumn: 'sortColumn' in (overrides ?? {}) ? overrides!.sortColumn : this._sortColumn,
+        sortDirection: 'sortDirection' in (overrides ?? {}) ? overrides!.sortDirection : this._sortDirection,
+        columnFilters: overrides?.columnFilters ?? this.columnFilters,
+        globalFilterValue: overrides?.globalFilterValue ?? this.globalFilterValue,
+      },
+      { reason },
+    );
+  }
+
+  /** Both pager callbacks: the one carrying a reason, and the `(page, pageSize)` pair it replaces. */
+  private firePaginationChange(page: number, pageSize: number, reason: DataGridChangeReason): void {
+    this.props.onPaginationChange?.({ page, pageSize }, { reason });
+    this.props.onPageChange?.(page, pageSize);
+  }
+
+  /**
+   * A query that changed underneath the pager sends it back to the first page. Returns where the page now
+   * is, which is what the server-state snapshot asks the server for.
+   */
+  private resetToFirstPage(reason: DataGridChangeReason): number {
+    if (!this.isPaginated || this.page === 1) return this.page;
+
+    this._page = 1;
+    this.firePaginationChange(1, this.pageSize, reason);
+
+    return 1;
   }
 
   /**
    * Set global filter value
    */
   public setGlobalFilter = (value: string): void => {
-    if (this.props.onGlobalFilterChange) {
-      this.props.onGlobalFilterChange(value);
-    } else {
-      this._globalFilterValue = value;
-    }
+    const reason: DataGridFilterReason = value === '' ? 'clear' : 'filter';
 
-    // Reset to page 1 when filter changes (server needs to re-filter from first page)
-    const nextPage = this.isPaginated && this.page !== 1 ? 1 : this.page;
-    if (nextPage !== this.page) {
-      if (this.props.onPageChange) {
-        this.props.onPageChange(1, this.pageSize);
-      } else {
-        this._page = 1;
-      }
-    }
+    // Written whether or not `globalFilterValue` is present — a handler is a listener, not ownership
+    // (bug #154). The getter prefers the prop, so a controlled grid still shows what its owner asked for.
+    this._globalFilterValue = value;
+    this.props.onGlobalFilterChange?.(value, { reason });
 
-    this.fireServerStateChange({ globalFilterValue: value, page: nextPage });
+    const nextPage = this.resetToFirstPage(reason);
+
+    this.fireServerStateChange(reason, { globalFilterValue: value, page: nextPage });
 
     this.rows.clear(); // cascades to flatRows/rowOffsets
     this.notify();
@@ -423,6 +441,7 @@ export default class GridModel<TRow> {
    */
   public setColumnFilter = (columnKey: Key, filter: FilterValue | undefined): void => {
     const newFilters = { ...this.columnFilters };
+    const reason: DataGridFilterReason = filter === undefined ? 'clear' : 'filter';
 
     if (filter === undefined) {
       delete newFilters[columnKey as keyof TRow];
@@ -430,23 +449,12 @@ export default class GridModel<TRow> {
       newFilters[columnKey as keyof TRow] = filter;
     }
 
-    if (this.props.onColumnFiltersChange) {
-      this.props.onColumnFiltersChange(newFilters);
-    } else {
-      this._columnFilters = newFilters;
-    }
+    this._columnFilters = newFilters;
+    this.props.onColumnFiltersChange?.(newFilters, { reason });
 
-    // Reset to page 1 when filter changes (server needs to re-filter from first page)
-    const nextPage = this.isPaginated && this.page !== 1 ? 1 : this.page;
-    if (nextPage !== this.page) {
-      if (this.props.onPageChange) {
-        this.props.onPageChange(1, this.pageSize);
-      } else {
-        this._page = 1;
-      }
-    }
+    const nextPage = this.resetToFirstPage(reason);
 
-    this.fireServerStateChange({ columnFilters: newFilters, page: nextPage });
+    this.fireServerStateChange(reason, { columnFilters: newFilters, page: nextPage });
 
     this.rows.clear(); // cascades to flatRows/rowOffsets
     this.notify();
@@ -456,13 +464,10 @@ export default class GridModel<TRow> {
    * Clear all column filters
    */
   public clearColumnFilters = (): void => {
-    if (this.props.onColumnFiltersChange) {
-      this.props.onColumnFiltersChange({});
-    } else {
-      this._columnFilters = {};
-    }
+    this._columnFilters = {};
+    this.props.onColumnFiltersChange?.({}, { reason: 'clear' });
 
-    this.fireServerStateChange({ columnFilters: {} });
+    this.fireServerStateChange('clear', { columnFilters: {} });
 
     this.rows.clear(); // cascades to flatRows/rowOffsets
     this.notify();
@@ -739,11 +744,8 @@ export default class GridModel<TRow> {
       expandedKeys.add(rowKey);
     }
 
-    if (this.props.onExpandedRowKeysChange) {
-      this.props.onExpandedRowKeysChange(Array.from(expandedKeys));
-    } else {
-      this._expandedDetailRows = expandedKeys;
-    }
+    this._expandedDetailRows = expandedKeys;
+    this.props.onExpandedRowKeysChange?.(Array.from(expandedKeys), { reason: expandedKeys.has(rowKey) ? 'expand' : 'collapse' });
 
     this.rows.clear(); // cascades to flatRows/rowOffsets
     this.notify();
@@ -795,13 +797,10 @@ export default class GridModel<TRow> {
     const clamped = Math.max(1, Math.min(page, state.totalPages));
     if (clamped === this.page) return;
 
-    if (this.props.onPageChange) {
-      this.props.onPageChange(clamped, state.pageSize);
-    } else {
-      this._page = clamped;
-    }
+    this._page = clamped;
+    this.firePaginationChange(clamped, state.pageSize, 'page');
 
-    this.fireServerStateChange({ page: clamped });
+    this.fireServerStateChange('page', { page: clamped });
 
     this.rows.clear(); // cascades to flatRows/rowOffsets
     this.notify();
@@ -810,19 +809,13 @@ export default class GridModel<TRow> {
   public changePageSize = (size: number): void => {
     if (size === this.pageSize) return;
 
-    if (this.props.onPageSizeChange) {
-      this.props.onPageSizeChange(size);
-    } else {
-      this._pageSize = size;
-    }
+    this._pageSize = size;
+    this._page = 1;
 
-    if (this.props.onPageChange) {
-      this.props.onPageChange(1, size);
-    } else {
-      this._page = 1;
-    }
+    this.props.onPageSizeChange?.(size);
+    this.firePaginationChange(1, size, 'page-size');
 
-    this.fireServerStateChange({ page: 1, pageSize: size });
+    this.fireServerStateChange('page-size', { page: 1, pageSize: size });
 
     this.rows.clear(); // cascades to flatRows/rowOffsets
     this.notify();
@@ -941,20 +934,20 @@ export default class GridModel<TRow> {
       this._sortDirection = _sortColumn === columnKey && _sortDirection === 'ASC' ? 'DESC' : 'ASC';
     }
 
-    // Notify parent for server-side sorting
+    // Notify parent for server-side sorting. A cleared sort keeps its direction for the older callback,
+    // which has always reported the pair; the new one says `undefined` once there is no column.
+    // Tested against `undefined` rather than truthiness: a column key is a `Key`, so `0` is one (bug #153).
+    const sorting =
+      this._sortColumn !== undefined && this._sortDirection !== undefined
+        ? { columnKey: this._sortColumn, direction: this._sortDirection }
+        : undefined;
+
+    this.props.onSortingChange?.(sorting, { reason: sorting ? 'sort' : 'clear' });
     this.props.onSortChange?.(this._sortColumn, this._sortDirection);
 
-    // Reset to page 1 when sort changes (server needs to re-sort from first page)
-    const nextPage = this.isPaginated && this.page !== 1 ? 1 : this.page;
-    if (nextPage !== this.page) {
-      if (this.props.onPageChange) {
-        this.props.onPageChange(1, this.pageSize);
-      } else {
-        this._page = 1;
-      }
-    }
+    const nextPage = this.resetToFirstPage('sort');
 
-    this.fireServerStateChange({ sortColumn: this._sortColumn, sortDirection: this._sortDirection, page: nextPage });
+    this.fireServerStateChange('sort', { sortColumn: this._sortColumn, sortDirection: this._sortDirection, page: nextPage });
 
     this.rows.clear(); // cascades to flatRows/rowOffsets (sort doesn't change column structure)
     this.notify();
@@ -1018,7 +1011,8 @@ export default class GridModel<TRow> {
     this.toggleRowsSelection([rowKey]);
   };
 
-  public toggleRowsSelection = (rowKeys: Key[]) => {
+  /** `all` is the header checkbox rather than a count: a group covering every row is still not select-all. */
+  public toggleRowsSelection = (rowKeys: Key[], all = false) => {
     this.selectedRows = new Set(this.selectedRows);
     this._selectionAnnounced = true;
 
@@ -1033,16 +1027,23 @@ export default class GridModel<TRow> {
     this.flatRows.clear(); // cascades to rowOffsets
     this.notify();
 
+    const selectedRowKeys = Array.from(this.selectedRows);
+    const reason: DataGridSelectionReason = all ? (hasAllSelected ? 'clear' : 'select-all') : hasAllSelected ? 'deselect' : 'select';
+
+    this.props.onSelectedRowKeysChange?.(selectedRowKeys, { reason });
     this.props.onSelectionChange?.({
       action: hasAllSelected ? 'deselect' : 'select',
       affectedRowKeys: rowKeys,
-      selectedRowKeys: Array.from(this.selectedRows),
+      selectedRowKeys,
       isAllSelected: this.selectedRows.size === this.props.data.length,
     });
   };
 
   public toggleSelectAllRows = () => {
-    this.toggleRowsSelection(this.props.data.map((x) => this.getRowKey(x)));
+    this.toggleRowsSelection(
+      this.props.data.map((x) => this.getRowKey(x)),
+      true,
+    );
   };
 
   public toggleColumnVisibility = (columnKey: Key) => {

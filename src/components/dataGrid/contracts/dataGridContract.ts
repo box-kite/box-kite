@@ -1,3 +1,5 @@
+import type { BoxProps } from '../../../box';
+import type { ChangeHandler } from '../../../react/a11y/useControllableState';
 import { ComponentsAndVariants } from '../../../types';
 import type { SortDirection } from '../../../utils/array/arrayUtils';
 import CellModel from '../models/cellModel';
@@ -48,6 +50,34 @@ export interface ServerState<TRow> {
   sortDirection: SortDirection | undefined;
   columnFilters: ColumnFilters<TRow>;
   globalFilterValue: string;
+}
+
+// ========== Change Reasons ==========
+
+/**
+ * Why a server-relevant thing changed. `'page'` and `'page-size'` are the pager; the other three are a
+ * query that changed underneath it, which is also what sent the grid back to the first page.
+ */
+export type DataGridChangeReason = 'page' | 'page-size' | 'sort' | 'filter' | 'clear';
+/** A filter was typed, or emptied — by the clear button or by deleting the last character. */
+export type DataGridFilterReason = 'filter' | 'clear';
+/** A column was sorted, or the sort was cleared (the third press on a header, and the menu's Clear Sort). */
+export type DataGridSortReason = 'sort' | 'clear';
+/** A detail row was opened or shut. */
+export type DataGridExpandReason = 'expand' | 'collapse';
+/** The same four `Dropdown` reports a selection under: the header checkbox is the `-all`/`clear` pair. */
+export type DataGridSelectionReason = 'select' | 'deselect' | 'select-all' | 'clear';
+
+/** Which column the grid is sorted by, and which way. `undefined` in a change means it is not sorted. */
+export interface DataGridSort {
+  columnKey: Key;
+  direction: SortDirection;
+}
+
+/** Where the pager is. The two move together — a new page size always returns to page 1. */
+export interface DataGridPagination {
+  page: number;
+  pageSize: number;
 }
 
 // ========== Filter Types ==========
@@ -185,7 +215,12 @@ export interface GridDefinition<TRow> {
   pagination?: PaginationConfig;
 }
 
-export interface DataGridProps<TRow> {
+/**
+ * The grid takes Box style props like anything else — on the element that wraps the bars, the rows and
+ * the pager. `component` is declared here rather than inherited so it stays the whole key union: the
+ * model hands it to every part, and narrowing it would mean a type parameter on all of them.
+ */
+export interface DataGridProps<TRow> extends Omit<BoxProps<'div', 'datagrid'>, 'ref' | 'tag' | 'children' | 'component' | 'variant'> {
   /** Component name for style resolution. Default: 'datagrid'. Set to a custom name to use a different component style tree. */
   component?: keyof ComponentsAndVariants;
   /** The rows. Virtualization means the length is not what is rendered — ten thousand is fine. */
@@ -194,34 +229,58 @@ export interface DataGridProps<TRow> {
   def: GridDefinition<TRow>;
   /** Show the loading sweep over the rows. The grid keeps whatever it is already showing underneath. */
   loading?: boolean;
-  /** Fires when rows are selected or deselected, with the keys affected and whether all are now selected. */
+  /** Fires with every selected row key and why the selection changed. */
+  onSelectedRowKeysChange?: ChangeHandler<Key[], DataGridSelectionReason>;
+  /**
+   * The older callback, whose event carries the keys *acted on* beside the selection. Both fire.
+   * @deprecated `onSelectedRowKeysChange` is the selection itself, with the `action` as a named reason —
+   * the spelling every component reports a change under. This one still works.
+   */
   onSelectionChange?: (event: SelectionChangeEvent<TRow>) => void;
   /** Controlled global filter value */
   globalFilterValue?: string;
-  /** Callback when global filter changes */
-  onGlobalFilterChange?: (value: string) => void;
+  /** Fires with the global filter's new text, and whether it was typed or emptied. */
+  onGlobalFilterChange?: ChangeHandler<string, DataGridFilterReason>;
   /** Controlled column filters */
   columnFilters?: ColumnFilters<TRow>;
-  /** Callback when column filters change */
-  onColumnFiltersChange?: (filters: ColumnFilters<TRow>) => void;
+  /** Fires with every column filter still set, and whether one was set or cleared. */
+  onColumnFiltersChange?: ChangeHandler<ColumnFilters<TRow>, DataGridFilterReason>;
   /** External predicate filters applied before global/column filters. Memoize with useMemo for performance. */
   filters?: ((row: TRow) => boolean)[];
   /** Controlled expanded detail row keys */
   expandedRowKeys?: Key[];
-  /** Callback when expanded detail rows change */
-  onExpandedRowKeysChange?: (keys: Key[]) => void;
+  /** Fires with every expanded detail row key, and whether one was opened or shut. */
+  onExpandedRowKeysChange?: ChangeHandler<Key[], DataGridExpandReason>;
   /** Controlled current page (1-indexed). Used with pagination. */
   page?: number;
-  /** Callback when page changes. Receives page (1-indexed) and pageSize. */
-  onPageChange?: (page: number, pageSize: number) => void;
   /** Controlled page size. Used with pagination and pageSizeOptions. */
   pageSize?: number;
-  /** Callback when the user changes the page size. */
+  /**
+   * Fires with both pager values and why they changed — the page and the size move together, and a filter
+   * or a sort is what sends the grid back to the first page.
+   */
+  onPaginationChange?: ChangeHandler<DataGridPagination, DataGridChangeReason>;
+  /**
+   * The older page callback, whose second argument is the page size rather than the reason. Both fire.
+   * @deprecated `onPaginationChange` reports both pager values with a reason, which is what says whether
+   * the page changed because the user navigated or because a filter reset it. This one still works.
+   */
+  onPageChange?: (page: number, pageSize: number) => void;
+  /**
+   * The older page-size callback. Both fire.
+   * @deprecated `onPaginationChange` covers it: a new page size always returns to page 1, so the two were
+   * never separate changes. This one still works.
+   */
   onPageSizeChange?: (pageSize: number) => void;
-  /** Callback when sort changes. For server-side sorting with pagination. */
+  /** Fires with the column and direction the grid is sorted by, or `undefined` once the sort is cleared. */
+  onSortingChange?: ChangeHandler<DataGridSort | undefined, DataGridSortReason>;
+  /**
+   * The older sort callback, whose two arguments are the column and the direction. Both fire.
+   * @deprecated `onSortingChange` reports the sort as one value with a reason beside it. This one still works.
+   */
   onSortChange?: (columnKey: Key | undefined, direction: SortDirection | undefined) => void;
-  /** Fires on any server-relevant state change (page, sort, filter). Provides full state snapshot for API calls. */
-  onServerStateChange?: (state: ServerState<TRow>) => void;
+  /** Fires on any server-relevant state change with the full snapshot for an API call, and what moved. */
+  onServerStateChange?: ChangeHandler<ServerState<TRow>, DataGridChangeReason>;
 }
 
 interface SelectionChangeEvent<TRow, TKey = TRow[keyof TRow] | number | string> {

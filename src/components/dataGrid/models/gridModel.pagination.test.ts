@@ -290,7 +290,7 @@ describe('GridModel Pagination', () => {
     grid.changePage(3);
 
     grid.changePageSize(25);
-    expect(onServerStateChange).toHaveBeenLastCalledWith(expect.objectContaining({ page: 1, pageSize: 25 }));
+    expect(onServerStateChange).toHaveBeenLastCalledWith(expect.objectContaining({ page: 1, pageSize: 25 }), { reason: 'page-size' });
   });
 
   // ========== Column filter resets page ==========

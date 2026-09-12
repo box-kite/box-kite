@@ -75,13 +75,17 @@ Also sanctioned: `Menu.Item`'s `onSelect`, which is a **command** — there is n
 reason to give — and `Overlay`'s `onSideChange`, which **reports** where the browser put the layer
 rather than announcing a state the caller owns.
 
-**Deprecated:** `Dropdown.onChange`, whose `(value, values)` pair predates the contract.
-`onValueChange` beside it is the same change with a reason on it, and both fire until the next
-major.
+**Deprecated:** `Dropdown.onChange`, whose `(value, values)` pair predates the contract, and the four
+`DataGrid` callbacks whose shape could not be fixed in place — `onSelectionChange`, `onSortChange`,
+`onPageChange` and `onPageSizeChange`. Each has a contract-shaped twin beside it and both fire until
+the next major.
 
-**Owed:** `DataGrid`'s eight callbacks, which are positional and reasonless.
-`DataGrid.onSelectionChange` is the near miss worth naming — its event object carries
-`action: 'select' | 'deselect'`, which is a reason under a different name.
+The four are the ones whose **first or second argument already meant something else**:
+`onPageChange(page, pageSize)` cannot grow a details argument where the page size already sits. The
+grid's other four callbacks took one and kept their names, because a handler written `(value) => …`
+is assignable to one that hands it a second argument — so adding the reason broke nobody.
+
+**Owed:** nothing.
 
 ## 3. No effect-driven state sync
 
@@ -141,7 +145,9 @@ variant is its own. `Overlay` places a layer and draws no surface; the surface i
 appear in the Box-props ledger for a modelling reason rather than a real one: their Box half is
 intersected in at the call signature, so the interface the reference names has none.
 
-**Owed:** `DataGrid`, which takes no Box props at all.
+**Owed:** nothing. `DataGrid` was the last one taking no Box props, and it takes them on the element
+that wraps the bars, the rows and the pager — with its own `style` merged over the column-width
+variables the grid writes there rather than replacing them.
 
 ---
 

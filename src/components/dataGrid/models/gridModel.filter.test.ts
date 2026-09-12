@@ -94,7 +94,10 @@ describe('GridModel Filtering', () => {
       const grid = createGridModel({ onGlobalFilterChange });
 
       grid.setGlobalFilter('test');
-      expect(onGlobalFilterChange).toHaveBeenCalledWith('test');
+      expect(onGlobalFilterChange).toHaveBeenCalledWith('test', { reason: 'filter' });
+
+      grid.setGlobalFilter('');
+      expect(onGlobalFilterChange).toHaveBeenLastCalledWith('', { reason: 'clear' });
     });
   });
 
