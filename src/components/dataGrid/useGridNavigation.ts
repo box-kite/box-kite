@@ -53,7 +53,9 @@ export default function useGridNavigation<TRow>(options: GridNavigationOptions<T
   // empty case has to borrow one rather than allocate a fresh array on every render.
   const bodyRows = grid.viewport.isEmpty ? EMPTY_ROWS : grid.flatRows.value;
   const columnCount = grid.columns.value.visibleLeafs.length;
-  const rowCount = headerRowCount + bodyRows.length;
+  // The footer is a row of the grid like any other — pinned, so the arrows reach it without a scroll.
+  const footerRowCount = grid.aggregation.hasFooter && !grid.viewport.isEmpty ? 1 : 0;
+  const rowCount = headerRowCount + bodyRows.length + footerRowCount;
 
   /**
    * How many cells a row holds. Only the body varies: a group row's data columns are absorbed into
@@ -63,6 +65,7 @@ export default function useGridNavigation<TRow>(options: GridNavigationOptions<T
     (row: number): number => {
       if (row < headerRows.length) return headerRows[row]?.length ?? 0;
       if (row < headerRowCount) return columnCount;
+      if (row >= headerRowCount + bodyRows.length) return columnCount;
 
       const bodyRow = bodyRows[row - headerRowCount];
 
@@ -82,6 +85,7 @@ export default function useGridNavigation<TRow>(options: GridNavigationOptions<T
       if (row < headerRows.length) return (headerRows[row]?.[cell]?.headerCell.columnIndex ?? cell + 1) - 1;
       if (row < headerRowCount) return cell;
 
+      // The footer holds one cell per column, so an ordinal there is already a column index.
       return bodyRows[row - headerRowCount]?.columnOf(cell) ?? cell;
     },
     [bodyRows, headerRowCount, headerRows],
@@ -99,6 +103,8 @@ export default function useGridNavigation<TRow>(options: GridNavigationOptions<T
       const scroller = scrollerRef.current;
 
       if (viewport.showAll || !scroller) return;
+      // The footer is pinned like the header, so reaching it scrolls nothing.
+      if (bodyIndex >= bodyRows.length) return;
 
       if (bodyIndex < 0) {
         // The header is sticky, so it is on screen whatever the body is doing. Only a move out of
@@ -122,7 +128,7 @@ export default function useGridNavigation<TRow>(options: GridNavigationOptions<T
       scroller.scrollTop = top;
       onScrollTo(top);
     },
-    [grid, headerRowCount, onScrollTo, scrollTop, scrollerRef],
+    [bodyRows.length, grid, headerRowCount, onScrollTo, scrollTop, scrollerRef],
   );
 
   // Which row the move started from, which only a scroll out of the body cares about.

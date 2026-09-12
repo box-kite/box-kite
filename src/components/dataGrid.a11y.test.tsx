@@ -525,6 +525,66 @@ describe('DataGrid accessibility', () => {
     });
   });
 
+  describe('The footer', () => {
+    const withFooter = () =>
+      renderGrid({
+        footer: true,
+        columns: [
+          { key: 'name', header: 'Name' },
+          { key: 'city', header: 'City' },
+          { key: 'age', header: 'Age', aggregate: 'sum' },
+        ],
+      });
+
+    it('is a rowgroup of its own, holding one row of cells', () => {
+      withFooter();
+
+      // Three rowgroups now: the header, the body and the footer.
+      expect(screen.getAllByRole('rowgroup')).toHaveLength(3);
+      expect(cellsOf(rows().at(-1)!).map((cell) => cell.textContent)).toEqual(['Total', '', '174']);
+    });
+
+    it('counts as a row of the grid, numbered after the last one', () => {
+      withFooter();
+
+      // One header row, four body rows and the footer.
+      expect(grid().getAttribute('aria-rowcount')).toBe('6');
+      expect(rows().at(-1)?.getAttribute('aria-rowindex')).toBe('6');
+    });
+
+    it('is where Ctrl+End lands, because it is the last row', async () => {
+      const user = keyboard();
+      withFooter();
+
+      await user.pressTab();
+      await user.pressCtrl('End');
+
+      expectFocusOn(cellsOf(rows().at(-1)!).at(-1));
+      expect(document.activeElement?.textContent).toBe('174');
+    });
+
+    it('is reached from the last body row with one Down, and left again with Up', async () => {
+      const user = keyboard();
+      withFooter();
+
+      await user.pressTab();
+      await user.pressCtrl('End');
+      await user.pressArrow('Up');
+
+      expect(document.activeElement?.textContent).toBe('52');
+
+      await user.pressArrow('Down');
+      expect(document.activeElement?.textContent).toBe('174');
+    });
+
+    it('is not rendered at all when no column aggregates', () => {
+      renderGrid({ footer: true });
+
+      expect(screen.getAllByRole('rowgroup')).toHaveLength(2);
+      expect(grid().getAttribute('aria-rowcount')).toBe('5');
+    });
+  });
+
   describe('Known gaps', () => {
     it('does not yet keep Tab inside the grid', async () => {
       const user = keyboard();

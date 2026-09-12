@@ -3,7 +3,7 @@ import memo from '../../../utils/memo';
 import { Key } from '../contracts/dataGridContract';
 import ColumnModel from './columnModel';
 import DetailRowModel from './detailRowModel';
-import GridModel, { GROUPING_CELL_KEY, ROW_DETAIL_CELL_KEY, ROW_NUMBER_CELL_KEY, ROW_SELECTION_CELL_KEY } from './gridModel';
+import GridModel, { GROUPING_CELL_KEY } from './gridModel';
 import GroupRowCellModel from './groupRowCellModel';
 import RowModel from './rowModel';
 
@@ -96,16 +96,12 @@ export default class GroupRowModel<TRow> {
   }
 
   public get groupingColumnGridColumn() {
-    const { visibleLeafs } = this.grid.columns.value;
-    const { groupingColumn } = this;
+    return this.grid.groupingSpan.value.length;
+  }
 
-    const gridColumn = ArrayUtils.sumBy(visibleLeafs, (c) =>
-      c.pin === groupingColumn.pin && c.key !== ROW_SELECTION_CELL_KEY && c.key !== ROW_NUMBER_CELL_KEY && c.key !== ROW_DETAIL_CELL_KEY
-        ? 1
-        : 0,
-    );
-
-    return gridColumn;
+  /** Whether the label cell has swallowed this column, which is what leaves it with no cell of its own. */
+  public spans(column: ColumnModel<TRow>): boolean {
+    return !column.isGrouping && this.grid.groupingSpan.value.includes(column);
   }
 
   public readonly kind = 'group' as const;

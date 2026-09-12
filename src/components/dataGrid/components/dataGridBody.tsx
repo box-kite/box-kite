@@ -8,6 +8,7 @@ import GridModel from '../models/gridModel';
 import GroupRowModel from '../models/groupRowModel';
 import RowModel from '../models/rowModel';
 import DataGridDetailRow from './dataGridDetailRow';
+import DataGridFooter from './dataGridFooter';
 import DataGridGroupRow from './dataGridGroupRow';
 import DataGridRow from './dataGridRow';
 
@@ -70,16 +71,19 @@ export default function DataGridBody<TRow>(props: Props<TRow>) {
 
   if (showAll) {
     return (
-      <Grid
-        component={`${grid.componentName}.body` as never}
-        width="max-content"
-        minWidth="fit"
-        transition="none"
-        props={{ role: 'rowgroup' }}
-        style={{ gridTemplateColumns: grid.gridTemplateColumns.value }}
-      >
-        {rows}
-      </Grid>
+      <>
+        <Grid
+          component={`${grid.componentName}.body` as never}
+          width="max-content"
+          minWidth="fit"
+          transition="none"
+          props={{ role: 'rowgroup' }}
+          style={{ gridTemplateColumns: grid.gridTemplateColumns.value }}
+        >
+          {rows}
+        </Grid>
+        <DataGridFooter grid={grid} />
+      </>
     );
   }
 
@@ -103,6 +107,9 @@ export default function DataGridBody<TRow>(props: Props<TRow>) {
           {rows}
         </Grid>
       </Box>
+      {/* Inside the height-capped wrapper and after the scroll spacer: that static position is what lets
+          `position: sticky` hold the footer at the bottom, and what keeps the last row out from under it. */}
+      <DataGridFooter grid={grid} />
     </Box>
   );
 }
