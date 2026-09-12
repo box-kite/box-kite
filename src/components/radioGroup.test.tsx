@@ -1,6 +1,7 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ignoreLogs } from '../../dev/tests';
+import BoxExtends from '../core/extends/boxExtends';
 import RadioButton from './radioButton';
 import RadioGroup, { RadioGroupReason } from './radioGroup';
 
@@ -140,5 +141,34 @@ describe('RadioGroup', () => {
     );
 
     expect((screen.getByRole('radio') as HTMLInputElement).name).toBe('own-name');
+  });
+});
+
+/** The style tree: a wrapper whose direction is a variant, and a label with a node of its own. */
+describe('RadioGroup styles', () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  it('stacks by default and lays out in a row as a variant', () => {
+    const { container } = render(
+      <RadioGroup label="Plan" orientation="horizontal">
+        <RadioGroup.Item value="free" label="Free" />
+      </RadioGroup>,
+    );
+
+    expect(container.firstElementChild!.getAttribute('class')).toContain('d-row');
+  });
+
+  it('names a node for the label, so one override reaches every group', () => {
+    BoxExtends.components({ radioGroup: { children: { label: { styles: { color: 'emerald-500' } } } } });
+
+    render(
+      <RadioGroup label="Plan">
+        <RadioGroup.Item value="free" label="Free" />
+      </RadioGroup>,
+    );
+
+    expect(screen.getByText('Plan').getAttribute('class')).toContain('color-emerald-500');
   });
 });

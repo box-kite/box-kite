@@ -19,5 +19,5 @@
     "It is a `<div>` with variables on it — no role, no name, nothing in the accessibility tree. Whatever the chart library renders inside owns its own accessibility."
   ],
   "axe": { "fixtures": ["ChartContainer"], "knownViolations": [] },
-  "styleTree": []
+  "styleTree": [{ "path": "chartContainer", "depth": 0, "extends": null, "variants": [] }]
 }

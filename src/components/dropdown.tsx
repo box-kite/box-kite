@@ -1,6 +1,7 @@
 import { forwardRef, FunctionComponent, ReactElement, Ref, RefAttributes, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Box, { BoxProps } from '../box';
 import { useEventCallback } from '../react/a11y/callbacks';
+import useControllableState, { ChangeHandler } from '../react/a11y/useControllableState';
 import useDismiss from '../react/a11y/useDismiss';
 import useFocusReturn from '../react/a11y/useFocusReturn';
 import useRovingFocus from '../react/a11y/useRovingFocus';
@@ -17,12 +18,18 @@ import Flex from './flex';
 import Presence from './presence';
 import Textbox from './textbox';
 
+/**
+ * Why the selection changed. `select-all` and `clear` are the two rows that act on the whole list —
+ * `Dropdown.SelectAll` and `Dropdown.Unselect` — rather than on the option under the pointer.
+ */
+export type DropdownValueReason = 'select' | 'deselect' | 'select-all' | 'clear';
+
 interface Props<TVal, TKey extends keyof ComponentsAndVariants = 'dropdown'> extends Omit<BoxProps<'button', TKey>, 'ref' | 'tag'> {
   /** What the selection submits under: the component renders a hidden input carrying it. */
   name?: string;
   /** What is selected to begin with, when the dropdown owns its own value. An array in `multiple` mode. */
   defaultValue?: TVal | TVal[];
-  /** Controlled selection. Pair it with `onChange`, or nothing the user picks sticks. */
+  /** Controlled selection. Pair it with `onValueChange`, or nothing the user picks sticks. */
   value?: TVal | TVal[];
   /** Let more than one option be chosen. Enter and Space then toggle without closing the listbox. */
   multiple?: boolean;
@@ -51,8 +58,28 @@ interface Props<TVal, TKey extends keyof ComponentsAndVariants = 'dropdown'> ext
   itemsProps?: BoxStyleProps;
   /** BoxProps applied to the chevron icon container (dropdown.icon) */
   iconProps?: BoxStyleProps;
-  /** Fires with the value chosen (`undefined` when it was unselected) and the full selection beside it. */
+  /**
+   * Fires with the selection in whatever shape `value` takes — the whole array in `multiple` mode, the
+   * one chosen option otherwise, `undefined` for nothing — and why it changed.
+   */
+  onValueChange?: ChangeHandler<TVal | TVal[] | undefined, DropdownValueReason>;
+  /**
+   * The older callback, whose first argument is the option *acted on* rather than the selection. Both
+   * fire, so either one can be passed.
+   * @deprecated `onValueChange` is what every component reports a value change under, and it carries the
+   * reason — which is the thing a `(value, values)` pair cannot say. This spelling still works.
+   */
   onChange?: (value: TVal | undefined, values: TVal[]) => void;
+}
+
+/**
+ * The selection as a list, whichever shape it was written in. `0` and `''` are values a caller can
+ * select, so the test is against `undefined`/`null` rather than falsiness — which used to drop them.
+ */
+function toValues<TVal>(value: TVal | TVal[] | undefined): TVal[] {
+  if (value === undefined || value === null) return [];
+
+  return Array.isArray(value) ? value : [value];
 }
 
 /** A `disabled` that came from a caller as a state, not as the `[state, styles]` pseudo-class form. */
@@ -77,7 +104,7 @@ const TEXT_EDITING_KEYS = new Set([' ', 'Home', 'End', 'ArrowLeft', 'ArrowRight'
  * The APG combobox, in both shapes: https://www.w3.org/WAI/ARIA/apg/patterns/combobox/
  *
  * ```tsx
- * <Dropdown<string> label="Fruit" defaultValue="apple" onChange={(value) => setFruit(value)}>
+ * <Dropdown<string> label="Fruit" defaultValue="apple" onValueChange={(fruit) => setFruit(fruit)}>
  *   <Dropdown.Item value="apple">Apple</Dropdown.Item>
  * </Dropdown>
  * ```
@@ -144,17 +171,32 @@ function DropdownImpl<TVal>(props: Props<TVal>, ref: Ref<HTMLInputElement>): Rea
     labelProps,
     itemsProps,
     iconProps,
+    onValueChange,
     onChange,
     props: tagProps,
     ...restProps
   } = props;
 
-  const [selectedValues, setSelectedValues] = useState(Array.isArray(defaultValue) ? defaultValue : defaultValue ? [defaultValue] : []);
+  // Which option the change was about, which is `onChange`'s first argument and not the selection the
+  // hook holds. A ref because the handler below is only ever handed the value the hook now has.
+  const acted = useRef<TVal | undefined>(undefined);
+
+  // Both names reach the same handler, so a caller mid-migration can pass either and neither is dropped.
+  const report: ChangeHandler<TVal[], DropdownValueReason> = useEventCallback((values, details) => {
+    onValueChange?.(multiple ? values : values[0], details);
+    onChange?.(acted.current, values);
+  });
+
+  // `'value' in props` rather than the hook's own `value !== undefined`: a controlled dropdown with
+  // nothing chosen yet passes `undefined`, and reading that as uncontrolled would let the listbox
+  // select an option its owner had refused.
   const isControlled = 'value' in props;
-  const valueToUse = useMemo(
-    () => (isControlled ? (Array.isArray(value) ? value : value ? [value] : []) : selectedValues),
-    [isControlled, value, selectedValues],
-  );
+  const controlledValues = useMemo(() => (isControlled ? toValues(value) : undefined), [isControlled, value]);
+  const [valueToUse, setSelectedValues] = useControllableState<TVal[], DropdownValueReason>({
+    value: controlledValues,
+    defaultValue: () => toValues(defaultValue),
+    onChange: report,
+  });
 
   /**
    * What has been typed into the field, or `null` for "nothing — it is showing the value". Genuinely two
@@ -279,32 +321,32 @@ function DropdownImpl<TVal>(props: Props<TVal>, ref: Ref<HTMLInputElement>): Rea
     (e: React.SyntheticEvent, ...kids: React.ReactElement<DropdownItemProps<TVal>>[]) => {
       // unselect all
       if (kids.length === 0) {
-        setSelectedValues([]);
-        onChange?.(undefined, []);
+        acted.current = undefined;
+        setSelectedValues([], { reason: 'clear', event: e });
       }
       // select multiple
       else if (multiple && kids.length > 1) {
-        const newValues = kids.map((k) => k.props.value);
-
-        setSelectedValues(newValues);
-        onChange?.(undefined, newValues);
+        acted.current = undefined;
+        setSelectedValues(
+          kids.map((k) => k.props.value),
+          { reason: 'select-all', event: e },
+        );
       }
       // clicked one item
       else if (kids.length === 1) {
         const kid = kids[0];
 
+        acted.current = kid.props.value;
+
         if (multiple) {
           const values = valueToUse.filter((value) => value !== kid.props.value);
+          const wasOn = values.length !== valueToUse.length;
 
-          if (values.length === valueToUse.length) {
-            values.push(kid.props.value);
-          }
+          if (!wasOn) values.push(kid.props.value);
 
-          setSelectedValues(values);
-          onChange?.(kid.props.value, values);
+          setSelectedValues(values, { reason: wasOn ? 'deselect' : 'select', event: e });
         } else {
-          setSelectedValues([kid.props.value]);
-          onChange?.(kid.props.value, [kid.props.value]);
+          setSelectedValues([kid.props.value], { reason: 'select', event: e });
         }
       }
 
@@ -320,7 +362,7 @@ function DropdownImpl<TVal>(props: Props<TVal>, ref: Ref<HTMLInputElement>): Rea
         close();
       }
     },
-    [multiple, isSearchable, valueToUse, onChange, close],
+    [multiple, isSearchable, valueToUse, setSelectedValues, close],
   );
 
   /** Choosing a row, whichever kind it is — the one path a click and an Enter both take. */

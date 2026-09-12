@@ -33,5 +33,8 @@
     "`aria-hidden` with no `label`, and a `label` makes it `role=\"img\"`. Segments are told apart by colour alone, so the breakdown has to exist somewhere a reader can get at it."
   ],
   "axe": { "fixtures": ["MiniDonut"], "knownViolations": [] },
-  "styleTree": []
+  "styleTree": [
+    { "path": "miniDonut", "depth": 0, "extends": null, "variants": [] },
+    { "path": "miniDonut.segment", "depth": 1, "extends": null, "variants": [] }
+  ]
 }

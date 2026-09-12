@@ -1,6 +1,5 @@
 import { forwardRef, Ref, RefAttributes } from 'react';
 import Box, { BoxProps } from '../box';
-import { mergeDeep } from '../core';
 import { ExtractElementFromTag } from '../react/reactTypes';
 import { BoxStyleProps, ComponentsAndVariants } from '../types';
 import ChartUtils from '../utils/chart/chartUtils';
@@ -64,28 +63,22 @@ function SparklineImpl(props: SparklineProps, ref: Ref<SVGSVGElement>) {
   return (
     <Svg
       viewBox={VIEW_BOX}
-      // The one primitive not drawn to scale: it fills whatever box it is given, and `non-scaling-stroke`
-      // keeps the line one width thick after the stretch. Both are ordinary props, so a caller can opt out.
+      component="sparkline"
+      // The one primitive not drawn to scale: it fills whatever box it is given. The attribute half is
+      // here and the `non-scaling-stroke` that keeps the line one width thick is in the style node.
       preserveAspectRatio="none"
-      vectorEffect="non-scaling-stroke"
       width="100%"
       height="1.5rem"
-      overflow="visible"
-      stroke="currentColor"
-      fill="currentColor"
-      strokeWidth={1.5}
-      strokeLinecap="round"
-      strokeLinejoin="round"
       ref={ref}
       {...svgProps}
     >
       {variant === 'bar' ? (
-        <Path d={ChartUtils.barsPath(data, domain)} stroke="none" />
+        <Path component="sparkline.bar" d={ChartUtils.barsPath(data, domain)} />
       ) : (
         <>
           {/* Two paths for an area, because one closed path would stroke its own baseline and sides. */}
-          {variant === 'area' && <Path d={ChartUtils.areaPath(points)} stroke="none" fillOpacity={0.2} />}
-          <Path d={ChartUtils.linePath(points)} fill="none" />
+          {variant === 'area' && <Path component="sparkline.area" d={ChartUtils.areaPath(points)} />}
+          <Path component="sparkline.line" d={ChartUtils.linePath(points)} />
         </>
       )}
       {children}
@@ -103,7 +96,7 @@ export interface ProgressRingProps extends ChartProps {
   value: number;
   /** The width of the ring in view units, out of the 100 the box is wide. */
   thickness?: number;
-  /** The unfilled part of the ring, as the same colour faded — so the track follows the theme too. */
+  /** The unfilled part of the ring, as the same colour faded — so the track follows the theme too. Default `0.2`, from the style node. */
   trackOpacity?: NonNullable<BoxStyleProps['strokeOpacity']>;
 }
 
@@ -115,28 +108,19 @@ export interface ProgressRingProps extends ChartProps {
  * announce a change.
  */
 function ProgressRingImpl(props: ProgressRingProps, ref: Ref<SVGSVGElement>) {
-  const { value, thickness = 10, trackOpacity = 0.2, children, ...svgProps } = props;
+  const { value, thickness = 10, trackOpacity, children, ...svgProps } = props;
   const radius = ChartUtils.radius(thickness);
   const length = ChartUtils.circumference(radius);
 
   return (
-    <Svg
-      viewBox={VIEW_BOX}
-      width="3rem"
-      height="3rem"
-      stroke="currentColor"
-      fill="none"
-      strokeWidth={thickness}
-      strokeLinecap="round"
-      ref={ref}
-      {...svgProps}
-    >
-      <Circle cx={ChartUtils.CENTRE} cy={ChartUtils.CENTRE} r={radius} strokeOpacity={trackOpacity} />
+    <Svg viewBox={VIEW_BOX} component="progressRing" width="3rem" height="3rem" strokeWidth={thickness} ref={ref} {...svgProps}>
+      <Circle component="progressRing.track" cx={ChartUtils.CENTRE} cy={ChartUtils.CENTRE} r={radius} strokeOpacity={trackOpacity} />
       {/*
        * Turned by the `transform` *attribute*, which carries its own centre: the CSS `rotate` prop turns a
        * shape around the corner of the viewBox, and there is no `transformOrigin` prop yet (AN1).
        */}
       <Circle
+        component="progressRing.arc"
         cx={ChartUtils.CENTRE}
         cy={ChartUtils.CENTRE}
         r={radius}
@@ -167,26 +151,16 @@ export interface GaugeProps extends ProgressRingProps {
  * in text: a dial's angle is not readable by anyone who cannot see it.
  */
 function GaugeImpl(props: GaugeProps, ref: Ref<SVGSVGElement>) {
-  const { value, thickness = 10, trackOpacity = 0.2, sweep = 270, start = 225, children, ...svgProps } = props;
+  const { value, thickness = 10, trackOpacity, sweep = 270, start = 225, children, ...svgProps } = props;
   const radius = ChartUtils.radius(thickness);
   const length = ChartUtils.arcLength(radius, sweep);
   // Constants of the shape, not of the data, so both arcs are the same string in every gauge.
   const d = ChartUtils.arcPath(radius, start, sweep);
 
   return (
-    <Svg
-      viewBox={VIEW_BOX}
-      width="4rem"
-      height="4rem"
-      stroke="currentColor"
-      fill="none"
-      strokeWidth={thickness}
-      strokeLinecap="round"
-      ref={ref}
-      {...svgProps}
-    >
-      <Path d={d} strokeOpacity={trackOpacity} />
-      <Path d={d} {...ChartUtils.dash(length, value)} />
+    <Svg viewBox={VIEW_BOX} component="gauge" width="4rem" height="4rem" strokeWidth={thickness} ref={ref} {...svgProps}>
+      <Path component="gauge.track" d={d} strokeOpacity={trackOpacity} />
+      <Path component="gauge.arc" d={d} {...ChartUtils.dash(length, value)} />
       {children}
     </Svg>
   );
@@ -218,9 +192,10 @@ function MiniDonutImpl(props: MiniDonutProps, ref: Ref<SVGSVGElement>) {
   const length = ChartUtils.circumference(radius);
 
   return (
-    <Svg viewBox={VIEW_BOX} width="3rem" height="3rem" fill="none" strokeWidth={thickness} ref={ref} {...svgProps}>
+    <Svg viewBox={VIEW_BOX} component="miniDonut" width="3rem" height="3rem" strokeWidth={thickness} ref={ref} {...svgProps}>
       {ChartUtils.donutSegments(data, length).map((segment) => (
         <Circle
+          component="miniDonut.segment"
           key={segment.index}
           cx={ChartUtils.CENTRE}
           cy={ChartUtils.CENTRE}
@@ -267,23 +242,14 @@ function ChartContainerImpl<TTag extends keyof React.JSX.IntrinsicElements = 'di
   props: ChartContainerProps<TTag>,
   ref: Ref<ExtractElementFromTag<TTag>>,
 ) {
-  const { series, vars, theme, ...boxProps } = props;
+  const { series, vars, ...boxProps } = props;
 
-  // The caller's own `vars` come last, so overriding one slot needs no prop of its own.
-  const declared = {
-    ...ChartUtils.paletteVariables(ChartUtils.PALETTE),
-    ...(series ? ChartUtils.seriesVariables(series) : {}),
-    ...vars,
-  };
+  // Only the series are declared here: the six palette slots and their dark twins are the
+  // `chartContainer` style node, which the engine merges underneath these. The caller's own `vars`
+  // come last, so overriding one slot still needs no prop of its own.
+  const declared = { ...(series ? ChartUtils.seriesVariables(series) : {}), ...vars };
 
-  // The dark palette arrives through the same theme selector every other prop uses, which is the whole
-  // trick. Merged rather than replaced, so a caller's own `theme` survives.
-  const themes = mergeDeep<NonNullable<ChartContainerProps<TTag>['theme']>>(
-    { dark: { vars: ChartUtils.paletteVariables(ChartUtils.DARK_PALETTE) } },
-    theme ?? {},
-  );
-
-  return <Box ref={ref} vars={declared} theme={themes} {...boxProps} />;
+  return <Box ref={ref} component="chartContainer" vars={declared} {...(boxProps as BoxProps<TTag>)} />;
 }
 
 const ChartContainerComponent = forwardRef(ChartContainerImpl);

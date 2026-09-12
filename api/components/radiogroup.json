@@ -128,5 +128,8 @@
     "The tab order is deliberately the platform's: a native radio set is already one tab stop with a roving tabindex, which a `tabIndex` of ours would fight."
   ],
   "axe": { "fixtures": ["RadioGroup"], "knownViolations": [] },
-  "styleTree": []
+  "styleTree": [
+    { "path": "radioGroup", "depth": 0, "extends": null, "variants": ["horizontal"] },
+    { "path": "radioGroup.label", "depth": 1, "extends": null, "variants": [] }
+  ]
 }

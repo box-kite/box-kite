@@ -24,7 +24,7 @@
       "type": "TVal | TVal[]",
       "required": false,
       "default": null,
-      "description": "Controlled selection. Pair it with `onChange`, or nothing the user picks sticks."
+      "description": "Controlled selection. Pair it with `onValueChange`, or nothing the user picks sticks."
     },
     {
       "name": "multiple",
@@ -90,11 +90,18 @@
       "description": "BoxProps applied to the chevron icon container (dropdown.icon)"
     },
     {
+      "name": "onValueChange",
+      "type": "ChangeHandler<TVal | TVal[] | undefined, DropdownValueReason>",
+      "required": false,
+      "default": null,
+      "description": "Fires with the selection in whatever shape `value` takes — the whole array in `multiple` mode, the one chosen option otherwise, `undefined` for nothing — and why it changed."
+    },
+    {
       "name": "onChange",
       "type": "(value: TVal | undefined, values: TVal[]) => void",
       "required": false,
       "default": null,
-      "description": "Fires with the value chosen (`undefined` when it was unselected) and the full selection beside it."
+      "description": "The older callback, whose first argument is the option *acted on* rather than the selection. Both fire, so either one can be passed."
     }
   ],
   "parts": [

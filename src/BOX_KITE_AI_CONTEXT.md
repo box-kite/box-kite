@@ -1239,7 +1239,7 @@ import RadioButton from '@box-kite/react/components/radioButton';
 <Checkbox label="Select all rows" name="rows" indeterminate />
 <Switch label="Email notifications" name="notify" defaultChecked />
 
-<RadioGroup label="Plan" name="plan" defaultValue="free" onChange={(plan, { reason }) => setPlan(plan)}>
+<RadioGroup label="Plan" name="plan" defaultValue="free" onValueChange={(plan, { reason }) => setPlan(plan)}>
   <RadioGroup.Item value="free" label="Free" />
   <RadioGroup.Item value="pro" label="Pro" />
   <RadioGroup.Item value="team" label="Team" disabled />
@@ -1261,7 +1261,7 @@ every other Box prop styles the control itself.
 | `RadioGroup` | `label`                  | `role="radiogroup"` named by it — a set of radios with nothing over it is a flat list.  |
 | `RadioGroup` | `name`                   | The field every item submits under. Generated when left out.                            |
 | `RadioGroup` | `value` / `defaultValue` | The selected item's value (a string — the platform's own model for a radio).            |
-| `RadioGroup` | `onChange`               | `(value, { reason, event })` — `click` or `keyboard`.                                   |
+| `RadioGroup` | `onValueChange`          | `(value, { reason, event })` — `click` or `keyboard`. `onChange` is the deprecated spelling. |
 | `RadioGroup` | `orientation`            | `vertical` (default) or `horizontal`. Both arrow pairs navigate either way.             |
 
 Arrow keys move **and select** inside a group, wrapping at both ends and skipping disabled items;
@@ -2381,14 +2381,14 @@ import Dropdown from '@box-kite/react/components/dropdown';
 
 ```tsx
 // Single selection (uncontrolled). `label` is not decoration — see Accessibility below.
-<Dropdown<string> label="Fruit" defaultValue="apple" onChange={(value, values) => console.log(value)}>
+<Dropdown<string> label="Fruit" defaultValue="apple" onValueChange={(fruit, { reason }) => console.log(fruit, reason)}>
   <Dropdown.Unselect>Pick a fruit...</Dropdown.Unselect>
   <Dropdown.Item value="apple">Apple</Dropdown.Item>
   <Dropdown.Item value="banana">Banana</Dropdown.Item>
 </Dropdown>
 
 // Controlled
-<Dropdown<string> label="Fruit" value={fruit} onChange={(value) => setFruit(value!)}>
+<Dropdown<string> label="Fruit" value={fruit} onValueChange={(value) => setFruit(value as string)}>
   <Dropdown.Item value="apple">Apple</Dropdown.Item>
   <Dropdown.Item value="banana">Banana</Dropdown.Item>
 </Dropdown>
@@ -2419,7 +2419,8 @@ import Dropdown from '@box-kite/react/components/dropdown';
 | `hideIcon`               | `boolean`                                            | Hide chevron icon                                                         |
 | `showCheckbox`           | `boolean`                                            | Show checkboxes in multiple mode                                          |
 | `name`                   | `string`                                             | Form field name (renders hidden `<input>` elements)                       |
-| `onChange`               | `(value: TVal \| undefined, values: TVal[]) => void` | Selection callback                                                        |
+| `onValueChange`          | `ChangeHandler<TVal \| TVal[] \| undefined, …>`      | The selection — an array in `multiple` mode — and why: `select`, `deselect`, `select-all`, `clear` |
+| `onChange`               | `(value: TVal \| undefined, values: TVal[]) => void` | **Deprecated**, still firing. The option acted on, and the selection beside it |
 | `itemsProps`             | `BoxStyleProps`                                      | Style overrides for the opened items container (`dropdown.items`)         |
 | `iconProps`              | `BoxStyleProps`                                      | Style overrides for the chevron icon container (`dropdown.icon`)          |
 | `variant`                | `ClassNameType`                                      | Propagates to root **and all child sub-components**                       |
@@ -2541,7 +2542,7 @@ import Select from '@box-kite/react/components/select';
 
 // Basic — `label` names the combobox, same as on Dropdown
 <Select<User, number> label="User" data={users} def={{ valueKey: 'id', displayKey: 'name', placeholder: 'Pick...' }}
-  value={selected} onChange={(value) => setSelected(value!)} />
+  value={selected} onValueChange={(value) => setSelected(value as number)} />
 
 // Multiple + search + custom display
 <Select<User, number> label="Users" data={users} multiple showCheckbox isSearchable searchPlaceholder="Search..."
@@ -2565,7 +2566,7 @@ import Select from '@box-kite/react/components/select';
 | `selectAllText`   | `string`                                       | Select all option text (multiple mode)                 |
 | `emptyText`       | `string`                                       | Empty search results text                              |
 
-Also accepts: `data` (TRow[]), `value`/`defaultValue`, `label`/`labelProps`, `multiple`, `isSearchable`, `searchPlaceholder`, `showCheckbox`, `hideIcon`, `name`, `onChange`, `itemsProps`, `iconProps`, `variant`, and all BoxProps. Same styling, variants and combobox accessibility as Dropdown — including owing it a name, and including `isSearchable` switching it to the editable combobox.
+Also accepts: `data` (TRow[]), `value`/`defaultValue`, `label`/`labelProps`, `multiple`, `isSearchable`, `searchPlaceholder`, `showCheckbox`, `hideIcon`, `name`, `onValueChange` (and the deprecated `onChange`), `itemsProps`, `iconProps`, `variant`, and all BoxProps. Same styling, variants and combobox accessibility as Dropdown — including owing it a name, and including `isSearchable` switching it to the editable combobox.
 
 ---
 

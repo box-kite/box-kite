@@ -61,7 +61,7 @@ interface ItemProps extends Omit<BoxProps<'input', 'radioButton'>, 'tag' | 'prop
 }
 
 interface RadioGroupType {
-  <TKey extends keyof ComponentsAndVariants = never>(props: Props<TKey>): React.ReactNode;
+  <TKey extends keyof ComponentsAndVariants = 'radioGroup'>(props: Props<TKey>): React.ReactNode;
   Item: (props: ItemProps & RefAttributes<HTMLInputElement>) => React.ReactNode;
   displayName?: string;
 }
@@ -111,7 +111,7 @@ function directionOf(key: string): number {
  * @keyboard Up / Left — The previous option, the same way, wrapping to the last.
  * @keyboard Space — Chooses the focused option. The platform supplies this one.
  */
-function RadioGroupImpl<TKey extends keyof ComponentsAndVariants = never>(props: Props<TKey>) {
+function RadioGroupImpl<TKey extends keyof ComponentsAndVariants = 'radioGroup'>(props: Props<TKey>) {
   const {
     label,
     name,
@@ -179,14 +179,18 @@ function RadioGroupImpl<TKey extends keyof ComponentsAndVariants = never>(props:
 
   return (
     <RadioGroupContext.Provider value={context}>
-      <Flex
+      <Flex<'div', 'radioGroup'>
         ref={groupRef}
-        d={orientation === 'horizontal' ? 'row' : 'column'}
-        gap={2}
+        component="radioGroup"
+        variant={{ horizontal: orientation === 'horizontal' }}
         {...(restProps as BoxProps<'div'>)}
         props={{ role: 'radiogroup', 'aria-labelledby': hasLabel ? labelId : undefined, ...tagProps, onKeyDown: handleKeyDown }}
       >
-        {hasLabel && <Span id={labelId}>{label}</Span>}
+        {hasLabel && (
+          <Span component="radioGroup.label" id={labelId}>
+            {label}
+          </Span>
+        )}
         {children}
       </Flex>
     </RadioGroupContext.Provider>

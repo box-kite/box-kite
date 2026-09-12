@@ -4,10 +4,10 @@
  * props on every part, a style-tree node to override, and composition by render prop rather than by
  * cloning. Run: npm run check:conventions
  *
- * Both ledgers below fail **two ways** — on a new break, and on a listed one that stopped breaking — the
- * `knownViolations` rule from the axe sweep. So a component cannot quietly drift out of the contract, and
- * the debt cannot quietly grow: `SANCTIONED` is where the rule genuinely does not apply, `OWED` is where
- * it does and has not been paid yet.
+ * All three ledgers below fail **two ways** — on a new break, and on a listed one that stopped breaking —
+ * the `knownViolations` rule from the axe sweep. So a component cannot quietly drift out of the contract,
+ * and the debt cannot quietly grow: `SANCTIONED` is where the rule genuinely does not apply, `DEPRECATED`
+ * is an old spelling kept working until the next major, and `OWED` is where it applies and is not paid yet.
  */
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -48,7 +48,7 @@ const SANCTIONED = {
   'Presence.styles': 'renders no element at all — a render prop and a timer',
   'AlertDialog.styles': "the `dialog` tree, whose `alert` variant is this component's",
   'Overlay.styles': 'positions a layer and draws no surface: the surface is its child',
-  'Icon.styles': "styles an element it did not author, so the class lands on that element rather than a node",
+  'Icon.styles': 'styles an element it did not author, so the class lands on that element rather than a node',
   // The Box half is intersected at the call signature rather than extended, because the other half is a
   // union (`Combobox`) or the props are shared with a polymorphic overload (`Overlay`). The caller writes
   // Box props on all three; it is the interface the reference names that has none.
@@ -62,27 +62,29 @@ const SANCTIONED = {
 };
 
 /**
- * Where a convention applies and the component has not been brought to it yet — B10 stage 2. An entry here
+ * The old spelling of a prop the component now also offers under the contract's name. Both fire, so
+ * nothing is broken while an entry is here, and it goes when the prop does — in the next major. A ledger
+ * of its own rather than a line in `SANCTIONED`, because a sanctioned break is one the library stands
+ * behind and these are ones it is walking away from.
+ */
+const DEPRECATED = {
+  'Dropdown.onChange': 'the pre-contract `(value, values)` pair, still firing beside `onValueChange`',
+};
+
+/**
+ * Where a convention applies and the component has not been brought to it yet — B10 stage 3. An entry here
  * is a promise with a name on it, and emptying this object is what closes the step.
  */
 const OWED = {
-  'Dropdown.onChange': 'B10 stage 2: `(value, values)` predates the contract; `onValueChange` replaces it',
-  'Dropdown.state': 'B10 stage 2: a hand-rolled `useState` + `useMemo` rather than the hook',
-  'DataGrid.onSelectionChange': 'B10 stage 2: an event object whose `action` is a reason under another name',
-  'DataGrid.onGlobalFilterChange': 'B10 stage 2: no details argument',
-  'DataGrid.onColumnFiltersChange': 'B10 stage 2: no details argument',
-  'DataGrid.onExpandedRowKeysChange': 'B10 stage 2: no details argument',
-  'DataGrid.onPageChange': 'B10 stage 2: two positional arguments',
-  'DataGrid.onPageSizeChange': 'B10 stage 2: no details argument',
-  'DataGrid.onSortChange': 'B10 stage 2: two positional arguments',
-  'DataGrid.onServerStateChange': 'B10 stage 2: a snapshot with no reason for it',
-  'DataGrid.box': 'B10 stage 2: `DataGridProps` is the whole prop type and takes no Box props at all',
-  'RadioGroup.styles': 'B10 stage 2: renders a wrapper and a label with no node to override',
-  'Sparkline.styles': 'B10 stage 2: no node of its own',
-  'ProgressRing.styles': 'B10 stage 2: no node of its own',
-  'Gauge.styles': 'B10 stage 2: no node of its own',
-  'MiniDonut.styles': 'B10 stage 2: no node of its own',
-  'ChartContainer.styles': 'B10 stage 2: no node of its own',
+  'DataGrid.onSelectionChange': 'B10 stage 3: an event object whose `action` is a reason under another name',
+  'DataGrid.onGlobalFilterChange': 'B10 stage 3: no details argument',
+  'DataGrid.onColumnFiltersChange': 'B10 stage 3: no details argument',
+  'DataGrid.onExpandedRowKeysChange': 'B10 stage 3: no details argument',
+  'DataGrid.onPageChange': 'B10 stage 3: two positional arguments',
+  'DataGrid.onPageSizeChange': 'B10 stage 3: no details argument',
+  'DataGrid.onSortChange': 'B10 stage 3: two positional arguments',
+  'DataGrid.onServerStateChange': 'B10 stage 3: a snapshot with no reason for it',
+  'DataGrid.box': 'B10 stage 3: `DataGridProps` is the whole prop type and takes no Box props at all',
 };
 
 /**
@@ -195,21 +197,27 @@ for (const file of new Set(COMPONENTS.map((entry) => entry.file))) {
 }
 
 const sanctioned = [];
+const deprecated = [];
 const owed = [];
 const unexpected = [];
 
 for (const [key, { rule, detail }] of breaks) {
   if (key in SANCTIONED) sanctioned.push(key);
+  else if (key in DEPRECATED) deprecated.push(key);
   else if (key in OWED) owed.push(key);
   else unexpected.push(`  ${key} — ${rule}: ${detail}`);
 }
 
-// The other side of both ledgers: an entry that no longer fires is a line claiming a break that is not
-// there, and the next reader believes it. A paid debt leaves `OWED` in the commit that pays it.
+// The other side of every ledger: an entry that no longer fires is a line claiming a break that is not
+// there, and the next reader believes it. A paid debt leaves `OWED` in the commit that pays it, and a
+// removed prop leaves `DEPRECATED` in the major that removes it.
 const settled = [
   ...Object.keys(SANCTIONED)
     .filter((key) => !breaks.has(key))
     .map((key) => `  ${key} — sanctioned, but nothing breaks the rule there any more`),
+  ...Object.keys(DEPRECATED)
+    .filter((key) => !breaks.has(key))
+    .map((key) => `  ${key} — deprecated, but already gone: delete the entry`),
   ...Object.keys(OWED)
     .filter((key) => !breaks.has(key))
     .map((key) => `  ${key} — owed, but already paid: delete the entry`),
@@ -225,4 +233,7 @@ if (problems.length) {
   process.exit(1);
 }
 
-console.log(`✔ ${COMPONENTS.length} components conform: ${sanctioned.length} sanctioned exception(s), ${owed.length} owed (B10 stage 2)`);
+console.log(
+  `✔ ${COMPONENTS.length} components conform: ${sanctioned.length} sanctioned exception(s), ` +
+    `${deprecated.length} deprecated spelling(s), ${owed.length} owed (B10 stage 3)`,
+);

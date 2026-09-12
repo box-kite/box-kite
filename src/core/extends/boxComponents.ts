@@ -1,4 +1,5 @@
 import { BoxComponentStyles } from '../../types';
+import { DARK_PALETTE, PALETTE, paletteVariables } from '../../utils/chart/chartPalette';
 
 export interface BoxComponent {
   extends?: string;
@@ -1210,6 +1211,24 @@ const boxComponents = {
               borderColor: 'gray-700',
             },
           },
+        },
+      },
+    },
+  },
+  // The wrapper a set of radios shares, and the label over it. The direction is a variant rather than
+  // a prop the component computes, so `Box.components()` can restyle both orientations at once.
+  radioGroup: {
+    styles: { d: 'column', gap: 2 },
+    variants: {
+      horizontal: { d: 'row' },
+    },
+    children: {
+      // The same label as a `Combobox`'s, which is the one a form control in this library wears.
+      label: {
+        styles: {
+          fontSize: 14,
+          color: 'gray-700',
+          theme: { dark: { color: 'gray-300' } },
         },
       },
     },
@@ -2645,6 +2664,61 @@ const boxComponents = {
           },
         },
       },
+    },
+  },
+  // The chart micro-primitives. Paint is a class and shape is an attribute, so what lives here is
+  // everything about a drawing that is not its data — which is also everything worth restyling at once.
+  sparkline: {
+    styles: {
+      overflow: 'visible',
+      stroke: 'currentColor',
+      fill: 'currentColor',
+      strokeWidth: 1.5,
+      strokeLinecap: 'round',
+      strokeLinejoin: 'round',
+      // The line is drawn into whatever box it is given, so it is the one primitive not to scale.
+      // `non-scaling-stroke` is what keeps it one width thick after the stretch.
+      vectorEffect: 'non-scaling-stroke',
+    },
+    children: {
+      // The trend itself: a stroke with nothing inside it.
+      line: { styles: { fill: 'none' } },
+      // The fill under the line, as a second path — one closed path would stroke its own baseline.
+      area: { styles: { stroke: 'none', fillOpacity: 0.2 } },
+      bar: { styles: { stroke: 'none' } },
+    },
+  },
+  progressRing: {
+    styles: { stroke: 'currentColor', fill: 'none', strokeLinecap: 'round' },
+    children: {
+      // The unfilled part, as the same colour faded — so the track follows the theme with it.
+      track: { styles: { strokeOpacity: 0.2 } },
+      arc: { styles: {} },
+    },
+  },
+  // A ring that stops short of a full turn: same paint, and the geometry that differs is a prop.
+  // `extends` carries the root styles; the children are spelled out because the *types* are read off
+  // this literal, and a node reached only through `extends` is one no caller could name.
+  gauge: {
+    extends: 'progressRing',
+    children: {
+      track: { styles: { strokeOpacity: 0.2 } },
+      arc: { styles: {} },
+    },
+  },
+  miniDonut: {
+    styles: { fill: 'none' },
+    children: {
+      // The colour is the one thing a segment cannot share: it is per index, so it stays a prop.
+      segment: { styles: {} },
+    },
+  },
+  // The variables a chart somebody else draws reads, in both themes — the whole component, since it
+  // paints nothing itself. An app re-skins every chart it has by overriding this one node.
+  chartContainer: {
+    styles: {
+      vars: paletteVariables(PALETTE),
+      theme: { dark: { vars: paletteVariables(DARK_PALETTE) } },
     },
   },
 } satisfies Components;

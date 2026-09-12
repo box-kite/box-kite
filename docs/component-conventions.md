@@ -7,11 +7,17 @@ realise the shape was a decision — and because the answer to "why does this li
 `asChild`?" should exist somewhere other than in a maintainer's head.
 
 Each rule below is the rule, the reason, and the exceptions. The exceptions are the interesting
-part: all of them are in `scripts/check-component-conventions.mjs`, in one of two ledgers.
+part: all of them are in `scripts/check-component-conventions.mjs`, in one of three ledgers.
 `SANCTIONED` is where a rule genuinely does not apply, with the prose a reviewer reads when a new
-one is proposed. `OWED` is where it applies and has not been paid yet. **Both fail two ways** — on
-a new break and on a listed one that stopped breaking — which is the rule the axe sweep's
-`knownViolations` already follows: an exception nobody can delete is a lie waiting to be believed.
+one is proposed. `DEPRECATED` is the old spelling of a prop the component now also offers under the
+contract's name — both fire, and the entry goes when the prop does, in the next major. `OWED` is
+where the rule applies and has not been paid yet. **All three fail two ways** — on a new break and
+on a listed one that stopped breaking — which is the rule the axe sweep's `knownViolations` already
+follows: an exception nobody can delete is a lie waiting to be believed.
+
+The three are separate because they read differently to whoever meets them next: a sanctioned break
+is one the library stands behind, a deprecated one is a break it is walking away from on a schedule,
+and an owed one is work with a step number on it.
 
 ---
 
@@ -28,14 +34,16 @@ const [open, setOpen] = useControllableState<boolean, PopoverReason>({ value: pr
 It is not a convenience. Rolling the pair by hand is how a component ends up with two sources of
 truth for one value, and the failure is quiet: the uncontrolled branch drifts from the controlled
 one in exactly the states a test does not cover. The hook also writes the uncontrolled value
-whether or not a `value` prop is present, so a consumer that *stops* controlling a value carries on
+whether or not a `value` prop is present, so a consumer that _stops_ controlling a value carries on
 from the last one it asked for rather than snapping back to the default.
 
 **Sanctioned:** `Textbox` and `Textarea`. `defaultValue` there is React's own uncontrolled-input
 attribute and the DOM holds it; a hook holding it beside the DOM would be the second source of
 truth this rule exists to prevent.
 
-**Owed:** `Dropdown`, which predates the hook and hand-rolls the pair with `useState` + `useMemo`.
+**Owed:** nothing. `Dropdown` was the last one holding the pair by hand, and moving it onto the hook
+is where it picked up the fix that a `0` or an empty string is a value somebody can select rather
+than an absence.
 
 ## 2. Every change is `onXChange(value, { reason })`
 
@@ -59,7 +67,7 @@ A component may report more than one event — `Slider` has `onValueChange` on e
 
 **Sanctioned, and this is the important one: a component that renders a real form control forwards
 the DOM event.** `Checkbox`, `Switch`, `RadioButton`, `Textbox`, `Textarea` and `Button` take
-React's `onChange`/`onInput`/`onClick` unchanged. The event *is* the API there — it carries the
+React's `onChange`/`onInput`/`onClick` unchanged. The event _is_ the API there — it carries the
 target, it is what a form library already wired up, and React's own types describe it better than
 ours would. Inventing a second channel beside it would mean two ways to hear about one keystroke.
 
@@ -67,9 +75,13 @@ Also sanctioned: `Menu.Item`'s `onSelect`, which is a **command** — there is n
 reason to give — and `Overlay`'s `onSideChange`, which **reports** where the browser put the layer
 rather than announcing a state the caller owns.
 
-**Owed:** `Dropdown.onChange`, which is `(value, values)`, and `DataGrid`'s eight callbacks, which
-are positional and reasonless. `DataGrid.onSelectionChange` is the near miss worth naming — its
-event object carries `action: 'select' | 'deselect'`, which is a reason under a different name.
+**Deprecated:** `Dropdown.onChange`, whose `(value, values)` pair predates the contract.
+`onValueChange` beside it is the same change with a reason on it, and both fire until the next
+major.
+
+**Owed:** `DataGrid`'s eight callbacks, which are positional and reasonless.
+`DataGrid.onSelectionChange` is the near miss worth naming — its event object carries
+`action: 'select' | 'deselect'`, which is a reason under a different name.
 
 ## 3. No effect-driven state sync
 
@@ -129,8 +141,7 @@ variant is its own. `Overlay` places a layer and draws no surface; the surface i
 appear in the Box-props ledger for a modelling reason rather than a real one: their Box half is
 intersected in at the call signature, so the interface the reference names has none.
 
-**Owed:** `DataGrid`, which takes no Box props at all, and `RadioGroup` and the four chart
-primitives, which render markup with no node to reach.
+**Owed:** `DataGrid`, which takes no Box props at all.
 
 ---
 

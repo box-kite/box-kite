@@ -213,6 +213,78 @@ describe('Dropdown', () => {
     });
   });
 
+  describe('onValueChange', () => {
+    it('reports the selection and why it changed', () => {
+      const onValueChange = vi.fn();
+      renderDropdown({ onValueChange });
+      openDropdown();
+      fireEvent.click(screen.getByText('Beta'));
+      expect(onValueChange).toHaveBeenCalledWith('b', expect.objectContaining({ reason: 'select' }));
+    });
+
+    it('reports the whole selection in multiple mode, and tells select from deselect', () => {
+      const onValueChange = vi.fn();
+      renderDropdown({ multiple: true, defaultValue: ['a'], onValueChange });
+      openDropdown();
+      fireEvent.click(screen.getByText('Beta'));
+      expect(onValueChange).toHaveBeenCalledWith(['a', 'b'], expect.objectContaining({ reason: 'select' }));
+      fireEvent.click(screen.getByText('Alpha'));
+      expect(onValueChange).toHaveBeenCalledWith(['b'], expect.objectContaining({ reason: 'deselect' }));
+    });
+
+    it('fires beside the deprecated onChange, which still gets the option acted on', () => {
+      const onChange = vi.fn();
+      const onValueChange = vi.fn();
+      renderDropdown({ multiple: true, onChange, onValueChange });
+      openDropdown();
+      fireEvent.click(screen.getByText('Alpha'));
+      expect(onChange).toHaveBeenCalledWith('a', ['a']);
+      expect(onValueChange).toHaveBeenCalledWith(['a'], expect.objectContaining({ reason: 'select' }));
+    });
+
+    it('names the two rows that act on the whole list', () => {
+      const onValueChange = vi.fn();
+      render(
+        <Dropdown<string> multiple onValueChange={onValueChange}>
+          <Dropdown.Unselect>Select...</Dropdown.Unselect>
+          <Dropdown.SelectAll>Select all</Dropdown.SelectAll>
+          <Dropdown.Item value="a">Alpha</Dropdown.Item>
+          <Dropdown.Item value="b">Beta</Dropdown.Item>
+        </Dropdown>,
+      );
+      openDropdown();
+      fireEvent.click(screen.getByText('Select all'));
+      expect(onValueChange).toHaveBeenCalledWith(['a', 'b'], expect.objectContaining({ reason: 'select-all' }));
+      fireEvent.click(screen.getAllByText('Select...').at(-1)!);
+      expect(onValueChange).toHaveBeenCalledWith([], expect.objectContaining({ reason: 'clear' }));
+    });
+
+    // A falsy value is a value: `0` used to be read as "nothing selected" on the way in.
+    it('selects a zero', () => {
+      render(
+        <Dropdown<number> defaultValue={0}>
+          <Dropdown.Item value={0}>Zero</Dropdown.Item>
+          <Dropdown.Item value={1}>One</Dropdown.Item>
+        </Dropdown>,
+      );
+      expect(screen.getByText('Zero')).toBeTruthy();
+    });
+
+    it('stays controlled when its owner has nothing selected yet', () => {
+      const onValueChange = vi.fn();
+      render(
+        <Dropdown<string> value={undefined} onValueChange={onValueChange}>
+          <Dropdown.Item value="a">Alpha</Dropdown.Item>
+        </Dropdown>,
+      );
+      openDropdown();
+      fireEvent.click(screen.getByRole('option'));
+      // Reported, and not applied: the owner refused it by not changing `value`.
+      expect(onValueChange).toHaveBeenCalledWith('a', expect.objectContaining({ reason: 'select' }));
+      expect(screen.getByRole('option').getAttribute('aria-selected')).toBe('false');
+    });
+  });
+
   describe('Multiple Selection', () => {
     it('toggles item selection without closing', () => {
       renderDropdown({ multiple: true });
