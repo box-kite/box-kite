@@ -662,6 +662,170 @@ const boxComponents = {
       },
     },
   },
+  // The viewport: a region pinned to one corner, in the top layer, holding whatever is on screen. It
+  // paints nothing itself — `pointerEvents: none` is what lets a press in the gaps between toasts reach
+  // the page underneath, which a fixed strip across a corner would otherwise swallow (measured).
+  toaster: {
+    styles: {
+      position: 'fixed',
+      display: 'flex',
+      d: 'column',
+      gap: 3,
+      maxWidth: 'fit-screen',
+      pointerEvents: 'none',
+      // The UA `[popover]` look, which is a bordered box pinned to all four edges: every part of it has
+      // to go, and the two that are not obviously decoration are the ones that bit. `inset: 0` leaves a
+      // corner-pinned stack over-constrained — `top` and `left` win over the two sides a variant sets,
+      // so it sat in the top-left corner — and `overflow: auto` makes the viewport a scroll container,
+      // which clips the toasts' own shadows. Both measured in Chrome 153.
+      m: 0,
+      p: 0,
+      b: 0,
+      bgColor: 'transparent',
+      overflow: 'visible',
+      top: 'auto',
+      bottom: 'auto',
+      insetStart: 'auto',
+      insetEnd: 'auto',
+      // Only the fallback path reads this. In the top layer nothing can be above it.
+      zIndex: 1000,
+    },
+    variants: {
+      // Pinned by the inline *sides*, so `start` is the left of a left-to-right page and the right of a
+      // right-to-left one with nothing declared twice. Longhands throughout rather than `insetX`: a
+      // variant *merges* into the styles above, so it has to replace the `auto` it is overriding, and a
+      // shorthand would sort ahead of the longhand it left behind instead.
+      topStart: { top: 4, insetStart: 4 },
+      topEnd: { top: 4, insetEnd: 4 },
+      topCenter: { top: 4, insetStart: 4, insetEnd: 4, ai: 'center' },
+      bottomStart: { bottom: 4, insetStart: 4 },
+      bottomEnd: { bottom: 4, insetEnd: 4 },
+      bottomCenter: { bottom: 4, insetStart: 4, insetEnd: 4, ai: 'center' },
+    },
+    children: {
+      toast: {
+        styles: {
+          // The viewport passes presses through; a toast is the thing that has to catch them.
+          pointerEvents: 'auto',
+          position: 'relative',
+          display: 'flex',
+          d: 'column',
+          gap: 1,
+          width: 88,
+          maxWidth: 'fit',
+          py: 3,
+          ps: 4,
+          // Room for the close button, which is absolutely positioned so the text wraps under nothing.
+          pe: 9,
+          b: 1,
+          borderRadius: 2,
+          overflow: 'hidden',
+          bgColor: 'white',
+          borderColor: 'gray-300',
+          color: 'gray-900',
+          shadow: 'medium',
+          fontSize: 14,
+          lineHeight: 20,
+          theme: { dark: { bgColor: 'gray-800', borderColor: 'gray-700', color: 'gray-100' } },
+          // The accent, drawn as a bar rather than a border because only `borderColor` exists and it
+          // takes all four sides. Transparent until a kind names a colour, so the geometry is declared
+          // once; `before` carries its own `content: ''`.
+          before: { position: 'absolute', insetStart: 0, insetY: 0, width: 1, bgColor: 'transparent' },
+          // It mounts, so the entrance is a first style resolution and costs no JavaScript. The exit is
+          // `<Presence>`, which holds the node while `data-state="closed"` runs on `._b`'s transition.
+          startingStyle: { opacity: 0, translateY: 3, scale: 0.96 },
+          dataAttr: { 'state=closed': { opacity: 0, scale: 0.96, pointerEvents: 'none' } },
+        },
+        variants: {
+          // A stack pinned to the top of the viewport comes *down* into place and leaves the same way.
+          fromTop: { startingStyle: { translateY: -3 } },
+          success: { before: { bgColor: 'emerald-500' } },
+          error: { before: { bgColor: 'red-500' } },
+          warning: { before: { bgColor: 'amber-500' } },
+          info: { before: { bgColor: 'sky-500' } },
+          loading: { before: { bgColor: 'gray-400' } },
+        },
+      },
+      message: {
+        styles: { fontWeight: 500, color: 'gray-900', theme: { dark: { color: 'gray-100' } } },
+      },
+      description: {
+        styles: { fontSize: 13, lineHeight: 18, color: 'gray-600', theme: { dark: { color: 'gray-400' } } },
+      },
+      action: {
+        styles: {
+          alignSelf: 'start',
+          mt: 1,
+          py: 1,
+          px: 2,
+          fontSize: 13,
+          lineHeight: 18,
+          fontWeight: 500,
+          borderRadius: 1,
+          b: 1,
+          borderColor: 'gray-300',
+          bgColor: 'transparent',
+          color: 'gray-900',
+          cursor: 'pointer',
+          transition: 'colors',
+          hover: { bgColor: 'gray-100' },
+          focusVisible: { outline: 2, outlineColor: 'indigo-500', outlineOffset: 1 },
+          theme: {
+            dark: { borderColor: 'gray-600', color: 'gray-100', hover: { bgColor: 'gray-700' } },
+          },
+        },
+      },
+      // The cross, two rotated rules rather than an icon — the library ships none, and `before` and
+      // `after` are one element each, which is exactly two.
+      close: {
+        styles: {
+          position: 'absolute',
+          top: 2,
+          insetEnd: 2,
+          width: 6,
+          height: 6,
+          display: 'flex',
+          ai: 'center',
+          jc: 'center',
+          borderRadius: 1,
+          b: 0,
+          bgColor: 'transparent',
+          color: 'gray-500',
+          cursor: 'pointer',
+          transition: 'colors',
+          hover: { color: 'gray-900', bgColor: 'gray-100' },
+          focusVisible: { outline: 2, outlineColor: 'indigo-500', outlineOffset: -2 },
+          // `borderStyle` on both, and it is the trap: a pseudo-element carries none of `._b`, whose
+          // `border: 0 solid` is what every other border in this file is leaning on — so a width with
+          // no style computes to `0px none` and the cross is invisible (measured in Chrome 153).
+          before: { position: 'absolute', width: 2.5, height: 0, bt: 1, borderStyle: 'solid', borderColor: 'currentColor', rotate: 45 },
+          after: { position: 'absolute', width: 2.5, height: 0, bt: 1, borderStyle: 'solid', borderColor: 'currentColor', rotate: -45 },
+          theme: {
+            dark: { color: 'gray-400', hover: { color: 'gray-100', bgColor: 'gray-700' } },
+          },
+        },
+      },
+      // What the limit is holding back. It sits at the end of the stack furthest from the screen edge,
+      // where the pile would be, and says how many messages are still waiting rather than hiding them.
+      overflow: {
+        styles: {
+          pointerEvents: 'auto',
+          alignSelf: 'center',
+          py: 1,
+          px: 2,
+          borderRadius: 4,
+          fontSize: 12,
+          lineHeight: 16,
+          fontWeight: 500,
+          bgColor: 'gray-900/80',
+          color: 'gray-50',
+          startingStyle: { opacity: 0 },
+          theme: { dark: { bgColor: 'gray-100/80', color: 'gray-900' } },
+          forcedColors: { b: 1 },
+        },
+      },
+    },
+  },
   // The `role="tooltip"` bubble. Inverted against the page on purpose: a tooltip is a temporary
   // overlay and has to read as one at a glance, whichever theme is underneath it.
   tooltip: {

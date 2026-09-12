@@ -208,6 +208,12 @@ export const siteRoutes = [
       'A progress bar that reports the value it really has, sweeps when there is none, and renders on a server with no JavaScript.',
   },
   {
+    path: '/toaster',
+    name: 'Toaster',
+    description:
+      'Toasts in the top layer with no portal: one live region that was there before its content, and timers that stop on hover, on focus and off screen.',
+  },
+  {
     path: '/tabs',
     name: 'Tabs',
     description:

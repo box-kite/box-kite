@@ -61,6 +61,7 @@ export const CLIENT_ONLY_COMPONENTS = [
   'slider',
   'switch',
   'tabs',
+  'toaster',
   'tooltip',
 ];
 

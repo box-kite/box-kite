@@ -20,6 +20,7 @@ Which component replaces which `<Box tag>`, and the three that carry a pattern o
 | one "show more" disclosure           | `<Collapsible>`                        | `components/accordion`                                           |
 | a value dragged along a track        | `<Slider>`                             | `components/slider`                                              |
 | how far a task has got               | `<Progress>`                           | `components/progress`                                            |
+| a message sent from anywhere         | `<Toaster>` + `toast()`                | `components/toaster`                                             |
 | a lucide/Tabler icon, styled         | `<Icon>`                               | `components/icon`                                                |
 | a sparkline, ring, gauge or donut    | `<Sparkline>`/`<ProgressRing>`/…       | `components/chart`                                               |
 | a themed Recharts (or any) chart     | `<ChartContainer>`                     | `components/chart`                                               |
@@ -96,6 +97,52 @@ a zero**: an indeterminate bar omits `aria-valuenow` rather than reporting `0`. 
 **has to be named** — `label` names one thumb, and on a range it names the `role="group"` while
 `thumbLabels` names the thumbs. The geometry is logical, so a right-to-left page mirrors for free; only
 the sideways arrows swap, and Up/Down never do.
+
+## Toaster
+
+```tsx
+import Toaster, { toast } from '@box-kite/react/components/toaster';
+
+// once, near the root of the app
+<Toaster position="bottom-end" limit={3} />;
+
+// then from anywhere at all — no React needed
+toast.success('Saved');
+toast.error('Could not save', { action: { label: 'Retry', onClick: save } });
+toast('Row deleted', { description: 'Ada Lovelace, added in March.', action: { label: 'Undo', onClick: restore } });
+toast.promise(save(), { loading: 'Saving…', success: (saved) => `Saved as ${saved.name}`, error: 'Could not save' });
+```
+
+**It is called, not rendered.** The store behind `toast()` has no React in it, so a message can come from
+an event handler, a fetch, a router guard or a module that has never heard of a component — and a call
+made _before_ the viewport mounts is queued rather than lost.
+
+`toast(message, options)` returns the id, with `success`/`error`/`warning`/`info`/`loading` beside it,
+plus `toast.promise`, `toast.update(id, message, options)` and `toast.dismiss(id?)`. An `options.id`
+already on screen is an **update**, which is what makes a promise one toast rather than two. Options:
+`description`, `action` (`{ label, onClick, closeOnClick }` — it dismisses the toast it answered unless
+told otherwise), `duration` in **milliseconds** (`Infinity` waits; `loading` already does), `dismissible`
+and `onDismiss(reason)` with `'timeout'`/`'close'`/`'action'`/`'imperative'`.
+
+`Toaster`: `position` (six corners, the inline half logical — default `'bottom-end'`), `limit` (3),
+`duration` (5000), `label`, `closeLabel`, `overflowLabel(count)`, `hotkey` (`'F6'`, `'alt+t'`, or
+`false`) and `store`, for a second independent stack or a test that must not share state
+(`createToastStore()` is exported from the same module). Parts: `toaster`, `toaster.toast` (the kind is a
+variant on it), `toaster.message`, `toaster.description`, `toaster.action`, `toaster.close`,
+`toaster.overflow`.
+
+**The limit is a queue, not a cap.** Past it a toast waits _with its timer unstarted_, so nothing expires
+that was never on screen, and a counter at the far end of the stack says how many are waiting.
+
+Four things to know. The viewport is a **polite live region that exists before there is anything in it** —
+a region inserted together with its content is not reliably announced — and an error toast is
+`role="alert"`, which is assertive; nothing else carries a region of its own, because the nearest one to a
+change is the one that speaks. It is in the **top layer with no portal**, so it inherits the theme and the
+direction around it, and it takes **no pointer events** while the toasts take them back, or a corner-sized
+fixed strip would swallow every press in its gaps. **Timers stop on hover, on focus and in a background
+tab** and resume where they left off (WCAG 2.2.1 — the only reason a toast may carry a control). And a
+toast **never takes focus**: `F6` moves focus to the stack, Tab walks it, and Escape dismisses the toast
+focus is in, handing focus back once the stack is empty.
 
 ## Dropdown
 

@@ -137,6 +137,14 @@ const CONFIG = [
     styles: 'progress',
   },
   {
+    name: 'Toaster',
+    route: '/toaster',
+    file: 'src/components/toaster.tsx',
+    props: 'ToasterProps',
+    doc: 'ToasterImpl',
+    styles: 'toaster',
+  },
+  {
     name: 'Dropdown',
     route: '/dropdown',
     file: 'src/components/dropdown.tsx',
