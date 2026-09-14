@@ -174,4 +174,47 @@ describe('GridModel row detail integration', () => {
     const expandCol = grid.columns.value.userVisibleLeafs.find((c) => c.key === 'row-detail-cell');
     expect(expandCol).toBeUndefined();
   });
+
+  describe('reveal', () => {
+    it('an expand records the reveal, and it is taken exactly once', () => {
+      const grid = getGrid();
+      grid.toggleDetailRow(2);
+
+      expect(grid.takeDetailReveal(2)).toBe(true);
+      expect(grid.takeDetailReveal(2)).toBe(false);
+    });
+
+    it('another row does not take it, and does not clear it either', () => {
+      const grid = getGrid();
+      grid.toggleDetailRow(2);
+
+      expect(grid.takeDetailReveal(1)).toBe(false);
+      expect(grid.takeDetailReveal(2)).toBe(true);
+    });
+
+    it('a collapse records nothing', () => {
+      const grid = getGrid();
+      grid.toggleDetailRow(2);
+      grid.toggleDetailRow(2);
+
+      expect(grid.takeDetailReveal(2)).toBe(false);
+    });
+
+    // A request nothing consumed would otherwise scroll the next time that row happened to render.
+    it('a second toggle drops a request the first one left unread', () => {
+      const grid = getGrid();
+      grid.toggleDetailRow(1);
+      grid.toggleDetailRow(3);
+
+      expect(grid.takeDetailReveal(1)).toBe(false);
+      expect(grid.takeDetailReveal(3)).toBe(true);
+    });
+
+    it('scrollIntoView: false records nothing', () => {
+      const grid = getGrid({ rowDetail: { content: () => null, height: 150, scrollIntoView: false } });
+      grid.toggleDetailRow(2);
+
+      expect(grid.takeDetailReveal(2)).toBe(false);
+    });
+  });
 });

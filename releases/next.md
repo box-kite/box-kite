@@ -849,6 +849,15 @@ logical, so it mirrors with the reading order. The expand chevron is a control r
 `gray-500` at rest, the accent when open. The row also gets a hover one step off its new surface, since
 the grid's own row hover is the colour an expanded row is already painted: it had stopped answering.
 
+A panel that opens below the fold now scrolls itself into view. It is `block: 'nearest'`, so a panel
+already on screen moves nothing, and a grid that scrolls internally absorbs the scroll rather than the
+page. The row that opened the panel is part of what gets revealed: `datagrid.body.detailRow` carries a
+`scroll-margin-block-start` of one row, so a panel taller than the viewport aligns the *row's* top
+rather than its own instead of pushing it off the screen — measured in Chrome, where without the margin
+the row lands 40px above the scrollport. The scroll happens where the panel mounts rather than where the
+row was toggled, because an `auto` panel's real height exists nowhere else: virtualization carries a
+200px estimate for it. `rowDetail: { scrollIntoView: false }` turns it off.
+
 Neutral rather than tinted on purpose: a **selected** row is the one that tints, so the two states stay
 legible beside each other. Re-colouring the block is two keys — `body.cell`'s `isExpanded` variant and
 `body.detailRow` — which is all the docs site's own Orders demo does now, where it used to spell out a

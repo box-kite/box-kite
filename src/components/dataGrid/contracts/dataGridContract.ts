@@ -143,6 +143,8 @@ export interface RowDetailConfig<TRow> {
   expandColumnWidth?: number;
   /** Header text for the expand column. Default: '' (empty) */
   expandColumnHeader?: string;
+  /** Scroll a panel opened below the fold into view. Default: true */
+  scrollIntoView?: boolean;
 }
 
 // ========== Context Menu ==========

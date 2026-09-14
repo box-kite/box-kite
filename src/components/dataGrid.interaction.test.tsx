@@ -1,5 +1,5 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ignoreLogs } from '../../dev/tests';
 import DataGrid from './dataGrid';
 import { DataGridProps, GridDefinition } from './dataGrid/contracts/dataGridContract';
@@ -74,6 +74,44 @@ describe('DataGrid interactions (component → model → re-render)', () => {
     fireEvent.click(screen.getAllByRole('button')[0]); // first row's expand button
 
     expect(screen.getAllByTestId('detail').length).toBeGreaterThan(0);
+  });
+
+  it('scrolls a panel it just opened into view, and does not scroll on the collapse', () => {
+    const scrollIntoView = vi.spyOn(Element.prototype, 'scrollIntoView').mockImplementation(() => {});
+    renderGrid({
+      contextMenu: false,
+      rowDetail: { content: (row) => <div data-testid="detail">Detail {row.firstName}</div> },
+    });
+
+    const expand = screen.getAllByRole('button')[0];
+    fireEvent.click(expand);
+
+    // The row that holds the panel, not the panel's own content: a tall panel scrolled by its content
+    // would leave the row that opened it off screen.
+    const detailRow = screen.getAllByTestId('detail')[0].closest('[role="row"]');
+    expect(scrollIntoView.mock.contexts).toContain(detailRow);
+    expect(scrollIntoView).toHaveBeenCalledWith({ block: 'nearest' });
+
+    scrollIntoView.mockClear();
+    fireEvent.click(expand);
+    expect(scrollIntoView).not.toHaveBeenCalled();
+
+    scrollIntoView.mockRestore();
+  });
+
+  it('leaves the scroll alone when rowDetail opts out', () => {
+    const scrollIntoView = vi.spyOn(Element.prototype, 'scrollIntoView').mockImplementation(() => {});
+    renderGrid({
+      contextMenu: false,
+      rowDetail: { content: () => <div data-testid="detail">Detail</div>, scrollIntoView: false },
+    });
+
+    fireEvent.click(screen.getAllByRole('button')[0]);
+
+    expect(screen.getAllByTestId('detail').length).toBeGreaterThan(0);
+    expect(scrollIntoView).not.toHaveBeenCalled();
+
+    scrollIntoView.mockRestore();
   });
 
   it('toggles a column hidden via the model and removes its header', () => {

@@ -2672,6 +2672,10 @@ const boxComponents = {
               bb: 1,
               borderColor: 'gray-200',
               bgColor: 'gray-50',
+              // What a panel opening below the fold scrolls to. `nearest` aligns the panel's own top
+              // when it is taller than the viewport, which would push the row that opened it off the
+              // screen — a scroll margin one row deep makes that row part of what gets revealed.
+              css: { scrollMarginBlockStart: 'var(--row-height)' },
               theme: {
                 dark: {
                   borderColor: 'gray-800',
