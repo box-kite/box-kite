@@ -62,6 +62,11 @@ export default function DataGridContent<TRow>(props: Props<TRow>) {
         // one axis is what makes the other one scroll — `overflow` computes a `visible` companion to an
         // `auto` up to `auto`, which is where the virtualized body's vertical scrolling comes from.
         overflowX="auto"
+        // The columns are sized to this element, so its width has to hold still: without the gutter, the
+        // vertical scrollbar arriving (a detail row opening, a filter clearing) takes 15px away and the
+        // columns reflow a frame later — a horizontal scrollbar flashing in between. Only where the grid
+        // can scroll vertically at all; `visibleRowsCount: 'all'` never does, and would just lose 15px.
+        scrollbarGutter={grid.viewport.showAll ? undefined : 'stable'}
         style={{ willChange: 'scroll-position' }}
         props={{
           role: 'grid',
