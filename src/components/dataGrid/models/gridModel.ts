@@ -21,6 +21,7 @@ import {
   ServerState,
   SortDirection,
 } from '../contracts/dataGridContract';
+import AggregationModel from './aggregationModel';
 import ColumnModel from './columnModel';
 import ColumnVisibilityModel from './columnVisibilityModel';
 import DetailRowModel from './detailRowModel';
@@ -570,6 +571,29 @@ export default class GridModel<TRow> {
     () => [this.columns],
   );
 
+  /**
+   * The columns the group row's label cell covers: the grouping cell itself and the data columns beside it in
+   * its own pin, stopping at the first one carrying an aggregate — past that each column draws a value of its
+   * own, and a number under the wrong heading is worse than a label with less room. With nothing aggregating
+   * the span is every one of them, which is what it was before aggregates existed.
+   */
+  public readonly groupingSpan = memo(
+    () => {
+      const { visibleLeafs } = this.columns.value;
+      const start = visibleLeafs.findIndex((c) => c.isGrouping);
+      if (start === -1) return [];
+
+      const inSpan = (c: ColumnModel<TRow>, index: number): boolean =>
+        index > start && c.pin === visibleLeafs[start].pin && !c.isRowNumber && !c.isRowSelection && !c.isRowDetail;
+
+      const aggregated = visibleLeafs.findIndex((c, index) => inSpan(c, index) && !!c.aggregate);
+      const stop = aggregated === -1 ? visibleLeafs.length : aggregated;
+
+      return [visibleLeafs[start], ...visibleLeafs.filter((c, index) => index < stop && inSpan(c, index))];
+    },
+    () => [this.columns],
+  );
+
   public readonly flatRows = memo(
     () => {
       return this.rows.value.flatMap((row) => {
@@ -611,14 +635,8 @@ export default class GridModel<TRow> {
       const { visibleLeafs } = this.columns.value;
       const groupingColumn = visibleLeafs.find((c) => c.key === GROUPING_CELL_KEY);
       if (groupingColumn) {
-        const groupingColumnSize = ArrayUtils.sumBy(visibleLeafs, (c) => {
-          return c.pin === groupingColumn.pin &&
-            c.key !== ROW_NUMBER_CELL_KEY &&
-            c.key !== ROW_SELECTION_CELL_KEY &&
-            c.key !== ROW_DETAIL_CELL_KEY
-            ? (c.inlineWidth ?? 0)
-            : 0;
-        });
+        // The width has to match the span exactly, so both read the same list.
+        const groupingColumnSize = ArrayUtils.sumBy(this.groupingSpan.value, (c) => c.inlineWidth ?? 0);
         size[groupingColumn.groupColumnWidthVarName] = `${groupingColumnSize}px`;
       }
 
@@ -849,6 +867,9 @@ export default class GridModel<TRow> {
 
   /** Pagination concern (navigation + row-range derivations). */
   public readonly pagination = new PaginationModel(this);
+
+  /** Aggregation concern (which columns aggregate, and the footer's grand totals). */
+  public readonly aggregation = new AggregationModel(this);
 
   /** Whether any user-facing column is currently visible (else the empty-columns state shows). */
   public get hasVisibleColumns(): boolean {

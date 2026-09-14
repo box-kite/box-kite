@@ -528,8 +528,9 @@ export const fixtures: A11yFixture[] = [
           columns: [
             { key: 'name', header: 'Name', filterable: true },
             { key: 'department', header: 'Department', filterable: { type: 'multiselect' } },
-            { key: 'salary', header: 'Salary', filterable: { type: 'number' } },
+            { key: 'salary', header: 'Salary', filterable: { type: 'number' }, aggregate: 'sum' },
           ],
+          footer: true,
           rowDetail: {
             content: (row) => (
               <P>

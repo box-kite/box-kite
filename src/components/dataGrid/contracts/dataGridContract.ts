@@ -2,6 +2,7 @@ import type { BoxProps } from '../../../box';
 import type { ChangeHandler } from '../../../react/a11y/useControllableState';
 import { ComponentsAndVariants } from '../../../types';
 import type { SortDirection } from '../../../utils/array/arrayUtils';
+import AggregateCellModel from '../models/aggregateCellModel';
 import CellModel from '../models/cellModel';
 
 export type { SortDirection };
@@ -156,6 +157,30 @@ export interface ContextMenuConfig {
   group?: boolean;
 }
 
+// ========== Aggregation ==========
+
+/** What an aggregate comes out as. Formatting it is `AggregateCell`'s job, not the aggregation's. */
+export type AggregateValue = number | string | null;
+
+/**
+ * The five built-in aggregations. `sum`, `avg`, `min` and `max` read the numbers in the column and skip
+ * everything else, so a blank cell is not a zero; `count` counts rows rather than values, which is why it
+ * is the one that never skips anything.
+ */
+export type AggregateName = 'sum' | 'avg' | 'min' | 'max' | 'count';
+
+/**
+ * An aggregation of your own. `values` is this column's value from every row in scope and `rows` are those
+ * rows, so a weighted average can reach the column it weights by.
+ */
+export type AggregateFn<TRow> = (values: unknown[], rows: TRow[]) => AggregateValue;
+
+/** What a column's `aggregate` takes: one of the five names, or a function. */
+export type ColumnAggregate<TRow> = AggregateName | AggregateFn<TRow>;
+
+/** Which rows an aggregate covered: one group row's, or every row the filters left. */
+export type AggregateScope = 'group' | 'footer';
+
 // ========== Column Type ==========
 
 export interface ColumnType<TRow> {
@@ -167,6 +192,13 @@ export interface ColumnType<TRow> {
   /** `start`/`end` follow the reading order; `left`/`right` stay on the screen side they name. */
   align?: 'start' | 'end' | 'center' | 'left' | 'right';
   Cell?: React.ComponentType<{ cell: CellModel<TRow> }>;
+  /**
+   * Aggregate this column over the rows under each group row, and over the whole grid when `def.footer`
+   * is on. One of the five built-in names, or a function.
+   */
+  aggregate?: ColumnAggregate<TRow>;
+  /** Renders this column's aggregate wherever one appears. Without it the value is rendered as it is. */
+  AggregateCell?: React.ComponentType<{ cell: AggregateCellModel<TRow> }>;
   /** Enable filtering for this column. Set to true for default text filter, or provide config */
   filterable?: boolean | ColumnFilterConfig;
   /** Enable sorting for this column. If undefined, inherits from GridDefinition.sortable */
@@ -209,6 +241,11 @@ export interface GridDefinition<TRow> {
   contextMenu?: boolean | ContextMenuConfig;
   /** Custom component to render when data is empty */
   noDataComponent?: React.ReactNode;
+  /**
+   * A row of grand totals pinned under the rows, over every column carrying an `aggregate`. It covers the
+   * rows the grid holds after filtering — which is the page, not the table, when the server is paginating.
+   */
+  footer?: boolean | { label?: React.ReactNode };
   /** Enable expandable row detail panel */
   rowDetail?: RowDetailConfig<TRow>;
   /** Server-side pagination. Provide totalCount from the API response. */

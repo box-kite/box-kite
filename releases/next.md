@@ -23,6 +23,7 @@ The package now carries instructions for the agent writing the code, the documen
 - **[A slider whose value keeps its own shape](#a-slider-whose-value-keeps-its-own-shape)** — `<Slider>` takes a number for one thumb and an array for a range, so nothing at the call site has to narrow; `<Progress>` is the bar beside it, and renders on a server. 2.14 KB gz and 0.31 against Radix’s 9.71 and 2.86.
 - **[A message you send rather than render](#a-message-you-send-rather-than-render)** — `<Toaster />` once, then `toast()` from anywhere at all: a live region that exists before there is anything in it, a queue rather than a cap, and timers that stop on hover, on focus and off screen. 4.14 KB gz against sonner's 9.86 plus a stylesheet.
 - **[A combobox whose value is your own row](#a-combobox-whose-value-is-your-own-row)** — the component Radix never shipped: `<Combobox>` takes your rows and hands one back, the filter composes, the selection can be chips, a query nothing answers can become a row, and a list of ten thousand opens in one frame. 9.53 KB gz on top of Box.
+- **[A column that adds itself up](#a-column-that-adds-itself-up)** — `aggregate` on a DataGrid column totals it over each group row and over a pinned footer of grand totals: five built-ins or a function of your own, respecting the filters, formatted by an `AggregateCell`.
 - **[The component contract, written down and enforced](#the-component-contract-written-down-and-enforced)** — five rules every component keeps: state in `useControllableState`, every change reported with a named reason, Box props on every part, a style tree to replace, and a render prop instead of `asChild`. A check with two ledgers that both fail on a stale entry is what keeps them true.
 
 ## The package tells an agent how to use it
@@ -749,6 +750,59 @@ else, so each has a new name beside it and the old one is deprecated and still f
 - **`onPageChange(page, pageSize)` and `onPageSizeChange(size)` → `onPaginationChange({ page, pageSize }, { reason })`**
   — one callback, because the two always moved together: a new page size always returns to page 1.
 
+## A column that adds itself up
+
+`aggregate` on a column is the half of grouping the grid was missing: the column totals itself over
+the rows under each group row, and over the whole grid when `def.footer` is on.
+
+```tsx
+<DataGrid
+  data={people}
+  def={{
+    footer: true,
+    columns: [
+      { key: 'country' },
+      { key: 'username', header: 'People', aggregate: 'count' },
+      { key: 'age', header: 'Avg age', aggregate: 'avg' },
+      { key: 'salary', header: 'Payroll', aggregate: 'sum' },
+    ],
+  }}
+/>
+```
+
+Five built-ins — `sum`, `avg`, `min`, `max` and `count` — or a function of your own, handed the
+column's values and the rows they came from, so a weighted average can reach the column it weights
+by. The four numeric ones read the numbers in the column and skip everything else, so a blank cell
+is not a zero and a column holding no number at all answers **`null` rather than `0`**: a total of
+nothing is not zero, and a footer reading `0` over an empty grid is a claim about the data. `count`
+counts rows rather than values, which is why it is the one that never skips anything. `avg` rounds
+to two decimals, because an exact mean is longer than the cell it goes in — any other precision is
+an `AggregateCell`, which is to an aggregate what `Cell` is to a row:
+
+```tsx
+{
+  key: 'salary',
+  aggregate: 'sum',
+  AggregateCell: ({ cell }) => <Box px={3}>{cell.value === null ? '—' : format(cell.value)}</Box>,
+}
+```
+
+Every total covers the rows the filters left, so filtering the grid changes them.
+
+Three things worth knowing. **A group row's label stops spanning at the first aggregated column.**
+It used to run across every data column beside it, and a number under the wrong heading is worse
+than a label with less room — so from there on each column draws its own value, and a group row's
+figures line up under the same headings the rows below them do. With nothing aggregating, the span
+is exactly what it was. **The footer covers the rows the grid holds**, which under server-side
+pagination is the page rather than the table, because those are the only rows it has; a
+server-computed total is what E3's row model will be for. And **the footer is a row of the grid in
+every sense** — `aria-rowcount` counts it, it is numbered last, Ctrl+End lands in it and Up leaves
+it, which is why it is pinned rather than parked at the end of the scroll.
+
+Its style nodes are `datagrid.footer`, `datagrid.footer.cell` and `datagrid.footer.label`, with
+`datagrid.body.groupRow.aggregate` for the same value on a group row. `def.footer` also takes
+`{ label }`, which replaces the default `Total` in the first column that is not aggregating.
+
 ## Breaking changes
 
 - **`Overlay` places a layer instead of translating one, so its four positioning props are gone.** `anchorSide` is `side` (`anchorSide="bottom"` is the default `side="bottom"`; the old `'top'` overlapped the anchor, which `side="bottom" offset={0}` does not — use a negative margin if you need the overlap). `adjustTranslateX`/`adjustTranslateY` are `offset` on the ÷4 scale for the gap and `align` for the sideways nudge (`adjustTranslateY="4px"` is `offset={1}`). `onPositionChange` is `onSideChange`, which reports the side rather than page coordinates — nothing measures a position any more, so there are none to report.
@@ -768,4 +822,5 @@ else, so each has a new name beside it and the old one is deprecated and still f
 - **Every table on the docs site rendered as a stack of full-width blocks.** `display: block` on a `<Box tag="table">` costs the table its layout _and_ its semantics, and five pages had written their own copy of the same broken table. There is one shared table now, carrying the display values each element needs — and the props above are what let it stop reaching for the escape hatch to collapse its borders.
 - **Inline code in the prose of ten documentation pages was rendered as a block.** Each `<code>` took a line of its own, breaking the paragraph around it into stripes — the local helper was missing `display="inline"`, which is the trap the library's own rules warn about: a `Box` is `display: block` whatever element it renders. Nothing in the library changed; the pages read as paragraphs again. The same pages' tables also lost their last nine inline `style` attributes to `css={{ borderCollapse: 'collapse' }}`, which is what the escape hatch is for.
 - **A `Dropdown` could not be given a value of `0` or an empty string.** Both `value` and `defaultValue` were tested for truthiness on the way in, so `<Dropdown<number> defaultValue={0}>` started with nothing selected and `value={0}` selected nothing however many times it was set — while `value={1}` worked, which is what made it read as a puzzle rather than a bug. The test is against `undefined` and `null` now, and a falsy value is a value somebody can pick.
+- **Every scrolling `DataGrid` showed a horizontal scrollbar it did not need, off by exactly the scrollbar's own width.** The flexible columns were distributed across the width of the **grid container**, but they are laid out inside the scroller — and the vertical scrollbar sits between the two, so the columns came out 15px wider than the space they had and `scrollWidth − clientWidth` measured exactly 15 at every viewport size. The width is measured on the scroller now. Two things follow it. The scroller is `overflow-x: auto` rather than `scroll`, so a grid whose columns genuinely fit no longer reserves a track it never uses; one whose columns do not fit still scrolls, and the virtualized body keeps its vertical scroll from the same rule as before — naming one overflow axis computes the other `visible` companion up to `auto`. And the scroller reserves its vertical scrollbar's space up front (`scrollbar-gutter: stable`), because the columns are now sized to a width the scrollbar can change: without it, opening a row-detail panel on a grid that was not yet scrolling took 15px away and the columns reflowed a frame later, flashing a horizontal scrollbar on the way. A grid that can never scroll vertically — `visibleRowsCount: 'all'` — reserves nothing, since it would only lose the 15px.
 - **A `DataGrid` given a callback but no value prop did nothing at all.** `<DataGrid onPageChange={track}>` without a `page` beside it fired the callback on every press of the pager and never moved — and the same for `onGlobalFilterChange` without `globalFilterValue`, `onColumnFiltersChange`, `onPageSizeChange` and `onExpandedRowKeysChange`. The grid read the _handler_ as "the caller owns this state", so a grid wired up only to watch its user was left with a pager, a filter box and a set of expanders that could not change anything. A handler is a listener; ownership is the value prop, which still wins wherever it is passed.

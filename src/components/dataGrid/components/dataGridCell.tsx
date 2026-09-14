@@ -1,12 +1,13 @@
 import { BoxProps } from '../../../box';
 import Flex from '../../flex';
 import { useGridNavigationContext } from '../gridNavigationContext';
+import AggregateCellModel from '../models/aggregateCellModel';
 import CellModel from '../models/cellModel';
 import GroupRowCellModel from '../models/groupRowCellModel';
 
 interface Props<TRow> extends BoxProps {
   children: React.ReactNode;
-  cell: CellModel<TRow> | GroupRowCellModel<TRow>;
+  cell: CellModel<TRow> | GroupRowCellModel<TRow> | AggregateCellModel<TRow>;
   /** Navigation coordinates. `columnIndex` counts rendered cells, which a group row has fewer of. */
   row: number;
   columnIndex: number;

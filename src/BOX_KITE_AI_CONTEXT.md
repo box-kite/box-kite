@@ -2233,6 +2233,7 @@ named ones carry the reason.
 | `contextMenu`             | `boolean \| ContextMenuConfig`     | `true`      | Control column header context menu. `false` hides it. Object: `{ sort?, pin?, group? }`                        |
 | `resizerStyle`            | `'visible' \| 'hover' \| 'hidden'` | `'visible'` | Resizer handle visibility. `'hover'`: shows on header cell hover. `'hidden'`: invisible but resize still works |
 | `noDataComponent`         | `ReactNode`                        | `'empty'`   | Custom empty state                                                                                             |
+| `footer`                  | `boolean \| { label? }`            | `false`     | A pinned row of grand totals over every column with an `aggregate`. `label` replaces the default `Total`        |
 
 ### ColumnType
 
@@ -2249,6 +2250,43 @@ named ones carry the reason.
 | `flexible`               | `boolean`                                           | `true`   | Participate in flex width distribution                                                                                                          |
 | `filterable`             | `boolean \| FilterConfig`                           | —        | `true` (text), `{ type: 'number', min?, max? }`, `{ type: 'multiselect', options? }`                                                            |
 | `contextMenu`            | `boolean \| ContextMenuConfig`                      | inherits | Override grid-level context menu. `false` hides entirely. `{ sort?, pin?, group? }` controls sections                                           |
+| `aggregate`              | `AggregateName \| (values, rows) => value`          | —        | Total this column over each group row, and over the footer. See below                                                                          |
+| `AggregateCell`          | `({ cell }) => ReactNode`                           | —        | Renders the aggregate. `cell`: `{ value, column, rows, scope }`, `scope` being `'group'` or `'footer'`                                          |
+
+### Aggregation
+
+`aggregate` on a column totals it over the rows under each group row, and over the whole grid when
+`def.footer` is on. `AggregateName` is `'sum' | 'avg' | 'min' | 'max' | 'count'`; anything else is a
+function `(values: unknown[], rows: TRow[]) => number | string | null`, handed this column's value from
+every row in scope beside the rows themselves.
+
+- **The four numeric ones skip everything that is not a number**, so a blank cell is not a zero — and a
+  column holding no number at all answers **`null` rather than `0`**, because a total of nothing is not
+  zero. `count` counts **rows**, which is why it is the one that never skips anything.
+- **`avg` rounds to two decimals.** Any other precision is an `AggregateCell`; the value itself is what
+  the aggregation returned, and formatting is the renderer's.
+- **Every total covers the rows the filters left.** Under server-side pagination that is the page rather
+  than the table, since those are the only rows the grid has.
+- **A group row's label cell stops spanning at the first aggregated column**, so each figure sits under
+  its own heading. With nothing aggregating, it spans every data column beside it as it always did.
+- The footer is a row of the grid: `aria-rowcount` counts it, it is numbered last, and Ctrl+End lands in
+  it. Style nodes: `datagrid.footer`, `datagrid.footer.cell`, `datagrid.footer.label`, and
+  `datagrid.body.groupRow.aggregate` for the same value on a group row.
+
+```tsx
+<DataGrid
+  data={people}
+  def={{
+    footer: true, // or { label: 'All teams' }
+    columns: [
+      { key: 'country' },
+      { key: 'username', header: 'People', aggregate: 'count' },
+      { key: 'age', header: 'Avg age', aggregate: 'avg' },
+      { key: 'salary', header: 'Payroll', aggregate: 'sum', AggregateCell: ({ cell }) => <Box px={3}>{format(cell.value)}</Box> },
+    ],
+  }}
+/>
+```
 
 ### RowDetailConfig
 

@@ -1,13 +1,16 @@
+import memo from '../../../utils/memo';
+import AggregateCellModel from './aggregateCellModel';
 import ColumnModel from './columnModel';
 import GridModel from './gridModel';
 import GroupRowModel from './groupRowModel';
 
 /**
  * How a cell participates in a group row's layout: `grouping` is the expand/label cell spanning the
- * grouped columns, `selection` the select-all cell, `spacer` a pinned or leading cell with its own value,
- * and `hidden` a data column absorbed into the grouping cell's span.
+ * grouped columns, `selection` the select-all cell, `aggregate` a column totalling the rows under the group,
+ * `spacer` a pinned or leading cell with its own value, and `hidden` a data column absorbed into the
+ * grouping cell's span.
  */
-export type GroupRowCellKind = 'grouping' | 'selection' | 'spacer' | 'hidden';
+export type GroupRowCellKind = 'grouping' | 'selection' | 'aggregate' | 'spacer' | 'hidden';
 
 export default class GroupRowCellModel<TRow> {
   constructor(
@@ -39,13 +42,26 @@ export default class GroupRowCellModel<TRow> {
   public get cellKind(): GroupRowCellKind {
     if (this.column.isGrouping) return 'grouping';
     if (this.column.isRowSelection) return 'selection';
+    // The span is asked first: a column the label covers has no cell to put an aggregate in.
+    if (this.row.spans(this.column)) return 'hidden';
+    if (this.column.aggregate) return 'aggregate';
 
-    const { groupingColumn } = this.row;
-    if (this.column.pin !== groupingColumn.pin || this.column.isRowNumber || this.column.isRowDetail) {
-      return 'spacer';
-    }
+    return 'spacer';
+  }
 
-    return 'hidden';
+  /** The aggregate over the rows under this group, on the columns that have one. */
+  private readonly _aggregate = memo(() =>
+    this.column.aggregate
+      ? new AggregateCellModel(
+          this.grid,
+          this.column,
+          this.row.allRows.map((r) => r.data),
+          'group',
+        )
+      : null,
+  );
+  public get aggregate(): AggregateCellModel<TRow> | null {
+    return this._aggregate.value;
   }
 
   // ========== Grouping-cell layout ==========

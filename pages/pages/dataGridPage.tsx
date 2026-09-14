@@ -650,6 +650,81 @@ export default function DataGridPage() {
             />
           </Code>
 
+          <Box id="aggregation">
+            <H2 fontSize={20} fontWeight={600} mb={2}>
+              Aggregation and totals
+            </H2>
+            <Box mb={4} fontSize={14}>
+              A column with an <Mono>aggregate</Mono> totals itself — over the rows under each group row, and over the whole grid when{' '}
+              <Mono>def.footer</Mono> is on. Five built-ins (<Mono>sum</Mono>, <Mono>avg</Mono>, <Mono>min</Mono>, <Mono>max</Mono>,{' '}
+              <Mono>count</Mono>) or a function of your own, which is handed the column's values and the rows they came from. It covers the
+              rows the filters left, so filtering the grid changes the totals; formatting is an <Mono>AggregateCell</Mono>, the aggregate's
+              twin of <Mono>Cell</Mono>. Open the Country column's menu and choose <b>Group By</b> to put the same numbers on group rows.
+            </Box>
+          </Box>
+
+          <Code
+            defer
+            label="Per-group totals and a pinned grand total"
+            language="jsx"
+            code={`<DataGrid
+  data={data}
+  def={{
+    // Grand totals pinned under the rows. The label goes in the first
+    // column that is not aggregating; \`footer: { label }\` replaces it.
+    footer: true,
+    columns: [
+      { key: 'country' },
+      { key: 'company_name', header: 'Company' },
+      // 'count' counts rows, so a blank cell is still a row.
+      { key: 'username', header: 'People', aggregate: 'count' },
+      { key: 'age', header: 'Avg age', aggregate: 'avg' },
+      {
+        key: 'salary',
+        header: 'Payroll',
+        aggregate: 'sum',
+        // The aggregate's own renderer — 'sum' answers a number, this formats it.
+        AggregateCell: ({ cell }) => (
+          <Box px={3} textWrap="nowrap">
+            {cell.value === null ? '—' : \`$\${Math.round(cell.value as number).toLocaleString('en-US')}\`}
+          </Box>
+        ),
+      },
+    ],
+  }}
+/>`}
+          >
+            <DataGrid
+              data={allData}
+              def={{
+                topBar: true,
+                title: 'Payroll by country',
+                globalFilter: true,
+                visibleRowsCount: 8,
+                footer: true,
+                rowSelection: { pinned: true },
+                columns: [
+                  { key: 'country', header: 'Country', width: 150 },
+                  { key: 'company_name', header: 'Company', width: 170 },
+                  { key: 'username', header: 'People', aggregate: 'count', align: 'end', width: 110 },
+                  { key: 'age', header: 'Avg age', aggregate: 'avg', align: 'end', width: 110 },
+                  {
+                    key: 'salary',
+                    header: 'Payroll',
+                    width: 140,
+                    align: 'end',
+                    aggregate: 'sum',
+                    AggregateCell: ({ cell }) => (
+                      <Box px={3} textWrap="nowrap">
+                        {cell.value === null ? '—' : `$${Math.round(cell.value as number).toLocaleString('en-US')}`}
+                      </Box>
+                    ),
+                  },
+                ],
+              }}
+            />
+          </Code>
+
           <Code
             id="row-detail"
             defer
@@ -1206,6 +1281,7 @@ const sidebarLinks = [
   { id: 'basic', label: 'Basic' },
   { id: 'filters', label: 'Filters' },
   { id: 'grouped', label: 'Grouped Columns' },
+  { id: 'aggregation', label: 'Aggregation and totals' },
   { id: 'row-detail', label: 'Row Detail' },
   { id: 'pagination', label: 'Server Pagination & Filters' },
   { id: 'disable-sort', label: 'Disable Sort' },

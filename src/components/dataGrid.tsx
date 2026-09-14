@@ -73,24 +73,16 @@ export default function DataGrid<TRow extends object>(props: DataGridProps<TRow>
     ...boxProps
   } = props;
 
-  // Track container width for flexible column sizing, and expose the container element so
-  // the resize drag can write width CSS variables straight to it (no React re-render per move).
+  // Expose the container element so the resize drag can write width CSS variables straight to it (no
+  // React re-render per move). The width the columns are sized to is measured on the scroller instead,
+  // in `DataGridContent` — the vertical scrollbar sits between the two.
   useLayoutEffect(() => {
     const el = containerRef.current;
     if (!el) return;
 
     grid.setSizingElement(el);
 
-    const observer = new ResizeObserver((entries) => {
-      const width = entries[0]?.contentRect.width ?? 0;
-      grid.setContainerWidth(width);
-    });
-
-    observer.observe(el);
-    return () => {
-      observer.disconnect();
-      grid.setSizingElement(null);
-    };
+    return () => grid.setSizingElement(null);
   }, [grid]);
 
   return (

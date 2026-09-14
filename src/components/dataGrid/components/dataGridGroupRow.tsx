@@ -6,6 +6,7 @@ import Checkbox from '../../checkbox';
 import Flex from '../../flex';
 import { useGridNavigationContext } from '../gridNavigationContext';
 import GroupRowModel from '../models/groupRowModel';
+import DataGridAggregateValue from './dataGridAggregateValue';
 import DataGridCell from './dataGridCell';
 
 interface Props<TRow> {
@@ -79,6 +80,13 @@ export default function DataGridGroupRow<TRow>(props: Props<TRow>) {
                   onChange={selectAllHandler}
                   props={{ 'aria-label': `Select all rows in ${row.groupValue}` }}
                 />
+              </DataGridCell>
+            );
+
+          case 'aggregate':
+            return (
+              <DataGridCell key={cell.column.key} cell={cell} row={navRow} columnIndex={navColumn} ariaColIndex={columnIndex + 1}>
+                {cell.aggregate && <DataGridAggregateValue cell={cell.aggregate} />}
               </DataGridCell>
             );
 

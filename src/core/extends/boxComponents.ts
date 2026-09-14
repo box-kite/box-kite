@@ -2610,10 +2610,52 @@ const boxComponents = {
                 clean: true,
                 styles: {},
               },
+              aggregate: {
+                styles: {
+                  fontWeight: 600,
+                },
+              },
             },
           },
           empty: {
             styles: {},
+          },
+        },
+      },
+      // The header's twin at the other edge. It carries a pinned cell's own background rather than the bars'
+      // grey, because the cells pinned inside it keep theirs and the two sit side by side.
+      footer: {
+        styles: {
+          position: 'sticky',
+          bottom: 0,
+          width: 'max-content',
+          minWidth: 'fit',
+          zIndex: 1,
+          bgColor: 'white',
+          bt: 1,
+          borderColor: 'gray-200',
+          theme: {
+            dark: {
+              bgColor: 'gray-900',
+              borderColor: 'gray-800',
+            },
+          },
+        },
+        children: {
+          cell: {
+            styles: {
+              fontWeight: 600,
+            },
+          },
+          label: {
+            styles: {
+              color: 'gray-500',
+              theme: {
+                dark: {
+                  color: 'gray-400',
+                },
+              },
+            },
           },
         },
       },

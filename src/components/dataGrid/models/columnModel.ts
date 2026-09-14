@@ -1,6 +1,7 @@
 import ArrayUtils from '../../../utils/array/arrayUtils';
 import memo from '../../../utils/memo';
 import {
+  ColumnAggregate,
   ColumnFilterConfig,
   ColumnType,
   ContextMenuConfig,
@@ -170,6 +171,13 @@ export default class ColumnModel<TRow> {
   }
   public get Cell() {
     return this.def.Cell;
+  }
+  /** This column's aggregation, if it has one — the thing that decides it appears on a group row at all. */
+  public get aggregate(): ColumnAggregate<TRow> | undefined {
+    return this.def.aggregate;
+  }
+  public get AggregateCell() {
+    return this.def.AggregateCell;
   }
   public get filterable() {
     return this.def.filterable;
