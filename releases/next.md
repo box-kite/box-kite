@@ -25,6 +25,7 @@ The package now carries instructions for the agent writing the code, the documen
 - **[A combobox whose value is your own row](#a-combobox-whose-value-is-your-own-row)** — the component Radix never shipped: `<Combobox>` takes your rows and hands one back, the filter composes, the selection can be chips, a query nothing answers can become a row, and a list of ten thousand opens in one frame. 9.53 KB gz on top of Box.
 - **[The DataGrid, restyled](#the-datagrid-restyled)** — tabular numerals, a selected row that finally looks selected, pinned columns that float rather than fence, and chrome quiet enough to read the data through.
 - **[A column that adds itself up](#a-column-that-adds-itself-up)** — `aggregate` on a DataGrid column totals it over each group row and over a pinned footer of grand totals: five built-ins or a function of your own, respecting the filters, formatted by an `AggregateCell`.
+- **[Excel and CSV, with nothing to install](#excel-and-csv-with-nothing-to-install)** — `def.export` writes an `.xlsx` with its groups as Excel outline levels and a CSV beside it: 3.80 KB gz behind a dynamic import, no ExcelJS, against the $999/dev/yr the same feature costs elsewhere.
 - **[The component contract, written down and enforced](#the-component-contract-written-down-and-enforced)** — five rules every component keeps: state in `useControllableState`, every change reported with a named reason, Box props on every part, a style tree to replace, and a render prop instead of `asChild`. A check with two ledgers that both fail on a stale entry is what keeps them true.
 
 ## The package tells an agent how to use it
@@ -862,6 +863,52 @@ Neutral rather than tinted on purpose: a **selected** row is the one that tints,
 legible beside each other. Re-colouring the block is two keys — `body.cell`'s `isExpanded` variant and
 `body.detailRow` — which is all the docs site's own Orders demo does now, where it used to spell out a
 3px frame across four nodes.
+
+## Excel and CSV, with nothing to install
+
+`def.export` puts two buttons in the grid's top bar, and a `ref` on the grid is the same two calls for
+a toolbar of your own:
+
+```tsx
+<DataGrid data={people} def={{ topBar: true, export: true }} />
+```
+
+```tsx
+const grid = useRef<DataGridHandle>(null);
+
+<DataGrid ref={grid} data={people} def={{ columns }} />
+<Button onClick={() => grid.current?.exportXlsx({ sheetName: 'Q1' })}>Download</Button>
+```
+
+The file is what the grid is showing: the visible columns in their pinned order, the rows the filters
+and the sort left, the group rows and their totals. It adds exactly one thing back — a column hidden
+*because the grid is grouped by it*. Its values moved to the group rows rather than going away, and a
+spreadsheet with no Country column in it is not the grid that was exported.
+
+The workbook is a real `.xlsx`, not a CSV wearing the extension: a bold header on a frozen row, column
+widths taken from the grid's own, values that keep their type — a number is a number, a `Date` is a date
+cell — an auto-filter, and **the grouping as Excel's own outline levels**, so a group left collapsed in
+the grid opens collapsed in Excel with every row still in the file. An export runs no React, so a column
+drawn by a `Cell` renderer says what it writes, and a column can name the number format its cells wear:
+
+```tsx
+{ key: 'salary', header: 'Payroll', aggregate: 'sum', exportFormat: '$#,##0' },
+{ key: 'name', exportValue: (row) => `${row.first} ${row.last}` },
+```
+
+**There is no ExcelJS to install.** An `.xlsx` is a ZIP of XML parts, and this writes both — 3.80 KB gz
+for the two formats together, in a chunk behind a dynamic import, so a grid nobody exports from carries
+none of it and the grid's own entry grows 1.03 KB for the model and the buttons. AG Grid charges
+$999/dev/yr for Excel export and MUI $599; the nearest free answer is a CSV and a second dependency.
+
+Two smaller things, both deliberate. A CSV starts with a byte-order mark, without which Excel reads
+UTF-8 as the local code page and mangles every accented name. And a CSV value beginning `=`, `+`, `-`
+or `@` is quoted into text: a file a page generated must not run a formula somebody typed into a cell.
+`exportCsv({ escapeFormulas: false })` writes it as it stands.
+
+Both take `fileName`, `columns`, `groups` and `footer`; `exportXlsx` also takes `sheetName`, `headerFill`
+and `headerColor` as `RRGGBB` — a workbook carries one appearance, not a light and a dark one. The
+buttons are `datagrid.topBar.export` and `datagrid.topBar.export.button`.
 
 ## Breaking changes
 

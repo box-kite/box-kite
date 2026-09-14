@@ -172,7 +172,7 @@ const CONFIG = [
     name: 'DataGrid',
     route: '/datagrid',
     file: 'src/components/dataGrid.tsx',
-    doc: 'DataGrid',
+    doc: 'DataGridImpl',
     props: 'DataGridProps',
     propsFile: 'src/components/dataGrid/contracts/dataGridContract.ts',
     styles: 'datagrid',

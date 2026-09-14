@@ -2,6 +2,7 @@ import Box from '../../../box';
 import Flex from '../../flex';
 import GridModel from '../models/gridModel';
 import DataGridColumnGroups from './dataGridColumnGroups';
+import DataGridExport from './dataGridExport';
 import DataGridGlobalFilter from './dataGridGlobalFilter';
 import DataGridTopBarContextMenu from './dataGridTopBarContextMenu';
 
@@ -15,7 +16,7 @@ export default function DataGridTopBar<TRow>(props: Props<TRow>) {
 
   return (
     <Flex component={`${grid.componentName}.topBar` as never} position="relative" d="column" gap={3}>
-      {/* Row 1: Title/context menu on the left, global filter pinned to the right */}
+      {/* Row 1: Title/context menu on the left, search and the export buttons pinned to the right */}
       <Flex ai="center" jc="space-between" gap={4} flexWrap="wrap" width="fit">
         <Flex ai="center" gap={3} flexWrap="wrap" minWidth={0}>
           <DataGridTopBarContextMenu grid={grid} />
@@ -30,7 +31,10 @@ export default function DataGridTopBar<TRow>(props: Props<TRow>) {
           <DataGridColumnGroups grid={grid} />
         </Flex>
 
-        {globalFilter && <DataGridGlobalFilter grid={grid} />}
+        <Flex ai="center" gap={3} flexWrap="wrap">
+          {globalFilter && <DataGridGlobalFilter grid={grid} />}
+          <DataGridExport grid={grid} />
+        </Flex>
       </Flex>
 
       {/* Row 2: Custom top bar content spans the full topbar width */}

@@ -183,6 +183,91 @@ export type ColumnAggregate<TRow> = AggregateName | AggregateFn<TRow>;
 /** Which rows an aggregate covered: one group row's, or every row the filters left. */
 export type AggregateScope = 'group' | 'footer';
 
+// ========== Export ==========
+
+/** What both export formats take. */
+export interface DataGridExportOptions {
+  /** The file's name, without the extension. Default: the grid's `title`, or `export`. */
+  fileName?: string;
+  /** The columns to write, by key, in the order given. Default: every visible column, plus the grouped ones. */
+  columns?: Key[];
+  /** Write a row per group, with its totals. Default: true, which writes them wherever the grid is grouped. */
+  groups?: boolean;
+  /** Write the grand-total row. Default: whatever `def.footer` is. */
+  footer?: boolean;
+}
+
+/** A CSV export. */
+export interface DataGridCsvOptions extends DataGridExportOptions {
+  /** The field separator. Default: `,`. */
+  delimiter?: string;
+  /**
+   * Prefix a value beginning `=`, `+`, `-` or `@` with a quote, so a spreadsheet reads it as text rather
+   * than running it. Default: true — a cell somebody typed is data, and a file that executes it is CSV
+   * injection.
+   */
+  escapeFormulas?: boolean;
+}
+
+/** An Excel export. A workbook carries no theme, so its colours are written out rather than themed. */
+export interface DataGridXlsxOptions extends DataGridExportOptions {
+  /** The worksheet's name. Default: the grid's `title`, or `Sheet1`. */
+  sheetName?: string;
+  /** The header row's fill, as `RRGGBB`. Default: the grid header's own grey. */
+  headerFill?: string;
+  /** The header row's text colour, as `RRGGBB`. */
+  headerColor?: string;
+}
+
+/** The export buttons in the top bar. `true` is both formats, named by the grid's title. */
+export interface ExportConfig extends DataGridExportOptions {
+  /** Show the CSV button. Default: true. */
+  csv?: boolean;
+  /** Show the Excel button. Default: true. */
+  xlsx?: boolean;
+}
+
+/** One column of an exported file. */
+export interface ExportColumn {
+  key: Key;
+  header: string;
+  /** In characters — the unit a spreadsheet sizes a column in. */
+  width: number;
+  /** The number format its values are written with, from the column's `exportFormat`. */
+  format?: string;
+}
+
+/** One row of an exported file, and where it sits in the grouping. */
+export interface ExportRow {
+  kind: 'group' | 'data' | 'footer';
+  /** 0 at the top; a row under one group is 1, under two is 2 — Excel's outline level. */
+  level: number;
+  /** Whether the grid has the group above it collapsed. */
+  hidden: boolean;
+  /** Whether this row is the summary of a collapsed group. */
+  collapsed: boolean;
+  values: unknown[];
+}
+
+/** What an export writes, before either format has written it. */
+export interface ExportTable {
+  columns: ExportColumn[];
+  rows: ExportRow[];
+}
+
+/**
+ * What a `ref` on a `DataGrid` holds. The export methods load the writers on the first call, so a grid
+ * nobody exports from carries none of that code.
+ */
+export interface DataGridHandle {
+  /** The element the grid renders. */
+  readonly element: HTMLDivElement | null;
+  /** Download the grid as `.csv`. */
+  exportCsv(options?: DataGridCsvOptions): Promise<void>;
+  /** Download the grid as `.xlsx`. */
+  exportXlsx(options?: DataGridXlsxOptions): Promise<void>;
+}
+
 // ========== Column Type ==========
 
 export interface ColumnType<TRow> {
@@ -199,6 +284,13 @@ export interface ColumnType<TRow> {
    * is on. One of the five built-in names, or a function.
    */
   aggregate?: ColumnAggregate<TRow>;
+  /**
+   * The value this column writes to an exported file. Default: the row's own field at `key` — which is
+   * what a column drawn by a `Cell` renderer needs, since an export runs no React.
+   */
+  exportValue?: (row: TRow) => string | number | boolean | Date | null;
+  /** The number format its values are written with in a spreadsheet, `'#,##0.00'` or `'yyyy-mm-dd'`. */
+  exportFormat?: string;
   /** Renders this column's aggregate wherever one appears. Without it the value is rendered as it is. */
   AggregateCell?: React.ComponentType<{ cell: AggregateCellModel<TRow> }>;
   /** Enable filtering for this column. Set to true for default text filter, or provide config */
@@ -248,6 +340,11 @@ export interface GridDefinition<TRow> {
    * rows the grid holds after filtering — which is the page, not the table, when the server is paginating.
    */
   footer?: boolean | { label?: React.ReactNode };
+  /**
+   * Export buttons in the top bar. `true` is both formats; the writers are loaded on the first press,
+   * so a grid nobody exports from pays nothing for them.
+   */
+  export?: boolean | ExportConfig;
   /** Enable expandable row detail panel */
   rowDetail?: RowDetailConfig<TRow>;
   /** Server-side pagination. Provide totalCount from the API response. */

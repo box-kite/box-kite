@@ -725,6 +725,70 @@ export default function DataGridPage() {
             />
           </Code>
 
+          <Box id="export">
+            <H2 fontSize={20} fontWeight={600} mb={2}>
+              Export to Excel and CSV
+            </H2>
+            <Box mb={4} fontSize={14}>
+              <Mono>def.export</Mono> puts the two buttons in the top bar; a <Mono>ref</Mono> on the grid gives you <Mono>exportXlsx</Mono>{' '}
+              and <Mono>exportCsv</Mono> to call from a toolbar of your own. The file is what the grid is showing — the visible columns in
+              their pinned order, the rows the filters and the sort left, the group rows and their totals — and the workbook is a real{' '}
+              <Mono>.xlsx</Mono>: a bold header on a frozen row, column widths, values that keep their type, and the grouping as Excel's own
+              outline levels, so a collapsed group opens collapsed. Both writers are behind a dynamic import, so a grid nobody exports from
+              carries none of that code. There is no ExcelJS to install and nothing to configure.
+            </Box>
+          </Box>
+
+          <Code
+            defer
+            label="Two buttons, and a workbook with its groups intact"
+            language="jsx"
+            context={`interface Person { country: string; company_name: string; username: string; salary: number }
+declare const data: Person[];`}
+            code={`<DataGrid<Person>
+  data={data}
+  def={{
+    topBar: true,
+    title: 'Payroll',
+    // \`true\` is both formats. \`{ csv: false }\` or \`{ xlsx: false }\` drops one,
+    // and \`fileName\` names the file — the title, otherwise.
+    export: { fileName: 'payroll' },
+    footer: true,
+    columns: [
+      { key: 'country' },
+      // An export runs no React, so a column drawn by a \`Cell\` says what it writes.
+      { key: 'company_name', header: 'Company', exportValue: (row) => row.company_name.toUpperCase() },
+      { key: 'username', header: 'People', aggregate: 'count' },
+      // The number format the cell wears in the workbook.
+      { key: 'salary', header: 'Payroll', aggregate: 'sum', exportFormat: '$#,##0' },
+    ],
+  }}
+/>`}
+          >
+            <DataGrid
+              data={allData}
+              def={{
+                topBar: true,
+                title: 'Payroll',
+                export: { fileName: 'payroll' },
+                globalFilter: true,
+                visibleRowsCount: 8,
+                footer: true,
+                columns: [
+                  { key: 'country', header: 'Country', width: 150 },
+                  {
+                    key: 'company_name',
+                    header: 'Company',
+                    width: 200,
+                    exportValue: (row) => row.company_name.toUpperCase(),
+                  },
+                  { key: 'username', header: 'People', aggregate: 'count', align: 'end', width: 110 },
+                  { key: 'salary', header: 'Payroll', aggregate: 'sum', align: 'end', width: 140, exportFormat: '$#,##0' },
+                ],
+              }}
+            />
+          </Code>
+
           <Code
             id="row-detail"
             defer
@@ -1348,6 +1412,7 @@ const sidebarLinks = [
   { id: 'filters', label: 'Filters' },
   { id: 'grouped', label: 'Grouped Columns' },
   { id: 'aggregation', label: 'Aggregation and totals' },
+  { id: 'export', label: 'Export to Excel and CSV' },
   { id: 'row-detail', label: 'Row Detail' },
   { id: 'pagination', label: 'Server Pagination & Filters' },
   { id: 'disable-sort', label: 'Disable Sort' },

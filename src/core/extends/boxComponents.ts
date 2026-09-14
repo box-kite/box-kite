@@ -2163,6 +2163,58 @@ const boxComponents = {
               },
             },
           },
+          // Quiet: an export is something the page offers, not something it asks for, so the buttons
+          // read as chrome until they are hovered.
+          export: {
+            styles: {},
+            children: {
+              button: {
+                clean: true,
+                styles: {
+                  display: 'inline-flex',
+                  ai: 'center',
+                  gap: 1.5,
+                  b: 1,
+                  borderColor: 'gray-300',
+                  bgColor: 'white',
+                  borderRadius: 2,
+                  py: 1.5,
+                  px: 2.5,
+                  color: 'gray-700',
+                  fontSize: 12,
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                  textWrap: 'nowrap',
+                  transition: 'colors',
+                  transitionDuration: 150,
+                  hover: {
+                    bgColor: 'gray-50',
+                    color: 'gray-900',
+                  },
+                  focusVisible: {
+                    outline: 2,
+                    outlineStyle: 'solid',
+                    outlineOffset: 2,
+                    outlineColor: 'indigo-500',
+                  },
+                  theme: {
+                    dark: {
+                      bgColor: 'gray-800',
+                      borderColor: 'gray-700',
+                      color: 'gray-300',
+                      hover: {
+                        bgColor: 'gray-700',
+                        color: 'gray-100',
+                      },
+                      focusVisible: {
+                        outlineColor: 'indigo-400',
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
         },
       },
       filter: {
