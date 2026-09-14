@@ -2,6 +2,7 @@ import { forwardRef, Ref, RefAttributes, useImperativeHandle, useLayoutEffect, u
 import Box from '../box';
 import DataGridBottomBar from './dataGrid/components/dataGridBottomBar';
 import DataGridContent from './dataGrid/components/dataGridContent';
+import DataGridDataSourceError from './dataGrid/components/dataGridDataSourceError';
 import DataGridTopBar from './dataGrid/components/dataGridTopBar';
 import { DataGridHandle, DataGridProps } from './dataGrid/contracts/dataGridContract';
 import useGrid from './dataGrid/useGrid';
@@ -55,6 +56,7 @@ function DataGridImpl<TRow extends object>(props: DataGridProps<TRow>, ref: Ref<
       },
       exportCsv: grid.exportCsv,
       exportXlsx: grid.exportXlsx,
+      refresh: grid.refresh,
     }),
     [grid],
   );
@@ -109,6 +111,10 @@ function DataGridImpl<TRow extends object>(props: DataGridProps<TRow>, ref: Ref<
       style={{ ...grid.sizes.value, ...style }}
     >
       {grid.props.def.topBar && <DataGridTopBar grid={grid} />}
+
+      {/* Above the rows rather than among them: a failed block is about the query, and inside the
+          scroller the strip sat at the top of a million rows' worth of content. */}
+      <DataGridDataSourceError grid={grid} />
 
       <DataGridContent grid={grid} />
 

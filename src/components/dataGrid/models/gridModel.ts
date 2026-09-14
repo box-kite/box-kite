@@ -27,6 +27,7 @@ import {
 import AggregationModel from './aggregationModel';
 import ColumnModel from './columnModel';
 import ColumnVisibilityModel from './columnVisibilityModel';
+import DataSourceModel from './dataSourceModel';
 import DetailRowModel from './detailRowModel';
 import ExportModel from './exportModel';
 import FilterModel from './filterModel';
@@ -92,6 +93,9 @@ export default class GridModel<TRow> {
       this.sourceColumns.clear();
     }
 
+    // A new ~def~ identity is not a new query: consumers build ~def~ inline, so invalidating the cache on
+    // it would refetch every render. The datasource is read live at request time, so a changed closure is
+    // picked up by the next block; ~refresh()~ on the grid's ref is how a caller forces the rest.
     // Any row-affecting prop changed → rebuild rows (cascades to flatRows/rowOffsets).
     if (
       prev.data !== props.data ||
@@ -105,6 +109,23 @@ export default class GridModel<TRow> {
     ) {
       this.rows.clear();
     }
+  }
+
+  /**
+   * The rows the grid was handed. `data` is optional because `def.dataSource` replaces it, and every
+   * reader goes through here so that "no rows yet" is one empty array rather than a check at each site.
+   */
+  public get data(): TRow[] {
+    return this.props.data ?? [];
+  }
+
+  /**
+   * Every row the grid can act on right now. With a datasource that is the blocks it holds rather than
+   * the table behind them — a select-all cannot reach rows nobody has fetched, and saying otherwise is
+   * the one thing a server-backed grid must not do.
+   */
+  public get loadedRows(): TRow[] {
+    return this.source.enabled ? this.source.loadedRows() : this.data;
   }
 
   public get componentName(): keyof ComponentsAndVariants {
@@ -373,10 +394,11 @@ export default class GridModel<TRow> {
    * Get filtered data (applies external, global, then column filters)
    */
   public get filteredData(): TRow[] {
-    // With server-side pagination, data is already filtered by the server
-    if (this.isPaginated) return this.props.data;
+    // The server has already filtered — with a datasource it filtered the block, with server-side
+    // pagination it filtered the page.
+    if (this.source.enabled || this.isPaginated) return this.data;
 
-    let data = this.props.data;
+    let data = this.data;
 
     // Apply external predicate filters
     data = this.applyExternalFilters(data);
@@ -440,6 +462,7 @@ export default class GridModel<TRow> {
 
     this.fireServerStateChange(reason, { globalFilterValue: value, page: nextPage });
 
+    this.source.invalidate();
     this.rows.clear(); // cascades to flatRows/rowOffsets
     this.notify();
   };
@@ -464,6 +487,7 @@ export default class GridModel<TRow> {
 
     this.fireServerStateChange(reason, { columnFilters: newFilters, page: nextPage });
 
+    this.source.invalidate();
     this.rows.clear(); // cascades to flatRows/rowOffsets
     this.notify();
   };
@@ -477,6 +501,7 @@ export default class GridModel<TRow> {
 
     this.fireServerStateChange('clear', { columnFilters: {} });
 
+    this.source.invalidate();
     this.rows.clear(); // cascades to flatRows/rowOffsets
     this.notify();
   };
@@ -495,7 +520,7 @@ export default class GridModel<TRow> {
   public getColumnUniqueValues = (columnKey: Key): (string | number | boolean | null)[] => {
     const values = new Set<string | number | boolean | null>();
 
-    this.props.data.forEach((row) => {
+    this.data.forEach((row) => {
       const value = row[columnKey as keyof TRow];
       if (value !== undefined) {
         values.add(value as string | number | boolean | null);
@@ -522,18 +547,30 @@ export default class GridModel<TRow> {
    * Get count of filtered rows vs total rows
    */
   public get filterStats(): { filtered: number; total: number } {
-    if (this.isPaginated) {
-      const totalCount = this.props.def.pagination!.totalCount;
+    if (this.source.enabled || this.isPaginated) {
+      const totalCount = this.totalRowCount;
       return { filtered: totalCount, total: totalCount };
     }
     return {
       filtered: this.filteredData.length,
-      total: this.props.data.length,
+      total: this.data.length,
     };
+  }
+
+  /** How many rows the query holds altogether: the server's count where there is one, else what is here. */
+  public get totalRowCount(): number {
+    if (this.source.enabled) return this.source.rowCount;
+
+    return this.props.def.pagination?.totalCount ?? this.data.length;
   }
 
   public readonly rows = memo(
     () => {
+      // A datasource owns the order and the filtering, so there is nothing to sort or group here: what
+      // is left is one row per position, whose values it reads out of the block cache. The count is the
+      // server's, so the scroll height and `aria-rowcount` hold still while the blocks arrive.
+      if (this.source.enabled) return this.source.rowList();
+
       let data = this.filteredData;
 
       if (this._sortColumn && !this.isPaginated) {
@@ -603,6 +640,10 @@ export default class GridModel<TRow> {
 
   public readonly flatRows = memo(
     () => {
+      // Never `flatMap` over a datasource's rows: the list is lazy, and iterating it is what building a
+      // model per row of a million-row grid would cost.
+      if (this.source.enabled) return this.source.flatRowList(this.rows.value as RowModel<TRow>[]);
+
       return this.rows.value.flatMap((row) => {
         return row.flatRows as (RowModel<TRow> | GroupRowModel<TRow> | DetailRowModel<TRow>)[];
       });
@@ -825,7 +866,8 @@ export default class GridModel<TRow> {
   public get paginationState(): PaginationState | undefined {
     const pagination = this.props.def.pagination;
     if (!pagination) return undefined;
-    const totalItems = pagination.totalCount;
+    // A datasource answers the count, so ~def.pagination~ need not carry one.
+    const totalItems = pagination.totalCount ?? (this.source.enabled ? this.source.rowCount : 0);
     const pageSize = this.pageSize;
     return {
       page: this.page,
@@ -846,6 +888,8 @@ export default class GridModel<TRow> {
 
     this.fireServerStateChange('page', { page: clamped });
 
+    // No invalidation: a new page is a different block of the same query, so a page already fetched is
+    // shown without a round trip and the one ahead is asked for.
     this.rows.clear(); // cascades to flatRows/rowOffsets
     this.notify();
   };
@@ -861,6 +905,8 @@ export default class GridModel<TRow> {
 
     this.fireServerStateChange('page-size', { page: 1, pageSize: size });
 
+    // Every block boundary moved, so nothing cached lines up with a request any more.
+    this.source.invalidate();
     this.rows.clear(); // cascades to flatRows/rowOffsets
     this.notify();
   };
@@ -869,6 +915,9 @@ export default class GridModel<TRow> {
 
   public readonly rowOffsets = memo(
     () => {
+      // A datasource never groups, so its flat list holds only rows and detail panels.
+      if (this.source.enabled) return this.source.rowOffsets(this.flatRows.value as (RowModel<TRow> | DetailRowModel<TRow>)[]);
+
       const offsets: number[] = [];
       let cumulative = 0;
 
@@ -899,6 +948,18 @@ export default class GridModel<TRow> {
 
   /** Export concern (the columns, rows and levels both file formats are written from). */
   public readonly exporter = new ExportModel(this);
+
+  /** Server row model: the blocks ~def.dataSource~ has answered, and the ones still in flight. */
+  public readonly source = new DataSourceModel(this);
+
+  /**
+   * Throw the fetched blocks away and ask for them again. The grid invalidates on its own whenever it
+   * changes the query; this is for the half it cannot see — a filter of the page's own, a row somebody
+   * saved, a tenant that changed underneath the closure ~getRows~ was written in.
+   */
+  public refresh = (): void => {
+    this.source.invalidate();
+  };
 
   /**
    * Which export buttons the top bar shows, and the options they press with. `export: true` resolves to
@@ -934,12 +995,14 @@ export default class GridModel<TRow> {
   }
 
   public get isEmpty(): boolean {
-    return this.props.data.length === 0;
+    return this.source.enabled ? this.flatRows.value.length === 0 : this.data.length === 0;
   }
 
   /** Header select-all checkbox state. */
   public get allRowsSelected(): boolean {
-    return this.selectedRows.size === this.props.data.length;
+    const rows = this.loadedRows.length;
+
+    return rows > 0 && this.selectedRows.size === rows;
   }
   public get someRowsSelected(): boolean {
     return this.selectedRows.size > 0;
@@ -957,7 +1020,7 @@ export default class GridModel<TRow> {
 
     const selected = this.selectedRows.size;
 
-    return selected === 0 ? 'No rows selected' : `${selected} of ${this.props.data.length} rows selected`;
+    return selected === 0 ? 'No rows selected' : `${selected} of ${this.totalRowCount} rows selected`;
   }
 
   /** The columns currently grouped, resolved from groupColumns keys (backs the top-bar group chips). */
@@ -1027,6 +1090,7 @@ export default class GridModel<TRow> {
 
     this.fireServerStateChange('sort', { sortColumn: this._sortColumn, sortDirection: this._sortDirection, page: nextPage });
 
+    this.source.invalidate();
     this.rows.clear(); // cascades to flatRows/rowOffsets (sort doesn't change column structure)
     this.notify();
   };
@@ -1113,13 +1177,13 @@ export default class GridModel<TRow> {
       action: hasAllSelected ? 'deselect' : 'select',
       affectedRowKeys: rowKeys,
       selectedRowKeys,
-      isAllSelected: this.selectedRows.size === this.props.data.length,
+      isAllSelected: this.selectedRows.size === this.loadedRows.length,
     });
   };
 
   public toggleSelectAllRows = () => {
     this.toggleRowsSelection(
-      this.props.data.map((x) => this.getRowKey(x)),
+      this.loadedRows.map((x) => this.getRowKey(x)),
       true,
     );
   };

@@ -8,9 +8,22 @@ import GroupRowModel from './groupRowModel';
 export default class RowModel<TRow> {
   constructor(
     public readonly grid: GridModel<TRow>,
-    public readonly data: TRow,
+    data: TRow,
     public readonly rowIndex: number,
-  ) {}
+  ) {
+    this._data = data;
+  }
+
+  protected _data: TRow;
+
+  /**
+   * The row's values. A getter rather than a parameter property so a subclass can read them from
+   * somewhere else — `SourceRowModel` reads them out of the block cache, which is what lets a block
+   * arriving change what a row shows without a single model being rebuilt.
+   */
+  public get data(): TRow {
+    return this._data;
+  }
 
   private _key?: Key;
   /**
@@ -24,6 +37,10 @@ export default class RowModel<TRow> {
   public parentRow?: GroupRowModel<TRow>;
   public readonly count = 1;
   public readonly kind = 'row' as const;
+  /** Whether this is a row the server has not sent yet — see `SourceRowModel`, which answers it live. */
+  public get placeholder(): boolean {
+    return false;
+  }
 
   /** Whether clicking the row toggles its detail panel. */
   public get expandOnRowClick(): boolean {

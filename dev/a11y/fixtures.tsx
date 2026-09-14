@@ -511,6 +511,27 @@ export const fixtures: A11yFixture[] = [
     ),
   },
   {
+    // The pager and the page-size selector, which nothing else here renders — the four navigation
+    // buttons are chevrons, so their whole accessible name is the label the component writes.
+    name: 'DataGrid (paginated)',
+    render: () => (
+      <DataGrid<Person>
+        data={people}
+        def={{
+          rowKey: 'id',
+          title: 'People',
+          bottomBar: true,
+          visibleRowsCount: 2,
+          columns: [
+            { key: 'name', header: 'Name' },
+            { key: 'age', header: 'Age' },
+          ],
+          pagination: { totalCount: people.length, pageSizeOptions: [2, 5] },
+        }}
+      />
+    ),
+  },
+  {
     // The flagship case, and the one every other grid library gets wrong: 10k rows behind a
     // virtualized window, grouped, selectable, filterable, with an expandable detail row. Every
     // ARIA number here describes rows and columns that are mostly *not* in the DOM.

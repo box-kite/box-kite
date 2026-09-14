@@ -27,10 +27,10 @@ export default function DataGridPagination<TRow>(props: Props<TRow>) {
   return (
     <Flex component={`${grid.componentName}.bottomBar.pagination` as never} gap={0.5} ai="center">
       <PageSizeSelector grid={grid} pageSize={state.pageSize} />
-      <PaginationButton componentName={grid.componentName} onClick={goFirst} disabled={!canGoPrev}>
+      <PaginationButton componentName={grid.componentName} label="First page" onClick={goFirst} disabled={!canGoPrev}>
         <ChevronDoubleLeft />
       </PaginationButton>
-      <PaginationButton componentName={grid.componentName} onClick={goPrev} disabled={!canGoPrev}>
+      <PaginationButton componentName={grid.componentName} label="Previous page" onClick={goPrev} disabled={!canGoPrev}>
         <ChevronLeft />
       </PaginationButton>
       <Flex ai="center" gap={1.5} px={2} userSelect="none">
@@ -39,10 +39,10 @@ export default function DataGridPagination<TRow>(props: Props<TRow>) {
           of {totalPages}
         </Box>
       </Flex>
-      <PaginationButton componentName={grid.componentName} onClick={goNext} disabled={!canGoNext}>
+      <PaginationButton componentName={grid.componentName} label="Next page" onClick={goNext} disabled={!canGoNext}>
         <ChevronRight />
       </PaginationButton>
-      <PaginationButton componentName={grid.componentName} onClick={goLast} disabled={!canGoNext}>
+      <PaginationButton componentName={grid.componentName} label="Last page" onClick={goLast} disabled={!canGoNext}>
         <ChevronDoubleRight />
       </PaginationButton>
     </Flex>
@@ -64,6 +64,7 @@ function PageSizeSelector<TRow>({ grid, pageSize }: { grid: GridModel<TRow>; pag
         borderRadius={4}
         cursor="pointer"
         props={{
+          'aria-label': 'Rows per page',
           value: pageSize,
           onChange: (e: React.ChangeEvent<HTMLSelectElement>) => grid.pagination.changePageSize(Number(e.target.value)),
         }}
@@ -109,17 +110,25 @@ function PageJumpInput<TRow>({ grid, page, totalPages }: { grid: GridModel<TRow>
       onChange={(e) => setValue(e.target.value)}
       textAlign="center"
       fontSize={12}
-      props={{ onKeyDown: handleKeyDown, onBlur: commit, min: 1, max: totalPages }}
+      props={{ 'aria-label': 'Page number', onKeyDown: handleKeyDown, onBlur: commit, min: 1, max: totalPages }}
     />
   );
 }
 
-function PaginationButton(props: { componentName: string; onClick: () => void; disabled: boolean; children: React.ReactNode }) {
-  const { componentName, onClick, disabled, children } = props;
+/** The chevrons are decorative, so the button says what it does — without a label it has no name at all. */
+function PaginationButton(props: {
+  componentName: string;
+  label: string;
+  onClick: () => void;
+  disabled: boolean;
+  children: React.ReactNode;
+}) {
+  const { componentName, label, onClick, disabled, children } = props;
 
   return (
     <Button
       component={`${componentName}.bottomBar.pagination.button` as never}
+      props={{ 'aria-label': label, 'aria-disabled': disabled || undefined }}
       onClick={onClick}
       cursor={disabled ? 'default' : 'pointer'}
       p={1}

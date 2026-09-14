@@ -91,6 +91,10 @@ export default class ExportModel<TRow> {
 
           walk(item.rows, withGroups ? level + 1 : level, hidden || (withGroups && collapsed));
         } else {
+          // A block the datasource has not answered is not a row of blanks: an export writes what the
+          // grid holds, and a placeholder holds nothing.
+          if (item.placeholder) continue;
+
           rows.push({ kind: 'data', level, hidden, collapsed: false, values: columns.map((column) => this.value(column, item.data)) });
         }
       }

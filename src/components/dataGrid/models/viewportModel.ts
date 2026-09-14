@@ -34,7 +34,11 @@ export default class ViewportModel<TRow> {
   }
 
   public get isEmpty(): boolean {
-    return this.grid.props.data.length === 0;
+    // A datasource's rows arrive over time, so "there is nothing here" is the row list rather than
+    // `data` — which it never fills.
+    if (this.grid.source.enabled) return this.grid.flatRows.value.length === 0;
+
+    return this.grid.data.length === 0;
   }
 
   /** Number of rows the viewport shows at once (all rows when `visibleRowsCount === 'all'`). */

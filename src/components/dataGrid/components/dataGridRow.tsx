@@ -3,6 +3,7 @@ import Flex from '../../flex';
 import { useGridNavigationContext } from '../gridNavigationContext';
 import RowModel from '../models/rowModel';
 import DataGridCell from './dataGridCell';
+import DataGridCellPlaceholder from './dataGridCellPlaceholder';
 import DataGridCellText from './dataGridCellText';
 
 interface Props<TRow> {
@@ -30,12 +31,26 @@ export default function DataGridRow<TRow>(props: Props<TRow>) {
       // no selection tells a screen reader there is something to select, which there is not.
       selected={row.grid.props.def.rowSelection ? selected : undefined}
       display="contents"
-      props={{ role: 'row', 'aria-rowindex': navRow + 1, onClick: expandOnRowClick ? handleRowClick : undefined }}
+      props={{
+        role: 'row',
+        'aria-rowindex': navRow + 1,
+        // The row exists, its values do not yet — which is what a reader landing on it needs to hear.
+        'aria-busy': row.placeholder || undefined,
+        onClick: expandOnRowClick ? handleRowClick : undefined,
+      }}
       cursor={expandOnRowClick ? 'pointer' : undefined}
     >
       {row.cells.map((cell, columnIndex) => (
         <DataGridCell key={cell.column.key} cell={cell} row={navRow} columnIndex={columnIndex}>
-          {cell.column.Cell ? <cell.column.Cell cell={cell} /> : <DataGridCellText cell={cell} />}
+          {/* The row number is known without the row, so it is the one cell a placeholder still fills:
+              a skeleton that hides the position is a grid whose scrollbar has nothing to say. */}
+          {row.placeholder && !cell.column.isRowNumber ? (
+            <DataGridCellPlaceholder cell={cell} columnIndex={columnIndex} />
+          ) : cell.column.Cell ? (
+            <cell.column.Cell cell={cell} />
+          ) : (
+            <DataGridCellText cell={cell} />
+          )}
         </DataGridCell>
       ))}
     </Flex>
