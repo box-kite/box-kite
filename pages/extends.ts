@@ -357,21 +357,14 @@ export const components = Box.components({
     },
   },
 
-  datagrid: {
-    children: {
-      body: {
-        children: {
-          detailRow: {
-            styles: {
-              theme: { dark: { bgColor: 'gray-900' } },
-            },
-          },
-        },
-      },
-    },
-  },
-
-  // Orders DataGrid — extends datagrid with 3px indigo border that visually joins expanded row + detail row
+  // The Orders demo's outer grid. The library already joins an expanded row to its drawer with a shared
+  // surface and an accent bar down the inline start; this re-colours that block, which is all a custom
+  // tree has to do — `isExpanded` tints the row, `detailRow` tints the panel under it.
+  //
+  // `slate` rather than a hue, and this is the whole lesson: a drawer can cover half the grid, and at that
+  // size any chroma reads as branding rather than as state. `indigo-950` was also **lighter** than the
+  // `gray-900` grid it sat in (L 25.7 against 21), so two open rows painted the grid purple and raised.
+  // The accent bar is where the hue belongs — it is 2px wide.
   'orders-datagrid': {
     extends: 'datagrid',
     children: {
@@ -380,56 +373,24 @@ export const components = Box.components({
           cell: {
             variants: {
               isExpanded: {
-                bt: 3,
-                bb: 0,
-                bgColor: 'indigo-50',
-                borderColor: 'indigo-300',
-                hoverGroup: { 'grid-row': { bgColor: 'indigo-100' } },
+                bgColor: 'slate-100',
+                group: { 'grid-row/hover': { bgColor: 'slate-200' } },
                 theme: {
                   dark: {
-                    bgColor: 'indigo-950',
-                    borderColor: 'indigo-700',
-                    hoverGroup: { 'grid-row': { bgColor: 'indigo-900' } },
+                    bgColor: 'slate-950',
+                    group: { 'grid-row/hover': { bgColor: 'slate-900' } },
                   },
                 },
-              },
-              isExpandedFirstLeaf: {
-                bl: 3,
-              },
-              isExpandedLastLeaf: {
-                br: 3,
-              },
-              isLastLeftPinned: {
-                br: 0,
               },
             },
           },
           detailRow: {
             styles: {
-              bb: 3,
-              bt: 0,
-              bgColor: 'indigo-50',
-              borderColor: 'indigo-300',
-              theme: {
-                dark: {
-                  bgColor: 'indigo-950',
-                  borderColor: 'indigo-700',
-                },
-              },
-            },
-            children: {
-              content: {
-                styles: {
-                  bl: 3,
-                  br: 3,
-                  borderColor: 'indigo-300',
-                  theme: {
-                    dark: {
-                      borderColor: 'indigo-700',
-                    },
-                  },
-                },
-              },
+              bgColor: 'slate-100',
+              // Two steps off the drawer, not one: at `slate-200` the rule closing one block sits between
+              // two surfaces of nearly its own lightness, and two open rows in a row merge into one.
+              borderColor: 'slate-300',
+              theme: { dark: { bgColor: 'slate-950', borderColor: 'slate-800' } },
             },
           },
         },
@@ -437,27 +398,45 @@ export const components = Box.components({
     },
   },
 
-  // Subgrid — extends datagrid styles with visual overrides for embedded DataGrids
+  // The grid inside a detail row. A nested grid is a list, not a second card: no border, no radius, no
+  // shadow and no surface of its own, so the drawer it sits in stays the only panel on screen.
   subgrid: {
     extends: 'datagrid',
     styles: {
       b: 0,
-      br: 1,
-      bl: 1,
       borderRadius: 0,
       shadow: 'none',
+      bgColor: 'transparent',
       theme: { dark: { bgColor: 'transparent' } },
     },
     children: {
       header: {
+        styles: {
+          bgColor: 'transparent',
+          theme: { dark: { bgColor: 'transparent' } },
+        },
         children: {
           cell: {
+            // A caption over a short list, not a heading bar: no fill at all, one rule under it, and a
+            // size below the outer grid's own header so the two never compete for the eye.
             styles: {
-              fontSize: 12,
-              bgColor: 'gray-900',
-              color: 'gray-100',
-              fontWeight: 500,
-              theme: { dark: { bgColor: 'gray-800', color: 'gray-500' } },
+              bgColor: 'transparent',
+              minHeight: 0,
+              py: 2,
+              fontSize: 11,
+              letterSpacing: 0.4,
+              textTransform: 'uppercase',
+              // `gray-500` is what the outer header uses, but that is measured on `gray-50`: on the
+              // drawer's tint the same pair is 4.33:1. One step darker measures 6.76.
+              color: 'gray-600',
+              borderColor: 'gray-300',
+              theme: { dark: { bgColor: 'transparent', color: 'gray-400', borderColor: 'gray-700' } },
+            },
+            variants: {
+              isSortable: {
+                hover: { bgColor: 'gray-200', color: 'gray-700' },
+                theme: { dark: { hover: { bgColor: 'gray-800', color: 'gray-200' } } },
+              },
             },
           },
         },
@@ -466,9 +445,18 @@ export const components = Box.components({
         children: {
           cell: {
             styles: {
-              fontSize: 13,
               bgColor: 'transparent',
-              theme: { dark: { bgColor: 'gray-600' } },
+              fontSize: 13,
+              borderColor: 'gray-200',
+              // The drawer is a tinted surface already, so the grid's own `gray-50` hover paints the
+              // colour that is there. One step further on, in both themes.
+              group: { 'grid-row/hover': { bgColor: 'gray-100' } },
+              theme: {
+                dark: {
+                  borderColor: 'gray-800',
+                  group: { 'grid-row/hover': { bgColor: 'gray-800' } },
+                },
+              },
             },
           },
         },

@@ -54,7 +54,6 @@ export default function DataGridGroupRow<TRow>(props: Props<TRow>) {
                 <Box textWrap="nowrap" px={3}>
                   <Button
                     component={`${row.grid.componentName}.body.groupRow.expandButton` as never}
-                    clean
                     onClick={() => row.toggleRow()}
                     cursor="pointer"
                     display="flex"

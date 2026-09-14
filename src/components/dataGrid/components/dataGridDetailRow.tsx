@@ -1,4 +1,6 @@
+import { useRef } from 'react';
 import Box from '../../../box';
+import { useIsomorphicLayoutEffect } from '../../../react/effects';
 import Flex from '../../flex';
 import { useGridNavigationContext } from '../gridNavigationContext';
 import DetailRowModel from '../models/detailRowModel';
@@ -19,8 +21,20 @@ export default function DataGridDetailRow<TRow>(props: Props<TRow>) {
 
   const isAutoHeight = row.isAutoHeight;
 
+  const rowRef = useRef<HTMLDivElement>(null);
+
+  // A panel that opens below the fold is a panel nobody sees. It runs here rather than where the row
+  // was toggled because this is the render that puts the panel in the DOM, and the browser is the only
+  // thing that knows how tall an `auto` one came out — virtualization carries an estimate for it.
+  useIsomorphicLayoutEffect(() => {
+    if (!grid.takeDetailReveal(parentRow.key)) return;
+
+    rowRef.current?.scrollIntoView?.({ block: 'nearest' });
+  });
+
   return (
     <Flex
+      ref={rowRef}
       component={`${grid.componentName}.body.detailRow` as never}
       props={{ role: 'row', 'aria-rowindex': navRow + 1 }}
       style={{

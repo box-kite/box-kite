@@ -731,32 +731,61 @@ export default function DataGridPage() {
             label="Row Detail — Orders with Items"
             language="jsx"
             check={false}
-            code={`// Define custom component style trees that extend 'datagrid' — 'orders-datagrid' for the outer
-// grid and 'subgrid' for the one inside the detail row. Both names need the same .d.ts
+            code={`// A detail row already arrives joined to the row that opened it: they share a surface and a
+// 2px accent runs down the inline start of both (isExpandedFirstLeaf on the row, detailRow.content
+// under it). A custom tree only has to re-colour that block. 'orders-datagrid' does the surfaces;
+// 'subgrid' strips the chrome off the grid inside the panel. Both names need the same .d.ts
 // augmentation every Box.components() entry does; the Theme Setup page shows it.
-// isExpanded/isExpandedFirstLeaf/isExpandedLastLeaf variants let you style
-// the expanded row's cells individually (e.g. top + side borders).
-// detailRow.content gets left/right borders without causing scroll overflow.
 Box.components({
-  subgrid: { extends: 'datagrid', styles: { b: 0, borderRadius: 0, shadow: 'none' } },
   'orders-datagrid': {
     extends: 'datagrid',
     children: {
       body: {
         children: {
+          // isExpanded is on every cell of the open row; isExpandedFirstLeaf / isExpandedLastLeaf
+          // name its two ends, which is where the default accent lives. A neutral, not a hue: this
+          // surface can cover half the grid, and the 2px accent is where colour belongs.
           cell: {
             variants: {
-              isExpanded: { bt: 3, bb: 0, bgColor: 'indigo-50', borderColor: 'indigo-300' },
-              isExpandedFirstLeaf: { bl: 3 },
-              isExpandedLastLeaf:  { br: 3 },
+              isExpanded: {
+                bgColor: 'slate-100',
+                group: { 'grid-row/hover': { bgColor: 'slate-200' } },
+              },
             },
           },
-          detailRow: {
-            styles: { bb: 3, bt: 0, bgColor: 'indigo-50', borderColor: 'indigo-300' },
-            children: {
-              content: { styles: { bl: 3, br: 3, borderColor: 'indigo-300' } },
+          detailRow: { styles: { bgColor: 'slate-100', borderColor: 'slate-300' } },
+        },
+      },
+    },
+  },
+  // A grid inside a row is a list, not a second card: no border, no radius, no shadow and no
+  // surface of its own, so the drawer it sits in stays the only panel on screen.
+  subgrid: {
+    extends: 'datagrid',
+    styles: { b: 0, borderRadius: 0, shadow: 'none', bgColor: 'transparent' },
+    children: {
+      header: {
+        styles: { bgColor: 'transparent' },
+        children: {
+          cell: {
+            styles: {
+              bgColor: 'transparent',
+              minHeight: 0,
+              py: 2,
+              fontSize: 11,
+              letterSpacing: 0.4,
+              textTransform: 'uppercase',
+              // gray-500 is what the outer header uses, but that is measured on gray-50: on the
+              // drawer's tint the same pair is 4.33:1, so the nested header goes one step darker.
+              color: 'gray-600',
+              borderColor: 'gray-300',
             },
           },
+        },
+      },
+      body: {
+        children: {
+          cell: { styles: { bgColor: 'transparent', fontSize: 13, borderColor: 'gray-200' } },
         },
       },
     },
@@ -780,19 +809,33 @@ Box.components({
     ],
     rowDetail: {
       content: (order) => (
-        <DataGrid
-          component="subgrid"
-          data={order.items}
-          def={{
-            columns: [
-              { key: 'product', header: 'Product' },
-              { key: 'qty', header: 'Qty', width: 80, align: 'right' },
-              { key: 'price', header: 'Price', width: 100, align: 'right' },
-            ],
-            visibleRowsCount: 'all',
-            rowHeight: 36,
-          }}
-        />
+        <Box px={5} py={4}>
+          {/* ps={3} lines the caption up with the first column's text, which a cell pads by 3. */}
+          <Flex ai="center" gap={2} mb={3} ps={3}>
+            <Box fontSize={11} fontWeight={600} letterSpacing={0.4} textTransform="uppercase" color="gray-600">
+              Items
+            </Box>
+            <Box fontSize={11} fontWeight={600} px={1.5} borderRadius={4} bgColor="indigo-100" color="indigo-700">
+              {order.items.length}
+            </Box>
+          </Flex>
+          <DataGrid
+            component="subgrid"
+            data={order.items}
+            def={{
+              columns: [
+                { key: 'product', header: 'Product' },
+                { key: 'qty', header: 'Qty', width: 80, align: 'right' },
+                { key: 'price', header: 'Price', width: 100, align: 'right' },
+              ],
+              visibleRowsCount: 'all',
+              rowHeight: 36,
+              // Three rows need no column menu and no resizing.
+              contextMenu: false,
+              resizable: false,
+            }}
+          />
+        </Box>
       ),
       pinned: true,
       expandOnRowClick: true,
@@ -809,7 +852,7 @@ Box.components({
                 bottomBar: true,
                 title: 'Orders',
                 rowHeight: 40,
-                visibleRowsCount: 8,
+                visibleRowsCount: 7,
                 columns: [
                   { key: 'orderId', header: 'Order #', width: 100, flexible: false },
                   { key: 'customer', header: 'Customer' },
@@ -857,10 +900,30 @@ Box.components({
                 rowDetail: {
                   // expandColumnHeader: 'Details',
                   content: (order: (typeof ordersData)[0]) => (
-                    <Box p={4}>
-                      <Box fontSize={13} fontWeight={600} mb={2} color="gray-600" theme={{ dark: { color: 'gray-400' } }}>
-                        Items for Order #{order.orderId}
-                      </Box>
+                    <Box px={5} py={4}>
+                      <Flex ai="center" gap={2} mb={3} ps={3}>
+                        <Box
+                          fontSize={11}
+                          fontWeight={600}
+                          letterSpacing={0.4}
+                          textTransform="uppercase"
+                          color="gray-600"
+                          theme={{ dark: { color: 'gray-400' } }}
+                        >
+                          Items
+                        </Box>
+                        <Box
+                          fontSize={11}
+                          fontWeight={600}
+                          px={1.5}
+                          borderRadius={4}
+                          bgColor="indigo-100"
+                          color="indigo-700"
+                          theme={{ dark: { bgColor: 'indigo-900', color: 'indigo-200' } }}
+                        >
+                          {order.items.length}
+                        </Box>
+                      </Flex>
                       <DataGrid
                         component="subgrid"
                         data={order.items}
@@ -879,6 +942,9 @@ Box.components({
                           ],
                           visibleRowsCount: 'all',
                           rowHeight: 36,
+                          // Three rows need no column menu and no resizing — the chrome would outweigh the data.
+                          contextMenu: false,
+                          resizable: false,
                         }}
                       />
                     </Box>

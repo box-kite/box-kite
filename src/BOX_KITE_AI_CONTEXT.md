@@ -2290,14 +2290,15 @@ every row in scope beside the rows themselves.
 
 ### RowDetailConfig
 
-| Prop                 | Type                                  | Default  | Description                                   |
-| -------------------- | ------------------------------------- | -------- | --------------------------------------------- |
-| `content`            | `(row: TRow) => ReactNode`            | required | Render function for the detail panel          |
-| `height`             | `'auto' \| number \| (row) => number` | `'auto'` | Detail row height                             |
-| `expandOnRowClick`   | `boolean`                             | `false`  | Click anywhere on the row to toggle expansion |
-| `pinned`             | `boolean`                             | `false`  | Pin the expand column to the reading start    |
-| `expandColumnWidth`  | `number`                              | `50`     | Width of the expand column in px              |
-| `expandColumnHeader` | `string`                              | `''`     | Header text for the expand column             |
+| Prop                 | Type                                  | Default  | Description                                    |
+| -------------------- | ------------------------------------- | -------- | ---------------------------------------------- |
+| `content`            | `(row: TRow) => ReactNode`            | required | Render function for the detail panel           |
+| `height`             | `'auto' \| number \| (row) => number` | `'auto'` | Detail row height                              |
+| `expandOnRowClick`   | `boolean`                             | `false`  | Click anywhere on the row to toggle expansion  |
+| `pinned`             | `boolean`                             | `false`  | Pin the expand column to the reading start     |
+| `expandColumnWidth`  | `number`                              | `50`     | Width of the expand column in px               |
+| `expandColumnHeader` | `string`                              | `''`     | Header text for the expand column              |
+| `scrollIntoView`     | `boolean`                             | `true`   | Scroll a panel opened below the fold into view |
 
 ### ContextMenuConfig
 

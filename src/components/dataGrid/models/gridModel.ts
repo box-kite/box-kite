@@ -753,6 +753,20 @@ export default class GridModel<TRow> {
     return this._expandedDetailRows;
   }
 
+  /** The row whose panel a user action just opened, for the row itself to bring into view once. */
+  private _revealDetailKey: Key | null = null;
+
+  /**
+   * Taken by the detail row on the render that puts it in the DOM, and only then: an `auto` panel's
+   * real height exists nowhere else, and the virtualization offsets carry an estimate for it.
+   */
+  public takeDetailReveal(rowKey: Key): boolean {
+    if (this._revealDetailKey !== rowKey) return false;
+
+    this._revealDetailKey = null;
+    return true;
+  }
+
   public toggleDetailRow = (rowKey: Key) => {
     const expandedKeys = new Set(this.expandedDetailRows);
 
@@ -762,8 +776,13 @@ export default class GridModel<TRow> {
       expandedKeys.add(rowKey);
     }
 
+    const expanded = expandedKeys.has(rowKey);
+    // Overwritten on every toggle, collapse included, so a request nothing consumed — a row scrolled
+    // out of the rendered window before its panel mounted — cannot fire a surprise scroll later.
+    this._revealDetailKey = expanded && this.props.def.rowDetail?.scrollIntoView !== false ? rowKey : null;
+
     this._expandedDetailRows = expandedKeys;
-    this.props.onExpandedRowKeysChange?.(Array.from(expandedKeys), { reason: expandedKeys.has(rowKey) ? 'expand' : 'collapse' });
+    this.props.onExpandedRowKeysChange?.(Array.from(expandedKeys), { reason: expanded ? 'expand' : 'collapse' });
 
     this.rows.clear(); // cascades to flatRows/rowOffsets
     this.notify();

@@ -23,6 +23,7 @@ The package now carries instructions for the agent writing the code, the documen
 - **[A slider whose value keeps its own shape](#a-slider-whose-value-keeps-its-own-shape)** — `<Slider>` takes a number for one thumb and an array for a range, so nothing at the call site has to narrow; `<Progress>` is the bar beside it, and renders on a server. 2.14 KB gz and 0.31 against Radix’s 9.71 and 2.86.
 - **[A message you send rather than render](#a-message-you-send-rather-than-render)** — `<Toaster />` once, then `toast()` from anywhere at all: a live region that exists before there is anything in it, a queue rather than a cap, and timers that stop on hover, on focus and off screen. 4.14 KB gz against sonner's 9.86 plus a stylesheet.
 - **[A combobox whose value is your own row](#a-combobox-whose-value-is-your-own-row)** — the component Radix never shipped: `<Combobox>` takes your rows and hands one back, the filter composes, the selection can be chips, a query nothing answers can become a row, and a list of ten thousand opens in one frame. 9.53 KB gz on top of Box.
+- **[The DataGrid, restyled](#the-datagrid-restyled)** — tabular numerals, a selected row that finally looks selected, pinned columns that float rather than fence, and chrome quiet enough to read the data through.
 - **[A column that adds itself up](#a-column-that-adds-itself-up)** — `aggregate` on a DataGrid column totals it over each group row and over a pinned footer of grand totals: five built-ins or a function of your own, respecting the filters, formatted by an `AggregateCell`.
 - **[The component contract, written down and enforced](#the-component-contract-written-down-and-enforced)** — five rules every component keeps: state in `useControllableState`, every change reported with a named reason, Box props on every part, a style tree to replace, and a render prop instead of `asChild`. A check with two ledgers that both fail on a stale entry is what keeps them true.
 
@@ -803,6 +804,65 @@ Its style nodes are `datagrid.footer`, `datagrid.footer.cell` and `datagrid.foot
 `datagrid.body.groupRow.aggregate` for the same value on a group row. `def.footer` also takes
 `{ label }`, which replaces the default `Total` in the first column that is not aggregating.
 
+## The DataGrid, restyled
+
+The grid's default appearance was a spreadsheet: a `gray-200` rule under every cell and down every
+column boundary, 13px headings as dark as the data under them, and a `large` drop shadow around the
+whole thing. It reads as one surface now — the chrome quiet, the data loud.
+
+What changed, and why each one:
+
+- **Numbers line up.** Every body cell is `font-variant-numeric: tabular-nums`, so a column of
+  figures shares a digit width instead of drifting. It is the one thing a data grid cannot do
+  without, and the registry has no prop for it — `css` is where a property with no prop goes, and it
+  still compiles to one shared class.
+- **A selected row finally looks selected.** It tints (`indigo-50`, `indigo-950` in the dark), pinned
+  columns included. `isRowSelected` had been declared on `datagrid.body.cell` and
+  `datagrid.header.cell` since the grid shipped and was applied by **nothing**, so a selected row was
+  legible only by its own checkbox. Both dead variants are gone; the appearance comes from
+  `aria-selected` on the row, through the library's own `group` prop.
+- **A group row reads as a section header**, tinted the same way off its `aria-expanded`.
+- **Pinned columns float rather than fence.** The hard border on the frozen edge is a soft directional
+  shadow, so the pinned columns sit *over* the scrolled ones.
+- **Quieter chrome.** Row separators drop to `gray-100`, the column resizer from a 2px `gray-400` rule
+  to a 1px hairline, the header to 12px tracked `gray-500`, and the bars to the grid's own surface
+  with a hairline under them — three stacked greys was what made it read as a spreadsheet. The
+  container keeps a tight `xs` shadow instead of `large`.
+- **One type scale.** The grid sets `fontSize: 14` once at its root and every part inherits it.
+
+Three colours were measured rather than chosen: a muted row number at `gray-400` is 2.60:1 on white,
+and the header's menu button at `gray-400` is 2.49:1 on `gray-50` — both below what text and controls
+owe. They are `gray-500` (4.84:1 and 4.63:1), which is as quiet as the contrast allows.
+
+**If you override `datagrid` styles**, the parts are unchanged — only their values. The two removed
+variants are the exception, and neither ever painted anything.
+
+### A row-detail panel is a drawer
+
+`rowDetail` shipped with no appearance of its own beyond a grey band. The row that opened the panel
+looked like every other row, and the hairline between the two said the panel was the _next_ row rather
+than part of this one. They are one block now: the expanded row takes the panel's surface (`gray-50`,
+and `gray-950` in the dark — _darker_ than the grid, because a drawer should read as a well) and gives
+up its bottom hairline, and a 2px `indigo-500` accent runs down the inline start of the row and on down
+the panel, which is the only thing tying a panel this tall back to the row it belongs to. The accent is
+logical, so it mirrors with the reading order. The expand chevron is a control rather than data now —
+`gray-500` at rest, the accent when open. The row also gets a hover one step off its new surface, since
+the grid's own row hover is the colour an expanded row is already painted: it had stopped answering.
+
+A panel that opens below the fold now scrolls itself into view. It is `block: 'nearest'`, so a panel
+already on screen moves nothing, and a grid that scrolls internally absorbs the scroll rather than the
+page. The row that opened the panel is part of what gets revealed: `datagrid.body.detailRow` carries a
+`scroll-margin-block-start` of one row, so a panel taller than the viewport aligns the *row's* top
+rather than its own instead of pushing it off the screen — measured in Chrome, where without the margin
+the row lands 40px above the scrollport. The scroll happens where the panel mounts rather than where the
+row was toggled, because an `auto` panel's real height exists nowhere else: virtualization carries a
+200px estimate for it. `rowDetail: { scrollIntoView: false }` turns it off.
+
+Neutral rather than tinted on purpose: a **selected** row is the one that tints, so the two states stay
+legible beside each other. Re-colouring the block is two keys — `body.cell`'s `isExpanded` variant and
+`body.detailRow` — which is all the docs site's own Orders demo does now, where it used to spell out a
+3px frame across four nodes.
+
 ## Breaking changes
 
 - **`Overlay` places a layer instead of translating one, so its four positioning props are gone.** `anchorSide` is `side` (`anchorSide="bottom"` is the default `side="bottom"`; the old `'top'` overlapped the anchor, which `side="bottom" offset={0}` does not — use a negative margin if you need the overlap). `adjustTranslateX`/`adjustTranslateY` are `offset` on the ÷4 scale for the gap and `align` for the sideways nudge (`adjustTranslateY="4px"` is `offset={1}`). `onPositionChange` is `onSideChange`, which reports the side rather than page coordinates — nothing measures a position any more, so there are none to report.
@@ -822,5 +882,6 @@ Its style nodes are `datagrid.footer`, `datagrid.footer.cell` and `datagrid.foot
 - **Every table on the docs site rendered as a stack of full-width blocks.** `display: block` on a `<Box tag="table">` costs the table its layout _and_ its semantics, and five pages had written their own copy of the same broken table. There is one shared table now, carrying the display values each element needs — and the props above are what let it stop reaching for the escape hatch to collapse its borders.
 - **Inline code in the prose of ten documentation pages was rendered as a block.** Each `<code>` took a line of its own, breaking the paragraph around it into stripes — the local helper was missing `display="inline"`, which is the trap the library's own rules warn about: a `Box` is `display: block` whatever element it renders. Nothing in the library changed; the pages read as paragraphs again. The same pages' tables also lost their last nine inline `style` attributes to `css={{ borderCollapse: 'collapse' }}`, which is what the escape hatch is for.
 - **A `Dropdown` could not be given a value of `0` or an empty string.** Both `value` and `defaultValue` were tested for truthiness on the way in, so `<Dropdown<number> defaultValue={0}>` started with nothing selected and `value={0}` selected nothing however many times it was set — while `value={1}` worked, which is what made it read as a puzzle rather than a bug. The test is against `undefined` and `null` now, and a falsy value is a value somebody can pick.
+- **Three nodes of the DataGrid style tree could not be styled at all.** `clean` tells the engine to use no component styles, so passing it _beside_ a `component` silently voided the very node that `component` named — and the expand chevron (`body.cell.rowDetail`), the group-row expander (`body.groupRow.expandButton`) and the pager buttons (`bottomBar.pagination.button`) all passed both. Anything written under those three keys, by the library or by a `Box.components()` override, was dropped on the floor. The three call sites name a component and no longer also claim to be clean; `clean` still strips a `Button` that names **no** component, which is the use it was meant for.
 - **Every scrolling `DataGrid` showed a horizontal scrollbar it did not need, off by exactly the scrollbar's own width.** The flexible columns were distributed across the width of the **grid container**, but they are laid out inside the scroller — and the vertical scrollbar sits between the two, so the columns came out 15px wider than the space they had and `scrollWidth − clientWidth` measured exactly 15 at every viewport size. The width is measured on the scroller now. Two things follow it. The scroller is `overflow-x: auto` rather than `scroll`, so a grid whose columns genuinely fit no longer reserves a track it never uses; one whose columns do not fit still scrolls, and the virtualized body keeps its vertical scroll from the same rule as before — naming one overflow axis computes the other `visible` companion up to `auto`. And the scroller reserves its vertical scrollbar's space up front (`scrollbar-gutter: stable`), because the columns are now sized to a width the scrollbar can change: without it, opening a row-detail panel on a grid that was not yet scrolling took 15px away and the columns reflowed a frame later, flashing a horizontal scrollbar on the way. A grid that can never scroll vertically — `visibleRowsCount: 'all'` — reserves nothing, since it would only lose the 15px.
 - **A `DataGrid` given a callback but no value prop did nothing at all.** `<DataGrid onPageChange={track}>` without a `page` beside it fired the callback on every press of the pager and never moved — and the same for `onGlobalFilterChange` without `globalFilterValue`, `onColumnFiltersChange`, `onPageSizeChange` and `onExpandedRowKeysChange`. The grid read the _handler_ as "the caller owns this state", so a grid wired up only to watch its user was left with a pager, a filter box and a set of expanders that could not change anything. A handler is a listener; ownership is the value prop, which still wins wherever it is passed.
