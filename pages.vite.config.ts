@@ -124,6 +124,14 @@ export default defineConfig(({ mode, isSsrBuild }) => {
     // `scripts/prerender-pages.mjs`), and the metadata plugin has nothing to do there: an SSR bundle
     // has no `index.html` for it to read.
     plugins: [reactPlugin(), iconsPlugin({ compiler: 'jsx', jsx: 'react' }), ...(isSsrBuild ? [] : [siteMetadata(), markdownMirror()])],
+    // One port, and a failure rather than the next one free. Vite's default walks 5173 → 5174 → … on a
+    // port already taken, which is silent: a second `npm run dev` looks like it worked, serves stale
+    // code at an address nobody looked at, and outlives the session. Fourteen of them accumulated over
+    // five days before anyone noticed. `preview` keeps its own 4173 but inherits `strictPort`.
+    server: {
+      port: 5173,
+      strictPort: true,
+    },
     build: {
       emptyOutDir: true,
       minify: mode !== 'dev' && !isSsrBuild,
