@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 import Box from '../../../box';
+import { useIsomorphicLayoutEffect } from '../../../react/effects';
 import GridNavigationContext from '../gridNavigationContext';
 import GridModel from '../models/gridModel';
 import useGridNavigation from '../useGridNavigation';
@@ -34,6 +35,20 @@ export default function DataGridContent<TRow>(props: Props<TRow>) {
   // pointer path can afford: the row has to be rendered by the time focus goes looking for it.
   const navigation = useGridNavigation({ grid, scrollerRef, scrollTop, onScrollTo: setScrollTop });
 
+  // The width the flexible columns are distributed across is the scroller's, not the grid container's:
+  // the vertical scrollbar sits between the two, so measuring the container made every scrolling grid
+  // lay its columns out 15px too wide and show a horizontal scrollbar it did not need (bug #156).
+  // `clientWidth` rather than `contentRect`, because excluding the scrollbar is the whole point.
+  useIsomorphicLayoutEffect(() => {
+    const el = scrollerRef.current;
+    if (!el) return;
+
+    const observer = new ResizeObserver(() => grid.setContainerWidth(el.clientWidth));
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [grid]);
+
   if (!grid.hasVisibleColumns) {
     return <DataGridEmptyColumns grid={grid} />;
   }
@@ -43,7 +58,10 @@ export default function DataGridContent<TRow>(props: Props<TRow>) {
       <Box
         ref={scrollerRef}
         component={`${grid.componentName}.content` as never}
-        overflowX="scroll"
+        // `auto`, not `scroll`: a grid whose columns fit reserved a scrollbar track it never used. Naming
+        // one axis is what makes the other one scroll — `overflow` computes a `visible` companion to an
+        // `auto` up to `auto`, which is where the virtualized body's vertical scrolling comes from.
+        overflowX="auto"
         style={{ willChange: 'scroll-position' }}
         props={{
           role: 'grid',

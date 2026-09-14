@@ -704,14 +704,14 @@ export default function DataGridPage() {
                 footer: true,
                 rowSelection: { pinned: true },
                 columns: [
-                  { key: 'country', header: 'Country', width: 160 },
-                  { key: 'company_name', header: 'Company', width: 180 },
-                  { key: 'username', header: 'People', aggregate: 'count', align: 'end', width: 120 },
-                  { key: 'age', header: 'Avg age', aggregate: 'avg', align: 'end', width: 120 },
+                  { key: 'country', header: 'Country', width: 150 },
+                  { key: 'company_name', header: 'Company', width: 170 },
+                  { key: 'username', header: 'People', aggregate: 'count', align: 'end', width: 110 },
+                  { key: 'age', header: 'Avg age', aggregate: 'avg', align: 'end', width: 110 },
                   {
                     key: 'salary',
                     header: 'Payroll',
-                    width: 150,
+                    width: 140,
                     align: 'end',
                     aggregate: 'sum',
                     AggregateCell: ({ cell }) => (
