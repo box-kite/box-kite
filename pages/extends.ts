@@ -359,7 +359,12 @@ export const components = Box.components({
 
   // The Orders demo's outer grid. The library already joins an expanded row to its drawer with a shared
   // surface and an accent bar down the inline start; this re-colours that block, which is all a custom
-  // tree has to do now — `isExpanded` tints the row, `detailRow` tints the panel under it.
+  // tree has to do — `isExpanded` tints the row, `detailRow` tints the panel under it.
+  //
+  // `slate` rather than a hue, and this is the whole lesson: a drawer can cover half the grid, and at that
+  // size any chroma reads as branding rather than as state. `indigo-950` was also **lighter** than the
+  // `gray-900` grid it sat in (L 25.7 against 21), so two open rows painted the grid purple and raised.
+  // The accent bar is where the hue belongs — it is 2px wide.
   'orders-datagrid': {
     extends: 'datagrid',
     children: {
@@ -368,16 +373,24 @@ export const components = Box.components({
           cell: {
             variants: {
               isExpanded: {
-                bgColor: 'indigo-50',
-                theme: { dark: { bgColor: 'indigo-950' } },
+                bgColor: 'slate-100',
+                group: { 'grid-row/hover': { bgColor: 'slate-200' } },
+                theme: {
+                  dark: {
+                    bgColor: 'slate-950',
+                    group: { 'grid-row/hover': { bgColor: 'slate-900' } },
+                  },
+                },
               },
             },
           },
           detailRow: {
             styles: {
-              bgColor: 'indigo-50',
-              borderColor: 'indigo-200',
-              theme: { dark: { bgColor: 'indigo-950', borderColor: 'indigo-900' } },
+              bgColor: 'slate-100',
+              // Two steps off the drawer, not one: at `slate-200` the rule closing one block sits between
+              // two surfaces of nearly its own lightness, and two open rows in a row merge into one.
+              borderColor: 'slate-300',
+              theme: { dark: { bgColor: 'slate-950', borderColor: 'slate-800' } },
             },
           },
         },

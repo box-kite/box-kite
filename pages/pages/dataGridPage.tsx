@@ -733,7 +733,7 @@ export default function DataGridPage() {
             check={false}
             code={`// A detail row already arrives joined to the row that opened it: they share a surface and a
 // 2px accent runs down the inline start of both (isExpandedFirstLeaf on the row, detailRow.content
-// under it). A custom tree only has to re-colour that block. 'orders-datagrid' tints it indigo;
+// under it). A custom tree only has to re-colour that block. 'orders-datagrid' does the surfaces;
 // 'subgrid' strips the chrome off the grid inside the panel. Both names need the same .d.ts
 // augmentation every Box.components() entry does; the Theme Setup page shows it.
 Box.components({
@@ -743,9 +743,17 @@ Box.components({
       body: {
         children: {
           // isExpanded is on every cell of the open row; isExpandedFirstLeaf / isExpandedLastLeaf
-          // name its two ends, which is where the default accent lives.
-          cell: { variants: { isExpanded: { bgColor: 'indigo-50' } } },
-          detailRow: { styles: { bgColor: 'indigo-50', borderColor: 'indigo-200' } },
+          // name its two ends, which is where the default accent lives. A neutral, not a hue: this
+          // surface can cover half the grid, and the 2px accent is where colour belongs.
+          cell: {
+            variants: {
+              isExpanded: {
+                bgColor: 'slate-100',
+                group: { 'grid-row/hover': { bgColor: 'slate-200' } },
+              },
+            },
+          },
+          detailRow: { styles: { bgColor: 'slate-100', borderColor: 'slate-300' } },
         },
       },
     },

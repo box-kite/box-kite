@@ -846,7 +846,8 @@ and `gray-950` in the dark — _darker_ than the grid, because a drawer should r
 up its bottom hairline, and a 2px `indigo-500` accent runs down the inline start of the row and on down
 the panel, which is the only thing tying a panel this tall back to the row it belongs to. The accent is
 logical, so it mirrors with the reading order. The expand chevron is a control rather than data now —
-`gray-500` at rest, the accent when open.
+`gray-500` at rest, the accent when open. The row also gets a hover one step off its new surface, since
+the grid's own row hover is the colour an expanded row is already painted: it had stopped answering.
 
 Neutral rather than tinted on purpose: a **selected** row is the one that tints, so the two states stay
 legible beside each other. Re-colouring the block is two keys — `body.cell`'s `isExpanded` variant and

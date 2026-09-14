@@ -2611,11 +2611,15 @@ const boxComponents = {
               isExpanded: {
                 bgColor: 'gray-50',
                 bb: 0,
+                // The row keeps its hover, one step off the surface it now has: the grid's own row hover is
+                // the colour this row is already painted, so an expanded row would have stopped answering.
+                group: { 'grid-row/hover': { bgColor: 'gray-100' } },
                 theme: {
                   dark: {
                     // Darker than the grid, not lighter: a well is what a drawer should read as, and
                     // `gray-800` reads as raised against a `gray-900` grid.
                     bgColor: 'gray-950',
+                    group: { 'grid-row/hover': { bgColor: 'gray-900' } },
                   },
                 },
               },
