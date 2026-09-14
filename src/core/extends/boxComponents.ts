@@ -1971,7 +1971,12 @@ const boxComponents = {
       borderColor: 'gray-200',
       overflow: 'hidden',
       borderRadius: 3,
-      shadow: 'large',
+      // A tight shadow rather than a large one: the border already separates the grid from the page, and a
+      // deep drop shadow under a full-width table reads as a card floating for no reason.
+      shadow: 'xs',
+      // The grid's own type scale, inherited by every cell — 14px is the density a table is read at, and
+      // setting it once here is what stops each part naming a size of its own.
+      fontSize: 14,
       theme: {
         dark: {
           bgColor: 'gray-900',
@@ -2036,21 +2041,23 @@ const boxComponents = {
           },
         },
       },
+      // The bars carry the grid's own surface and are separated by a hairline rather than a fill: three
+      // stacked greys (bar, header, rows) is what made the old grid read as a spreadsheet.
       topBar: {
         styles: {
           py: 3,
           px: 4,
           bb: 1,
           borderColor: 'gray-200',
-          color: 'gray-800',
+          color: 'gray-900',
           gap: 3,
           ai: 'center',
-          bgColor: 'gray-50',
+          bgColor: 'white',
           theme: {
             dark: {
-              bgColor: 'gray-800',
-              borderColor: 'gray-700',
-              color: 'gray-200',
+              bgColor: 'gray-900',
+              borderColor: 'gray-800',
+              color: 'gray-100',
             },
           },
         },
@@ -2163,13 +2170,13 @@ const boxComponents = {
         children: {
           row: {
             styles: {
-              bgColor: 'gray-50',
+              bgColor: 'white',
               bb: 1,
               borderColor: 'gray-200',
               theme: {
                 dark: {
-                  bgColor: 'gray-800',
-                  borderColor: 'gray-700',
+                  bgColor: 'gray-900',
+                  borderColor: 'gray-800',
                 },
               },
             },
@@ -2281,9 +2288,12 @@ const boxComponents = {
               minHeight: 12,
               position: 'relative',
               transition: 'none',
-              fontSize: 13,
+              // A label, not data: small, tracked and muted, so the eye reads down the values rather than
+              // along the headings. The weight carries it at this size where the colour no longer does.
+              fontSize: 12,
               fontWeight: 600,
-              color: 'gray-800',
+              letterSpacing: 0.2,
+              color: 'gray-500',
               py: 3.5,
               // The cell is where the keyboard lives in a grid, so it has to show where it is — an *inset* outline,
               // since an outset ring on the first or last column would be clipped by the scroll container.
@@ -2298,7 +2308,7 @@ const boxComponents = {
               theme: {
                 dark: {
                   borderColor: 'gray-700',
-                  color: 'gray-200',
+                  color: 'gray-400',
                   focusVisible: {
                     outlineColor: 'indigo-400',
                   },
@@ -2340,16 +2350,19 @@ const boxComponents = {
                 cursor: 'pointer',
                 hover: {
                   bgColor: 'gray-100',
+                  color: 'gray-900',
                 },
                 theme: {
                   dark: {
                     hover: {
-                      bgColor: 'gray-800',
+                      // Not `gray-800`, which is the header's own background in this theme: a hover that
+                      // paints the colour already there is a hover nobody can see.
+                      bgColor: 'gray-700',
+                      color: 'gray-100',
                     },
                   },
                 },
               },
-              isRowSelected: {},
               isRowSelection: {},
               isRowNumber: { jc: 'center' },
               isFirstLeaf: {},
@@ -2364,18 +2377,20 @@ const boxComponents = {
                   height: 6,
                   cursor: 'pointer',
                   userSelect: 'none',
-                  borderRadius: 1,
+                  borderRadius: 1.5,
                   borderColor: 'gray-200',
                   display: 'flex',
                   jc: 'center',
                   ai: 'center',
                   transition: 'none',
-                  color: 'gray-600',
-                  hover: { bgColor: 'gray-300' },
+                  // Quiet by default: one of these sits in every header cell. `gray-500` rather than the
+                  // `gray-400` that looks right — a control owes 3:1 and `gray-400` on `gray-50` is 2.49.
+                  color: 'gray-500',
+                  hover: { bgColor: 'gray-200', color: 'gray-700' },
                   theme: {
                     dark: {
                       color: 'gray-400',
-                      hover: { bgColor: 'gray-700' },
+                      hover: { bgColor: 'gray-700', color: 'gray-200' },
                     },
                   },
                 },
@@ -2459,10 +2474,13 @@ const boxComponents = {
               },
               resizer: {
                 styles: {
-                  width: 0.5,
+                  // A hairline, not a rule: 2px of `gray-400` down every column boundary was what made a wide
+                  // grid read as a spreadsheet. Halved rather than lightened — the colour is a control's, and
+                  // `gray-400` on `gray-50` is already only 2.49:1.
+                  width: 0.25,
                   height: 'fit',
                   bgColor: 'gray-400',
-                  group: { 'resizer/hover': { bgColor: 'gray-600' } },
+                  group: { 'resizer/hover': { bgColor: 'indigo-500' } },
                   // The separator is its own tab stop, and a bar two pixels wide has no room for a ring inside it, so the
                   // outline sits around it. `opacity` is here rather than on the element because a resizer that only
                   // appears on hover is a tab stop nobody could follow, and a pseudo rule outranks the base one.
@@ -2475,6 +2493,8 @@ const boxComponents = {
                   },
                   theme: {
                     dark: {
+                      bgColor: 'gray-600',
+                      group: { 'resizer/hover': { bgColor: 'indigo-400' } },
                       focusVisible: {
                         outlineColor: 'indigo-400',
                         bgColor: 'indigo-400',
@@ -2493,10 +2513,25 @@ const boxComponents = {
           cell: {
             styles: {
               bb: 1,
-              borderColor: 'gray-200',
+              // A lighter hairline than the header's: the separator between two rows is the quietest line
+              // in the grid, and at `gray-200` a screenful of them read as a spreadsheet grid.
+              borderColor: 'gray-100',
               transition: 'none',
               ai: 'center',
-              group: { 'grid-row/hover': { bgColor: 'gray-100' } },
+              color: 'gray-900',
+              // The one thing a data grid cannot do without and the registry has no prop for: without it a
+              // column of numbers is ragged, because a proportional `1` is narrower than a `0`.
+              css: { fontVariantNumeric: 'tabular-nums' },
+              group: {
+                'grid-row/hover': { bgColor: 'gray-50' },
+                // A group row is the only one carrying `aria-expanded`, and a bare `aria-` key means
+                // `="true"` — so both states are named to tint a section header open or shut.
+                'grid-row/aria-expanded=true': { bgColor: 'gray-50' },
+                'grid-row/aria-expanded=false': { bgColor: 'gray-50' },
+                // Selection had no appearance at all: `isRowSelected` was declared on this node and applied
+                // by nothing, so a selected row was legible only by its own checkbox.
+                'grid-row/aria-selected=true': { bgColor: 'indigo-50' },
+              },
               // Same ring as the header cell: in a grid the cell is the thing that holds focus.
               focusVisible: {
                 outline: 2,
@@ -2507,7 +2542,13 @@ const boxComponents = {
               theme: {
                 dark: {
                   borderColor: 'gray-800',
-                  group: { 'grid-row/hover': { bgColor: 'gray-700' } },
+                  color: 'gray-100',
+                  group: {
+                    'grid-row/hover': { bgColor: 'gray-800' },
+                    'grid-row/aria-expanded=true': { bgColor: 'gray-800' },
+                    'grid-row/aria-expanded=false': { bgColor: 'gray-800' },
+                    'grid-row/aria-selected=true': { bgColor: 'indigo-950' },
+                  },
                   focusVisible: {
                     outlineColor: 'indigo-400',
                   },
@@ -2515,39 +2556,51 @@ const boxComponents = {
               },
             },
             variants: {
+              // A pinned cell paints its own background or the rows would show through it, so it has to
+              // carry the row states too — otherwise hovering or selecting a row skipped its pinned columns.
               isPinned: {
                 position: 'sticky',
                 bgColor: 'white',
                 zIndex: 1,
+                group: {
+                  'grid-row/hover': { bgColor: 'gray-50' },
+                  'grid-row/aria-expanded=true': { bgColor: 'gray-50' },
+                  'grid-row/aria-expanded=false': { bgColor: 'gray-50' },
+                  'grid-row/aria-selected=true': { bgColor: 'indigo-50' },
+                },
                 theme: {
                   dark: {
                     bgColor: 'gray-900',
+                    group: {
+                      'grid-row/hover': { bgColor: 'gray-800' },
+                      'grid-row/aria-expanded=true': { bgColor: 'gray-800' },
+                      'grid-row/aria-expanded=false': { bgColor: 'gray-800' },
+                      'grid-row/aria-selected=true': { bgColor: 'indigo-950' },
+                    },
                   },
                 },
               },
               isFirstStartPinned: {},
+              // The pinned edge is a shadow rather than a border, so the frozen columns read as sitting
+              // *over* the scrolled ones. `css` because `shadow` composes into one custom-property stack and
+              // this is a single directional value no scale has; nothing else on this cell paints a shadow.
               isLastStartPinned: {
-                be: 1,
-                borderColor: 'gray-200',
+                css: { boxShadow: '4px 0 6px -4px rgb(15 23 42 / 0.15)' },
                 theme: {
-                  dark: {
-                    borderColor: 'gray-800',
-                  },
+                  dark: { css: { boxShadow: '4px 0 6px -4px rgb(0 0 0 / 0.5)' } },
                 },
               },
               isFirstEndPinned: {
-                bs: 1,
-                borderColor: 'gray-200',
+                css: { boxShadow: '-4px 0 6px -4px rgb(15 23 42 / 0.15)' },
                 theme: {
-                  dark: {
-                    borderColor: 'gray-800',
-                  },
+                  dark: { css: { boxShadow: '-4px 0 6px -4px rgb(0 0 0 / 0.5)' } },
                 },
               },
               isLastEndPinned: {},
-              isRowNumber: { jc: 'end' },
+              // Muted, but only as far as contrast allows: `gray-400` on white measures 2.60:1 and `gray-500`
+              // on `gray-900` 3.67:1, so the quiet-looking pair is the one that fails both ways round.
+              isRowNumber: { jc: 'end', color: 'gray-500', theme: { dark: { color: 'gray-400' } } },
               isRowSelection: {},
-              isRowSelected: {},
               isFirstLeaf: {},
               isLastLeaf: {},
               isEmptyCell: {},
@@ -2572,10 +2625,12 @@ const boxComponents = {
           detailRow: {
             styles: {
               bb: 1,
-              borderColor: 'gray-200',
+              borderColor: 'gray-100',
+              bgColor: 'gray-50',
               theme: {
                 dark: {
                   borderColor: 'gray-800',
+                  bgColor: 'gray-800',
                 },
               },
             },
@@ -2645,10 +2700,15 @@ const boxComponents = {
           cell: {
             styles: {
               fontWeight: 600,
+              color: 'gray-900',
+              theme: { dark: { color: 'gray-50' } },
             },
           },
           label: {
             styles: {
+              fontSize: 12,
+              fontWeight: 600,
+              letterSpacing: 0.2,
               color: 'gray-500',
               theme: {
                 dark: {
@@ -2667,18 +2727,18 @@ const boxComponents = {
           py: 3,
           px: 4,
           lineHeight: 36,
-          bgColor: 'gray-50',
+          bgColor: 'white',
           bt: 1,
           borderColor: 'gray-200',
           gap: 4,
           ai: 'center',
-          fontSize: 14,
-          color: 'gray-800',
+          fontSize: 13,
+          color: 'gray-500',
           theme: {
             dark: {
-              bgColor: 'gray-800',
-              borderColor: 'gray-700',
-              color: 'gray-200',
+              bgColor: 'gray-900',
+              borderColor: 'gray-800',
+              color: 'gray-400',
             },
           },
         },

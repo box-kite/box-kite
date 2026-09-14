@@ -23,6 +23,7 @@ The package now carries instructions for the agent writing the code, the documen
 - **[A slider whose value keeps its own shape](#a-slider-whose-value-keeps-its-own-shape)** — `<Slider>` takes a number for one thumb and an array for a range, so nothing at the call site has to narrow; `<Progress>` is the bar beside it, and renders on a server. 2.14 KB gz and 0.31 against Radix’s 9.71 and 2.86.
 - **[A message you send rather than render](#a-message-you-send-rather-than-render)** — `<Toaster />` once, then `toast()` from anywhere at all: a live region that exists before there is anything in it, a queue rather than a cap, and timers that stop on hover, on focus and off screen. 4.14 KB gz against sonner's 9.86 plus a stylesheet.
 - **[A combobox whose value is your own row](#a-combobox-whose-value-is-your-own-row)** — the component Radix never shipped: `<Combobox>` takes your rows and hands one back, the filter composes, the selection can be chips, a query nothing answers can become a row, and a list of ten thousand opens in one frame. 9.53 KB gz on top of Box.
+- **[The DataGrid, restyled](#the-datagrid-restyled)** — tabular numerals, a selected row that finally looks selected, pinned columns that float rather than fence, and chrome quiet enough to read the data through.
 - **[A column that adds itself up](#a-column-that-adds-itself-up)** — `aggregate` on a DataGrid column totals it over each group row and over a pinned footer of grand totals: five built-ins or a function of your own, respecting the filters, formatted by an `AggregateCell`.
 - **[The component contract, written down and enforced](#the-component-contract-written-down-and-enforced)** — five rules every component keeps: state in `useControllableState`, every change reported with a named reason, Box props on every part, a style tree to replace, and a render prop instead of `asChild`. A check with two ledgers that both fail on a stale entry is what keeps them true.
 
@@ -802,6 +803,39 @@ it, which is why it is pinned rather than parked at the end of the scroll.
 Its style nodes are `datagrid.footer`, `datagrid.footer.cell` and `datagrid.footer.label`, with
 `datagrid.body.groupRow.aggregate` for the same value on a group row. `def.footer` also takes
 `{ label }`, which replaces the default `Total` in the first column that is not aggregating.
+
+## The DataGrid, restyled
+
+The grid's default appearance was a spreadsheet: a `gray-200` rule under every cell and down every
+column boundary, 13px headings as dark as the data under them, and a `large` drop shadow around the
+whole thing. It reads as one surface now — the chrome quiet, the data loud.
+
+What changed, and why each one:
+
+- **Numbers line up.** Every body cell is `font-variant-numeric: tabular-nums`, so a column of
+  figures shares a digit width instead of drifting. It is the one thing a data grid cannot do
+  without, and the registry has no prop for it — `css` is where a property with no prop goes, and it
+  still compiles to one shared class.
+- **A selected row finally looks selected.** It tints (`indigo-50`, `indigo-950` in the dark), pinned
+  columns included. `isRowSelected` had been declared on `datagrid.body.cell` and
+  `datagrid.header.cell` since the grid shipped and was applied by **nothing**, so a selected row was
+  legible only by its own checkbox. Both dead variants are gone; the appearance comes from
+  `aria-selected` on the row, through the library's own `group` prop.
+- **A group row reads as a section header**, tinted the same way off its `aria-expanded`.
+- **Pinned columns float rather than fence.** The hard border on the frozen edge is a soft directional
+  shadow, so the pinned columns sit *over* the scrolled ones.
+- **Quieter chrome.** Row separators drop to `gray-100`, the column resizer from a 2px `gray-400` rule
+  to a 1px hairline, the header to 12px tracked `gray-500`, and the bars to the grid's own surface
+  with a hairline under them — three stacked greys was what made it read as a spreadsheet. The
+  container keeps a tight `xs` shadow instead of `large`.
+- **One type scale.** The grid sets `fontSize: 14` once at its root and every part inherits it.
+
+Three colours were measured rather than chosen: a muted row number at `gray-400` is 2.60:1 on white,
+and the header's menu button at `gray-400` is 2.49:1 on `gray-50` — both below what text and controls
+owe. They are `gray-500` (4.84:1 and 4.63:1), which is as quiet as the contrast allows.
+
+**If you override `datagrid` styles**, the parts are unchanged — only their values. The two removed
+variants are the exception, and neither ever painted anything.
 
 ## Breaking changes
 

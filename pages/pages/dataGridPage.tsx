@@ -809,7 +809,7 @@ Box.components({
                 bottomBar: true,
                 title: 'Orders',
                 rowHeight: 40,
-                visibleRowsCount: 8,
+                visibleRowsCount: 7,
                 columns: [
                   { key: 'orderId', header: 'Order #', width: 100, flexible: false },
                   { key: 'customer', header: 'Customer' },
