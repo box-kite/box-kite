@@ -26,6 +26,7 @@ The package now carries instructions for the agent writing the code, the documen
 - **[The DataGrid, restyled](#the-datagrid-restyled)** — tabular numerals, a selected row that finally looks selected, pinned columns that float rather than fence, and chrome quiet enough to read the data through.
 - **[A column that adds itself up](#a-column-that-adds-itself-up)** — `aggregate` on a DataGrid column totals it over each group row and over a pinned footer of grand totals: five built-ins or a function of your own, respecting the filters, formatted by an `AggregateCell`.
 - **[Excel and CSV, with nothing to install](#excel-and-csv-with-nothing-to-install)** — `def.export` writes an `.xlsx` with its groups as Excel outline levels and a CSV beside it: 3.80 KB gz behind a dynamic import, no ExcelJS, against the $999/dev/yr the same feature costs elsewhere.
+- **[A grid that fetches its own rows](#a-grid-that-fetches-its-own-rows)** — `def.dataSource` is one function the grid asks for a block at a time: a million rows scrolled with no array in the page, sort and filter round-tripped, a superseded request aborted and a late answer dropped. +2.51 KB gz, against the $999/dev/yr the same row model costs elsewhere.
 - **[The component contract, written down and enforced](#the-component-contract-written-down-and-enforced)** — five rules every component keeps: state in `useControllableState`, every change reported with a named reason, Box props on every part, a style tree to replace, and a render prop instead of `asChild`. A check with two ledgers that both fail on a stale entry is what keeps them true.
 
 ## The package tells an agent how to use it
@@ -824,7 +825,7 @@ What changed, and why each one:
   `aria-selected` on the row, through the library's own `group` prop.
 - **A group row reads as a section header**, tinted the same way off its `aria-expanded`.
 - **Pinned columns float rather than fence.** The hard border on the frozen edge is a soft directional
-  shadow, so the pinned columns sit *over* the scrolled ones.
+  shadow, so the pinned columns sit _over_ the scrolled ones.
 - **Quieter chrome.** Row separators drop to `gray-100`, the column resizer from a 2px `gray-400` rule
   to a 1px hairline, the header to 12px tracked `gray-500`, and the bars to the grid's own surface
   with a hairline under them — three stacked greys was what made it read as a spreadsheet. The
@@ -853,7 +854,7 @@ the grid's own row hover is the colour an expanded row is already painted: it ha
 A panel that opens below the fold now scrolls itself into view. It is `block: 'nearest'`, so a panel
 already on screen moves nothing, and a grid that scrolls internally absorbs the scroll rather than the
 page. The row that opened the panel is part of what gets revealed: `datagrid.body.detailRow` carries a
-`scroll-margin-block-start` of one row, so a panel taller than the viewport aligns the *row's* top
+`scroll-margin-block-start` of one row, so a panel taller than the viewport aligns the _row's_ top
 rather than its own instead of pushing it off the screen — measured in Chrome, where without the margin
 the row lands 40px above the scrollport. The scroll happens where the panel mounts rather than where the
 row was toggled, because an `auto` panel's real height exists nowhere else: virtualization carries a
@@ -882,7 +883,7 @@ const grid = useRef<DataGridHandle>(null);
 
 The file is what the grid is showing: the visible columns in their pinned order, the rows the filters
 and the sort left, the group rows and their totals. It adds exactly one thing back — a column hidden
-*because the grid is grouped by it*. Its values moved to the group rows rather than going away, and a
+_because the grid is grouped by it_. Its values moved to the group rows rather than going away, and a
 spreadsheet with no Country column in it is not the grid that was exported.
 
 The workbook is a real `.xlsx`, not a CSV wearing the extension: a bold header on a frozen row, column
@@ -910,6 +911,69 @@ Both take `fileName`, `columns`, `groups` and `footer`; `exportXlsx` also takes 
 and `headerColor` as `RRGGBB` — a workbook carries one appearance, not a light and a dark one. The
 buttons are `datagrid.topBar.export` and `datagrid.topBar.export.button`.
 
+## A grid that fetches its own rows
+
+`def.dataSource` turns the grid the other way round. Instead of handing it an array and wiring five
+callbacks to keep that array in step, you hand it one function and it asks:
+
+```tsx
+<DataGrid
+  def={{
+    title: 'One million people',
+    globalFilter: true,
+    visibleRowsCount: 12,
+    columns,
+    dataSource: {
+      async getRows({ startRow, endRow, page, pageSize, sort, globalFilter, columnFilters, signal }) {
+        const res = await fetch(`/api/people?offset=${startRow}&limit=${endRow - startRow}`, { signal });
+        const body = await res.json();
+
+        return { rows: body.items, totalCount: body.total };
+      },
+    },
+  }}
+/>
+```
+
+There is no `data` prop in that call, and no `loading`, `page` or `totalCount` either — the grid owns all
+four. Sorting, filtering and paging stop being work the browser does over an array and become part of a
+request, which is what lets a grid stand in front of a table nobody could send to a browser at all. The
+range arrives twice, as `startRow`/`endRow` for an API that offsets and as `page`/`pageSize` for one that
+pages, because they always describe the same block.
+
+**A block is the unit of everything**: one request, one wait, one failure. `blockSize` is how many rows
+each asks for — the page size when `def.pagination` is beside it, 100 otherwise — and `maxBlocks` is how
+many are kept before the ones furthest from the viewport are dropped and asked for again on the way back.
+Rows that have not arrived are drawn as skeletons and are **still counted**, so the scrollbar and
+`aria-rowcount` describe the whole result set from the first block rather than growing under whoever is
+reading it; a placeholder row says `aria-busy`, and the row number, which is known without the row, is
+the one cell it still fills.
+
+A superseded request costs the network nothing: every call carries an `AbortSignal` that fires when the
+sort or the filters change underneath it. And a reply that arrives anyway is **dropped** rather than
+written over the newer one — the out-of-order race is the whole of what an async row model has to get
+right, and it is not something a page should have to write again.
+
+`def.pagination` beside a datasource is the pager rather than the scroller, and the two share one cache:
+a page already fetched is shown with no round trip. It needs no `totalCount` any more, since the response
+carries one — and a response may leave it out altogether, in which case the grid follows the rows and
+treats a block shorter than it asked for as the end of the data.
+
+A failed block shows one strip with the error's own message and a Retry that asks for every block that
+failed. The grid invalidates its own cache whenever it changes the query; for the half it cannot see — a
+filter of the page's own, a row somebody saved — `refresh()` on the grid's ref throws the blocks away and
+asks again.
+
+Two things a server-backed grid must not pretend: a select-all reaches the rows that are loaded, not the
+table behind them, and an export writes what the grid holds. Grouping is not offered with a datasource
+set, because grouping the blocks that happen to be fetched is not grouping the data; a group level the
+server answers is the next step. The existing `onServerStateChange` grid is untouched and still works —
+`dataSource` is the answer for a new one.
+
+The parts are `datagrid.body.cell.placeholder` and its `bar`, and `datagrid.error` with `message` and
+`retry`. **+2.51 KB gz** on the DataGrid entry, and 0.15 KB on every other engine-carrying entry for the
+two style-tree nodes — `/a11y` and `/anchor`, which carry no engine, moved nothing at all. AG Grid's server-side row model is Enterprise, at $999/dev/yr.
+
 ## Breaking changes
 
 - **`Overlay` places a layer instead of translating one, so its four positioning props are gone.** `anchorSide` is `side` (`anchorSide="bottom"` is the default `side="bottom"`; the old `'top'` overlapped the anchor, which `side="bottom" offset={0}` does not — use a negative margin if you need the overlap). `adjustTranslateX`/`adjustTranslateY` are `offset` on the ÷4 scale for the gap and `align` for the sideways nudge (`adjustTranslateY="4px"` is `offset={1}`). `onPositionChange` is `onSideChange`, which reports the side rather than page coordinates — nothing measures a position any more, so there are none to report.
@@ -931,4 +995,5 @@ buttons are `datagrid.topBar.export` and `datagrid.topBar.export.button`.
 - **A `Dropdown` could not be given a value of `0` or an empty string.** Both `value` and `defaultValue` were tested for truthiness on the way in, so `<Dropdown<number> defaultValue={0}>` started with nothing selected and `value={0}` selected nothing however many times it was set — while `value={1}` worked, which is what made it read as a puzzle rather than a bug. The test is against `undefined` and `null` now, and a falsy value is a value somebody can pick.
 - **Three nodes of the DataGrid style tree could not be styled at all.** `clean` tells the engine to use no component styles, so passing it _beside_ a `component` silently voided the very node that `component` named — and the expand chevron (`body.cell.rowDetail`), the group-row expander (`body.groupRow.expandButton`) and the pager buttons (`bottomBar.pagination.button`) all passed both. Anything written under those three keys, by the library or by a `Box.components()` override, was dropped on the floor. The three call sites name a component and no longer also claim to be clean; `clean` still strips a `Button` that names **no** component, which is the use it was meant for.
 - **Every scrolling `DataGrid` showed a horizontal scrollbar it did not need, off by exactly the scrollbar's own width.** The flexible columns were distributed across the width of the **grid container**, but they are laid out inside the scroller — and the vertical scrollbar sits between the two, so the columns came out 15px wider than the space they had and `scrollWidth − clientWidth` measured exactly 15 at every viewport size. The width is measured on the scroller now. Two things follow it. The scroller is `overflow-x: auto` rather than `scroll`, so a grid whose columns genuinely fit no longer reserves a track it never uses; one whose columns do not fit still scrolls, and the virtualized body keeps its vertical scroll from the same rule as before — naming one overflow axis computes the other `visible` companion up to `auto`. And the scroller reserves its vertical scrollbar's space up front (`scrollbar-gutter: stable`), because the columns are now sized to a width the scrollbar can change: without it, opening a row-detail panel on a grid that was not yet scrolling took 15px away and the columns reflowed a frame later, flashing a horizontal scrollbar on the way. A grid that can never scroll vertically — `visibleRowsCount: 'all'` — reserves nothing, since it would only lose the 15px.
+- **Six of the DataGrid pager's controls had no accessible name at all.** The four navigation buttons are chevrons and the chevrons are decorative, so a screen reader reached four buttons called nothing; the rows-per-page `<select>` and the page-number input were unlabelled beside them, both critical axe failures. All six are named now — and the a11y sweep grew a paginated grid fixture, which is what found them: the two DataGrid fixtures it already had never rendered a pager.
 - **A `DataGrid` given a callback but no value prop did nothing at all.** `<DataGrid onPageChange={track}>` without a `page` beside it fired the callback on every press of the pager and never moved — and the same for `onGlobalFilterChange` without `globalFilterValue`, `onColumnFiltersChange`, `onPageSizeChange` and `onExpandedRowKeysChange`. The grid read the _handler_ as "the caller owns this state", so a grid wired up only to watch its user was left with a pager, a filter box and a set of expanders that could not change anything. A handler is a listener; ownership is the value prop, which still wins wherever it is passed.

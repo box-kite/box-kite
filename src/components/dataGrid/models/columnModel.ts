@@ -271,13 +271,18 @@ export default class ColumnModel<TRow> {
   /** Resolved context menu sections visibility. */
   public get contextMenuSections(): { sort: boolean; pin: boolean; group: boolean } {
     const config = this.contextMenu;
+    // Grouping reads the rows the browser holds, and with a datasource that is the blocks in play rather
+    // than the table — so it would group whatever happened to be fetched. Not offered until the server
+    // can answer a group level of its own.
+    const group = !this.grid.source.enabled;
+
     if (typeof config === 'boolean') {
-      return { sort: config, pin: config, group: config };
+      return { sort: config, pin: config, group: config && group };
     }
     return {
       sort: config.sort !== false,
       pin: config.pin !== false,
-      group: config.group !== false,
+      group: group && config.group !== false,
     };
   }
 

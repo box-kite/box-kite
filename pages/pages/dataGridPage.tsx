@@ -4,6 +4,7 @@ import dataGridApi from '../../api/components/datagrid.json';
 import Box from '../../src/box';
 import Button from '../../src/components/button';
 import DataGrid from '../../src/components/dataGrid';
+import { DataSourceRequest, DataSourceResult } from '../../src/components/dataGrid/contracts/dataGridContract';
 import Flex from '../../src/components/flex';
 import { H2 } from '../../src/components/semantics';
 import ApiReference from '../components/apiReference';
@@ -1023,6 +1024,77 @@ Box.components({
 
           <PaginatedDataGridDemo />
 
+          <Section id="data-source" title="A million rows, fetched a block at a time">
+            <Box>
+              <Mono>def.dataSource</Mono> is the other way round from everything above: instead of handing the grid rows, you hand it a
+              function and it asks. Sorting, filtering and paging stop being work the browser does over an array and become part of a
+              request — so the grid can stand in front of a table nobody could send to a browser at all. Rows the server has not answered
+              for yet are drawn as skeletons and are still counted, so the scrollbar and <Mono>aria-rowcount</Mono> describe the whole
+              result set from the first block.
+            </Box>
+            <Flex d="column" gap={3} mt={4}>
+              <Note icon={Table} title="A block is the unit of everything">
+                One request, one wait, one failure. <Mono>blockSize</Mono> is how many rows each asks for (the page size when{' '}
+                <Mono>def.pagination</Mono> is beside it, 100 otherwise), and <Mono>maxBlocks</Mono> is how many are kept before the ones
+                furthest from the viewport are dropped and fetched again on the way back.
+              </Note>
+              <Note icon={Filter} title="A late answer to an old question is thrown away">
+                Every request carries an <Mono>AbortSignal</Mono> that fires when the sort or the filters change underneath it — hand it to{' '}
+                <Mono>fetch</Mono> and a superseded request costs the network nothing. A reply that arrives anyway is dropped rather than
+                written over the newer one.
+              </Note>
+              <Note icon={Table} title="What the grid cannot see is refresh()">
+                The grid invalidates its own cache whenever it changes the query. For the half it cannot see — a filter of the page’s own, a
+                row somebody saved — call <Mono>refresh()</Mono> on the grid’s ref.
+              </Note>
+            </Flex>
+          </Section>
+
+          <Code
+            id="data-source-demo"
+            defer
+            label="Server row model"
+            language="jsx"
+            check={false}
+            code={`// One object, stable across renders: the grid reads it when it asks for a block.
+const dataSource = useMemo(() => ({
+  blockSize: 100,
+  async getRows({ startRow, endRow, page, pageSize, sort, globalFilter, columnFilters, signal }) {
+    const res = await fetch('/api/people?' + new URLSearchParams({
+      offset: String(startRow),
+      limit: String(endRow - startRow),
+      sort: sort ? \`\${sort.columnKey}:\${sort.direction}\` : '',
+      q: globalFilter,
+    }), { signal });
+
+    const body = await res.json();
+
+    // \`totalCount\` sizes the scrollbar. Omit it and the grid follows the rows instead,
+    // treating a block shorter than it asked for as the end of the data.
+    return { rows: body.items, totalCount: body.total };
+  },
+}), []);
+
+<DataGrid
+  def={{
+    dataSource,
+    title: 'One million people',
+    topBar: true,
+    globalFilter: true,
+    visibleRowsCount: 12,
+    columns: [
+      { key: 'id', header: '#', sortable: false, width: 110, align: 'end' },
+      { key: 'name', header: 'Name', width: 240 },
+      { key: 'country', header: 'Country', width: 160 },
+      { key: 'joined', header: 'Joined', width: 140 },
+      { key: 'score', header: 'Score', width: 120, align: 'end' },
+    ],
+  }}
+/>`}
+          >
+            <MillionRowDemo />
+          </Code>
+
           <Code
             id="disable-sort"
             defer
@@ -1209,6 +1281,194 @@ function ResizeModeDemo() {
           resizeMode,
         }}
       />
+    </Flex>
+  );
+}
+
+/**
+ * A million rows that exist nowhere. Every value is a function of the row's index, so the "server" holds
+ * no table at all — and because the generator repeats every `PERIOD` rows, a sort or a filter over the
+ * whole million is answered by arithmetic rather than by a scan. That is the mock's trick, not the grid's:
+ * what the grid does is ask for one block at a time.
+ */
+const FIRST_NAMES = [
+  'Ada',
+  'Grace',
+  'Alan',
+  'Edsger',
+  'Barbara',
+  'Donald',
+  'Katherine',
+  'Linus',
+  'Margaret',
+  'Dennis',
+  'Radia',
+  'Ken',
+  'Frances',
+  'Tony',
+  'Sophie',
+  'Niklaus',
+  'Jean',
+  'Adele',
+  'Leslie',
+  'Guido',
+  'Anita',
+  'Bjarne',
+  'Carol',
+  'Ivan',
+  'Shafi',
+];
+const LAST_NAMES = [
+  'Lovelace',
+  'Hopper',
+  'Turing',
+  'Dijkstra',
+  'Liskov',
+  'Knuth',
+  'Johnson',
+  'Torvalds',
+  'Hamilton',
+  'Ritchie',
+  'Perlman',
+  'Thompson',
+  'Allen',
+  'Hoare',
+  'Wilkes',
+  'Wirth',
+  'Bartik',
+  'Goldberg',
+  'Lamport',
+  'Sutherland',
+];
+const COUNTRIES = ['Moldova', 'Portugal', 'Japan', 'Kenya', 'Chile', 'Norway', 'Vietnam', 'Canada'];
+
+/** One full turn of the generator: every distinct row shape appears exactly once in each. */
+const PERIOD = FIRST_NAMES.length * LAST_NAMES.length;
+const TOTAL_ROWS = 1_000_000;
+/** How many rows share each slot of the period — exact, since the total is a multiple of it. */
+const PER_SLOT = TOTAL_ROWS / PERIOD;
+
+interface Person {
+  id: number;
+  name: string;
+  country: string;
+  joined: string;
+  score: number;
+}
+
+/** The slot a row's values come from, and the row itself. Both pure, both O(1). */
+const slotOf = (index: number) => index % PERIOD;
+
+function personAt(index: number): Person {
+  const slot = slotOf(index);
+
+  return {
+    id: index + 1,
+    // Seven is coprime with the twenty surnames, so consecutive rows differ: a column reading
+    // Lovelace twenty-five times running looks like a bug rather than a generator.
+    name: `${FIRST_NAMES[slot % FIRST_NAMES.length]} ${LAST_NAMES[(slot * 7) % LAST_NAMES.length]}`,
+    country: COUNTRIES[slot % COUNTRIES.length],
+    // Off the index rather than the slot, so consecutive rows differ — a sort on a column with five
+    // hundred distinct values puts two thousand identical rows together, which reads as a broken grid.
+    // It is not sortable for the same reason `id` is not: the arithmetic below only reaches the slot.
+    joined: new Date(Date.UTC(2019, 0, 1 + (index % 2500))).toISOString().slice(0, 10),
+    score: ((slot * 37) % 500) + 100,
+  };
+}
+
+/** Every slot, in the order a sort on that column puts them — the whole sort, for 500 comparisons. */
+function sortedSlots(columnKey: string | number | undefined, direction: string | undefined): number[] {
+  const slots = Array.from({ length: PERIOD }, (_, slot) => slot);
+  if (!columnKey || !direction) return slots;
+
+  const value = (slot: number) => personAt(slot)[columnKey as keyof Person];
+
+  slots.sort((a, b) => {
+    const left = value(a);
+    const right = value(b);
+    const cmp = left < right ? -1 : left > right ? 1 : a - b;
+
+    return direction === 'DESC' ? -cmp : cmp;
+  });
+
+  return slots;
+}
+
+function MillionRowDemo() {
+  const [failNext, setFailNext] = useState(false);
+  const [lastRequest, setLastRequest] = useState<string>('—');
+
+  // One object for the life of the demo: a new `getRows` every render would be read by the next block
+  // rather than by a refetch, but the identity is what a reader will copy, so keep it honest.
+  const dataSource = useMemo(
+    () => ({
+      blockSize: 100,
+      getRows: ({ startRow, endRow, sort, globalFilter }: DataSourceRequest<Person>) =>
+        new Promise<DataSourceResult<Person>>((resolve, reject) => {
+          setLastRequest(`rows ${startRow}–${endRow}${sort ? `, sorted by ${sort.columnKey} ${sort.direction}` : ''}`);
+
+          setTimeout(() => {
+            if (failNext) {
+              setFailNext(false);
+              reject(new Error('The server said 503. Nothing was lost — press Retry.'));
+              return;
+            }
+
+            // Which slots the filter leaves, in the order the sort puts them. The filtered set is the
+            // same in every turn of the period, so counting it is 500 tests rather than a million.
+            const query = globalFilter.trim().toLowerCase();
+            const slots = sortedSlots(sort?.columnKey, sort?.direction).filter(
+              (slot) => !query || `${personAt(slot).name} ${personAt(slot).country}`.toLowerCase().includes(query),
+            );
+            const totalCount = slots.length * PER_SLOT;
+            const natural = !sort && !query;
+            const rows: Person[] = [];
+
+            for (let position = startRow; position < Math.min(endRow, totalCount); position++) {
+              // Unasked, the rows come back in the table's own order. Sorted or filtered, the nth row is
+              // found by which slot it falls in and which turn of the period — no scan, and no table.
+              rows.push(personAt(natural ? position : slots[Math.floor(position / PER_SLOT)] + (position % PER_SLOT) * PERIOD));
+            }
+
+            resolve({ rows, totalCount });
+          }, 220);
+        }),
+    }),
+    [failNext],
+  );
+
+  const def = useMemo(
+    () => ({
+      rowKey: 'id' as const,
+      title: 'One million people',
+      topBar: true,
+      globalFilter: true,
+      visibleRowsCount: 12,
+      rowHeight: 40,
+      dataSource,
+      columns: [
+        // The one column the mock cannot sort: `id` is the row's index, and the slot arithmetic below
+        // only reaches values that repeat with the period.
+        { key: 'id' as const, header: '#', sortable: false, width: 110, align: 'end' as const },
+        { key: 'name' as const, header: 'Name', width: 240 },
+        { key: 'country' as const, header: 'Country', width: 160 },
+        { key: 'joined' as const, header: 'Joined', sortable: false, width: 140 },
+        { key: 'score' as const, header: 'Score', width: 120, align: 'end' as const },
+      ],
+    }),
+    [dataSource],
+  );
+
+  return (
+    <Flex d="column" gap={3}>
+      <Flex gap={2} ai="center" flexWrap="wrap">
+        <FilterChip label="Fail the next request" active={failNext} onClick={() => setFailNext(!failNext)} />
+        <Box fontSize={12} color="gray-500" theme={{ dark: { color: 'gray-400' } }}>
+          Last asked for: {lastRequest}
+        </Box>
+      </Flex>
+
+      <DataGrid<Person> def={def} />
     </Flex>
   );
 }
@@ -1415,6 +1675,7 @@ const sidebarLinks = [
   { id: 'export', label: 'Export to Excel and CSV' },
   { id: 'row-detail', label: 'Row Detail' },
   { id: 'pagination', label: 'Server Pagination & Filters' },
+  { id: 'data-source', label: 'Server row model' },
   { id: 'disable-sort', label: 'Disable Sort' },
   { id: 'context-menu', label: 'Context Menu' },
   { id: 'resizer-style', label: 'Resizer Style' },

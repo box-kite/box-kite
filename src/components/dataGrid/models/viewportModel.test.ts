@@ -67,7 +67,7 @@ describe('ViewportModel', () => {
     it('uses the rowOffsets binary search and offset-based translateY', () => {
       const grid = getGrid({ rowDetail: { content: () => null } }, 100);
       // expand a row so offsets are non-uniform
-      grid.toggleDetailRow(grid.getRowKey(grid.props.data[0]));
+      grid.toggleDetailRow(grid.getRowKey(grid.data[0]));
 
       expect(grid.viewport.hasDetailRows).toBe(true);
       const { offsets } = grid.rowOffsets.value;

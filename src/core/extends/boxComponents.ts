@@ -2041,6 +2041,75 @@ const boxComponents = {
           },
         },
       },
+      // What a failed block says. A sibling of the scroller rather than something inside it: measured in
+      // Chrome 152, a strip inside sat at the top of the scrolled content and left the viewport with it.
+      error: {
+        styles: {
+          gap: 3,
+          ai: 'center',
+          jc: 'center',
+          py: 2,
+          px: 4,
+          bb: 1,
+          fontSize: 13,
+          bgColor: 'red-50',
+          borderColor: 'red-200',
+          color: 'red-700',
+          theme: {
+            dark: {
+              bgColor: 'red-950',
+              borderColor: 'red-900',
+              color: 'red-300',
+            },
+          },
+        },
+        children: {
+          message: {
+            styles: {
+              textOverflow: 'ellipsis',
+              overflow: 'hidden',
+              textWrap: 'nowrap',
+            },
+          },
+          retry: {
+            clean: true,
+            styles: {
+              b: 1,
+              borderColor: 'red-300',
+              bgColor: 'white',
+              borderRadius: 2,
+              py: 1,
+              px: 2.5,
+              fontSize: 12,
+              fontWeight: 500,
+              color: 'red-700',
+              cursor: 'pointer',
+              textWrap: 'nowrap',
+              transition: 'colors',
+              transitionDuration: 150,
+              hover: {
+                bgColor: 'red-100',
+              },
+              focusVisible: {
+                outline: 2,
+                outlineStyle: 'solid',
+                outlineOffset: 2,
+                outlineColor: 'red-500',
+              },
+              theme: {
+                dark: {
+                  bgColor: 'red-900',
+                  borderColor: 'red-800',
+                  color: 'red-100',
+                  hover: {
+                    bgColor: 'red-800',
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
       // The bars carry the grid's own surface and are separated by a hairline rather than a fill: three
       // stacked greys (bar, header, rows) is what made the old grid read as a spreadsheet.
       topBar: {
@@ -2691,6 +2760,30 @@ const boxComponents = {
             children: {
               text: {
                 styles: {},
+              },
+              // A cell whose block has not arrived. The bar carries the pulse rather than the row, which
+              // is `display: contents` and animates nothing; `pulse` is a named preset, so it stops
+              // itself under `prefers-reduced-motion` with nothing declared here.
+              placeholder: {
+                styles: {
+                  height: 'fit',
+                  width: 'fit',
+                },
+                children: {
+                  bar: {
+                    styles: {
+                      height: 2,
+                      borderRadius: 1,
+                      bgColor: 'gray-200',
+                      animation: 'pulse',
+                      theme: {
+                        dark: {
+                          bgColor: 'gray-800',
+                        },
+                      },
+                    },
+                  },
+                },
               },
               // The expand chevron. A control rather than data, so it is quieter than the row it sits in —
               // and only as quiet as a control's 3:1 allows.

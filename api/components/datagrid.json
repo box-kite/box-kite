@@ -15,9 +15,9 @@
     {
       "name": "data",
       "type": "TRow[]",
-      "required": true,
+      "required": false,
       "default": null,
-      "description": "The rows. Virtualization means the length is not what is rendered — ten thousand is fine."
+      "description": "The rows. Virtualization means the length is not what is rendered — ten thousand is fine. Optional only because `def.dataSource` replaces it: with one set, this is not read at all."
     },
     {
       "name": "def",
@@ -188,13 +188,16 @@
     "A grid is not named by the rows in it — pass `def.title` and the grid points `aria-labelledby` at it. Everything the grid draws for itself is named after what it acts on (\"Select row 4\", \"Filter Country\"), and a selection change is announced through a `role=\"status\"` region.",
     "Each column resizer is a `role=\"separator\"` — APG's window splitter — carrying the column's width on `aria-valuenow`, so the new width is read out as it changes."
   ],
-  "axe": { "fixtures": ["DataGrid", "DataGrid (virtualized, grouped, selectable)"], "knownViolations": [] },
+  "axe": { "fixtures": ["DataGrid", "DataGrid (paginated)", "DataGrid (virtualized, grouped, selectable)"], "knownViolations": [] },
   "styleTree": [
     { "path": "datagrid", "depth": 0, "extends": null, "variants": [] },
     { "path": "datagrid.content", "depth": 1, "extends": null, "variants": [] },
     { "path": "datagrid.loader", "depth": 1, "extends": null, "variants": [] },
     { "path": "datagrid.loader.track", "depth": 2, "extends": null, "variants": [] },
     { "path": "datagrid.loader.track.bar", "depth": 3, "extends": null, "variants": [] },
+    { "path": "datagrid.error", "depth": 1, "extends": null, "variants": [] },
+    { "path": "datagrid.error.message", "depth": 2, "extends": null, "variants": [] },
+    { "path": "datagrid.error.retry", "depth": 2, "extends": null, "variants": [] },
     { "path": "datagrid.topBar", "depth": 1, "extends": null, "variants": [] },
     { "path": "datagrid.topBar.globalFilter", "depth": 2, "extends": null, "variants": [] },
     { "path": "datagrid.topBar.globalFilter.stats", "depth": 3, "extends": null, "variants": [] },
@@ -265,6 +268,8 @@
       ]
     },
     { "path": "datagrid.body.cell.text", "depth": 3, "extends": null, "variants": [] },
+    { "path": "datagrid.body.cell.placeholder", "depth": 3, "extends": null, "variants": [] },
+    { "path": "datagrid.body.cell.placeholder.bar", "depth": 4, "extends": null, "variants": [] },
     { "path": "datagrid.body.cell.rowDetail", "depth": 3, "extends": null, "variants": ["isExpanded"] },
     { "path": "datagrid.body.detailRow", "depth": 2, "extends": null, "variants": [] },
     { "path": "datagrid.body.detailRow.content", "depth": 3, "extends": null, "variants": [] },

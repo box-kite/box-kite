@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Box from '../../../box';
 import { useIsomorphicLayoutEffect } from '../../../react/effects';
 import GridNavigationContext from '../gridNavigationContext';
@@ -34,6 +34,27 @@ export default function DataGridContent<TRow>(props: Props<TRow>) {
   // A keyboard jump writes the scroll position straight through, ahead of the animation frame the
   // pointer path can afford: the row has to be rendered by the time focus goes looking for it.
   const navigation = useGridNavigation({ grid, scrollerRef, scrollTop, onScrollTo: setScrollTop });
+
+  const { source } = grid;
+  const { queryVersion } = source;
+
+  // A new query has no scroll position worth preserving — the rows underneath it are different rows. The
+  // DOM is written rather than the state: the scroll event that follows updates `scrollTop` on its own,
+  // and it runs before the fetch effect below reads the element, so no block of the old view is asked for.
+  useIsomorphicLayoutEffect(() => {
+    if (source.enabled && scrollerRef.current) scrollerRef.current.scrollTop = 0;
+  }, [source, queryVersion]);
+
+  // Where the rows come from when the grid fetches its own: the viewport says what is wanted and the
+  // model decides what that costs. Read off the element rather than off `scrollTop`, which is one
+  // animation frame behind a scroll and a whole commit behind the reset above.
+  useEffect(() => {
+    if (!source.enabled) return;
+
+    const { startIndex, take } = grid.viewport.window(scrollerRef.current?.scrollTop ?? 0);
+
+    source.request(startIndex, startIndex + take);
+  }, [grid, source, queryVersion, scrollTop, grid.totalRowCount, grid.page, grid.pageSize]);
 
   // The width the flexible columns are distributed across is the scroller's, not the grid container's:
   // the vertical scrollbar sits between the two, so measuring the container made every scrolling grid
@@ -74,14 +95,14 @@ export default function DataGridContent<TRow>(props: Props<TRow>) {
           'aria-colcount': navigation.columnCount,
           'aria-multiselectable': grid.props.def.rowSelection ? true : undefined,
           'aria-labelledby': grid.props.def.title ? grid.titleId : undefined,
-          'aria-busy': grid.props.loading ? true : undefined,
+          'aria-busy': grid.props.loading || source.isLoading ? true : undefined,
           onScroll: handleScroll,
           onKeyDown: navigation.onKeyDown,
         }}
       >
         <DataGridHeader grid={grid} />
 
-        {grid.props.loading && <DataGridLoader grid={grid} />}
+        {(grid.props.loading || source.isLoading) && <DataGridLoader grid={grid} />}
 
         <DataGridBody grid={grid} scrollTop={scrollTop} />
       </Box>

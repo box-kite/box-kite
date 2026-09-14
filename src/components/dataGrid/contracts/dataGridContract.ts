@@ -33,8 +33,11 @@ export interface PaginationState {
 }
 /** Server-side pagination configuration on GridDefinition */
 export interface PaginationConfig {
-  /** Total number of items across all pages (from server response) */
-  totalCount: number;
+  /**
+   * Total number of items across all pages, from the server response. Required unless `def.dataSource`
+   * is answering the count, in which case the grid already has it.
+   */
+  totalCount?: number;
   /** Page size override. If omitted, defaults to visibleRowsCount (or 10). */
   pageSize?: number;
   /** Options shown in the page size selector dropdown. If omitted, no selector is shown. */
@@ -51,6 +54,67 @@ export interface ServerState<TRow> {
   sortDirection: SortDirection | undefined;
   columnFilters: ColumnFilters<TRow>;
   globalFilterValue: string;
+}
+
+// ========== Data Source ==========
+
+/**
+ * What the grid asks its `def.dataSource` for: one block of rows, and the query they have to satisfy.
+ * The range is given twice because the two halves of the world spell it differently — `startRow`/`endRow`
+ * is an SQL `OFFSET`/`LIMIT`, `page`/`pageSize` is a REST pager, and they always describe the same block.
+ */
+export interface DataSourceRequest<TRow> {
+  /** First row wanted, 0-based across the whole result set. */
+  startRow: number;
+  /** One past the last row wanted. `endRow - startRow` is never more than the block size. */
+  endRow: number;
+  /** The same block, 1-based, for an API that pages. */
+  page: number;
+  /** Rows per block — the page size when the grid is paginated, `blockSize` otherwise. */
+  pageSize: number;
+  /** Which column the grid is sorted by, or `undefined` when it is not sorted. */
+  sort: DataGridSort | undefined;
+  /** What the global filter box holds. Empty when it is not in use. */
+  globalFilter: string;
+  /** Every column filter still set, keyed by column. */
+  columnFilters: ColumnFilters<TRow>;
+  /**
+   * Aborted when the query changes under a request still in flight — a new sort, a new filter, a page
+   * the user left. Hand it to `fetch` and a superseded request costs nothing.
+   */
+  signal: AbortSignal;
+}
+
+/** What a `getRows` answers with. */
+export interface DataSourceResult<TRow> {
+  /** The block's rows, in order. Fewer than asked for means the end of the data. */
+  rows: TRow[];
+  /**
+   * How many rows the query holds altogether — the scrollbar's length and the pager's last page. Answer
+   * it once and the grid keeps it; omit it and the grid follows the rows instead, treating a short block
+   * as the end, which is what an API that cannot count cheaply needs.
+   */
+  totalCount?: number;
+}
+
+/**
+ * Where the rows come from when the grid fetches them itself: sorting, filtering and paging become a
+ * request rather than work done in the browser, so a table of a million rows costs the page one block.
+ * `data` is not read at all while this is set.
+ */
+export interface DataSource<TRow> {
+  /** Answers one block. Called again whenever the sort, the filters or the visible range change. */
+  getRows: (request: DataSourceRequest<TRow>) => Promise<DataSourceResult<TRow>>;
+  /**
+   * Rows per request. Default: the page size when `def.pagination` is set, 100 otherwise. A block is the
+   * unit of everything here — of a request, of the loading state, and of what a failure costs.
+   */
+  blockSize?: number;
+  /**
+   * How many blocks to keep. Past this the ones furthest from the viewport are dropped and fetched again
+   * if the user scrolls back. Default: 40.
+   */
+  maxBlocks?: number;
 }
 
 // ========== Change Reasons ==========
@@ -266,6 +330,13 @@ export interface DataGridHandle {
   exportCsv(options?: DataGridCsvOptions): Promise<void>;
   /** Download the grid as `.xlsx`. */
   exportXlsx(options?: DataGridXlsxOptions): Promise<void>;
+  /**
+   * Throw away the blocks `def.dataSource` has fetched and ask for them again. The grid already does
+   * this whenever it changes the query itself; this is for the half it cannot see — a filter of the
+   * page's own, a row somebody saved, a tenant that changed under the closure `getRows` lives in. Inert
+   * without a datasource.
+   */
+  refresh(): void;
 }
 
 // ========== Column Type ==========
@@ -349,6 +420,13 @@ export interface GridDefinition<TRow> {
   rowDetail?: RowDetailConfig<TRow>;
   /** Server-side pagination. Provide totalCount from the API response. */
   pagination?: PaginationConfig;
+  /**
+   * Where the rows come from, when the grid is to fetch them itself. Sorting, filtering and paging then
+   * round-trip to `getRows` instead of running over `data`, which is what lets a grid stand in front of a
+   * table nobody could send to a browser. With `def.pagination` beside it the block is the page; without
+   * it the grid scrolls the whole result set and fetches the blocks it reaches.
+   */
+  dataSource?: DataSource<TRow>;
 }
 
 /**
@@ -359,8 +437,11 @@ export interface GridDefinition<TRow> {
 export interface DataGridProps<TRow> extends Omit<BoxProps<'div', 'datagrid'>, 'ref' | 'tag' | 'children' | 'component' | 'variant'> {
   /** Component name for style resolution. Default: 'datagrid'. Set to a custom name to use a different component style tree. */
   component?: keyof ComponentsAndVariants;
-  /** The rows. Virtualization means the length is not what is rendered — ten thousand is fine. */
-  data: TRow[];
+  /**
+   * The rows. Virtualization means the length is not what is rendered — ten thousand is fine. Optional
+   * only because `def.dataSource` replaces it: with one set, this is not read at all.
+   */
+  data?: TRow[];
   /** Everything about the grid that is not the rows: the columns, the bars, the title, the row height. */
   def: GridDefinition<TRow>;
   /** Show the loading sweep over the rows. The grid keeps whatever it is already showing underneath. */
