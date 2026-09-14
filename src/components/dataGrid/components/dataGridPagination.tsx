@@ -120,7 +120,6 @@ function PaginationButton(props: { componentName: string; onClick: () => void; d
   return (
     <Button
       component={`${componentName}.bottomBar.pagination.button` as never}
-      clean
       onClick={onClick}
       cursor={disabled ? 'default' : 'pointer'}
       p={1}

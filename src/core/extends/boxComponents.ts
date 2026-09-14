@@ -2605,38 +2605,84 @@ const boxComponents = {
               isLastLeaf: {},
               isEmptyCell: {},
               isRowDetail: {},
-              isExpanded: {},
-              isExpandedFirstLeaf: {},
+              // An expanded row and the drawer under it are one block: the row takes the drawer's surface and
+              // gives up the hairline between them, so the panel reads as hanging off the row rather than as
+              // the row after it. Neutral rather than tinted, so it stays legible beside a *selected* row.
+              isExpanded: {
+                bgColor: 'gray-50',
+                bb: 0,
+                theme: {
+                  dark: {
+                    // Darker than the grid, not lighter: a well is what a drawer should read as, and
+                    // `gray-800` reads as raised against a `gray-900` grid.
+                    bgColor: 'gray-950',
+                  },
+                },
+              },
+              // The accent runs down the inline start of the row and on down the drawer — the only thing
+              // tying a panel this tall back to the row that opened it. Logical, so it mirrors with the text.
+              isExpandedFirstLeaf: {
+                bs: 2,
+                borderColor: 'indigo-500',
+                theme: {
+                  dark: {
+                    borderColor: 'indigo-400',
+                  },
+                },
+              },
               isExpandedLastLeaf: {},
             },
             children: {
               text: {
                 styles: {},
               },
+              // The expand chevron. A control rather than data, so it is quieter than the row it sits in —
+              // and only as quiet as a control's 3:1 allows.
               rowDetail: {
                 clean: true,
-                styles: {},
+                styles: {
+                  color: 'gray-500',
+                  hover: { color: 'gray-900' },
+                  theme: {
+                    dark: {
+                      color: 'gray-400',
+                      hover: { color: 'gray-100' },
+                    },
+                  },
+                },
                 variants: {
-                  isExpanded: {},
+                  // Open: the chevron takes the accent the row's own bar is drawn in.
+                  isExpanded: {
+                    color: 'indigo-600',
+                    theme: { dark: { color: 'indigo-400' } },
+                  },
                 },
               },
             },
           },
+          // The drawer. It shares the expanded row's surface so the two read as one block, and closes on a
+          // heavier hairline than a row separator — a rule that says the block ends here rather than that
+          // another row follows.
           detailRow: {
             styles: {
               bb: 1,
-              borderColor: 'gray-100',
+              borderColor: 'gray-200',
               bgColor: 'gray-50',
               theme: {
                 dark: {
                   borderColor: 'gray-800',
-                  bgColor: 'gray-800',
+                  bgColor: 'gray-950',
                 },
               },
             },
             children: {
               content: {
                 styles: {
+                  // The other half of the accent on the expanded row's first cell. It goes here rather than
+                  // on the row because this is the sticky box: the row is as wide as the scrolled content,
+                  // so a border on it would slide out of view.
+                  bs: 2,
+                  borderColor: 'indigo-500',
                   // The panel is the detail row's single cell, so it holds focus like any other.
                   focusVisible: {
                     outline: 2,
@@ -2646,6 +2692,7 @@ const boxComponents = {
                   },
                   theme: {
                     dark: {
+                      borderColor: 'indigo-400',
                       focusVisible: {
                         outlineColor: 'indigo-400',
                       },
