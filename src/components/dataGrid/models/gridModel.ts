@@ -8,9 +8,12 @@ import DataGridCellRowSelection from '../components/dataGridCellRowSelection';
 import {
   ColumnFilters,
   DataGridChangeReason,
+  DataGridCsvOptions,
   DataGridFilterReason,
   DataGridProps,
   DataGridSelectionReason,
+  DataGridXlsxOptions,
+  ExportConfig,
   FilterValue,
   Key,
   NO_PIN,
@@ -25,6 +28,7 @@ import AggregationModel from './aggregationModel';
 import ColumnModel from './columnModel';
 import ColumnVisibilityModel from './columnVisibilityModel';
 import DetailRowModel from './detailRowModel';
+import ExportModel from './exportModel';
 import FilterModel from './filterModel';
 import GroupRowModel from './groupRowModel';
 import PaginationModel from './paginationModel';
@@ -36,6 +40,9 @@ export const DEFAULT_ROW_NUMBER_COLUMN_WIDTH = 70;
 export const ROW_SELECTION_CELL_KEY: Key = 'row-selection-cell';
 export const GROUPING_CELL_KEY: Key = 'grouping-cell';
 export const ROW_DETAIL_CELL_KEY: Key = 'row-detail-cell';
+
+/** What `def.export: true` means, as one record: every option at its default. */
+const DEFAULT_EXPORT: ExportConfig = {};
 
 export default class GridModel<TRow> {
   constructor(
@@ -889,6 +896,37 @@ export default class GridModel<TRow> {
 
   /** Aggregation concern (which columns aggregate, and the footer's grand totals). */
   public readonly aggregation = new AggregationModel(this);
+
+  /** Export concern (the columns, rows and levels both file formats are written from). */
+  public readonly exporter = new ExportModel(this);
+
+  /**
+   * Which export buttons the top bar shows, and the options they press with. `export: true` resolves to
+   * one shared record rather than a fresh one, so the buttons' handlers keep their identity.
+   */
+  public get exportConfig(): ExportConfig | undefined {
+    const config = this.props.def.export;
+    if (!config) return undefined;
+
+    return typeof config === 'object' ? config : DEFAULT_EXPORT;
+  }
+
+  /**
+   * Download the grid as a CSV. Both writers are behind an `import()`, so the format is fetched on the
+   * first press and a grid nobody exports from carries neither.
+   */
+  public exportCsv = async (options: DataGridCsvOptions = {}): Promise<void> => {
+    const { downloadCsv } = await import('../export/gridExport');
+
+    downloadCsv(this.exporter.table(options), this.exporter.fileName(options), options);
+  };
+
+  /** Download the grid as an `.xlsx`, with its groups as Excel's own outline levels. */
+  public exportXlsx = async (options: DataGridXlsxOptions = {}): Promise<void> => {
+    const { downloadXlsx } = await import('../export/gridExport');
+
+    downloadXlsx(this.exporter.table(options), this.exporter.fileName(options), options);
+  };
 
   /** Whether any user-facing column is currently visible (else the empty-columns state shows). */
   public get hasVisibleColumns(): boolean {

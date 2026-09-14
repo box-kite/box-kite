@@ -205,6 +205,8 @@
     { "path": "datagrid.topBar.columnGroups.item.icon", "depth": 4, "extends": null, "variants": [] },
     { "path": "datagrid.topBar.columnVisibility", "depth": 2, "extends": null, "variants": [] },
     { "path": "datagrid.topBar.columnVisibility.badge", "depth": 3, "extends": null, "variants": [] },
+    { "path": "datagrid.topBar.export", "depth": 2, "extends": null, "variants": [] },
+    { "path": "datagrid.topBar.export.button", "depth": 3, "extends": null, "variants": [] },
     { "path": "datagrid.filter", "depth": 1, "extends": null, "variants": [] },
     { "path": "datagrid.filter.row", "depth": 2, "extends": null, "variants": [] },
     {

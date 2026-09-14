@@ -2233,25 +2233,28 @@ named ones carry the reason.
 | `contextMenu`             | `boolean \| ContextMenuConfig`     | `true`      | Control column header context menu. `false` hides it. Object: `{ sort?, pin?, group? }`                        |
 | `resizerStyle`            | `'visible' \| 'hover' \| 'hidden'` | `'visible'` | Resizer handle visibility. `'hover'`: shows on header cell hover. `'hidden'`: invisible but resize still works |
 | `noDataComponent`         | `ReactNode`                        | `'empty'`   | Custom empty state                                                                                             |
-| `footer`                  | `boolean \| { label? }`            | `false`     | A pinned row of grand totals over every column with an `aggregate`. `label` replaces the default `Total`        |
+| `footer`                  | `boolean \| { label? }`            | `false`     | A pinned row of grand totals over every column with an `aggregate`. `label` replaces the default `Total`       |
+| `export`                  | `boolean \| ExportConfig`          | `false`     | Export buttons in the top bar: `{ csv?, xlsx?, fileName? }`. The writers load on the first press               |
 
 ### ColumnType
 
-| Prop                     | Type                                                | Default  | Description                                                                                                                                     |
-| ------------------------ | --------------------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| `key`                    | `Key`                                               | required | Column identifier (maps to TRow property)                                                                                                       |
-| `header`                 | `string`                                            | —        | Header text                                                                                                                                     |
-| `width`                  | `number`                                            | `200`    | Base width in px                                                                                                                                |
-| `align`                  | `'start' \| 'end' \| 'center' \| 'left' \| 'right'` | `'left'` | Cell alignment. `start`/`end` follow the reading order; `left`/`right` stay on the screen side they name                                        |
-| `pin`                    | `'START' \| 'END'` (also `'LEFT'`/`'RIGHT'`)        | —        | Pin to an edge of the **inline axis** (sticky on scroll), so it holds under either `dir`. `LEFT`/`RIGHT` are the older spelling of the same two |
-| `columns`                | `ColumnType[]`                                      | —        | Nested columns (grouped header)                                                                                                                 |
-| `Cell`                   | `({ cell }) => ReactNode`                           | —        | Custom renderer. `cell`: `{ value, row, column, grid }`                                                                                         |
-| `sortable` / `resizable` | `boolean`                                           | inherits | Override grid-level setting                                                                                                                     |
-| `flexible`               | `boolean`                                           | `true`   | Participate in flex width distribution                                                                                                          |
-| `filterable`             | `boolean \| FilterConfig`                           | —        | `true` (text), `{ type: 'number', min?, max? }`, `{ type: 'multiselect', options? }`                                                            |
-| `contextMenu`            | `boolean \| ContextMenuConfig`                      | inherits | Override grid-level context menu. `false` hides entirely. `{ sort?, pin?, group? }` controls sections                                           |
-| `aggregate`              | `AggregateName \| (values, rows) => value`          | —        | Total this column over each group row, and over the footer. See below                                                                          |
-| `AggregateCell`          | `({ cell }) => ReactNode`                           | —        | Renders the aggregate. `cell`: `{ value, column, rows, scope }`, `scope` being `'group'` or `'footer'`                                          |
+| Prop                     | Type                                                | Default   | Description                                                                                                                                     |
+| ------------------------ | --------------------------------------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `key`                    | `Key`                                               | required  | Column identifier (maps to TRow property)                                                                                                       |
+| `header`                 | `string`                                            | —         | Header text                                                                                                                                     |
+| `width`                  | `number`                                            | `200`     | Base width in px                                                                                                                                |
+| `align`                  | `'start' \| 'end' \| 'center' \| 'left' \| 'right'` | `'left'`  | Cell alignment. `start`/`end` follow the reading order; `left`/`right` stay on the screen side they name                                        |
+| `pin`                    | `'START' \| 'END'` (also `'LEFT'`/`'RIGHT'`)        | —         | Pin to an edge of the **inline axis** (sticky on scroll), so it holds under either `dir`. `LEFT`/`RIGHT` are the older spelling of the same two |
+| `columns`                | `ColumnType[]`                                      | —         | Nested columns (grouped header)                                                                                                                 |
+| `Cell`                   | `({ cell }) => ReactNode`                           | —         | Custom renderer. `cell`: `{ value, row, column, grid }`                                                                                         |
+| `sortable` / `resizable` | `boolean`                                           | inherits  | Override grid-level setting                                                                                                                     |
+| `flexible`               | `boolean`                                           | `true`    | Participate in flex width distribution                                                                                                          |
+| `filterable`             | `boolean \| FilterConfig`                           | —         | `true` (text), `{ type: 'number', min?, max? }`, `{ type: 'multiselect', options? }`                                                            |
+| `contextMenu`            | `boolean \| ContextMenuConfig`                      | inherits  | Override grid-level context menu. `false` hides entirely. `{ sort?, pin?, group? }` controls sections                                           |
+| `aggregate`              | `AggregateName \| (values, rows) => value`          | —         | Total this column over each group row, and over the footer. See below                                                                           |
+| `AggregateCell`          | `({ cell }) => ReactNode`                           | —         | Renders the aggregate. `cell`: `{ value, column, rows, scope }`, `scope` being `'group'` or `'footer'`                                          |
+| `exportValue`            | `(row: TRow) => value`                              | the field | What this column writes to an exported file — an export runs no React, so a `Cell` renderer needs it                                            |
+| `exportFormat`           | `string`                                            | —         | The number format its cells wear in a workbook, `'#,##0.00'` or `'yyyy-mm-dd'`                                                                  |
 
 ### Aggregation
 
@@ -2287,6 +2290,49 @@ every row in scope beside the rows themselves.
   }}
 />
 ```
+
+### Export to Excel and CSV
+
+**Never install a spreadsheet library for this.** The grid writes `.xlsx` itself — an `.xlsx` is a ZIP of
+XML parts, and both writers sit behind a dynamic import, so they cost the grid's bundle nothing until
+somebody presses the button and there is nothing to add to `package.json`.
+
+Two ways in. `def.export` puts the buttons in the top bar (which needs `topBar: true`):
+
+```tsx
+<DataGrid data={rows} def={{ topBar: true, export: true }} />
+// or: export: { csv: false, fileName: 'payroll' }
+```
+
+A `ref` on the grid is the same two calls, for a toolbar of your own:
+
+```tsx
+const grid = useRef<DataGridHandle>(null);
+
+<DataGrid ref={grid} data={rows} def={{ columns }} />
+<Button onClick={() => grid.current?.exportXlsx({ sheetName: 'Q1' })}>Download</Button>
+```
+
+Both take `fileName`, `columns` (keys, in the order given), `groups` and `footer`; `exportXlsx` also takes
+`sheetName`, `headerFill` and `headerColor` (as `RRGGBB`), and `exportCsv` takes `delimiter` and
+`escapeFormulas`. Both return a promise that resolves once the file has been handed to the browser.
+
+- **The file is what the grid is showing**: the visible columns in their pinned order, the rows the filters
+  and the sort left, the group rows and their totals. The one addition is a column hidden _because the grid
+  is grouped by it_ — its values moved to the group rows, and a file with no Country column in it is not
+  the grid.
+- **An export runs no React**, so a column drawn by a `Cell` renderer exports the raw field. The column's
+  own `exportValue: (row) => …` is what it writes instead, and `exportFormat: '#,##0.00'` is the number
+  format the workbook's cells wear.
+- **Values keep their type.** A number is a number, a boolean is a boolean, and a `Date` is a real date cell
+  (given `yyyy-mm-dd` automatically when the column declares no format of its own).
+- **Grouping is Excel's own outline**, not indentation: a collapsed group in the grid opens collapsed in
+  Excel, and every row is in the file either way. The workbook also gets a bold header on a frozen row,
+  column widths from the grid's own, and an auto-filter when nothing is grouped.
+- **A CSV starts with a byte-order mark**, without which Excel reads UTF-8 as the local code page, and a
+  value beginning `=`, `+`, `-` or `@` is quoted into text — a downloaded file must not run a formula
+  somebody typed into a cell. `escapeFormulas: false` turns that off.
+- Style nodes: `datagrid.topBar.export` and `datagrid.topBar.export.button`.
 
 ### RowDetailConfig
 

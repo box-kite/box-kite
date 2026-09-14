@@ -1,9 +1,9 @@
-import { useLayoutEffect, useRef } from 'react';
+import { forwardRef, Ref, RefAttributes, useImperativeHandle, useLayoutEffect, useRef } from 'react';
 import Box from '../box';
 import DataGridBottomBar from './dataGrid/components/dataGridBottomBar';
 import DataGridContent from './dataGrid/components/dataGridContent';
 import DataGridTopBar from './dataGrid/components/dataGridTopBar';
-import { DataGridProps } from './dataGrid/contracts/dataGridContract';
+import { DataGridHandle, DataGridProps } from './dataGrid/contracts/dataGridContract';
 import useGrid from './dataGrid/useGrid';
 import VisuallyHidden from './visuallyHidden';
 
@@ -41,9 +41,23 @@ import VisuallyHidden from './visuallyHidden';
  * @keyboard (On a column resizer) Home / End — The narrowest the grid allows, or as wide as the grid
  * itself.
  */
-export default function DataGrid<TRow extends object>(props: DataGridProps<TRow>) {
+function DataGridImpl<TRow extends object>(props: DataGridProps<TRow>, ref: Ref<DataGridHandle>) {
   const grid = useGrid(props);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // A `ref` on a grid is the export surface, not the element — the model behind it is the library's to
+  // change, so what is published is the three things a caller has a use for.
+  useImperativeHandle(
+    ref,
+    () => ({
+      get element() {
+        return containerRef.current;
+      },
+      exportCsv: grid.exportCsv,
+      exportXlsx: grid.exportXlsx,
+    }),
+    [grid],
+  );
 
   // Everything the grid reads itself comes off here, so what is left is the Box half — style props, the
   // `props` bag, a className — and a new grid prop cannot leak onto the element by being forgotten.
@@ -107,4 +121,10 @@ export default function DataGrid<TRow extends object>(props: DataGridProps<TRow>
   );
 }
 
-(DataGrid as React.FunctionComponent).displayName = 'DataGrid';
+const DataGrid = forwardRef(DataGridImpl) as <TRow extends object>(
+  props: DataGridProps<TRow> & RefAttributes<DataGridHandle>,
+) => React.ReactElement | null;
+
+(DataGridImpl as React.FunctionComponent).displayName = 'DataGrid';
+
+export default DataGrid;

@@ -525,6 +525,8 @@ export const fixtures: A11yFixture[] = [
           showRowNumber: true,
           visibleRowsCount: 15,
           globalFilter: true,
+          topBar: true,
+          export: true,
           columns: [
             { key: 'name', header: 'Name', filterable: true },
             { key: 'department', header: 'Department', filterable: { type: 'multiselect' } },
