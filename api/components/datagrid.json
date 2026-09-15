@@ -91,6 +91,20 @@
       "description": "Fires with every expanded detail row key, and whether one was opened or shut."
     },
     {
+      "name": "expandedTreeKeys",
+      "type": "Key[]",
+      "required": false,
+      "default": null,
+      "description": "Controlled open rows of a `def.treeData` tree. A separate list from `expandedRowKeys`, which is the detail panels: a row can have both, and they open different things."
+    },
+    {
+      "name": "onExpandedTreeKeysChange",
+      "type": "ChangeHandler<Key[], DataGridExpandReason>",
+      "required": false,
+      "default": null,
+      "description": "Fires with every open tree row's key, and whether one was opened or shut."
+    },
+    {
       "name": "page",
       "type": "number",
       "required": false,
@@ -152,6 +166,11 @@
     { "mode": null, "keys": "Tab", "action": "Enters the grid at one cell, not at every cell. Shift+Tab leaves it." },
     { "mode": null, "keys": "Right / Left", "action": "One cell along the row. At either end focus stays where it is." },
     {
+      "mode": "On a tree's own column",
+      "keys": "Right / Left",
+      "action": "Opens a shut row and shuts an open one; on a row that is already shut, Left steps out to its parent. Both follow the reading order, so they swap in a right-to-left grid, and on every other column they are the ordinary move along the row."
+    },
+    {
       "mode": null,
       "keys": "Down / Up",
       "action": "One row, keeping the column: through a group row or a detail panel with fewer cells, and through a grouped header whose cells cover several columns each."
@@ -184,11 +203,21 @@
   ],
   "a11y": [
     "`role=\"grid\"` with `aria-rowcount`/`aria-colcount` over the whole data set and `aria-rowindex`/`aria-colindex` on what is rendered, so virtualization does not renumber the grid.",
+    "With `def.treeData` it is a `role=\"treegrid\"` instead, and its rows carry `aria-level`, `aria-posinset`, `aria-setsize` and — valid only inside a treegrid — `aria-expanded`. The rows under a row are its siblings in the same rowgroup rather than its children, so those four are all a screen reader has to go on.",
     "One cell is the tab stop, as APG's grid pattern specifies: the grid is entered once and the arrow keys move inside it, rather than every cell being a stop of its own.",
     "A grid is not named by the rows in it — pass `def.title` and the grid points `aria-labelledby` at it. Everything the grid draws for itself is named after what it acts on (\"Select row 4\", \"Filter Country\"), and a selection change is announced through a `role=\"status\"` region.",
     "Each column resizer is a `role=\"separator\"` — APG's window splitter — carrying the column's width on `aria-valuenow`, so the new width is read out as it changes."
   ],
-  "axe": { "fixtures": ["DataGrid", "DataGrid (paginated)", "DataGrid (virtualized, grouped, selectable)"], "knownViolations": [] },
+  "axe": {
+    "fixtures": [
+      "DataGrid",
+      "DataGrid (paginated)",
+      "DataGrid (virtualized, grouped, selectable)",
+      "DataGrid (grouped, expanded)",
+      "DataGrid (tree data)"
+    ],
+    "knownViolations": []
+  },
   "styleTree": [
     { "path": "datagrid", "depth": 0, "extends": null, "variants": [] },
     { "path": "datagrid.content", "depth": 1, "extends": null, "variants": [] },
@@ -270,6 +299,9 @@
     { "path": "datagrid.body.cell.text", "depth": 3, "extends": null, "variants": [] },
     { "path": "datagrid.body.cell.placeholder", "depth": 3, "extends": null, "variants": [] },
     { "path": "datagrid.body.cell.placeholder.bar", "depth": 4, "extends": null, "variants": [] },
+    { "path": "datagrid.body.cell.tree", "depth": 3, "extends": null, "variants": [] },
+    { "path": "datagrid.body.cell.tree.toggle", "depth": 4, "extends": null, "variants": ["isExpanded"] },
+    { "path": "datagrid.body.cell.tree.spacer", "depth": 4, "extends": null, "variants": [] },
     { "path": "datagrid.body.cell.rowDetail", "depth": 3, "extends": null, "variants": ["isExpanded"] },
     { "path": "datagrid.body.detailRow", "depth": 2, "extends": null, "variants": [] },
     { "path": "datagrid.body.detailRow.content", "depth": 3, "extends": null, "variants": [] },

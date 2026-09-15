@@ -38,6 +38,9 @@ export default function DataGridGroupRow<TRow>(props: Props<TRow>) {
       props={{
         role: 'row',
         'aria-rowindex': navRow + 1,
+        // What the cells are tinted by. It used to be the row's own `aria-expanded`, which #162 took off
+        // it — and a tree row carries one legitimately, which is not a section header at all.
+        'data-group-row': '',
         // The group exists, its value does not yet — a server has been asked and has not answered.
         'aria-busy': placeholder || undefined,
       }}

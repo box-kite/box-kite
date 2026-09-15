@@ -236,6 +236,46 @@ export interface RowDetailConfig<TRow> {
   scrollIntoView?: boolean;
 }
 
+// ========== Tree Data ==========
+
+/**
+ * What a row's own state is before anybody has clicked anything: `true` opens every row, a number opens
+ * down to that depth (`1` is the top level's children shown), and a list of keys opens exactly those.
+ */
+export type DefaultExpanded = boolean | number | Key[];
+
+/**
+ * Rows that hold rows. The tree is read off the data in one of two shapes — **nested**, where a row
+ * carries its children (`childrenKey`/`getChildren`), or **flat**, where every row carries the path to
+ * itself (`pathKey`/`getPath`) — and the grid does the rest: one column grows a chevron and an indent,
+ * the rows underneath a shut one leave the list, and the grid becomes a `treegrid`.
+ */
+export interface TreeDataConfig<TRow> {
+  /** Nested rows: the field a row's children live in. */
+  childrenKey?: keyof TRow | Key;
+  /** Nested rows, worked out rather than stored. Answer nothing for a leaf. */
+  getChildren?: (row: TRow) => TRow[] | undefined | null;
+  /** Flat rows: the field holding the path from the root to this row, its own segment last. */
+  pathKey?: keyof TRow | Key;
+  /** Flat rows, worked out: `['src', 'core', 'box.ts']` for a row three deep. */
+  getPath?: (row: TRow) => Key[];
+  /**
+   * Which column carries the chevrons and the indent. Default: the first column of your own, which is
+   * the one a tree is almost always read down.
+   */
+  column?: Key;
+  /** How far one level indents, on the ÷4 spacing scale. Default: 4, which is 1rem a level. */
+  indent?: number;
+  /** Which rows are open before anything has been clicked. Default: nothing but the top level. */
+  defaultExpanded?: DefaultExpanded;
+  /**
+   * Whether ticking a row ticks everything under it, and a row whose children are partly ticked reads as
+   * indeterminate. Default: `'self'` — a checkbox selects the row it is on, which is what every other row
+   * in the grid does.
+   */
+  selection?: 'self' | 'cascade';
+}
+
 // ========== Context Menu ==========
 
 /** Controls which sections appear in the column header context menu */
@@ -443,6 +483,19 @@ export interface GridDefinition<TRow> {
   export?: boolean | ExportConfig;
   /** Enable expandable row detail panel */
   rowDetail?: RowDetailConfig<TRow>;
+  /**
+   * Rows that hold rows: one column grows a chevron and an indent, and the grid reports itself as a
+   * `treegrid`. The tree comes out of the data, either nested in it or named by a path on each row.
+   */
+  treeData?: TreeDataConfig<TRow>;
+  /**
+   * The columns the grid starts grouped by, outermost first — the declared half of what the column menu's
+   * *Group By* does, so a grid can be grouped before anybody has clicked anything (and on a server, where
+   * nobody can).
+   */
+  groupBy?: Key[];
+  /** Which group rows start open: `true` is all of them, a number is how many levels down. Default: none. */
+  groupDefaultExpanded?: boolean | number;
   /** Server-side pagination. Provide totalCount from the API response. */
   pagination?: PaginationConfig;
   /**
@@ -493,6 +546,13 @@ export interface DataGridProps<TRow> extends Omit<BoxProps<'div', 'datagrid'>, '
   expandedRowKeys?: Key[];
   /** Fires with every expanded detail row key, and whether one was opened or shut. */
   onExpandedRowKeysChange?: ChangeHandler<Key[], DataGridExpandReason>;
+  /**
+   * Controlled open rows of a `def.treeData` tree. A separate list from `expandedRowKeys`, which is the
+   * detail panels: a row can have both, and they open different things.
+   */
+  expandedTreeKeys?: Key[];
+  /** Fires with every open tree row's key, and whether one was opened or shut. */
+  onExpandedTreeKeysChange?: ChangeHandler<Key[], DataGridExpandReason>;
   /** Controlled current page (1-indexed). Used with pagination. */
   page?: number;
   /** Controlled page size. Used with pagination and pageSizeOptions. */

@@ -192,6 +192,49 @@ describe('GridModel', () => {
       expect(((grid.rows.value.at(1) as GroupRowModel<Person>).rows.at(1) as GroupRowModel<Person>).rows).toHaveLength(1);
     });
 
+    it('starts grouped by `def.groupBy`, with the grouped column hidden', () => {
+      const grid = getGridModel({ data, gridDef: { groupBy: ['day'], columns: [{ key: 'day' }, { key: 'firstName' }] } });
+
+      expect(grid.flatRows.value).toHaveLength(2);
+      expect(grid.flatRows.value.at(0) instanceof GroupRowModel).toBeTruthy();
+      expect(grid.hiddenColumns.has('day')).toBe(true);
+    });
+
+    it('`groupDefaultExpanded` opens the groups nobody has touched, and a collapse still wins', () => {
+      const grid = getGridModel({
+        data,
+        gridDef: { groupBy: ['day'], groupDefaultExpanded: true, columns: [{ key: 'day' }, { key: 'firstName' }] },
+      });
+
+      expect(grid.flatRows.value).toHaveLength(7);
+
+      const first = grid.rows.value[0] as GroupRowModel<Person>;
+      first.toggleRow();
+
+      expect(first.expanded).toBe(false);
+      expect(grid.flatRows.value).toHaveLength(4);
+    });
+
+    it('`groupDefaultExpanded` takes a depth', () => {
+      const grid = getGridModel({
+        data,
+        gridDef: { groupBy: ['day', 'month'], groupDefaultExpanded: 1, columns: [{ key: 'day' }, { key: 'month' }, { key: 'firstName' }] },
+      });
+
+      // The two day groups are open and the month groups inside them are not.
+      expect(grid.flatRows.value.filter((row) => row instanceof GroupRowModel)).toHaveLength(6);
+      expect(grid.flatRows.value.filter((row) => row instanceof RowModel)).toHaveLength(0);
+    });
+
+    it('the menu still takes it from there', () => {
+      const grid = getGridModel({ data, gridDef: { groupBy: ['day'], columns: [{ key: 'day' }, { key: 'firstName' }] } });
+
+      grid.unGroupAll();
+
+      expect(grid.groupColumns.size).toBe(0);
+      expect(grid.hiddenColumns.has('day')).toBe(false);
+    });
+
     it('resets hidden columns when ungrouping all', () => {
       const grid = getGridModel({ data, gridDef: { columns: [{ key: 'day' }, { key: 'firstName' }] } });
 

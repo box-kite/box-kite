@@ -19,6 +19,7 @@ export default function DataGridCellRowSelection<TRow>(props: Props<TRow>) {
     <Checkbox
       variant="datagrid"
       checked={cell.selected}
+      indeterminate={cell.indeterminate}
       onChange={rowSelectedHandler}
       props={{ 'aria-label': `Select row ${cell.row.rowIndex + 1}` }}
     />

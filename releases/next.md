@@ -27,7 +27,9 @@ The package now carries instructions for the agent writing the code, the documen
 - **[A column that adds itself up](#a-column-that-adds-itself-up)** — `aggregate` on a DataGrid column totals it over each group row and over a pinned footer of grand totals: five built-ins or a function of your own, respecting the filters, formatted by an `AggregateCell`.
 - **[Excel and CSV, with nothing to install](#excel-and-csv-with-nothing-to-install)** — `def.export` writes an `.xlsx` with its groups as Excel outline levels and a CSV beside it: 3.80 KB gz behind a dynamic import, no ExcelJS, against the $999/dev/yr the same feature costs elsewhere.
 - **[A grid that fetches its own rows](#a-grid-that-fetches-its-own-rows)** — `def.dataSource` is one function the grid asks for a block at a time: a million rows scrolled with no array in the page, sort and filter round-tripped, a superseded request aborted and a late answer dropped. +2.51 KB gz, against the $999/dev/yr the same row model costs elsewhere.
-- **[A group the server counts, and children it fetches when you open one](#a-group-the-server-counts-and-children-it-fetches-when-you-open-one)** — `grouping: true` puts *Group By* back with a datasource set: the request carries `groupBy` and `groupKeys`, a group row brings its own count and totals, and a group nobody has opened costs the page nothing. +1.45 KB gz.
+- **[A group the server counts, and children it fetches when you open one](#a-group-the-server-counts-and-children-it-fetches-when-you-open-one)** — `grouping: true` puts _Group By_ back with a datasource set: the request carries `groupBy` and `groupKeys`, a group row brings its own count and totals, and a group nobody has opened costs the page nothing. +1.45 KB gz.
+- **[A grid whose rows hold rows](#a-grid-whose-rows-hold-rows)** — `def.treeData` turns the rows into a tree, nested in the data or named by a path on each row: a chevron and an indent on one column, a `treegrid` with the keyboard APG asks for, a filter that keeps the path to a match, and nothing built under a row nobody has opened.
+- **[Grouping can be declared now, not only clicked](#grouping-can-be-declared-now-not-only-clicked)** — `def.groupBy` and `def.groupDefaultExpanded`: a grid that starts grouped, which is what a server render, a fixture and a demo all needed.
 - **[The component contract, written down and enforced](#the-component-contract-written-down-and-enforced)** — five rules every component keeps: state in `useControllableState`, every change reported with a named reason, Box props on every part, a style tree to replace, and a render prop instead of `asChild`. A check with two ledgers that both fail on a stale entry is what keeps them true.
 
 ## The package tells an agent how to use it
@@ -977,7 +979,7 @@ two style-tree nodes — `/a11y` and `/anchor`, which carry no engine, moved not
 ## A group the server counts, and children it fetches when you open one
 
 Grouping was the one thing a datasource did not offer, for a good reason: grouping the blocks that happen
-to be in the browser is not grouping the data. So the server does it. Say that it can, and *Group By*
+to be in the browser is not grouping the data. So the server does it. Say that it can, and _Group By_
 comes back in the column menu:
 
 ```tsx
@@ -1000,7 +1002,7 @@ dataSource: {
 ```
 
 Every request now carries **`groupBy`**, the columns being grouped by, outermost first, and
-**`groupKeys`**, the group it is inside. Shorter than `groupBy` and the rows wanted are *group* rows, one
+**`groupKeys`**, the group it is inside. Shorter than `groupBy` and the rows wanted are _group_ rows, one
 per distinct value of `groupBy[groupKeys.length]`, with `groupCounts` beside them; the same length and
 they are that group's own rows. One rule covers both directions, and there is no second callback.
 
@@ -1011,7 +1013,7 @@ Its count goes in the label; omit `groupCounts` and the label is the value alone
 
 Nothing under a group is fetched until its chevron is pressed. **Each open group is a cache of its own** —
 its own blocks, its own count, its own failure — and shutting one disposes of it and everything beneath.
-Eviction keeps the chain *above* a level in play, so scrolling deep inside a group never drops the group
+Eviction keeps the chain _above_ a level in play, so scrolling deep inside a group never drops the group
 row it hangs off; that was measured, because the obvious least-recently-used order takes it first.
 
 Two things the grid still declines to pretend. A group whose rows have never been fetched shows **no
@@ -1028,6 +1030,83 @@ One fix came out of it. A group row carried `aria-expanded`, which is only defin
 `treegrid` and is a serious axe violation inside a `grid` — it had been there since grouping shipped, and
 no fixture had ever rendered a group row for the sweep to see. The open state is on the expand button,
 where it always also was.
+
+## A grid whose rows hold rows
+
+A file system, an org chart, a bill of materials: rows with rows inside them. `def.treeData` reads that
+shape off the data and the grid does the rest — one column grows a chevron and an indent, and the whole
+thing reports itself as a `treegrid`:
+
+```tsx
+<DataGrid
+  data={files}
+  def={{
+    rowKey: 'id',
+    treeData: {
+      // Nested data: the field the children live in. `getChildren` works them out instead.
+      childrenKey: 'children',
+      // Which column carries the chevrons. Default: the first column of your own.
+      column: 'name',
+      // `true` for every row, a number for a depth, or a list of keys.
+      defaultExpanded: 1,
+      // Ticking a folder ticks everything in it.
+      selection: 'cascade',
+    },
+    columns: [
+      { key: 'name', header: 'Name' },
+      { key: 'size', header: 'Size', align: 'end' },
+    ],
+  }}
+/>
+```
+
+The tree comes in **two shapes**, and both are the data you already have. Nested, where a row carries its
+children (`childrenKey`, or `getChildren` to compute them); or flat, where every row carries the path to
+itself (`pathKey`/`getPath`) — which is what an export, a `WHERE path LIKE` or a materialised-path table
+hands you. A flat list needs no ordering: shallower rows are read first, and a row whose parent is missing
+hangs off the nearest ancestor that is there.
+
+**A filter keeps the path to a match.** Filtering a tree row by row would hide every match three folders
+down, so a row survives when it matches _or something under it does_ — what is left is the matches and
+the way to them. A row that matches on its own keeps none of the children that did not, and a sort happens
+_inside_ each parent, because a tree sorted across its levels is not a tree any more.
+
+**A shut row costs nothing.** Nothing under one is built at all — no models, no cells — so ten thousand
+rows nobody has opened cost the page its top level; opening one builds that level and no more. The tree
+itself is built once and left alone, so an expand rebuilds none of it.
+
+It is **a `treegrid`**, which is the only place ARIA allows a row to say it is expandable: every row
+carries `aria-level`, `aria-posinset` and `aria-setsize`, and a row with something under it carries
+`aria-expanded`. On the tree's own column, **Right** opens a shut row and **Left** shuts an open one —
+and on a row that is already shut, Left steps out to its parent, which is APG's rule. Both follow the
+reading order, so they swap in a right-to-left grid; on every other column they are the ordinary move
+along the row.
+
+Two things it does not pretend. Selection cascades only when you ask (`selection: 'cascade'`, which also
+makes a half-ticked row read as indeterminate) — a checkbox is otherwise the row it is on, like every
+other row in the grid. And _Group By_ is not offered on a tree at all: the rows are already in a shape.
+
+## Grouping can be declared now, not only clicked
+
+Row grouping was reachable only through a column's menu, which meant a grid could not _start_ grouped —
+no server render, no fixture, no demo that shows anything before the reader opens a menu. `def.groupBy`
+is where the grid starts, and `def.groupDefaultExpanded` says which of those groups start open:
+
+```tsx
+def={{
+  groupBy: ['country'],        // outermost first; a grouped column is hidden, as the menu hides one
+  groupDefaultExpanded: 1,     // `true` for all of them, a number for how many levels down
+  columns: [
+    { key: 'name', header: 'Name' },
+    { key: 'country', header: 'Country' },
+    { key: 'salary', header: 'Salary', aggregate: 'avg', align: 'end' },
+  ],
+}}
+```
+
+The menu takes it from there, and a group somebody opens or shuts stays where they left it. It also
+closed a hole in the accessibility sweep: a group row had never been rendered by a fixture, because no
+fixture could produce one.
 
 ## Breaking changes
 

@@ -72,6 +72,16 @@ export default class RowModel<TRow> {
     return this.grid.selectedRows.has(this.key);
   }
 
+  /** Half-selected, which only a tree row with the cascade on can be. */
+  public get indeterminate(): boolean {
+    return false;
+  }
+
+  /** Select or deselect this row. A tree row under `selection: 'cascade'` takes its subtree with it. */
+  public toggleSelection = (): void => {
+    this.grid.toggleRowSelection(this.key);
+  };
+
   public get expanded() {
     return this.grid.expandedDetailRows.has(this.key);
   }

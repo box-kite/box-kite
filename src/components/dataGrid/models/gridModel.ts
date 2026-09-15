@@ -35,6 +35,7 @@ import FilterModel from './filterModel';
 import GroupRowModel from './groupRowModel';
 import PaginationModel from './paginationModel';
 import RowModel from './rowModel';
+import TreeModel from './treeModel';
 import ViewportModel from './viewportModel';
 
 export { GROUPING_CELL_KEY, ROW_DETAIL_CELL_KEY, ROW_NUMBER_CELL_KEY, ROW_SELECTION_CELL_KEY } from './cellKeys';
@@ -102,10 +103,23 @@ export default class GridModel<TRow> {
       prev.columnFilters !== props.columnFilters ||
       prev.filters !== props.filters ||
       prev.expandedRowKeys !== props.expandedRowKeys ||
+      prev.expandedTreeKeys !== props.expandedTreeKeys ||
       prev.page !== props.page ||
       prev.pageSize !== props.pageSize
     ) {
       this.rows.clear();
+    }
+
+    // The tree the data describes, which only the data and the filters over it can change: opening a row
+    // rebuilds the models above and must leave this alone, or every expand would rebuild the whole tree.
+    if (
+      prev.data !== props.data ||
+      prev.def !== props.def ||
+      prev.globalFilterValue !== props.globalFilterValue ||
+      prev.columnFilters !== props.columnFilters ||
+      prev.filters !== props.filters
+    ) {
+      this.tree.nodes.clear();
     }
   }
 
@@ -123,7 +137,11 @@ export default class GridModel<TRow> {
    * the one thing a server-backed grid must not do.
    */
   public get loadedRows(): TRow[] {
-    return this.source.enabled ? this.source.loadedRows() : this.data;
+    if (this.source.enabled) return this.source.loadedRows();
+    // A tree keeps its rows inside each other, so `data` is the top level rather than the rows.
+    if (this.tree.enabled) return this.tree.allRows.value;
+
+    return this.data;
   }
 
   public get componentName(): keyof ComponentsAndVariants {
@@ -282,16 +300,10 @@ export default class GridModel<TRow> {
     return this.props.columnFilters ?? this._columnFilters;
   }
 
-  /**
-   * Apply global filter (fuzzy search across all or specified columns)
-   */
-  private applyGlobalFilter(data: TRow[]): TRow[] {
-    const filterValue = this.globalFilterValue.trim();
-    if (!filterValue) return data;
-
-    const { globalFilterKeys } = this.props.def;
-    const searchableColumns =
-      globalFilterKeys ??
+  /** Which columns the global filter searches: the ones named, or every column of the caller's own. */
+  private readonly globalFilterColumns = memo(
+    () =>
+      this.props.def.globalFilterKeys ??
       this.columns.value.leafs
         .filter(
           (c) =>
@@ -300,35 +312,51 @@ export default class GridModel<TRow> {
             c.key !== GROUPING_CELL_KEY &&
             c.key !== ROW_DETAIL_CELL_KEY,
         )
-        .map((c) => c.key);
+        .map((c) => c.key),
+    () => [this.columns],
+  );
 
-    return data.filter((row) => {
-      return searchableColumns.some((key) => {
-        const value = row[key as keyof TRow];
-        if (value == null) return false;
-        return fuzzySearch(filterValue, String(value));
-      });
+  /**
+   * Whether one row survives the filters — all three of them, in the order they cost: the caller's own
+   * predicates, the global search box, then the column filters. A row rather than an array, because a
+   * tree is filtered a node at a time (a match keeps its ancestors) rather than in one pass.
+   */
+  public rowMatchesFilters(row: TRow): boolean {
+    const { filters } = this.props;
+
+    if (filters && !filters.every((predicate) => predicate(row))) return false;
+    if (this.props.def.globalFilter && !this.matchesGlobalFilter(row)) return false;
+
+    return this.matchesColumnFilters(row);
+  }
+
+  /** Whether anything is filtering at all — what says a filtering pass can be skipped outright. */
+  public get hasRowFilters(): boolean {
+    return (
+      (this.props.filters?.length ?? 0) > 0 ||
+      (!!this.props.def.globalFilter && this.globalFilterValue.trim() !== '') ||
+      Object.keys(this.columnFilters).length > 0
+    );
+  }
+
+  private matchesGlobalFilter(row: TRow): boolean {
+    const filterValue = this.globalFilterValue.trim();
+    if (!filterValue) return true;
+
+    return this.globalFilterColumns.value.some((key) => {
+      const value = row[key as keyof TRow];
+      if (value == null) return false;
+      return fuzzySearch(filterValue, String(value));
     });
   }
 
-  /**
-   * Apply column-level filters
-   */
-  private applyColumnFilters(data: TRow[]): TRow[] {
+  private matchesColumnFilters(row: TRow): boolean {
     const filters = this.columnFilters;
-    const filterKeys = Object.keys(filters) as (keyof TRow)[];
 
-    if (filterKeys.length === 0) return data;
+    return (Object.keys(filters) as (keyof TRow)[]).every((key) => {
+      const filter = filters[key];
 
-    return data.filter((row) => {
-      return filterKeys.every((key) => {
-        const filter = filters[key];
-        if (!filter) return true;
-
-        const cellValue = row[key as keyof TRow];
-
-        return this.matchesFilter(cellValue, filter);
-      });
+      return filter ? this.matchesFilter(row[key as keyof TRow], filter) : true;
     });
   }
 
@@ -379,37 +407,18 @@ export default class GridModel<TRow> {
   }
 
   /**
-   * Apply external predicate filters from the filters prop
-   */
-  private applyExternalFilters(data: TRow[]): TRow[] {
-    const filters = this.props.filters;
-    if (!filters || filters.length === 0) return data;
-
-    return data.filter((row) => filters.every((predicate) => predicate(row)));
-  }
-
-  /**
    * Get filtered data (applies external, global, then column filters)
    */
   public get filteredData(): TRow[] {
     // The server has already filtered — with a datasource it filtered the block, with server-side
     // pagination it filtered the page.
     if (this.source.enabled || this.isPaginated) return this.data;
+    // The tree filtered itself as it was built — a match keeps its ancestors, which no pass over a flat
+    // array can do — so what is left is every row of it.
+    if (this.tree.enabled) return this.tree.allRows.value;
+    if (!this.hasRowFilters) return this.data;
 
-    let data = this.data;
-
-    // Apply external predicate filters
-    data = this.applyExternalFilters(data);
-
-    // Apply global filter
-    if (this.props.def.globalFilter) {
-      data = this.applyGlobalFilter(data);
-    }
-
-    // Apply column filters
-    data = this.applyColumnFilters(data);
-
-    return data;
+    return this.data.filter((row) => this.rowMatchesFilters(row));
   }
 
   private fireServerStateChange(reason: DataGridChangeReason, overrides?: Partial<ServerState<TRow>>): void {
@@ -461,6 +470,7 @@ export default class GridModel<TRow> {
     this.fireServerStateChange(reason, { globalFilterValue: value, page: nextPage });
 
     this.source.invalidate();
+    this.tree.nodes.clear();
     this.rows.clear(); // cascades to flatRows/rowOffsets
     this.notify();
   };
@@ -486,6 +496,7 @@ export default class GridModel<TRow> {
     this.fireServerStateChange(reason, { columnFilters: newFilters, page: nextPage });
 
     this.source.invalidate();
+    this.tree.nodes.clear();
     this.rows.clear(); // cascades to flatRows/rowOffsets
     this.notify();
   };
@@ -500,6 +511,7 @@ export default class GridModel<TRow> {
     this.fireServerStateChange('clear', { columnFilters: {} });
 
     this.source.invalidate();
+    this.tree.nodes.clear();
     this.rows.clear(); // cascades to flatRows/rowOffsets
     this.notify();
   };
@@ -518,7 +530,9 @@ export default class GridModel<TRow> {
   public getColumnUniqueValues = (columnKey: Key): (string | number | boolean | null)[] => {
     const values = new Set<string | number | boolean | null>();
 
-    this.data.forEach((row) => {
+    // Every row in the tree, not the top level of it — a filter offering the roots' values only would
+    // be a filter that hides most of what it names.
+    (this.tree.enabled ? this.tree.everyRow() : this.data).forEach((row) => {
       const value = row[columnKey as keyof TRow];
       if (value !== undefined) {
         values.add(value as string | number | boolean | null);
@@ -551,13 +565,14 @@ export default class GridModel<TRow> {
     }
     return {
       filtered: this.filteredData.length,
-      total: this.data.length,
+      total: this.tree.enabled ? this.tree.everyRow().length : this.data.length,
     };
   }
 
   /** How many rows the query holds altogether: the server's count where there is one, else what is here. */
   public get totalRowCount(): number {
     if (this.source.enabled) return this.source.rowCount;
+    if (this.tree.enabled) return this.tree.everyRow().length;
 
     return this.props.def.pagination?.totalCount ?? this.data.length;
   }
@@ -568,6 +583,10 @@ export default class GridModel<TRow> {
       // here: what is left is one model per position, reading its values out of the block cache. The
       // count is the server's, so the scroll height and `aria-rowcount` hold still while blocks arrive.
       if (this.source.enabled) return this.source.rowList();
+
+      // A tree is filtered and sorted inside itself — a match keeps its ancestors, and a sort happens
+      // among siblings — so none of the flat path below applies to it.
+      if (this.tree.enabled) return this.tree.rowList();
 
       let data = this.filteredData;
 
@@ -906,6 +925,7 @@ export default class GridModel<TRow> {
 
     // Every block boundary moved, so nothing cached lines up with a request any more.
     this.source.invalidate();
+    this.tree.nodes.clear();
     this.rows.clear(); // cascades to flatRows/rowOffsets
     this.notify();
   };
@@ -949,6 +969,9 @@ export default class GridModel<TRow> {
 
   /** Server row model: the blocks ~def.dataSource~ has answered, and the ones still in flight. */
   public readonly source = new DataSourceModel(this);
+
+  /** Tree data: the shape `def.treeData` describes, and which of its rows are open. */
+  public readonly tree = new TreeModel(this);
 
   /**
    * Throw the fetched blocks away and ask for them again. The grid invalidates on its own whenever it
@@ -1089,6 +1112,7 @@ export default class GridModel<TRow> {
     this.fireServerStateChange('sort', { sortColumn: this._sortColumn, sortDirection: this._sortDirection, page: nextPage });
 
     this.source.invalidate();
+    this.tree.nodes.clear();
     this.rows.clear(); // cascades to flatRows/rowOffsets (sort doesn't change column structure)
     this.notify();
   };
@@ -1139,6 +1163,7 @@ export default class GridModel<TRow> {
   /** Grouping changed, so every open path names a group that is not there and every block is stale. */
   private collapseGroups(): void {
     this.expandedGroupRow = new Set();
+    this._collapsedGroupRow = new Set();
     this.source.expansionChanged();
     this.source.invalidate();
   }
@@ -1150,14 +1175,34 @@ export default class GridModel<TRow> {
     return this._expansion;
   }
 
-  public toggleGroupRow = (groupRowKey: Key) => {
+  /**
+   * Whether a group row is open. Explicit state wins: a group somebody has opened or shut is where they
+   * left it, and `def.groupDefaultExpanded` answers for every group nobody has touched. Client-side
+   * grouping only — with a datasource, a level that has never been fetched has no rows to open.
+   */
+  public isGroupExpanded(groupRowKey: Key, depth: number): boolean {
+    if (this.expandedGroupRow.has(groupRowKey)) return true;
+    if (this._collapsedGroupRow.has(groupRowKey)) return false;
+
+    const defaultExpanded = this.props.def.groupDefaultExpanded;
+
+    return typeof defaultExpanded === 'number' ? depth < defaultExpanded : defaultExpanded === true;
+  }
+
+  /** Group rows shut by hand, which is what a `groupDefaultExpanded` grid needs to remember. */
+  private _collapsedGroupRow: Set<Key> = new Set();
+
+  public toggleGroupRow = (groupRowKey: Key, expanded = this.expandedGroupRow.has(groupRowKey)) => {
     this._expansion++;
     this.expandedGroupRow = new Set(this.expandedGroupRow);
+    this._collapsedGroupRow = new Set(this._collapsedGroupRow);
 
-    if (this.expandedGroupRow.has(groupRowKey)) {
+    if (expanded) {
       this.expandedGroupRow.delete(groupRowKey);
+      this._collapsedGroupRow.add(groupRowKey);
     } else {
       this.expandedGroupRow.add(groupRowKey);
+      this._collapsedGroupRow.delete(groupRowKey);
     }
 
     this.source.expansionChanged();
@@ -1223,8 +1268,25 @@ export default class GridModel<TRow> {
     this.columnWidths.set(columnKey, width);
   };
 
-  public groupColumns: Set<Key> = new Set();
-  public hiddenColumns: Set<Key> = new Set();
+  // Seeded from `def.groupBy` on the first read rather than in the constructor, so the declared grouping
+  // is the state the first render is built from — and a grouped column is hidden, the way the menu hides
+  // one. Declared rather than controlled: it is where the grid starts, and the menu takes it from there.
+  private _groupColumns?: Set<Key>;
+  public get groupColumns(): Set<Key> {
+    return (this._groupColumns ??= new Set(this.props.def.groupBy ?? []));
+  }
+  public set groupColumns(value: Set<Key>) {
+    this._groupColumns = value;
+  }
+
+  private _hiddenColumns?: Set<Key>;
+  public get hiddenColumns(): Set<Key> {
+    return (this._hiddenColumns ??= new Set(this.props.def.groupBy ?? []));
+  }
+  public set hiddenColumns(value: Set<Key>) {
+    this._hiddenColumns = value;
+  }
+
   public columnWidths: Map<Key, number> = new Map();
 
   private _sortColumn?: Key;

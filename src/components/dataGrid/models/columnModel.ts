@@ -275,7 +275,8 @@ export default class ColumnModel<TRow> {
     // Grouping reads the rows the browser holds, and with a datasource that is the blocks in play rather
     // than the table — so it would group whatever happened to be fetched. Offered only where the server
     // answers a group level itself, which is what `dataSource.grouping` declares.
-    const group = !this.grid.source.enabled || this.grid.source.canGroup;
+    // A tree is already a shape the rows are in, so grouping them into a second one is not offered.
+    const group = (!this.grid.source.enabled || this.grid.source.canGroup) && !this.grid.tree.enabled;
 
     if (typeof config === 'boolean') {
       return { sort: config, pin: config, group: config && group };

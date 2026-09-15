@@ -96,6 +96,27 @@ const employees: Employee[] = Array.from({ length: 10_000 }, (_, index) => ({
   salary: 40_000 + (index % 50) * 1_000,
 }));
 
+interface TreeNode {
+  id: string;
+  name: string;
+  size: number;
+  children?: TreeNode[];
+}
+
+/** Three levels, so `aria-level` has something to say beyond the top. */
+const tree: TreeNode[] = [
+  {
+    id: 'src',
+    name: 'src',
+    size: 55,
+    children: [
+      { id: 'box', name: 'box.ts', size: 12 },
+      { id: 'core', name: 'core', size: 43, children: [{ id: 'engine', name: 'engine.ts', size: 43 }] },
+    ],
+  },
+  { id: 'readme', name: 'README.md', size: 1 },
+];
+
 const openPopup = () => fireEvent.click(screen.getByRole('combobox'));
 
 export const fixtures: A11yFixture[] = [
@@ -561,6 +582,50 @@ export const fixtures: A11yFixture[] = [
               </P>
             ),
           },
+        }}
+      />
+    ),
+  },
+  {
+    // A group row, which the sweep had never rendered until grouping could be declared rather than
+    // only clicked (bug #163) — and `aria-expanded` on a row inside a `grid` was a violation all along.
+    name: 'DataGrid (grouped, expanded)',
+    render: () => (
+      <DataGrid<Employee>
+        data={employees.slice(0, 30)}
+        def={{
+          rowKey: 'id',
+          title: 'Employees by department',
+          rowSelection: true,
+          visibleRowsCount: 10,
+          groupBy: ['department'],
+          groupDefaultExpanded: true,
+          columns: [
+            { key: 'name', header: 'Name' },
+            { key: 'department', header: 'Department' },
+            { key: 'salary', header: 'Salary', aggregate: 'sum' },
+          ],
+        }}
+      />
+    ),
+  },
+  {
+    // A `treegrid`: rows carrying `aria-level`, `aria-posinset`, `aria-setsize` and — the one place in
+    // the library where it is valid on a row — `aria-expanded`.
+    name: 'DataGrid (tree data)',
+    render: () => (
+      <DataGrid<TreeNode>
+        data={tree}
+        def={{
+          rowKey: 'id',
+          title: 'Files',
+          rowSelection: true,
+          visibleRowsCount: 'all',
+          treeData: { childrenKey: 'children', defaultExpanded: true, selection: 'cascade' },
+          columns: [
+            { key: 'name', header: 'Name' },
+            { key: 'size', header: 'Size' },
+          ],
         }}
       />
     ),

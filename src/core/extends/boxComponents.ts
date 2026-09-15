@@ -2645,10 +2645,9 @@ const boxComponents = {
               css: { fontVariantNumeric: 'tabular-nums' },
               group: {
                 'grid-row/hover': { bgColor: 'gray-50' },
-                // A group row is the only one carrying `aria-expanded`, and a bare `aria-` key means
-                // `="true"` — so both states are named to tint a section header open or shut.
-                'grid-row/aria-expanded=true': { bgColor: 'gray-50' },
-                'grid-row/aria-expanded=false': { bgColor: 'gray-50' },
+                // A group row is tinted because it is a group, not because it can be opened: since #162 the
+                // open state is on the expand button, and a tree row carries an `aria-expanded` of its own.
+                'grid-row/data-group-row': { bgColor: 'gray-50' },
                 // Selection had no appearance at all: `isRowSelected` was declared on this node and applied
                 // by nothing, so a selected row was legible only by its own checkbox.
                 'grid-row/aria-selected=true': { bgColor: 'indigo-50' },
@@ -2666,8 +2665,7 @@ const boxComponents = {
                   color: 'gray-100',
                   group: {
                     'grid-row/hover': { bgColor: 'gray-800' },
-                    'grid-row/aria-expanded=true': { bgColor: 'gray-800' },
-                    'grid-row/aria-expanded=false': { bgColor: 'gray-800' },
+                    'grid-row/data-group-row': { bgColor: 'gray-800' },
                     'grid-row/aria-selected=true': { bgColor: 'indigo-950' },
                   },
                   focusVisible: {
@@ -2685,8 +2683,7 @@ const boxComponents = {
                 zIndex: 1,
                 group: {
                   'grid-row/hover': { bgColor: 'gray-50' },
-                  'grid-row/aria-expanded=true': { bgColor: 'gray-50' },
-                  'grid-row/aria-expanded=false': { bgColor: 'gray-50' },
+                  'grid-row/data-group-row': { bgColor: 'gray-50' },
                   'grid-row/aria-selected=true': { bgColor: 'indigo-50' },
                 },
                 theme: {
@@ -2694,8 +2691,7 @@ const boxComponents = {
                     bgColor: 'gray-900',
                     group: {
                       'grid-row/hover': { bgColor: 'gray-800' },
-                      'grid-row/aria-expanded=true': { bgColor: 'gray-800' },
-                      'grid-row/aria-expanded=false': { bgColor: 'gray-800' },
+                      'grid-row/data-group-row': { bgColor: 'gray-800' },
                       'grid-row/aria-selected=true': { bgColor: 'indigo-950' },
                     },
                   },
@@ -2781,6 +2777,49 @@ const boxComponents = {
                           bgColor: 'gray-800',
                         },
                       },
+                    },
+                  },
+                },
+              },
+              // The tree column's cell: the indent, the chevron and the value it belongs to. The whole
+              // cell rather than the chevron alone, so a `Cell` renderer of the caller's own indents too.
+              tree: {
+                styles: {
+                  gap: 1,
+                  // Every level pushes the value along, so the cell has to be allowed to overflow its
+                  // column rather than push the column wider than its neighbours.
+                  minWidth: 0,
+                },
+                children: {
+                  toggle: {
+                    clean: true,
+                    styles: {
+                      width: 5,
+                      height: 5,
+                      flexShrink: 0,
+                      borderRadius: 1,
+                      color: 'gray-500',
+                      hover: { color: 'gray-900', bgColor: 'gray-100' },
+                      theme: {
+                        dark: {
+                          color: 'gray-400',
+                          hover: { color: 'gray-100', bgColor: 'gray-800' },
+                        },
+                      },
+                    },
+                    variants: {
+                      // Open: the chevron takes the accent everything else in the grid opens in.
+                      isExpanded: {
+                        color: 'indigo-600',
+                        theme: { dark: { color: 'indigo-400' } },
+                      },
+                    },
+                  },
+                  // What a leaf puts where its chevron would be: the values line up in a column either way.
+                  spacer: {
+                    styles: {
+                      width: 5,
+                      flexShrink: 0,
                     },
                   },
                 },

@@ -37,8 +37,13 @@ export default class CellModel<TRow> {
     this.grid.toggleDetailRow(this.row.key);
   };
 
-  /** Toggle this row's selection (used by the row-selection checkbox cell). */
+  /** Whether the row is half-selected — a tree row whose subtree is partly ticked. */
+  public get indeterminate(): boolean {
+    return this.row.indeterminate;
+  }
+
+  /** Toggle this row's selection (used by the row-selection checkbox cell). The row owns what that means. */
   public toggleSelection = (): void => {
-    this.grid.toggleRowSelection(this.row.key);
+    this.row.toggleSelection();
   };
 }

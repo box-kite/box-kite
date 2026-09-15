@@ -16,6 +16,10 @@ import VisuallyHidden from './visuallyHidden';
  * @pattern https://www.w3.org/WAI/ARIA/apg/patterns/grid/
  * @a11y `role="grid"` with `aria-rowcount`/`aria-colcount` over the whole data set and
  * `aria-rowindex`/`aria-colindex` on what is rendered, so virtualization does not renumber the grid.
+ * @a11y With `def.treeData` it is a `role="treegrid"` instead, and its rows carry `aria-level`,
+ * `aria-posinset`, `aria-setsize` and — valid only inside a treegrid — `aria-expanded`. The rows under a
+ * row are its siblings in the same rowgroup rather than its children, so those four are all a screen
+ * reader has to go on.
  * @a11y One cell is the tab stop, as APG's grid pattern specifies: the grid is entered once and the arrow
  * keys move inside it, rather than every cell being a stop of its own.
  * @a11y A grid is not named by the rows in it — pass `def.title` and the grid points `aria-labelledby`
@@ -25,6 +29,9 @@ import VisuallyHidden from './visuallyHidden';
  * width on `aria-valuenow`, so the new width is read out as it changes.
  * @keyboard Tab — Enters the grid at one cell, not at every cell. Shift+Tab leaves it.
  * @keyboard Right / Left — One cell along the row. At either end focus stays where it is.
+ * @keyboard (On a tree's own column) Right / Left — Opens a shut row and shuts an open one; on a row that
+ * is already shut, Left steps out to its parent. Both follow the reading order, so they swap in a
+ * right-to-left grid, and on every other column they are the ordinary move along the row.
  * @keyboard Down / Up — One row, keeping the column: through a group row or a detail panel with fewer
  * cells, and through a grouped header whose cells cover several columns each.
  * @keyboard Home / End — The first or last cell of the row.

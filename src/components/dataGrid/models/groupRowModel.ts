@@ -105,7 +105,7 @@ export default class GroupRowModel<TRow> {
   }
 
   public get expanded() {
-    return this.grid.expandedGroupRow.has(this.key);
+    return this.grid.isGroupExpanded(this.key, this.depth);
   }
 
   public get depth(): number {
@@ -144,7 +144,7 @@ export default class GroupRowModel<TRow> {
   public readonly kind = 'group' as const;
 
   public toggleRow() {
-    this.grid.toggleGroupRow(this.key);
+    this.grid.toggleGroupRow(this.key, this.expanded);
   }
 
   /** Select/deselect every leaf row under this group. */
