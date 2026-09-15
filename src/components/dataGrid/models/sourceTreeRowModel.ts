@@ -1,4 +1,3 @@
-import { Key } from '../contracts/dataGridContract';
 import SourceRowModel from './sourceRowModel';
 import { TreeRow } from './treeRow';
 
@@ -28,15 +27,9 @@ export default class SourceTreeRowModel<TRow> extends SourceRowModel<TRow> imple
     return this.sourceLevel.totalCount ?? -1;
   }
 
-  /** The path naming this row's own level: its level's, with its own key on the end. */
-  public get treeKeys(): Key[] {
-    return [...this.sourceLevel.path, this.key];
-  }
-
+  /** A row the server has not answered for holds nothing anybody can ask about yet. */
   public get hasChildren(): boolean {
-    const row = this.data;
-
-    return !this.placeholder && this.grid.tree.rowHasChildren(row);
+    return !this.placeholder && this.grid.tree.rowHasChildren(this.data);
   }
 
   public get treeExpanded(): boolean {
