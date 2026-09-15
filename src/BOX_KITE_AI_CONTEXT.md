@@ -2368,6 +2368,7 @@ row that is already shut (they swap in a right-to-left grid).
 | `indent`          | `number`                             | `4`       | How far one level indents, on the ÷4 spacing scale                        |
 | `defaultExpanded` | `boolean \| number \| Key[]`         | none open | `true` for every row, a number for a depth, or the keys to open           |
 | `selection`       | `'self' \| 'cascade'`                | `'self'`  | `cascade` ticks the whole subtree, and half of one reads as indeterminate |
+| `hasChildren`     | `keyof TRow \| (row) => boolean`     | —         | **Lazy only**: whether the row holds rows the server can be asked for     |
 
 ```tsx
 <DataGrid
@@ -2387,7 +2388,28 @@ row that is already shut (they swap in a right-to-left grid).
 
 A filter over a tree keeps **a match and every ancestor of one**, so the way to a match stays visible; a
 sort happens inside each parent. Nothing under a shut row is built at all. _Group By_ is not offered on a
-tree, and a `def.dataSource` grid ignores `treeData` — lazy children are the datasource's own contract.
+tree: the rows are already in a shape.
+
+**Beside `def.dataSource` the tree is the server's** — one level per open row, and the browser holds none
+of it. Each request carries `treeKeys` (the row whose children are wanted, named by its `rowKey` and its
+ancestors', `[]` for the top), and `hasChildren` is how a row says there is a level to ask for — without
+one no row grows a chevron. `childrenKey`/`getChildren`/`pathKey`/`getPath` are not read, `selection: 'cascade'`
+is not offered (a tick cannot reach rows nobody has fetched), and `defaultExpanded` costs one request per
+row it opens, so name the keys rather than passing `true`.
+
+```tsx
+<DataGrid
+  def={{
+    rowKey: 'id',
+    dataSource: { getRows: async ({ startRow, endRow, treeKeys, signal }) => fetchLevel(treeKeys, startRow, endRow, signal) },
+    treeData: { hasChildren: 'folder', column: 'name' },
+    columns: [
+      { key: 'name', header: 'Name' },
+      { key: 'size', header: 'Size', align: 'end' },
+    ],
+  }}
+/>
+```
 
 ### ContextMenuConfig
 
