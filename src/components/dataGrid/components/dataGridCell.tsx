@@ -25,9 +25,13 @@ export default function DataGridCell<TRow>(props: Props<TRow>) {
   if (column.hasAlign) restProps.jc = column.align;
 
   // Column-stable variant (precomputed once) merged with this row's expansion state.
-  const variant = cell.isExpanded
+  let variant: Record<string, boolean> = cell.isExpanded
     ? { ...column.cellVariant.value, isExpanded: true, isExpandedFirstLeaf: cell.isFirst, isExpandedLastLeaf: cell.isLast }
     : column.cellVariant.value;
+
+  // Editing is per cell rather than per column, so it cannot ride the precomputed record — and a cell
+  // whose editor is open stops clipping, or a control as tall as the row is cut off at both ends.
+  if (cell instanceof CellModel && cell.editing) variant = { ...variant, isEditing: true, isInvalid: !!cell.error };
 
   return (
     <Flex

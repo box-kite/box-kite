@@ -30,6 +30,7 @@ import ColumnModel from './columnModel';
 import ColumnVisibilityModel from './columnVisibilityModel';
 import DataSourceModel from './dataSourceModel';
 import DetailRowModel from './detailRowModel';
+import EditModel from './editModel';
 import ExportModel from './exportModel';
 import FilterModel from './filterModel';
 import GroupRowModel from './groupRowModel';
@@ -973,12 +974,17 @@ export default class GridModel<TRow> {
   /** Tree data: the shape `def.treeData` describes, and which of its rows are open. */
   public readonly tree = new TreeModel(this);
 
+  /** Cell editing: which cell is open, what a commit is judged by, and the values the grid has accepted. */
+  public readonly edits = new EditModel(this);
+
   /**
    * Throw the fetched blocks away and ask for them again. The grid invalidates on its own whenever it
    * changes the query; this is for the half it cannot see — a filter of the page's own, a row somebody
    * saved, a tenant that changed underneath the closure ~getRows~ was written in.
    */
   public refresh = (): void => {
+    // The blocks are being fetched afresh, so whatever the grid was holding over them is the older answer.
+    this.edits.clearEdits();
     this.source.invalidate();
   };
 

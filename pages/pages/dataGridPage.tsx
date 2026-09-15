@@ -1340,6 +1340,66 @@ const dataSource = useMemo(() => ({
             <LazyTreeDemo />
           </Code>
 
+          <Section id="editing" title="A cell you can type into">
+            <Box>
+              <Mono>column.editable</Mono> is the whole opt-in, and <Mono>def.onCellEdit</Mono> is the one function that both judges an edit
+              and is told about it — answer nothing to accept the value, or a string to refuse it. Which editor a cell opens is read off the
+              value in it: a number gets a numeric field, a boolean a checkbox, everything else a text field, so a column of numbers has a
+              numeric keypad on a phone without being told. <Mono>editor</Mono> names one of the four (<Mono>text</Mono>,{' '}
+              <Mono>number</Mono>, <Mono>checkbox</Mono>, <Mono>select</Mono>) or configures it, and <Mono>EditCell</Mono> is a control of
+              your own bound to <Mono>cell.draft</Mono>.
+            </Box>
+            <Flex d="column" gap={3} mt={4}>
+              <Note icon={Table} title="The keyboard is APG's, and Tab is the one that matters">
+                Enter or F2 opens the editor, Escape throws the draft away, Enter commits and hands the keyboard back to the cell. A
+                printable character opens the editor on that character, replacing the value the way a spreadsheet does — and{' '}
+                <b>Tab commits and opens the next editable cell</b>, along the row and on into the rows after it, so a row of corrections is
+                one gesture.
+              </Note>
+              <Note icon={Filter} title="A validator can be async, and a late answer is dropped">
+                <Mono>def.onCellEdit</Mono> may return a promise, so a uniqueness check against a server is the same function. The editor
+                waits; an answer to an edit the user has since abandoned is dropped rather than applied to whatever they are editing now. A
+                refused value keeps the editor open with the message in a <Mono>role="alert"</Mono> — in the top layer, since a bubble
+                inside the scroller would be clipped away on the last row.
+              </Note>
+              <Note icon={Table} title="The grid does not own your data, so it holds the edit">
+                An accepted value is kept as an edit <i>over</i> the rows the grid was given, and is what every cell, every{' '}
+                <Mono>Cell</Mono> renderer and every export reads from then on — which is what lets a grid over a{' '}
+                <Mono>def.dataSource</Mono> be edited at all. <Mono>onCellEditsChange</Mono> reports the whole list, oldest first, which is
+                the stream an undo is built out of, and <Mono>clearEdits()</Mono> on the grid's ref says your own data has caught up. An
+                edit never re-sorts or re-filters the grid: a row jumping out from under the pointer as it is typed into is not an edit
+                anybody asked for.
+              </Note>
+            </Flex>
+          </Section>
+
+          <Code
+            id="editing-demo"
+            defer
+            label="Cell editing"
+            language="jsx"
+            check={false}
+            code={`<DataGrid
+  data={people}
+  def={{
+    rowKey: 'id',
+    // Both the validation and the notification. Nothing accepts, a string refuses.
+    onCellEdit: ({ columnKey, value }) => {
+      if (columnKey === 'first_name' && !String(value).trim()) return 'A name is required';
+      if (columnKey === 'salary' && Number(value) < 0) return 'A salary cannot be negative';
+    },
+    columns: [
+      { key: 'first_name', header: 'First name', editable: true },
+      // No \`editor\`: the value is a number, so the field is a numeric one.
+      { key: 'salary', header: 'Salary', editable: true, align: 'end' },
+      { key: 'country', header: 'Country', editable: true, editor: { type: 'select', options: countryOptions } },
+    ],
+  }}
+/>`}
+          >
+            <EditingDemo />
+          </Code>
+
           <Code
             id="disable-sort"
             defer
@@ -2081,6 +2141,55 @@ const fileTreeSize = fileTree.reduce(
   0,
 );
 
+/**
+ * Editing, with the two halves a page has to supply: a validator that refuses something, and somewhere
+ * for the edit stream to go — which is all an undo needs, so this one has one.
+ */
+function EditingDemo() {
+  const [edits, setEdits] = useState<{ rowKey: Key; columnKey: Key; value: unknown; oldValue: unknown }[]>([]);
+
+  const def = useMemo(
+    () => ({
+      title: 'People',
+      topBar: true,
+      rowHeight: 40,
+      visibleRowsCount: 8,
+      onCellEdit: ({ columnKey, value }: { columnKey: Key; value: unknown }) => {
+        if (columnKey === 'first_name' && !String(value ?? '').trim()) return 'A name is required';
+        if (columnKey === 'salary' && Number(value) < 0) return 'A salary cannot be negative';
+      },
+      columns: [
+        { key: 'first_name' as const, header: 'First name', width: 170, editable: true },
+        { key: 'last_name' as const, header: 'Last name', width: 170, editable: true },
+        // No `editor`: the value is a number, so the field is a numeric one.
+        { key: 'salary' as const, header: 'Salary', width: 140, align: 'end' as const, editable: true },
+        {
+          key: 'country' as const,
+          header: 'Country',
+          width: 170,
+          editable: true,
+          editor: { type: 'select' as const, options: allCountryOptions },
+        },
+      ],
+    }),
+    [],
+  );
+
+  const last = edits.at(-1);
+
+  return (
+    <Flex d="column" gap={3}>
+      <Box fontSize={12} color="gray-500" theme={{ dark: { color: 'gray-400' } }}>
+        {edits.length === 0
+          ? 'Press Enter on a cell, or just start typing. Tab walks the row. An empty name is refused.'
+          : `${edits.length} edit${edits.length === 1 ? '' : 's'} · last: ${String(last?.columnKey)} ${String(last?.oldValue)} → ${String(last?.value)}`}
+      </Box>
+
+      <DataGrid data={allData} def={def} onCellEditsChange={setEdits} />
+    </Flex>
+  );
+}
+
 function TreeDataDemo() {
   // `defaultExpanded: 1` opens the top level, so the count starts at what is already open.
   const [openRows, setOpenRows] = useState(fileTree.length);
@@ -2262,6 +2371,7 @@ const sidebarLinks = [
   { id: 'data-source', label: 'Server row model' },
   { id: 'data-source-grouping', label: 'Server-side grouping' },
   { id: 'data-source-tree', label: 'Server-side tree' },
+  { id: 'editing', label: 'Cell editing' },
   { id: 'disable-sort', label: 'Disable Sort' },
   { id: 'context-menu', label: 'Context Menu' },
   { id: 'resizer-style', label: 'Resizer Style' },

@@ -357,6 +357,83 @@ describe('DataGrid accessibility', () => {
     });
   });
 
+  /**
+   * APG's editable-cell keys, driven by a real keyboard. The pattern is Enter or F2 in, Escape out with
+   * nothing written, and Tab out committing — and the editor has to *hold* focus while it is open, which
+   * a roving tabindex over cells is the natural way to get wrong.
+   */
+  describe('Keyboard — editing a cell', () => {
+    const editable = [
+      { key: 'name', header: 'Name', editable: true },
+      { key: 'city', header: 'City', editable: true },
+      { key: 'age', header: 'Age' },
+    ];
+
+    it('opens on Enter, keeps focus in the editor and commits back onto the cell', async () => {
+      const user = keyboard();
+      renderGrid({ columns: editable });
+
+      const cell = cellsOf(rows()[1])[0];
+      await user.click(cell);
+      await user.press('Enter');
+
+      const input = screen.getByRole('textbox', { name: 'Edit Name' });
+      expectFocusOn(input);
+
+      await user.type('Ada Lovelace');
+      await user.press('Enter');
+
+      expectFocusOn(cell);
+      expect(cell.textContent).toContain('Ada Lovelace');
+    });
+
+    it('opens on F2 and Escape hands the keyboard back with nothing written', async () => {
+      const user = keyboard();
+      renderGrid({ columns: editable });
+
+      const cell = cellsOf(rows()[1])[0];
+      await user.click(cell);
+      await user.press('F2');
+      await user.type('Nobody');
+      await user.press('Escape');
+
+      expectFocusOn(cell);
+      expect(cell.textContent).toContain('Ada');
+    });
+
+    it('Tab commits and lands in the next editable cell', async () => {
+      const user = keyboard();
+      renderGrid({ columns: editable });
+
+      await user.click(cellsOf(rows()[1])[0]);
+      await user.press('Enter');
+      await user.type('Ada Lovelace');
+      await user.pressTab();
+
+      expectFocusOn(screen.getByRole('textbox', { name: 'Edit City' }));
+      expect(cellsOf(rows()[1])[0].textContent).toContain('Ada Lovelace');
+    });
+
+    it('says a refused value is refused, in a live region and on the field', async () => {
+      const user = keyboard();
+      renderGrid({ columns: editable, onCellEdit: () => 'Name is taken' });
+
+      await user.click(cellsOf(rows()[1])[0]);
+      await user.press('Enter');
+      await user.type('Grace');
+      await user.press('Enter');
+
+      const alert = screen.getByRole('alert');
+      const input = screen.getByRole('textbox', { name: 'Edit Name' });
+
+      expect(alert.textContent).toBe('Name is taken');
+      expect(input.getAttribute('aria-invalid')).toBe('true');
+      expect(input.getAttribute('aria-describedby')).toBe(alert.id);
+      // Still in the editor: a value nobody accepted is one the keyboard has to stay on.
+      expectFocusOn(input);
+    });
+  });
+
   describe('The controls the grid draws for itself', () => {
     it('names every icon-only control it renders', () => {
       renderGrid({ topBar: true, rowSelection: true, rowDetail: { content: () => <span>detail</span> } });

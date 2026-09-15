@@ -1,4 +1,4 @@
-import { fireEvent, screen } from '@testing-library/react';
+import { act, fireEvent, screen } from '@testing-library/react';
 import { Sun } from 'lucide-react';
 import Accordion, { Collapsible } from '../../src/components/accordion';
 import BaseSvg from '../../src/components/baseSvg';
@@ -530,6 +530,36 @@ export const fixtures: A11yFixture[] = [
         }}
       />
     ),
+  },
+  {
+    // An open cell editor, which is the only state where the grid puts a control *inside* a cell and
+    // the only one with a `role="alert"` in it. The message is forced by a validator that refuses
+    // everything, so the invalid state is swept rather than only the resting one.
+    name: 'DataGrid (editing, with a refused value)',
+    render: () => (
+      <DataGrid<Person>
+        data={people}
+        def={{
+          rowKey: 'id',
+          editable: true,
+          onCellEdit: () => 'Name is taken',
+          columns: [
+            { key: 'name', header: 'Name' },
+            { key: 'age', header: 'Age' },
+          ],
+        }}
+      />
+    ),
+    setup: () => {
+      const cell = document.querySelector<HTMLElement>('[role="gridcell"]');
+
+      // One act per step: focusing moves the roving tab stop, and the Enter after it has to be read by
+      // the render that move caused rather than by the one before it.
+      act(() => cell?.focus());
+      act(() => void fireEvent.keyDown(cell!, { key: 'Enter' }));
+      act(() => void fireEvent.change(screen.getByRole('textbox', { name: 'Edit Name' }), { target: { value: 'Grace' } }));
+      act(() => void fireEvent.keyDown(screen.getByRole('textbox', { name: 'Edit Name' }), { key: 'Enter' }));
+    },
   },
   {
     // The pager and the page-size selector, which nothing else here renders — the four navigation

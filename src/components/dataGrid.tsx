@@ -38,10 +38,18 @@ import VisuallyHidden from './visuallyHidden';
  * @keyboard Ctrl + Home / End — The first or last cell of the whole grid, scrolling there if it has not
  * been rendered yet.
  * @keyboard PageDown / PageUp — A screenful of rows at a time.
- * @keyboard Enter / Space — Sorts, on a sortable column header. Anywhere else, steps into the cell's own
- * control.
- * @keyboard F2 — Steps into the cell's control even on a header, where Enter is spoken for by the sort.
- * @keyboard Escape — Hands the keyboard back from that control to the cell.
+ * @keyboard Enter / Space — Sorts, on a sortable column header. On an editable cell, opens its editor.
+ * Anywhere else, steps into the cell's own control.
+ * @keyboard F2 — Steps into the cell's control even on a header, where Enter is spoken for by the sort;
+ * on an editable cell it opens the editor, as Enter does.
+ * @keyboard (On an editable cell) Any printable character — Opens the editor on that character, replacing
+ * the value the way a spreadsheet does.
+ * @keyboard (In an editor) Enter — Commits and hands the keyboard back to the cell. A value `def.onCellEdit`
+ * refuses keeps the editor open, with the message in a `role="alert"` and `aria-invalid` on the field.
+ * @keyboard (In an editor) Tab / Shift+Tab — Commits and opens the next or previous editable cell, along
+ * the row and on into the ones after it. With no next one it leaves the grid, as Tab does.
+ * @keyboard Escape — Hands the keyboard back from that control to the cell; from an editor it also throws
+ * the draft away.
  * @keyboard (On a column resizer) Tab / F2 — Reaches the resizer of the header cell focus is on. Escape
  * hands the keyboard back to the cell.
  * @keyboard (On a column resizer) Right / Left — Moves the separator 16px, which widens or narrows the
@@ -64,6 +72,7 @@ function DataGridImpl<TRow extends object>(props: DataGridProps<TRow>, ref: Ref<
       exportCsv: grid.exportCsv,
       exportXlsx: grid.exportXlsx,
       refresh: grid.refresh,
+      clearEdits: grid.edits.clearEdits,
     }),
     [grid],
   );
@@ -79,6 +88,7 @@ function DataGridImpl<TRow extends object>(props: DataGridProps<TRow>, ref: Ref<
     globalFilterValue,
     columnFilters,
     expandedRowKeys,
+    expandedTreeKeys,
     page,
     pageSize,
     onSelectedRowKeysChange,
@@ -86,6 +96,8 @@ function DataGridImpl<TRow extends object>(props: DataGridProps<TRow>, ref: Ref<
     onGlobalFilterChange,
     onColumnFiltersChange,
     onExpandedRowKeysChange,
+    onExpandedTreeKeysChange,
+    onCellEditsChange,
     onPaginationChange,
     onPageChange,
     onPageSizeChange,
