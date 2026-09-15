@@ -225,9 +225,14 @@ describe('TreeModel', () => {
     expect(visible(grid)[0].indeterminate).toBe(false);
   });
 
-  it('a datasource wins: lazy children are its own contract, not a walk over data', () => {
+  it('is still a tree beside a datasource, and stops walking the data it will never be handed', () => {
     const grid = nestedGrid({ dataSource: { getRows: async () => ({ rows: [], totalCount: 0 }) } });
 
-    expect(grid.tree.enabled).toBe(false);
+    // A chevron, an indent and a treegrid either way — what changes is who holds the tree.
+    expect(grid.tree.enabled).toBe(true);
+    expect(grid.tree.isLazy).toBe(true);
+    expect(grid.tree.isEager).toBe(false);
+    expect(grid.tree.nodes.value).toEqual([]);
+    expect(grid.tree.everyRow()).toEqual([]);
   });
 });

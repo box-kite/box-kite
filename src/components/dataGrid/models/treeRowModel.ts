@@ -4,13 +4,16 @@ import DetailRowModel from './detailRowModel';
 import GridModel from './gridModel';
 import RowModel from './rowModel';
 import type { TreeNode } from './treeModel';
+import { TreeRow } from './treeRow';
 
 /**
  * One row of a `def.treeData` tree: a row of the grid in every sense — its own values, its own cells,
  * its own detail panel — that happens to hold rows of its own. The rows under it are its siblings in the
  * same rowgroup rather than its children in the DOM, which is what `aria-level` is for.
  */
-export default class TreeRowModel<TRow> extends RowModel<TRow> {
+export default class TreeRowModel<TRow> extends RowModel<TRow> implements TreeRow {
+  public readonly isTreeRow = true;
+
   constructor(
     grid: GridModel<TRow>,
     private readonly node: TreeNode<TRow>,

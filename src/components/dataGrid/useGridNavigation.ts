@@ -3,7 +3,7 @@ import useRovingFocus from '../../react/a11y/useRovingFocus';
 import { useIsomorphicLayoutEffect } from '../../react/effects';
 import { GridNavigation } from './gridNavigationContext';
 import GridModel from './models/gridModel';
-import TreeRowModel from './models/treeRowModel';
+import { isTreeRow } from './models/treeRow';
 
 /** A cell, header or body — what a keystroke has to land on for the grid to own it. */
 const CELL_SELECTOR = '[role="gridcell"],[role="columnheader"]';
@@ -173,7 +173,7 @@ export default function useGridNavigation<TRow>(options: GridNavigationOptions<T
       if (!grid.tree.enabled || (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft')) return false;
 
       const bodyRow = bodyRows[row - headerRowCount];
-      if (!(bodyRow instanceof TreeRowModel)) return false;
+      if (!isTreeRow<TRow>(bodyRow)) return false;
       if (grid.columns.value.visibleLeafs[column]?.key !== grid.tree.columnKey) return false;
 
       const forward = event.key === (grid.isRtl ? 'ArrowLeft' : 'ArrowRight');
@@ -190,11 +190,17 @@ export default function useGridNavigation<TRow>(options: GridNavigationOptions<T
         return true;
       }
 
-      const parent = bodyRow.treeParent;
-      if (!parent) return false;
+      // The parent is the nearest row above sitting one level shallower — the display list is the tree in
+      // its own order, so there is nothing else it can be, and a lazy tree has no parent object to hold.
+      for (let at = row - 1; at >= headerRowCount; at--) {
+        const candidate = bodyRows[at - headerRowCount];
+        if (!isTreeRow<TRow>(candidate) || candidate.level >= bodyRow.level) continue;
 
-      roving.setActiveCell(headerRowCount + bodyRows.indexOf(parent), column, { reason: 'keyboard' });
-      return true;
+        roving.setActiveCell(at, column, { reason: 'keyboard' });
+        return true;
+      }
+
+      return false;
     },
     [bodyRows, grid, headerRowCount, roving],
   );

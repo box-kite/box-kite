@@ -5,6 +5,7 @@ import GridModel from './gridModel';
 import GroupRowModel from './groupRowModel';
 import RowModel from './rowModel';
 import type { TreeNode } from './treeModel';
+import { isTreeRow } from './treeRow';
 
 /** Roughly how many characters fit in a pixel width, once Excel's cell padding is taken off. */
 const PIXELS_PER_CHARACTER = 7;
@@ -96,12 +97,22 @@ export default class ExportModel<TRow> {
           // grid holds, and a placeholder holds nothing.
           if (item.placeholder) continue;
 
-          rows.push({ kind: 'data', level, hidden, collapsed: false, values: columns.map((column) => this.value(column, item.data)) });
+          // A lazy tree's rows come through here rather than through `walkTree`, and their depth is on the
+          // row: the outline is what is on screen, which is all a datasource export ever writes.
+          const depth = isTreeRow<TRow>(item) ? item.level : level;
+
+          rows.push({
+            kind: 'data',
+            level: depth,
+            hidden,
+            collapsed: false,
+            values: columns.map((column) => this.value(column, item.data)),
+          });
         }
       }
     };
 
-    if (this.grid.tree.enabled) this.walkTree(rows, columns);
+    if (this.grid.tree.isEager) this.walkTree(rows, columns);
     else walk(this.grid.rows.value, 0, false);
 
     if (options.footer ?? this.grid.aggregation.hasFooter) rows.push(this.footerRow(columns));

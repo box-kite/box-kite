@@ -139,7 +139,7 @@ export default class GridModel<TRow> {
   public get loadedRows(): TRow[] {
     if (this.source.enabled) return this.source.loadedRows();
     // A tree keeps its rows inside each other, so `data` is the top level rather than the rows.
-    if (this.tree.enabled) return this.tree.allRows.value;
+    if (this.tree.isEager) return this.tree.allRows.value;
 
     return this.data;
   }
@@ -415,7 +415,7 @@ export default class GridModel<TRow> {
     if (this.source.enabled || this.isPaginated) return this.data;
     // The tree filtered itself as it was built — a match keeps its ancestors, which no pass over a flat
     // array can do — so what is left is every row of it.
-    if (this.tree.enabled) return this.tree.allRows.value;
+    if (this.tree.isEager) return this.tree.allRows.value;
     if (!this.hasRowFilters) return this.data;
 
     return this.data.filter((row) => this.rowMatchesFilters(row));
@@ -532,7 +532,7 @@ export default class GridModel<TRow> {
 
     // Every row in the tree, not the top level of it — a filter offering the roots' values only would
     // be a filter that hides most of what it names.
-    (this.tree.enabled ? this.tree.everyRow() : this.data).forEach((row) => {
+    (this.tree.isEager ? this.tree.everyRow() : this.data).forEach((row) => {
       const value = row[columnKey as keyof TRow];
       if (value !== undefined) {
         values.add(value as string | number | boolean | null);
@@ -565,14 +565,14 @@ export default class GridModel<TRow> {
     }
     return {
       filtered: this.filteredData.length,
-      total: this.tree.enabled ? this.tree.everyRow().length : this.data.length,
+      total: this.tree.isEager ? this.tree.everyRow().length : this.data.length,
     };
   }
 
   /** How many rows the query holds altogether: the server's count where there is one, else what is here. */
   public get totalRowCount(): number {
     if (this.source.enabled) return this.source.rowCount;
-    if (this.tree.enabled) return this.tree.everyRow().length;
+    if (this.tree.isEager) return this.tree.everyRow().length;
 
     return this.props.def.pagination?.totalCount ?? this.data.length;
   }
@@ -586,7 +586,7 @@ export default class GridModel<TRow> {
 
       // A tree is filtered and sorted inside itself — a match keeps its ancestors, and a sort happens
       // among siblings — so none of the flat path below applies to it.
-      if (this.tree.enabled) return this.tree.rowList();
+      if (this.tree.isEager) return this.tree.rowList();
 
       let data = this.filteredData;
 
@@ -1209,6 +1209,16 @@ export default class GridModel<TRow> {
     this.rows.clear(); // required to update rowIndex; cascades to flatRows/rowOffsets
     this.notify();
   };
+
+  /**
+   * A tree row opened or shut. The walk over the rows is a different walk — and where the tree is lazy the
+   * level just opened has not been asked for yet, which is what the bumped version tells the fetch effect.
+   */
+  public treeExpansionChanged(): void {
+    this._expansion++;
+    this.source.expansionChanged();
+    this.rows.clear(); // required to update rowIndex; cascades to flatRows/rowOffsets
+  }
 
   public toggleRowSelection = (rowKey: Key) => {
     this.toggleRowsSelection([rowKey]);

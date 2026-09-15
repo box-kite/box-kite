@@ -91,6 +91,12 @@ export interface DataSourceRequest<TRow> {
    */
   groupKeys: Key[];
   /**
+   * The row whose children this block holds, named by the keys of it and of every ancestor, outermost
+   * first — `[]` is the top of the tree. Empty unless `def.treeData` is set beside the datasource, and
+   * the keys are the grid's own (`def.rowKey`), so a server names a node by the id it sent for it.
+   */
+  treeKeys: Key[];
+  /**
    * Aborted when the query changes under a request still in flight — a new sort, a new filter, a page
    * the user left. Hand it to `fetch` and a superseded request costs nothing.
    */
@@ -249,6 +255,10 @@ export type DefaultExpanded = boolean | number | Key[];
  * carries its children (`childrenKey`/`getChildren`), or **flat**, where every row carries the path to
  * itself (`pathKey`/`getPath`) — and the grid does the rest: one column grows a chevron and an indent,
  * the rows underneath a shut one leave the list, and the grid becomes a `treegrid`.
+ *
+ * Beside `def.dataSource` it is the third shape: **lazy**, where the tree is not in the browser at all.
+ * The server answers one level at a time — the request carries `treeKeys`, the path of the row that was
+ * opened — and `hasChildren` is how a row says there is something under it to ask for.
  */
 export interface TreeDataConfig<TRow> {
   /** Nested rows: the field a row's children live in. */
@@ -260,18 +270,28 @@ export interface TreeDataConfig<TRow> {
   /** Flat rows, worked out: `['src', 'core', 'box.ts']` for a row three deep. */
   getPath?: (row: TRow) => Key[];
   /**
+   * Lazy rows: whether this row holds any, which is the one thing a server has to say that the row's own
+   * values do not. A field of the row or a predicate over it; without one no row grows a chevron, since
+   * the browser has nothing under it to read. Ignored by a nested or a flat tree, whose shape says it.
+   */
+  hasChildren?: keyof TRow | ((row: TRow) => boolean);
+  /**
    * Which column carries the chevrons and the indent. Default: the first column of your own, which is
    * the one a tree is almost always read down.
    */
   column?: Key;
   /** How far one level indents, on the ÷4 spacing scale. Default: 4, which is 1rem a level. */
   indent?: number;
-  /** Which rows are open before anything has been clicked. Default: nothing but the top level. */
+  /**
+   * Which rows are open before anything has been clicked. Default: nothing but the top level. A lazy
+   * tree fetches one level per row it opens, so `true` there is a request per row of the whole tree —
+   * name the keys instead.
+   */
   defaultExpanded?: DefaultExpanded;
   /**
    * Whether ticking a row ticks everything under it, and a row whose children are partly ticked reads as
    * indeterminate. Default: `'self'` — a checkbox selects the row it is on, which is what every other row
-   * in the grid does.
+   * in the grid does. Not offered by a lazy tree: a cascade cannot reach rows nobody has fetched.
    */
   selection?: 'self' | 'cascade';
 }
@@ -485,7 +505,8 @@ export interface GridDefinition<TRow> {
   rowDetail?: RowDetailConfig<TRow>;
   /**
    * Rows that hold rows: one column grows a chevron and an indent, and the grid reports itself as a
-   * `treegrid`. The tree comes out of the data, either nested in it or named by a path on each row.
+   * `treegrid`. The tree comes out of the data, either nested in it or named by a path on each row —
+   * or, beside `def.dataSource`, out of the server a level at a time.
    */
   treeData?: TreeDataConfig<TRow>;
   /**

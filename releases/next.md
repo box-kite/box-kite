@@ -29,6 +29,7 @@ The package now carries instructions for the agent writing the code, the documen
 - **[A grid that fetches its own rows](#a-grid-that-fetches-its-own-rows)** — `def.dataSource` is one function the grid asks for a block at a time: a million rows scrolled with no array in the page, sort and filter round-tripped, a superseded request aborted and a late answer dropped. +2.51 KB gz, against the $999/dev/yr the same row model costs elsewhere.
 - **[A group the server counts, and children it fetches when you open one](#a-group-the-server-counts-and-children-it-fetches-when-you-open-one)** — `grouping: true` puts _Group By_ back with a datasource set: the request carries `groupBy` and `groupKeys`, a group row brings its own count and totals, and a group nobody has opened costs the page nothing. +1.45 KB gz.
 - **[A grid whose rows hold rows](#a-grid-whose-rows-hold-rows)** — `def.treeData` turns the rows into a tree, nested in the data or named by a path on each row: a chevron and an indent on one column, a `treegrid` with the keyboard APG asks for, a filter that keeps the path to a match, and nothing built under a row nobody has opened.
+- **[A tree the server holds, one level per chevron](#a-tree-the-server-holds-one-level-per-chevron)** — `def.treeData` beside `def.dataSource`: the request carries `treeKeys`, `hasChildren` says which rows have a level to ask for, and 144,732 rows cost the page one of them.
 - **[Grouping can be declared now, not only clicked](#grouping-can-be-declared-now-not-only-clicked)** — `def.groupBy` and `def.groupDefaultExpanded`: a grid that starts grouped, which is what a server render, a fixture and a demo all needed.
 - **[The component contract, written down and enforced](#the-component-contract-written-down-and-enforced)** — five rules every component keeps: state in `useControllableState`, every change reported with a named reason, Box props on every part, a style tree to replace, and a render prop instead of `asChild`. A check with two ledgers that both fail on a stale entry is what keeps them true.
 
@@ -1094,6 +1095,77 @@ filtering the whole tree costs **82 ms** on the first keystroke and 11–25 ms a
 `dir`, which no test environment resolves: ArrowLeft opens. **+2.0 KB gz** on the DataGrid entry and ~35 B
 on every entry that carries the engine (the three new style-tree nodes); `/a11y`, `/anchor` and the export
 chunk moved by zero, which is what attributes the rest.
+
+## A tree the server holds, one level per chevron
+
+The tree above is in the browser. Put `def.treeData` beside `def.dataSource` and it is not: the grid asks
+for one level at a time, and a folder nobody has opened costs the page nothing however deep it goes.
+
+```tsx
+const dataSource = useMemo(
+  () => ({
+    async getRows({ startRow, endRow, treeKeys, signal }) {
+      // [] is the top of the tree, ['app'] what is in that folder,
+      // ['app', 'app/m3'] what is in the one under that.
+      const res = await fetch(`/api/files?path=${treeKeys.join('/')}&offset=${startRow}&limit=${endRow - startRow}`, { signal });
+      const body = await res.json();
+
+      return { rows: body.items, totalCount: body.total };
+    },
+  }),
+  [],
+);
+
+<DataGrid
+  def={{
+    dataSource,
+    rowKey: 'id',
+    // The tree is the server's. `hasChildren` is the one thing a row's own
+    // values cannot say, since what is under it has never been in the browser.
+    treeData: { hasChildren: 'folder', column: 'name' },
+    columns: [
+      { key: 'name', header: 'Name' },
+      { key: 'size', header: 'Size (KB)', align: 'end' },
+    ],
+  }}
+/>;
+```
+
+**The path is keys, so the server names a node the way it named it.** `treeKeys` is built from
+`def.rowKey` rather than from the values on screen — the ids the server sent come back to it verbatim,
+outermost first, `[]` for the top. A row three deep asks with all three, so a query can be written against
+the whole path or against the last segment alone.
+
+**A chevron is the server's answer, not a guess.** `hasChildren` names a field (`hasChildren: 'folder'`)
+or works the answer out (`hasChildren: (row) => row.kind !== 'file'`). Without one no row grows a chevron:
+a grid that offered one on every row would promise a level that may not exist, and a grid that fetched to
+find out would defeat the whole thing.
+
+It is **the same mechanism as server-side grouping**, not a second one beside it. A level per open path,
+each with its own blocks, its own count and its own failure; a level is created when its row is opened and
+disposed of the moment nothing reaches it; and eviction keeps the chain above a level in play, so
+scrolling deep inside a folder never drops the row it hangs off. `treeKeys` and `groupKeys` are the same
+field of the cache seen from two ends, which is also why the two are mutually exclusive — _Group By_ is
+not offered on a tree, whoever holds it.
+
+Everything the eager tree gives the keyboard and the screen reader is unchanged: a `treegrid`, `aria-level`
+/`aria-posinset`/`aria-setsize` on every row, `aria-expanded` on the ones that hold rows, and **Right** to
+open with **Left** to shut and step out to the parent, following the reading order. Two differences, both
+of them the honest answer rather than a gap. `selection: 'cascade'` is not offered — a tick cannot take
+rows nobody has fetched — and `defaultExpanded` costs one request per row it opens, so a list of keys is
+what it is for and `true` would fetch the whole tree. `onExpandedTreeKeysChange` still reports the rows
+that are open _and reachable_: a row under one that has been shut is not open, and its level is gone.
+
+The docs page's demo is a repository of 144,732 rows (12 areas × 60 modules × 200 files) generated a level
+at a time and never built — beside the eager tree further up the same page, which holds all 10,212 of its
+own, and that neighbour is the control. Measured in Chrome on the built site: scrolling three levels deep
+with blocks arriving is a **46 ms** worst frame gap against the eager tree's **56 ms** on the same page and
+the same harness, **29 ms** back over cached blocks, and opening a folder is **1 ms** — the level it adds is
+a walk, not a rebuild. Thirty-three rows in the DOM either way. Right-to-left was measured with a real
+`dir`, which no test environment resolves: ArrowLeft opens and ArrowRight shuts. **+0.56 KB gz** on the
+DataGrid entry; `/a11y`, `/anchor`, the export chunk, the core engine and every other component moved by
+exactly zero, which is what attributes the rest. AG Grid's server-side tree data is Enterprise, at
+$999/dev/yr.
 
 ## Grouping can be declared now, not only clicked
 

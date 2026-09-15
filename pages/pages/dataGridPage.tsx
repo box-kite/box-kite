@@ -1274,6 +1274,72 @@ const dataSource = useMemo(() => ({
             <GroupedSourceDemo />
           </Code>
 
+          <Section id="data-source-tree" title="A tree the server holds, one level per chevron">
+            <Box>
+              Put <Mono>def.treeData</Mono> beside the datasource and the tree stops being something the browser holds at all. Every request
+              then carries <Mono>treeKeys</Mono> — the row whose children are wanted, named by its key and its ancestors', outermost first,
+              with <Mono>[]</Mono> for the top — and <Mono>hasChildren</Mono> is how a row says there is something under it to ask for. It
+              is the same mechanism as server-side grouping: a level per open path, with its own blocks, its own count and the same
+              eviction, which keeps the chain above a level in play. A folder nobody has opened costs the page nothing, however deep it
+              goes.
+            </Box>
+            <Flex d="column" gap={3} mt={4}>
+              <Note icon={Table} title="The path is keys, so the server names a node the way it named it">
+                <Mono>treeKeys</Mono> is built from <Mono>def.rowKey</Mono> rather than from the values on screen — the ids the server sent
+                come back to it verbatim. A row three deep asks with all three, so a query can be written against the whole path or against
+                the last segment alone.
+              </Note>
+              <Note icon={Filter} title="A chevron is the server's answer, not a guess">
+                <Mono>hasChildren</Mono> names a field or works the answer out. Without one no row grows a chevron: a grid that offered one
+                on every row would promise a level that may not exist, and a grid that fetched to find out would defeat the whole thing.
+              </Note>
+              <Note icon={Table} title="What the grid does not hold, it does not claim">
+                <Mono>selection: 'cascade'</Mono> is not offered — a tick cannot take rows nobody has fetched — and an export writes the
+                rows in hand, at the depth they are drawn.
+              </Note>
+            </Flex>
+          </Section>
+
+          <Code
+            id="data-source-tree-demo"
+            defer
+            label="Lazy tree"
+            language="jsx"
+            check={false}
+            code={`const dataSource = useMemo(() => ({
+  async getRows({ startRow, endRow, treeKeys, sort, signal }) {
+    const res = await fetch('/api/files?' + new URLSearchParams({
+      offset: String(startRow),
+      limit: String(endRow - startRow),
+      // [] is the top of the tree, ['app'] what is in that folder,
+      // ['app', 'app/m3'] what is in the one under that.
+      path: treeKeys.join('/'),
+    }), { signal });
+
+    const body = await res.json();
+
+    return { rows: body.items, totalCount: body.total };
+  },
+}), []);
+
+<DataGrid
+  def={{
+    dataSource,
+    rowKey: 'id',
+    // The tree is the server's. \`hasChildren\` is the one thing a row's own
+    // values cannot say, since what is under it has never been in the browser.
+    treeData: { hasChildren: 'folder', column: 'name' },
+    columns: [
+      { key: 'name', header: 'Name' },
+      { key: 'size', header: 'Size (KB)', align: 'end' },
+      { key: 'modified', header: 'Modified' },
+    ],
+  }}
+/>`}
+          >
+            <LazyTreeDemo />
+          </Code>
+
           <Code
             id="disable-sort"
             defer
@@ -2049,6 +2115,138 @@ function TreeDataDemo() {
   );
 }
 
+/** A row of the tree the server holds. No `children`: what is under it is a request, not a field. */
+interface ServerNode {
+  id: string;
+  name: string;
+  size: number;
+  modified: string;
+  folder: boolean;
+}
+
+/** The same shape as the tree above and fourteen times the size, generated a level at a time. */
+const LAZY_MODULES = 60;
+const LAZY_FILES = 200;
+const LAZY_ROWS = AREAS.length * (1 + LAZY_MODULES * (1 + LAZY_FILES));
+
+const fileSeed = (area: number, module: number) => area * 1000 + module * 31;
+const fileSize = (seed: number, index: number) => 1 + Math.floor(pseudo(seed + index) * 90);
+
+/** A folder's size is what is in it, which the server adds up — kept, since a level is asked for twice. */
+const folderSizes = new Map<string, number>();
+const sizeOf = (key: string, compute: () => number): number => {
+  let size = folderSizes.get(key);
+  if (size === undefined) folderSizes.set(key, (size = compute()));
+
+  return size;
+};
+
+const moduleSize = (area: number, module: number) =>
+  sizeOf(`${area}/${module}`, () => {
+    const seed = fileSeed(area, module);
+    let total = 0;
+    for (let file = 0; file < LAZY_FILES; file++) total += fileSize(seed, file);
+
+    return total;
+  });
+
+const areaSize = (area: number) =>
+  sizeOf(`${area}`, () => {
+    let total = 0;
+    for (let module = 0; module < LAZY_MODULES; module++) total += moduleSize(area, module);
+
+    return total;
+  });
+
+/**
+ * One level of the tree, worked out from the path rather than looked up: `[]` is the areas, an area's key
+ * is its modules, a module's is its files. Nothing above or below the level asked for is ever built.
+ */
+function lazyLevel(treeKeys: Key[]): ServerNode[] {
+  if (treeKeys.length === 0) {
+    return AREAS.map((area, index) => ({ id: area, name: area, size: areaSize(index), modified: dayOf(index), folder: true }));
+  }
+
+  const parts = String(treeKeys[treeKeys.length - 1]).split('/');
+  const area = AREAS.indexOf(parts[0]);
+
+  if (treeKeys.length === 1) {
+    return Array.from({ length: LAZY_MODULES }, (_, module) => ({
+      id: `${parts[0]}/m${module}`,
+      name: `${PARTS[module % PARTS.length]}-${module}`,
+      size: moduleSize(area, module),
+      modified: dayOf(fileSeed(area, module)),
+      folder: true,
+    }));
+  }
+
+  const module = Number(parts[1].slice(1));
+  const seed = fileSeed(area, module);
+
+  return Array.from({ length: LAZY_FILES }, (_, file) => ({
+    id: `${parts[0]}/${parts[1]}/f${file}`,
+    name: `${PARTS[(module + file) % PARTS.length]}${file}.ts`,
+    size: fileSize(seed, file),
+    modified: dayOf(seed + file),
+    folder: false,
+  }));
+}
+
+function LazyTreeDemo() {
+  const [lastRequest, setLastRequest] = useState('rows 0–100 of the top of the tree');
+
+  const dataSource = useMemo(
+    () => ({
+      blockSize: 100,
+      getRows: ({ startRow, endRow, treeKeys }: DataSourceRequest<ServerNode>) =>
+        new Promise<DataSourceResult<ServerNode>>((resolve) => {
+          setLastRequest(
+            `rows ${startRow}–${endRow} ${treeKeys.length === 0 ? 'of the top of the tree' : `inside ${treeKeys.join(' › ')}`}`,
+          );
+
+          setTimeout(() => {
+            const level = lazyLevel(treeKeys);
+
+            resolve({ rows: level.slice(startRow, endRow), totalCount: level.length });
+          }, 220);
+        }),
+    }),
+    [],
+  );
+
+  const def = useMemo(
+    () => ({
+      rowKey: 'id' as const,
+      title: 'A repository the browser has never seen',
+      topBar: true,
+      rowHeight: 40,
+      visibleRowsCount: 12,
+      dataSource,
+      treeData: { hasChildren: 'folder' as const, column: 'name' as const },
+      columns: [
+        { key: 'name' as const, header: 'Name', sortable: false, width: 320 },
+        { key: 'size' as const, header: 'Size (KB)', sortable: false, width: 130, align: 'end' as const },
+        { key: 'modified' as const, header: 'Modified', sortable: false, width: 160 },
+      ],
+    }),
+    [dataSource],
+  );
+
+  return (
+    <Flex d="column" gap={3}>
+      <Box fontSize={13} color="gray-600" theme={{ dark: { color: 'gray-400' } }}>
+        {LAZY_ROWS.toLocaleString()} rows in the tree, none of them in the browser. Open a folder and watch what is asked for — a module
+        holds {LAZY_FILES} files, so scrolling inside one fetches a second block of the same level.
+      </Box>
+      <Box fontSize={12} color="gray-500" theme={{ dark: { color: 'gray-400' } }}>
+        Last asked for: {lastRequest}
+      </Box>
+
+      <DataGrid<ServerNode> def={def} />
+    </Flex>
+  );
+}
+
 const sidebarLinks = [
   { id: 'a11y', label: 'Keyboard and roles' },
   { id: 'full-featured', label: 'Full Featured' },
@@ -2062,6 +2260,8 @@ const sidebarLinks = [
   { id: 'tree-data', label: 'Tree data' },
   { id: 'pagination', label: 'Server Pagination & Filters' },
   { id: 'data-source', label: 'Server row model' },
+  { id: 'data-source-grouping', label: 'Server-side grouping' },
+  { id: 'data-source-tree', label: 'Server-side tree' },
   { id: 'disable-sort', label: 'Disable Sort' },
   { id: 'context-menu', label: 'Context Menu' },
   { id: 'resizer-style', label: 'Resizer Style' },
