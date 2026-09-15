@@ -54,7 +54,7 @@ export default function DataGridContent<TRow>(props: Props<TRow>) {
     const { startIndex, take } = grid.viewport.window(scrollerRef.current?.scrollTop ?? 0);
 
     source.request(startIndex, startIndex + take);
-  }, [grid, source, queryVersion, scrollTop, grid.totalRowCount, grid.page, grid.pageSize]);
+  }, [grid, source, queryVersion, scrollTop, grid.totalRowCount, grid.page, grid.pageSize, grid.expansionVersion]);
 
   // The width the flexible columns are distributed across is the scroller's, not the grid container's:
   // the vertical scrollbar sits between the two, so measuring the container made every scrolling grid

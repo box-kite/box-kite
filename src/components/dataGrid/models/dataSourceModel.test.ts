@@ -68,7 +68,12 @@ function createGrid(def: GridDefinition<Order>, overrides?: Partial<DataGridProp
 const dataRow = <T>(grid: GridModel<T>, index: number) => grid.rows.value[index] as RowModel<T>;
 
 /** How many row models the source has actually built — the point of the lazy list. */
-const countModels = <T>(grid: GridModel<T>) => (grid.source as unknown as { models: Map<number, unknown> }).models.size;
+const countModels = <T>(grid: GridModel<T>) => {
+  let total = 0;
+  (grid.source as unknown as { models: Map<string, Map<number, unknown>> }).models.forEach((byIndex) => (total += byIndex.size));
+
+  return total;
+};
 
 /** Let every already-resolved promise run its handlers. */
 const flush = () => new Promise<void>((resolve) => setTimeout(resolve, 0));

@@ -25,6 +25,7 @@ import {
   SortDirection,
 } from '../contracts/dataGridContract';
 import AggregationModel from './aggregationModel';
+import { GROUPING_CELL_KEY, ROW_DETAIL_CELL_KEY, ROW_NUMBER_CELL_KEY, ROW_SELECTION_CELL_KEY } from './cellKeys';
 import ColumnModel from './columnModel';
 import ColumnVisibilityModel from './columnVisibilityModel';
 import DataSourceModel from './dataSourceModel';
@@ -36,11 +37,8 @@ import PaginationModel from './paginationModel';
 import RowModel from './rowModel';
 import ViewportModel from './viewportModel';
 
-export const ROW_NUMBER_CELL_KEY: Key = 'row-number-cell';
+export { GROUPING_CELL_KEY, ROW_DETAIL_CELL_KEY, ROW_NUMBER_CELL_KEY, ROW_SELECTION_CELL_KEY } from './cellKeys';
 export const DEFAULT_ROW_NUMBER_COLUMN_WIDTH = 70;
-export const ROW_SELECTION_CELL_KEY: Key = 'row-selection-cell';
-export const GROUPING_CELL_KEY: Key = 'grouping-cell';
-export const ROW_DETAIL_CELL_KEY: Key = 'row-detail-cell';
 
 /** What `def.export: true` means, as one record: every option at its default. */
 const DEFAULT_EXPORT: ExportConfig = {};
@@ -566,9 +564,9 @@ export default class GridModel<TRow> {
 
   public readonly rows = memo(
     () => {
-      // A datasource owns the order and the filtering, so there is nothing to sort or group here: what
-      // is left is one row per position, whose values it reads out of the block cache. The count is the
-      // server's, so the scroll height and `aria-rowcount` hold still while the blocks arrive.
+      // A datasource owns the order, the filtering and the grouping, so there is nothing to work out
+      // here: what is left is one model per position, reading its values out of the block cache. The
+      // count is the server's, so the scroll height and `aria-rowcount` hold still while blocks arrive.
       if (this.source.enabled) return this.source.rowList();
 
       let data = this.filteredData;
@@ -641,8 +639,9 @@ export default class GridModel<TRow> {
   public readonly flatRows = memo(
     () => {
       // Never `flatMap` over a datasource's rows: the list is lazy, and iterating it is what building a
-      // model per row of a million-row grid would cost.
-      if (this.source.enabled) return this.source.flatRowList(this.rows.value as RowModel<TRow>[]);
+      // model per row of a million-row grid would cost. A group's children are already in that list —
+      // the source splices them in as it walks its levels, so nothing here expands anything.
+      if (this.source.enabled) return this.source.flatRowList(this.rows.value);
 
       return this.rows.value.flatMap((row) => {
         return row.flatRows as (RowModel<TRow> | GroupRowModel<TRow> | DetailRowModel<TRow>)[];
@@ -915,8 +914,7 @@ export default class GridModel<TRow> {
 
   public readonly rowOffsets = memo(
     () => {
-      // A datasource never groups, so its flat list holds only rows and detail panels.
-      if (this.source.enabled) return this.source.rowOffsets(this.flatRows.value as (RowModel<TRow> | DetailRowModel<TRow>)[]);
+      if (this.source.enabled) return this.source.rowOffsets(this.flatRows.value);
 
       const offsets: number[] = [];
       let cumulative = 0;
@@ -1121,6 +1119,7 @@ export default class GridModel<TRow> {
       this.hiddenColumns.add(columnKey);
     }
 
+    this.collapseGroups();
     this.sourceColumns.clear(); // cascades to columns → headerRows/gridTemplateColumns/flexWidths/sizes/rows/flatRows/rowOffsets
 
     this.notify();
@@ -1132,11 +1131,27 @@ export default class GridModel<TRow> {
     // Ensure previously grouped columns are made visible again
     this.hiddenColumns = new Set(Array.from(this.hiddenColumns).filter((key) => !prevGroupColumns.has(key)));
 
+    this.collapseGroups();
     this.sourceColumns.clear(); // cascades to columns → headerRows/gridTemplateColumns/flexWidths/sizes/rows/flatRows/rowOffsets
     this.notify();
   };
 
+  /** Grouping changed, so every open path names a group that is not there and every block is stale. */
+  private collapseGroups(): void {
+    this.expandedGroupRow = new Set();
+    this.source.expansionChanged();
+    this.source.invalidate();
+  }
+
+  /** Bumped by every expand and collapse, so the adapter's fetch effect asks for the level just opened. */
+  private _expansion = 0;
+
+  public get expansionVersion(): number {
+    return this._expansion;
+  }
+
   public toggleGroupRow = (groupRowKey: Key) => {
+    this._expansion++;
     this.expandedGroupRow = new Set(this.expandedGroupRow);
 
     if (this.expandedGroupRow.has(groupRowKey)) {
@@ -1145,6 +1160,7 @@ export default class GridModel<TRow> {
       this.expandedGroupRow.add(groupRowKey);
     }
 
+    this.source.expansionChanged();
     this.rows.clear(); // required to update rowIndex; cascades to flatRows/rowOffsets
     this.notify();
   };

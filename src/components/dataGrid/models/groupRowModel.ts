@@ -1,9 +1,10 @@
 import ArrayUtils from '../../../utils/array/arrayUtils';
 import memo from '../../../utils/memo';
-import { Key } from '../contracts/dataGridContract';
+import { AggregateValue, Key } from '../contracts/dataGridContract';
+import { GROUPING_CELL_KEY } from './cellKeys';
 import ColumnModel from './columnModel';
 import DetailRowModel from './detailRowModel';
-import GridModel, { GROUPING_CELL_KEY } from './gridModel';
+import GridModel from './gridModel';
 import GroupRowCellModel from './groupRowCellModel';
 import RowModel from './rowModel';
 
@@ -13,9 +14,45 @@ export default class GroupRowModel<TRow> {
     public readonly groupColumn: ColumnModel<TRow>,
     public readonly rows: RowModel<TRow>[] | GroupRowModel<TRow>[],
     public readonly rowIndex: number,
-    public readonly groupValue: Key,
+    groupValue: Key,
   ) {
+    this._groupValue = groupValue;
     rows.forEach((row) => (row.parentRow = this));
+  }
+
+  protected _groupValue: Key;
+
+  /**
+   * The value this group collects. A getter rather than a parameter property so a subclass can read it
+   * from somewhere else — a field would shadow the override outright, which is what `useDefineForClassFields`
+   * does to a base class's own properties.
+   */
+  public get groupValue(): Key {
+    return this._groupValue;
+  }
+
+  /** What the expand cell reads: the value, and how many rows are under it. */
+  public get label(): string {
+    return `${this.groupValue} (${this.count})`;
+  }
+
+  /** Whether the group's rows have arrived at all. Always, until a server answers a level — see `SourceGroupRowModel`. */
+  public get placeholder(): boolean {
+    return false;
+  }
+
+  /** Whether the select-all checkbox is offered: a group can only select the rows the grid holds. */
+  public get selectable(): boolean {
+    return true;
+  }
+
+  /**
+   * An aggregate the grid was handed rather than one it works out. Nothing server-side can be totalled in
+   * the browser — the rows are not here — so a server group row carries its own totals and this is where
+   * they come from; `undefined` means "compute it", which is every client-side group.
+   */
+  public aggregateValue(_column: ColumnModel<TRow>): AggregateValue | undefined {
+    return undefined;
   }
 
   public get key(): Key {

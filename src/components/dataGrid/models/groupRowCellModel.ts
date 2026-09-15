@@ -21,7 +21,7 @@ export default class GroupRowCellModel<TRow> {
 
   public get value(): string | number | null {
     if (this.column.isRowNumber) return this.row.rowIndex + 1;
-    if (this.column.isGrouping) return `${this.row.groupValue} (${this.row.count})`;
+    if (this.column.isGrouping) return this.row.label;
 
     return null;
   }
@@ -41,7 +41,8 @@ export default class GroupRowCellModel<TRow> {
 
   public get cellKind(): GroupRowCellKind {
     if (this.column.isGrouping) return 'grouping';
-    if (this.column.isRowSelection) return 'selection';
+    // A group whose rows are not in the browser cannot select them, so it shows no checkbox at all.
+    if (this.column.isRowSelection) return this.row.selectable ? 'selection' : 'spacer';
     // The span is asked first: a column the label covers has no cell to put an aggregate in.
     if (this.row.spans(this.column)) return 'hidden';
     if (this.column.aggregate) return 'aggregate';
@@ -49,7 +50,10 @@ export default class GroupRowCellModel<TRow> {
     return 'spacer';
   }
 
-  /** The aggregate over the rows under this group, on the columns that have one. */
+  /**
+   * The aggregate over the rows under this group, on the columns that have one. A server group brings its
+   * own total down with it, since the rows it is over were never in the browser to add up.
+   */
   private readonly _aggregate = memo(() =>
     this.column.aggregate
       ? new AggregateCellModel(
@@ -57,6 +61,7 @@ export default class GroupRowCellModel<TRow> {
           this.column,
           this.row.allRows.map((r) => r.data),
           'group',
+          () => this.row.aggregateValue(this.column),
         )
       : null,
   );

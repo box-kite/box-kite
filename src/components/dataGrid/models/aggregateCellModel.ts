@@ -14,6 +14,12 @@ export default class AggregateCellModel<TRow> {
     public readonly column: ColumnModel<TRow>,
     public readonly rows: TRow[],
     public readonly scope: AggregateScope,
+    /**
+     * A total the grid was handed rather than one it works out. Read when it is *asked for*, not when this
+     * model is built: a server's group row arrives after the cell that shows it, and a value baked in at
+     * construction stayed empty for the life of the row (measured in Chrome 152).
+     */
+    private readonly given?: () => AggregateValue | undefined,
   ) {}
 
   /** This column's value from every row in scope, in row order — what a custom aggregation is handed. */
@@ -28,7 +34,9 @@ export default class AggregateCellModel<TRow> {
     return fn ? aggregate(fn, this.values, this.rows) : null;
   });
   public get value(): AggregateValue {
-    return this._value.value;
+    const given = this.given?.();
+
+    return given !== undefined ? given : this._value.value;
   }
 
   // An aggregate belongs to no row, so the body cell's expanded-leaf variant is constant here.

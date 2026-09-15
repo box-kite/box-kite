@@ -79,6 +79,18 @@ export interface DataSourceRequest<TRow> {
   /** Every column filter still set, keyed by column. */
   columnFilters: ColumnFilters<TRow>;
   /**
+   * Which columns the grid is grouping by, outermost first. Empty unless `dataSource.grouping` is on and
+   * the user has grouped something; the column this block groups by is `groupBy[groupKeys.length]`.
+   */
+  groupBy: Key[];
+  /**
+   * The group this block sits inside, outermost value first — `[]` at the top. `['Japan']` asks for what
+   * is inside the Japan group, `['Japan', 2021]` for the level under that. Shorter than `groupBy` and the
+   * rows wanted are **group** rows, one per distinct value of `groupBy[groupKeys.length]`; the same length
+   * and they are that group's leaf rows.
+   */
+  groupKeys: Key[];
+  /**
    * Aborted when the query changes under a request still in flight — a new sort, a new filter, a page
    * the user left. Hand it to `fetch` and a superseded request costs nothing.
    */
@@ -95,6 +107,12 @@ export interface DataSourceResult<TRow> {
    * as the end, which is what an API that cannot count cheaply needs.
    */
   totalCount?: number;
+  /**
+   * For a group level: how many leaf rows each returned group holds, in the order `rows` came in. It is
+   * what the group label puts in its brackets, and it is optional — a server that cannot count a group
+   * cheaply omits it and the label is the value on its own.
+   */
+  groupCounts?: number[];
 }
 
 /**
@@ -115,6 +133,13 @@ export interface DataSource<TRow> {
    * if the user scrolls back. Default: 40.
    */
   maxBlocks?: number;
+  /**
+   * Whether `getRows` honours `groupKeys` — which is what puts *Group by* back in the column menu. Off by
+   * default, because a `getRows` that ignored the field would answer a group level with leaf rows and the
+   * grid has no way to tell. With it on, opening a group is one more request rather than work in the
+   * browser: the children of a group nobody has expanded are never in the page at all.
+   */
+  grouping?: boolean;
 }
 
 // ========== Change Reasons ==========

@@ -8,6 +8,7 @@ import { useGridNavigationContext } from '../gridNavigationContext';
 import GroupRowModel from '../models/groupRowModel';
 import DataGridAggregateValue from './dataGridAggregateValue';
 import DataGridCell from './dataGridCell';
+import DataGridCellPlaceholder from './dataGridCellPlaceholder';
 
 interface Props<TRow> {
   row: GroupRowModel<TRow>;
@@ -17,7 +18,7 @@ interface Props<TRow> {
 
 export default function DataGridGroupRow<TRow>(props: Props<TRow>) {
   const { row, index } = props;
-  const { selected, indeterminate, expanded } = row;
+  const { selected, indeterminate, expanded, placeholder } = row;
   const navigation = useGridNavigationContext();
   const navRow = (navigation?.headerRowCount ?? 0) + index;
 
@@ -31,8 +32,15 @@ export default function DataGridGroupRow<TRow>(props: Props<TRow>) {
       selected={row.grid.props.def.rowSelection ? selected : undefined}
       display="contents"
       // A row, not a rowgroup: it holds cells of its own, and the rows it groups are its siblings
-      // in the same rowgroup rather than its children. `aria-expanded` is what says it collapses.
-      props={{ role: 'row', 'aria-rowindex': navRow + 1, 'aria-expanded': expanded }}
+      // in the same rowgroup rather than its children. The open state is on the expand *button* and
+      // not here: `aria-expanded` on a `row` is only defined inside a `treegrid`, and axe calls it a
+      // serious violation in a `grid` — which is what this has always been (bug #162).
+      props={{
+        role: 'row',
+        'aria-rowindex': navRow + 1,
+        // The group exists, its value does not yet — a server has been asked and has not answered.
+        'aria-busy': placeholder || undefined,
+      }}
     >
       {row.renderedCells.map(({ cell, columnIndex }, navColumn) => {
         switch (cell.cellKind) {
@@ -51,20 +59,24 @@ export default function DataGridGroupRow<TRow>(props: Props<TRow>) {
                 ps={cell.depthPadding}
                 overflow="auto"
               >
-                <Box textWrap="nowrap" px={3}>
-                  <Button
-                    component={`${row.grid.componentName}.body.groupRow.expandButton` as never}
-                    onClick={() => row.toggleRow()}
-                    cursor="pointer"
-                    display="flex"
-                    gap={1}
-                    ai="center"
-                    props={{ 'aria-expanded': expanded }}
-                  >
-                    <ExpandIcon fill="currentColor" width="14px" height="14px" rotate={expanded ? 0 : -90} />
-                    {cell.value}
-                  </Button>
-                </Box>
+                {placeholder ? (
+                  <DataGridCellPlaceholder cell={cell} columnIndex={navColumn} />
+                ) : (
+                  <Box textWrap="nowrap" px={3}>
+                    <Button
+                      component={`${row.grid.componentName}.body.groupRow.expandButton` as never}
+                      onClick={() => row.toggleRow()}
+                      cursor="pointer"
+                      display="flex"
+                      gap={1}
+                      ai="center"
+                      props={{ 'aria-expanded': expanded }}
+                    >
+                      <ExpandIcon fill="currentColor" width="14px" height="14px" rotate={expanded ? 0 : -90} />
+                      {cell.value}
+                    </Button>
+                  </Box>
+                )}
               </DataGridCell>
             );
 

@@ -1,9 +1,10 @@
 import Box from '../../../box';
 import Flex from '../../flex';
-import CellModel from '../models/cellModel';
+import GridModel from '../models/gridModel';
 
 interface Props<TRow> {
-  cell: CellModel<TRow>;
+  /** A body cell or a group row cell: both draw the same skeleton off the same two things. */
+  cell: { grid: GridModel<TRow>; row: { rowIndex: number } };
   /** Position among the rendered cells, which is half of what picks this bar’s width. */
   columnIndex: number;
 }
