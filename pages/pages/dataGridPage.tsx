@@ -2371,6 +2371,7 @@ const sidebarLinks = [
   { id: 'data-source', label: 'Server row model' },
   { id: 'data-source-grouping', label: 'Server-side grouping' },
   { id: 'data-source-tree', label: 'Server-side tree' },
+  { id: 'editing', label: 'Cell editing' },
   { id: 'disable-sort', label: 'Disable Sort' },
   { id: 'context-menu', label: 'Context Menu' },
   { id: 'resizer-style', label: 'Resizer Style' },
