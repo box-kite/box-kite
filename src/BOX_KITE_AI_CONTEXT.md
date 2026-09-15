@@ -2224,6 +2224,10 @@ named ones carry the reason.
 | `showRowNumber`           | `boolean \| { pinned?, width? }`   | `false`     | Row number column                                                                                              |
 | `rowSelection`            | `boolean \| { pinned? }`           | `false`     | Checkbox selection column                                                                                      |
 | `rowDetail`               | `RowDetailConfig`                  | —           | Expandable detail panel (see below)                                                                            |
+| `treeData`                | `TreeDataConfig`                   | —           | Rows that hold rows: a `treegrid` with a chevron column (see below)                                            |
+| `groupBy`                 | `Key[]`                            | —           | The columns the grid starts grouped by, outermost first. The column menu takes it from there                   |
+| `groupDefaultExpanded`    | `boolean \| number`                | `false`     | Which group rows start open: `true` for all, a number for how many levels down                                 |
+| `dataSource`              | `DataSource`                       | —           | The grid fetches its own rows a block at a time; `data` is not read at all                                     |
 | `pagination`              | `{ totalCount, pageSize? }`        | —           | Server-side pagination. Bypasses client-side filtering                                                         |
 | `topBar` / `bottomBar`    | `boolean`                          | `false`     | Show top/bottom bars                                                                                           |
 | `title` / `topBarContent` | `ReactNode`                        | —           | Top bar content                                                                                                |
@@ -2346,6 +2350,45 @@ Both take `fileName`, `columns` (keys, in the order given), `groups` and `footer
 | `expandColumnHeader` | `string`                              | `''`     | Header text for the expand column              |
 | `scrollIntoView`     | `boolean`                             | `true`   | Scroll a panel opened below the fold into view |
 
+### TreeDataConfig
+
+Rows that hold rows. The shape comes off the data — nested in it, or named by a path on every row — and
+the grid becomes a `role="treegrid"`: one column grows a chevron and an indent, and every row carries
+`aria-level`, `aria-posinset`, `aria-setsize` and, where there is something under it, `aria-expanded`.
+On that column **Right** opens a shut row, **Left** shuts an open one and steps out to the parent of a
+row that is already shut (they swap in a right-to-left grid).
+
+| Prop              | Type                                 | Default   | Description                                                               |
+| ----------------- | ------------------------------------ | --------- | ------------------------------------------------------------------------- |
+| `childrenKey`     | `keyof TRow`                         | —         | Nested data: the field a row's children live in                           |
+| `getChildren`     | `(row: TRow) => TRow[] \| undefined` | —         | Nested data, worked out rather than stored                                |
+| `pathKey`         | `keyof TRow`                         | —         | Flat data: the field holding the path to this row, its own segment last   |
+| `getPath`         | `(row: TRow) => Key[]`               | —         | Flat data, worked out                                                     |
+| `column`          | `Key`                                | first own | Which column carries the chevrons and the indent                          |
+| `indent`          | `number`                             | `4`       | How far one level indents, on the ÷4 spacing scale                        |
+| `defaultExpanded` | `boolean \| number \| Key[]`         | none open | `true` for every row, a number for a depth, or the keys to open           |
+| `selection`       | `'self' \| 'cascade'`                | `'self'`  | `cascade` ticks the whole subtree, and half of one reads as indeterminate |
+
+```tsx
+<DataGrid
+  data={files}
+  def={{
+    rowKey: 'id',
+    treeData: { childrenKey: 'children', defaultExpanded: 1, selection: 'cascade' },
+    columns: [
+      { key: 'name', header: 'Name' },
+      { key: 'size', header: 'Size', align: 'end' },
+    ],
+  }}
+  // Controlled instead: `expandedTreeKeys` is the open rows, and this reports them.
+  onExpandedTreeKeysChange={(keys, { reason }) => setOpen(keys)}
+/>
+```
+
+A filter over a tree keeps **a match and every ancestor of one**, so the way to a match stays visible; a
+sort happens inside each parent. Nothing under a shut row is built at all. _Group By_ is not offered on a
+tree, and a `def.dataSource` grid ignores `treeData` — lazy children are the datasource's own contract.
+
 ### ContextMenuConfig
 
 | Prop    | Type      | Default | Description                                                               |
@@ -2450,6 +2493,9 @@ stops, as they were before A7.
 | `datagrid.body.cell`                                      | Body cell                                        | `isPinned`, `isFirstLeftPinned`, `isLastLeftPinned`, `isFirstRightPinned`, `isLastRightPinned`, `isRowNumber`, `isRowSelection`, `isRowSelected`, `isFirstLeaf`, `isLastLeaf`, `isEmptyCell` |
 | `datagrid.body.cell.text`                                 | Default cell text renderer                       | —                                                                                                                                                                                            |
 | `datagrid.body.cell.rowDetail`                            | Row detail expand/collapse button                | —                                                                                                                                                                                            |
+| `datagrid.body.cell.tree`                                 | Tree cell: the indent, the chevron and the value | —                                                                                                                                                                                            |
+| `datagrid.body.cell.tree.toggle`                          | Tree expand/collapse chevron                     | `isExpanded`                                                                                                                                                                                 |
+| `datagrid.body.cell.tree.spacer`                          | What a leaf puts where its chevron would be      | —                                                                                                                                                                                            |
 | `datagrid.body.row`                                       | Data row (display: contents)                     | —                                                                                                                                                                                            |
 | `datagrid.body.groupRow`                                  | Group row (display: contents)                    | —                                                                                                                                                                                            |
 | `datagrid.body.groupRow.expandButton`                     | Group expand/collapse button                     | —                                                                                                                                                                                            |

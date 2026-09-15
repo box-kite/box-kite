@@ -4,6 +4,7 @@ import ColumnModel from './columnModel';
 import GridModel from './gridModel';
 import GroupRowModel from './groupRowModel';
 import RowModel from './rowModel';
+import type { TreeNode } from './treeModel';
 
 /** Roughly how many characters fit in a pixel width, once Excel's cell padding is taken off. */
 const PIXELS_PER_CHARACTER = 7;
@@ -100,7 +101,8 @@ export default class ExportModel<TRow> {
       }
     };
 
-    walk(this.grid.rows.value, 0, false);
+    if (this.grid.tree.enabled) this.walkTree(rows, columns);
+    else walk(this.grid.rows.value, 0, false);
 
     if (options.footer ?? this.grid.aggregation.hasFooter) rows.push(this.footerRow(columns));
 
@@ -113,6 +115,34 @@ export default class ExportModel<TRow> {
       })),
       rows,
     };
+  }
+
+  /**
+   * A tree, as Excel's outline: a row's level is its depth and a shut row exports `collapsed`, with
+   * everything under it `hidden` — the same two flags a collapsed group writes, so the file opens
+   * looking like the screen. The rows are walked rather than the models: a shut row builds none of its
+   * children, and an export writes the whole tree.
+   */
+  private walkTree(rows: ExportRow[], columns: ColumnModel<TRow>[]): void {
+    const { tree } = this.grid;
+
+    const walk = (nodes: TreeNode<TRow>[], level: number, hidden: boolean): void => {
+      nodes.forEach((node) => {
+        const collapsed = node.children.length > 0 && !tree.isExpanded(this.grid.getRowKey(node.data), level);
+
+        rows.push({
+          kind: 'data',
+          level,
+          hidden,
+          collapsed,
+          values: columns.map((column) => this.value(column, node.data)),
+        });
+
+        walk(node.children, level + 1, hidden || collapsed);
+      });
+    };
+
+    walk(tree.nodes.value, 0, false);
   }
 
   /**

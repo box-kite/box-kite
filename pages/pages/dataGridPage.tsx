@@ -1022,6 +1022,119 @@ Box.components({
             />
           </Code>
 
+          <Section id="group-by" title="Grouped rows, declared rather than clicked">
+            <Box>
+              <b>Group By</b> in a column's menu has always grouped the rows; <Mono>def.groupBy</Mono> is where the grid <i>starts</i>. Name
+              the columns to group by, outermost first, and the grid opens grouped — which is also the only way a page can server-render a
+              grouped grid, or a test can see one. <Mono>def.groupDefaultExpanded</Mono> says which of those groups start open:{' '}
+              <Mono>true</Mono> for all of them, a number for how many levels down. The menu takes it from there, and a group somebody opens
+              or shuts stays where they left it.
+            </Box>
+          </Section>
+
+          <Code
+            id="group-by-demo"
+            defer
+            label="Declared grouping"
+            language="jsx"
+            code={`<DataGrid
+  data={people}
+  def={{
+    // Outermost first. A grouped column is hidden, the way the menu hides one.
+    groupBy: ['country'],
+    // \`true\` opens every group; a number is how many levels down to open.
+    groupDefaultExpanded: 1,
+    footer: true,
+    columns: [
+      { key: 'first_name', header: 'First name' },
+      { key: 'last_name', header: 'Last name' },
+      { key: 'country', header: 'Country' },
+      { key: 'salary', header: 'Salary', aggregate: 'avg', align: 'end' },
+    ],
+  }}
+/>`}
+          >
+            <DataGrid
+              data={allData}
+              def={{
+                title: 'People by country',
+                topBar: true,
+                rowHeight: 40,
+                visibleRowsCount: 10,
+                groupBy: ['country'],
+                groupDefaultExpanded: 1,
+                footer: true,
+                columns: [
+                  { key: 'first_name', header: 'First name', width: 160 },
+                  { key: 'last_name', header: 'Last name', width: 160 },
+                  { key: 'country', header: 'Country', width: 150 },
+                  { key: 'salary', header: 'Salary', aggregate: 'avg', align: 'end', width: 140 },
+                ],
+              }}
+            />
+          </Code>
+
+          <Section id="tree-data" title="Rows that hold rows">
+            <Box>
+              <Mono>def.treeData</Mono> is a grid whose rows are a tree: a file system, an org chart, a bill of materials. The shape comes
+              out of the data in one of two ways — <b>nested</b>, where a row carries its children (<Mono>childrenKey</Mono>, or{' '}
+              <Mono>getChildren</Mono> to work them out), or <b>flat</b>, where every row carries the path to itself (<Mono>pathKey</Mono>/
+              <Mono>getPath</Mono>), which is the shape an export or a <Mono>WHERE path LIKE</Mono> hands you. The grid does the rest: one
+              column grows a chevron and an indent, and the whole thing reports itself as a <Mono>role="treegrid"</Mono> — which is what
+              makes a row's <Mono>aria-level</Mono> and <Mono>aria-expanded</Mono> mean something, since the rows under a row are its
+              siblings in the markup rather than its children.
+            </Box>
+            <Flex d="column" gap={3} mt={4}>
+              <Note icon={Table} title="A filter keeps the path to a match">
+                Filtering a tree row by row would hide every match that lives three folders down. A row survives when it matches{' '}
+                <i>or something under it does</i>, so what is left is the matches and the way to them — and a row that matches on its own
+                keeps none of the children that did not.
+              </Note>
+              <Note icon={Filter} title="A shut row costs nothing">
+                Nothing under a shut row is built at all — no models, no cells — so ten thousand rows nobody has opened cost the page its
+                top level. Opening one builds that level and no more.
+              </Note>
+              <Note icon={Table} title="Ticking a parent is a decision, so it is opt-in">
+                <Mono>selection: 'cascade'</Mono> makes a checkbox take everything under the row with it, and a row whose children are
+                partly ticked reads as indeterminate. Without it a checkbox is the row it is on, which is what every other row in the grid
+                does.
+              </Note>
+            </Flex>
+          </Section>
+
+          <Code
+            id="tree-data-demo"
+            defer
+            label="Tree data"
+            language="jsx"
+            code={`<DataGrid
+  data={files}
+  def={{
+    rowKey: 'id',
+    rowSelection: true,
+    globalFilter: true,
+    topBar: true,
+    // The tree is nested in the data. A flat list says \`pathKey: 'path'\` instead.
+    treeData: {
+      childrenKey: 'children',
+      // Which column carries the chevrons. Default: the first column of your own.
+      column: 'name',
+      // \`true\` for every row, a number for a depth, or a list of keys.
+      defaultExpanded: 1,
+      // Ticking a folder ticks everything in it.
+      selection: 'cascade',
+    },
+    columns: [
+      { key: 'name', header: 'Name', width: 320 },
+      { key: 'size', header: 'Size', align: 'end' },
+      { key: 'modified', header: 'Modified' },
+    ],
+  }}
+/>`}
+          >
+            <TreeDataDemo />
+          </Code>
+
           <PaginatedDataGridDemo />
 
           <Section id="data-source" title="A million rows, fetched a block at a time">
@@ -1848,6 +1961,94 @@ function Note({ icon: Icon, title, children }: { icon: typeof Table; title: stri
   );
 }
 
+interface FileNode {
+  id: string;
+  name: string;
+  size: number;
+  modified: string;
+  children?: FileNode[];
+}
+
+const AREAS = ['app', 'components', 'core', 'docs', 'examples', 'hooks', 'icons', 'pages', 'scripts', 'server', 'styles', 'utils'];
+const PARTS = ['index', 'model', 'view', 'state', 'types', 'utils', 'client', 'server', 'format', 'parse', 'cache'];
+
+/** Deterministic, so the tree is the same on the server, in the client and in a screenshot. */
+const pseudo = (seed: number): number => ((seed * 9301 + 49297) % 233280) / 233280;
+
+const dayOf = (seed: number): string => new Date(2026, 0, 1 + Math.floor(pseudo(seed) * 365)).toISOString().slice(0, 10);
+
+/**
+ * Twelve areas of twenty-five modules of thirty-three files: 10,212 rows, generated rather than shipped.
+ * A folder's size is what is in it, so nothing on screen needs an `aggregate` to add up.
+ */
+const fileTree: FileNode[] = AREAS.map((area, areaIndex) => {
+  const modules: FileNode[] = Array.from({ length: 25 }, (_, moduleIndex) => {
+    const seed = areaIndex * 1000 + moduleIndex * 31;
+    const files: FileNode[] = Array.from({ length: 33 }, (_, fileIndex) => ({
+      id: `${area}-${moduleIndex}-${fileIndex}`,
+      name: `${PARTS[(moduleIndex + fileIndex) % PARTS.length]}${fileIndex}.ts`,
+      size: 1 + Math.floor(pseudo(seed + fileIndex) * 90),
+      modified: dayOf(seed + fileIndex),
+    }));
+
+    return {
+      id: `${area}-${moduleIndex}`,
+      name: `${PARTS[moduleIndex % PARTS.length]}-${moduleIndex}`,
+      size: files.reduce((total, file) => total + file.size, 0),
+      modified: dayOf(seed),
+      children: files,
+    };
+  });
+
+  return {
+    id: area,
+    name: area,
+    size: modules.reduce((total, module) => total + module.size, 0),
+    modified: dayOf(areaIndex),
+    children: modules,
+  };
+});
+
+/** Every row of it, for the count the page quotes. */
+const fileTreeSize = fileTree.reduce(
+  (total, area) => total + 1 + area.children!.reduce((inner, module) => inner + 1 + module.children!.length, 0),
+  0,
+);
+
+function TreeDataDemo() {
+  // `defaultExpanded: 1` opens the top level, so the count starts at what is already open.
+  const [openRows, setOpenRows] = useState(fileTree.length);
+
+  const def = useMemo(
+    () => ({
+      rowKey: 'id' as const,
+      title: 'Repository',
+      topBar: true,
+      globalFilter: true,
+      rowSelection: true,
+      rowHeight: 40,
+      visibleRowsCount: 12,
+      treeData: { childrenKey: 'children' as const, column: 'name' as const, defaultExpanded: 1, selection: 'cascade' as const },
+      columns: [
+        { key: 'name' as const, header: 'Name', width: 320 },
+        { key: 'size' as const, header: 'Size (KB)', width: 130, align: 'end' as const },
+        { key: 'modified' as const, header: 'Modified', width: 160 },
+      ],
+    }),
+    [],
+  );
+
+  return (
+    <Flex d="column" gap={3}>
+      <Box fontSize={12} color="gray-500" theme={{ dark: { color: 'gray-400' } }}>
+        {fileTreeSize.toLocaleString()} rows in the tree, {openRows} of them open. Twelve are on screen.
+      </Box>
+
+      <DataGrid<FileNode> data={fileTree} def={def} onExpandedTreeKeysChange={(keys) => setOpenRows(keys.length)} />
+    </Flex>
+  );
+}
+
 const sidebarLinks = [
   { id: 'a11y', label: 'Keyboard and roles' },
   { id: 'full-featured', label: 'Full Featured' },
@@ -1857,6 +2058,8 @@ const sidebarLinks = [
   { id: 'aggregation', label: 'Aggregation and totals' },
   { id: 'export', label: 'Export to Excel and CSV' },
   { id: 'row-detail', label: 'Row Detail' },
+  { id: 'group-by', label: 'Grouped rows' },
+  { id: 'tree-data', label: 'Tree data' },
   { id: 'pagination', label: 'Server Pagination & Filters' },
   { id: 'data-source', label: 'Server row model' },
   { id: 'disable-sort', label: 'Disable Sort' },

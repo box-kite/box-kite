@@ -3,6 +3,7 @@ import useRovingFocus from '../../react/a11y/useRovingFocus';
 import { useIsomorphicLayoutEffect } from '../../react/effects';
 import { GridNavigation } from './gridNavigationContext';
 import GridModel from './models/gridModel';
+import TreeRowModel from './models/treeRowModel';
 
 /** A cell, header or body — what a keystroke has to land on for the grid to own it. */
 const CELL_SELECTOR = '[role="gridcell"],[role="columnheader"]';
@@ -160,6 +161,44 @@ export default function useGridNavigation<TRow>(options: GridNavigationOptions<T
     activeItem()?.focus();
   });
 
+  /**
+   * The sideways keys on a tree's own column, which is where APG's treegrid puts expanding and collapsing:
+   * forward opens a shut row, back shuts an open one and steps out to the parent of a row that is already
+   * shut. Anything else falls through to the ordinary cell move — including both keys on every other
+   * column, so a tree is still a grid to walk across. Forward is the *reading* direction, so the two keys
+   * swap in a right-to-left grid.
+   */
+  const treeKeyDown = useCallback(
+    (event: React.KeyboardEvent, row: number, column: number): boolean => {
+      if (!grid.tree.enabled || (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft')) return false;
+
+      const bodyRow = bodyRows[row - headerRowCount];
+      if (!(bodyRow instanceof TreeRowModel)) return false;
+      if (grid.columns.value.visibleLeafs[column]?.key !== grid.tree.columnKey) return false;
+
+      const forward = event.key === (grid.isRtl ? 'ArrowLeft' : 'ArrowRight');
+
+      if (forward) {
+        if (!bodyRow.hasChildren || bodyRow.treeExpanded) return false;
+
+        bodyRow.toggleTree();
+        return true;
+      }
+
+      if (bodyRow.hasChildren && bodyRow.treeExpanded) {
+        bodyRow.toggleTree();
+        return true;
+      }
+
+      const parent = bodyRow.treeParent;
+      if (!parent) return false;
+
+      roving.setActiveCell(headerRowCount + bodyRows.indexOf(parent), column, { reason: 'keyboard' });
+      return true;
+    },
+    [bodyRows, grid, headerRowCount, roving],
+  );
+
   const rovingKeyDown = roving.onKeyDown;
   const onKeyDown = useCallback(
     (event: React.KeyboardEvent) => {
@@ -199,9 +238,14 @@ export default function useGridNavigation<TRow>(options: GridNavigationOptions<T
         }
       }
 
+      if (treeKeyDown(event, roving.activeIndex, roving.activeColumn)) {
+        event.preventDefault();
+        return;
+      }
+
       rovingKeyDown(event);
     },
-    [headerRows, roving.activeColumn, roving.activeIndex, rovingKeyDown],
+    [headerRows, roving.activeColumn, roving.activeIndex, rovingKeyDown, treeKeyDown],
   );
 
   return { rowCount, columnCount, headerRowCount, cellProps: roving.cellProps, onKeyDown };

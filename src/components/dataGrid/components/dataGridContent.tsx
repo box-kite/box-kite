@@ -90,7 +90,9 @@ export default function DataGridContent<TRow>(props: Props<TRow>) {
         scrollbarGutter={grid.viewport.showAll ? undefined : 'stable'}
         style={{ willChange: 'scroll-position' }}
         props={{
-          role: 'grid',
+          // A tree is a `treegrid`: it is what makes `aria-level` and a row's `aria-expanded` valid,
+          // and axe calls either of them on a plain `grid` a serious violation (bug #162).
+          role: grid.tree.enabled ? 'treegrid' : 'grid',
           'aria-rowcount': navigation.rowCount,
           'aria-colcount': navigation.columnCount,
           'aria-multiselectable': grid.props.def.rowSelection ? true : undefined,
