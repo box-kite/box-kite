@@ -27,6 +27,7 @@ The package now carries instructions for the agent writing the code, the documen
 - **[A column that adds itself up](#a-column-that-adds-itself-up)** — `aggregate` on a DataGrid column totals it over each group row and over a pinned footer of grand totals: five built-ins or a function of your own, respecting the filters, formatted by an `AggregateCell`.
 - **[Excel and CSV, with nothing to install](#excel-and-csv-with-nothing-to-install)** — `def.export` writes an `.xlsx` with its groups as Excel outline levels and a CSV beside it: 3.80 KB gz behind a dynamic import, no ExcelJS, against the $999/dev/yr the same feature costs elsewhere.
 - **[A grid that fetches its own rows](#a-grid-that-fetches-its-own-rows)** — `def.dataSource` is one function the grid asks for a block at a time: a million rows scrolled with no array in the page, sort and filter round-tripped, a superseded request aborted and a late answer dropped. +2.51 KB gz, against the $999/dev/yr the same row model costs elsewhere.
+- **[A group the server counts, and children it fetches when you open one](#a-group-the-server-counts-and-children-it-fetches-when-you-open-one)** — `grouping: true` puts *Group By* back with a datasource set: the request carries `groupBy` and `groupKeys`, a group row brings its own count and totals, and a group nobody has opened costs the page nothing. +1.45 KB gz.
 - **[The component contract, written down and enforced](#the-component-contract-written-down-and-enforced)** — five rules every component keeps: state in `useControllableState`, every change reported with a named reason, Box props on every part, a style tree to replace, and a render prop instead of `asChild`. A check with two ledgers that both fail on a stale entry is what keeps them true.
 
 ## The package tells an agent how to use it
@@ -965,14 +966,68 @@ filter of the page's own, a row somebody saved — `refresh()` on the grid's ref
 asks again.
 
 Two things a server-backed grid must not pretend: a select-all reaches the rows that are loaded, not the
-table behind them, and an export writes what the grid holds. Grouping is not offered with a datasource
-set, because grouping the blocks that happen to be fetched is not grouping the data; a group level the
-server answers is the next step. The existing `onServerStateChange` grid is untouched and still works —
-`dataSource` is the answer for a new one.
+table behind them, and an export writes what the grid holds. Grouping used to be the third — it is the
+next section now. The existing `onServerStateChange` grid is untouched and still works — `dataSource` is
+the answer for a new one.
 
 The parts are `datagrid.body.cell.placeholder` and its `bar`, and `datagrid.error` with `message` and
 `retry`. **+2.51 KB gz** on the DataGrid entry, and 0.15 KB on every other engine-carrying entry for the
 two style-tree nodes — `/a11y` and `/anchor`, which carry no engine, moved nothing at all. AG Grid's server-side row model is Enterprise, at $999/dev/yr.
+
+## A group the server counts, and children it fetches when you open one
+
+Grouping was the one thing a datasource did not offer, for a good reason: grouping the blocks that happen
+to be in the browser is not grouping the data. So the server does it. Say that it can, and *Group By*
+comes back in the column menu:
+
+```tsx
+dataSource: {
+  // Without this, Group By is not offered at all: a `getRows` that ignored `groupKeys` would
+  // answer a group level with leaf rows, and the grid has no way to tell that it had.
+  grouping: true,
+  async getRows({ startRow, endRow, groupBy, groupKeys, signal }) {
+    const res = await fetch(`/api/people?` + new URLSearchParams({
+      offset: String(startRow),
+      limit: String(endRow - startRow),
+      groupBy: groupBy.join(','),      // ['country'] — what to GROUP BY
+      groupKeys: groupKeys.join(','),  // [] for the groups, ['Japan'] for what is inside one
+    }), { signal });
+    const body = await res.json();
+
+    return { rows: body.items, totalCount: body.total, groupCounts: body.counts };
+  },
+}
+```
+
+Every request now carries **`groupBy`**, the columns being grouped by, outermost first, and
+**`groupKeys`**, the group it is inside. Shorter than `groupBy` and the rows wanted are *group* rows, one
+per distinct value of `groupBy[groupKeys.length]`, with `groupCounts` beside them; the same length and
+they are that group's own rows. One rule covers both directions, and there is no second callback.
+
+A group row is **a row of the same shape**: the level's own column, and whatever it totals. A column with
+an `aggregate` reads its value off that row rather than adding up rows the browser has not got — so the
+number on a group row is the server's arithmetic over the whole group, not over the fifty rows in hand.
+Its count goes in the label; omit `groupCounts` and the label is the value alone.
+
+Nothing under a group is fetched until its chevron is pressed. **Each open group is a cache of its own** —
+its own blocks, its own count, its own failure — and shutting one disposes of it and everything beneath.
+Eviction keeps the chain *above* a level in play, so scrolling deep inside a group never drops the group
+row it hangs off; that was measured, because the obvious least-recently-used order takes it first.
+
+Two things the grid still declines to pretend. A group whose rows have never been fetched shows **no
+select-all checkbox**: it cannot select what the browser has never seen, and a checkbox that did nothing
+would be worse than none. And the totals come down with the group row, so a column with no `aggregate`
+declared still shows nothing — declaring one is how you say a column totals, whoever does the arithmetic.
+
+Measured in Chrome 152 on the built site, scrolling twelve blocks deep inside an open group: **109 ms**
+worst frame gap against **105 ms** for the same scroll through the ungrouped million-row grid beside it,
+and **52 ms** back over blocks already cached. The walk over the open levels costs nothing the flat path
+did not. **+1.45 KB gz** on the DataGrid entry; every other entry moved by zero.
+
+One fix came out of it. A group row carried `aria-expanded`, which is only defined on a row inside a
+`treegrid` and is a serious axe violation inside a `grid` — it had been there since grouping shipped, and
+no fixture had ever rendered a group row for the sweep to see. The open state is on the expand button,
+where it always also was.
 
 ## Breaking changes
 

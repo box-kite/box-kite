@@ -13,7 +13,8 @@ import {
   pinPositionOf,
   SortDirection,
 } from '../contracts/dataGridContract';
-import GridModel, { GROUPING_CELL_KEY, ROW_DETAIL_CELL_KEY, ROW_NUMBER_CELL_KEY, ROW_SELECTION_CELL_KEY } from './gridModel';
+import { GROUPING_CELL_KEY, ROW_DETAIL_CELL_KEY, ROW_NUMBER_CELL_KEY, ROW_SELECTION_CELL_KEY } from './cellKeys';
+import GridModel from './gridModel';
 import HeaderCellModel from './headerCellModel';
 
 /** Discriminates the structural role of a column — replaces scattered `key === *_CELL_KEY` checks. */
@@ -272,9 +273,9 @@ export default class ColumnModel<TRow> {
   public get contextMenuSections(): { sort: boolean; pin: boolean; group: boolean } {
     const config = this.contextMenu;
     // Grouping reads the rows the browser holds, and with a datasource that is the blocks in play rather
-    // than the table — so it would group whatever happened to be fetched. Not offered until the server
-    // can answer a group level of its own.
-    const group = !this.grid.source.enabled;
+    // than the table — so it would group whatever happened to be fetched. Offered only where the server
+    // answers a group level itself, which is what `dataSource.grouping` declares.
+    const group = !this.grid.source.enabled || this.grid.source.canGroup;
 
     if (typeof config === 'boolean') {
       return { sort: config, pin: config, group: config && group };

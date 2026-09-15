@@ -4,7 +4,7 @@ import dataGridApi from '../../api/components/datagrid.json';
 import Box from '../../src/box';
 import Button from '../../src/components/button';
 import DataGrid from '../../src/components/dataGrid';
-import { DataSourceRequest, DataSourceResult } from '../../src/components/dataGrid/contracts/dataGridContract';
+import { DataSourceRequest, DataSourceResult, Key } from '../../src/components/dataGrid/contracts/dataGridContract';
 import Flex from '../../src/components/flex';
 import { H2 } from '../../src/components/semantics';
 import ApiReference from '../components/apiReference';
@@ -1095,6 +1095,72 @@ const dataSource = useMemo(() => ({
             <MillionRowDemo />
           </Code>
 
+          <Section id="data-source-grouping" title="A group the server counts, and children it fetches when you open one">
+            <Box>
+              Set <Mono>grouping: true</Mono> on the datasource and <b>Group By</b> comes back in the column menu. Every request then
+              carries <Mono>groupBy</Mono> — the columns being grouped by, outermost first — and <Mono>groupKeys</Mono>, the group it is
+              inside: <Mono>[]</Mono> asks for the top level, <Mono>['Japan']</Mono> for what is inside Japan. Shorter than{' '}
+              <Mono>groupBy</Mono> and the rows wanted are <i>group</i> rows, one per distinct value, with <Mono>groupCounts</Mono> beside
+              them; the same length and they are that group's own rows. Nothing is fetched until a chevron is pressed, so a million rows
+              under eight groups cost the page eight rows.
+            </Box>
+            <Flex d="column" gap={3} mt={4}>
+              <Note icon={Table} title="A group row is a row, and it brings its own totals">
+                The server answers with rows of the same shape carrying the level's column — a group row for Japan is{' '}
+                <Mono>{'{ country: "Japan", score: 61_500_000 }'}</Mono>. A column with an <Mono>aggregate</Mono> reads its total off that
+                row rather than adding up rows the browser has not got, so the numbers are the server's arithmetic, over the whole group.
+              </Note>
+              <Note icon={Filter} title="A level is its own cache, and closing a group frees it">
+                Each open group holds blocks, a count and a failure of its own, and a group that is shut is disposed of with everything
+                under it. Eviction keeps the chain above a level in play, so scrolling deep inside a group never drops the row it hangs off.
+              </Note>
+              <Note icon={Table} title="What the grid does not hold, it does not claim">
+                A group whose rows have never been fetched shows no select-all checkbox, and an export writes the rows in hand. A grid that
+                offered either would be promising something only the server can answer.
+              </Note>
+            </Flex>
+          </Section>
+
+          <Code
+            id="data-source-grouping-demo"
+            defer
+            label="Server-side grouping"
+            language="jsx"
+            check={false}
+            code={`const dataSource = useMemo(() => ({
+  // Without this, Group By is not offered at all: a \`getRows\` that ignored
+  // \`groupKeys\` would answer a group level with leaf rows and nothing could tell.
+  grouping: true,
+  async getRows({ startRow, endRow, groupBy, groupKeys, sort, signal }) {
+    const res = await fetch('/api/people?' + new URLSearchParams({
+      offset: String(startRow),
+      limit: String(endRow - startRow),
+      groupBy: groupBy.join(','),      // ['country'] — what to GROUP BY
+      groupKeys: groupKeys.join(','),  // [] for the groups, ['Japan'] for what is in one
+    }), { signal });
+
+    const body = await res.json();
+
+    // A group level answers group rows plus how many leaf rows each holds. A leaf
+    // level answers rows, and needs neither — it is the same shape as every other block.
+    return { rows: body.items, totalCount: body.total, groupCounts: body.counts };
+  },
+}), []);
+
+<DataGrid
+  def={{
+    dataSource,
+    columns: [
+      { key: 'name', header: 'Name' },
+      { key: 'country', header: 'Country' },
+      { key: 'score', header: 'Score', aggregate: 'sum', align: 'end' },
+    ],
+  }}
+/>`}
+          >
+            <GroupedSourceDemo />
+          </Code>
+
           <Code
             id="disable-sort"
             defer
@@ -1352,12 +1418,39 @@ interface Person {
   id: number;
   name: string;
   country: string;
+  tier: string;
   joined: string;
   score: number;
 }
 
 /** The slot a row's values come from, and the row itself. Both pure, both O(1). */
 const slotOf = (index: number) => index % PERIOD;
+
+const scoreOf = (slot: number) => ((slot * 37) % 500) + 100;
+const tierOf = (slot: number) => (scoreOf(slot) >= 400 ? 'Gold' : scoreOf(slot) >= 250 ? 'Silver' : 'Bronze');
+
+/**
+ * The two columns the mock can group by, each a function of the slot — which is what lets a level of a
+ * million rows be answered by arithmetic over five hundred of them rather than by a scan.
+ */
+const GROUPABLE: Record<string, (slot: number) => string> = {
+  country: (slot) => COUNTRIES[slot % COUNTRIES.length],
+  tier: tierOf,
+};
+
+const ALL_SLOTS = Array.from({ length: PERIOD }, (_, slot) => slot);
+
+/** Which slots fall inside a group path — every grouped column above this level matching its value. */
+const slotsIn = (groupBy: Key[], groupKeys: Key[]) =>
+  ALL_SLOTS.filter((slot) => groupKeys.every((value, depth) => GROUPABLE[String(groupBy[depth])](slot) === value));
+
+/**
+ * The nth row of a group, in the table's own order. Each turn of the period contributes `slots.length`
+ * of them, so the nth is a division and a lookup — and because it walks *along* the period rather than
+ * down one slot, consecutive rows differ, which slot-major order does not (every row read Ada Lovelace).
+ */
+const rowIn = (slots: number[], position: number) =>
+  personAt(Math.floor(position / slots.length) * PERIOD + slots[position % slots.length]);
 
 function personAt(index: number): Person {
   const slot = slotOf(index);
@@ -1368,6 +1461,7 @@ function personAt(index: number): Person {
     // Lovelace twenty-five times running looks like a bug rather than a generator.
     name: `${FIRST_NAMES[slot % FIRST_NAMES.length]} ${LAST_NAMES[(slot * 7) % LAST_NAMES.length]}`,
     country: COUNTRIES[slot % COUNTRIES.length],
+    tier: tierOf(slot),
     // Off the index rather than the slot, so consecutive rows differ — a sort on a column with five
     // hundred distinct values puts two thousand identical rows together, which reads as a broken grid.
     // It is not sortable for the same reason `id` is not: the arithmetic below only reaches the slot.
@@ -1627,6 +1721,95 @@ useEffect(() => { fetchData({ page: 1, pageSize }); }, []);
     >
       <DataGrid data={data} loading={loading} page={page} onServerStateChange={fetchData} def={def} />
     </Code>
+  );
+}
+
+/**
+ * The same million rows, grouped by a server that never holds them either. A group level is the distinct
+ * values of one slot-derived column and how many rows each covers; a leaf level is the nth row inside a
+ * path. Both are arithmetic over the five hundred slots, which is the mock's trick — what the grid does
+ * is ask for one level at a time, and ask for a group's children only once somebody opens it.
+ */
+function GroupedSourceDemo() {
+  const [lastRequest, setLastRequest] = useState<string>('rows 0–100 of the top level');
+
+  const dataSource = useMemo(
+    () => ({
+      grouping: true,
+      blockSize: 100,
+      getRows: ({ startRow, endRow, groupBy, groupKeys }: DataSourceRequest<Person>) =>
+        new Promise<DataSourceResult<Person>>((resolve) => {
+          const inside = groupKeys.length > 0 ? ` inside ${groupKeys.join(' › ')}` : ' of the top level';
+          setLastRequest(`rows ${startRow}–${endRow}${groupBy.length > 0 ? inside : ''}`);
+
+          setTimeout(() => {
+            const slots = slotsIn(groupBy, groupKeys);
+
+            // As deep as the grouping goes: these are the rows themselves, found by which slot the nth
+            // one falls in and which turn of the period — no scan, and no table.
+            if (groupKeys.length === groupBy.length) {
+              const totalCount = slots.length * PER_SLOT;
+              const rows: Person[] = [];
+
+              for (let position = startRow; position < Math.min(endRow, totalCount); position++) {
+                rows.push(rowIn(slots, position));
+              }
+
+              resolve({ rows, totalCount });
+              return;
+            }
+
+            // A group level: one row per distinct value of this level's column, carrying the column
+            // itself and the total a server would have worked out in SQL.
+            const column = String(groupBy[groupKeys.length]);
+            const values = [...new Set(slots.map((slot) => GROUPABLE[column](slot)))].sort();
+            const under = (value: string) => slots.filter((slot) => GROUPABLE[column](slot) === value);
+
+            resolve({
+              rows: values.map(
+                (value) =>
+                  ({ [column]: value, score: under(value).reduce((sum, slot) => sum + scoreOf(slot), 0) * PER_SLOT }) as unknown as Person,
+              ),
+              totalCount: values.length,
+              groupCounts: values.map((value) => under(value).length * PER_SLOT),
+            });
+          }, 220);
+        }),
+    }),
+    [],
+  );
+
+  const def = useMemo(
+    () => ({
+      rowKey: 'id' as const,
+      title: 'One million people, grouped by the server',
+      topBar: true,
+      visibleRowsCount: 12,
+      rowHeight: 40,
+      dataSource,
+      columns: [
+        { key: 'id' as const, header: '#', sortable: false, width: 80, align: 'end' as const },
+        { key: 'name' as const, header: 'Name', sortable: false, width: 180 },
+        { key: 'country' as const, header: 'Country', sortable: false, width: 130 },
+        { key: 'tier' as const, header: 'Tier', sortable: false, width: 110 },
+        { key: 'score' as const, header: 'Score', sortable: false, aggregate: 'sum' as const, width: 130, align: 'end' as const },
+      ],
+    }),
+    [dataSource],
+  );
+
+  return (
+    <Flex d="column" gap={3}>
+      <Box fontSize={13} color="gray-600" theme={{ dark: { color: 'gray-400' } }}>
+        Open the <b>Country</b> column's menu and choose <b>Group By</b> — then <b>Tier</b> for a second level. Press a chevron and watch
+        what is asked for.
+      </Box>
+      <Box fontSize={12} color="gray-500" theme={{ dark: { color: 'gray-400' } }}>
+        Last asked for: {lastRequest}
+      </Box>
+
+      <DataGrid<Person> def={def} />
+    </Flex>
   );
 }
 

@@ -228,7 +228,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "68.35 KB"
+      "limit": "69.85 KB"
     },
     {
       "name": "DataGrid export, the chunk fetched on the first press",
@@ -248,7 +248,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "90.01 KB"
+      "limit": "91.75 KB"
     }
   ],
   "repository": {

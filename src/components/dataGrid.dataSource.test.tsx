@@ -2,6 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { createRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
+import { formatViolations, runAxe } from '../../dev/a11y/axe';
 import { ignoreLogs } from '../../dev/tests';
 import DataGrid from './dataGrid';
 import { DataGridHandle, DataSourceRequest, DataSourceResult, GridDefinition } from './dataGrid/contracts/dataGridContract';
@@ -27,6 +28,35 @@ function createSource() {
     );
 
     return Promise.resolve({ rows, totalCount: TOTAL });
+  });
+
+  return { getRows, requests };
+}
+
+/** A server that answers a group level: two countries, and the rows inside one of them. */
+function createGroupingSource() {
+  const requests: DataSourceRequest<Row>[] = [];
+  const all = Array.from({ length: TOTAL }, (_, i) => rowAt(i));
+
+  const getRows = vi.fn((request: DataSourceRequest<Row>): Promise<DataSourceResult<Row>> => {
+    requests.push(request);
+
+    if (request.groupBy.length === 0) return Promise.resolve({ rows: all.slice(request.startRow, request.endRow), totalCount: TOTAL });
+
+    if (request.groupKeys.length === 0) {
+      // A group row is a row with the grouped column set; the count comes down beside it.
+      const countries = ['USA', 'UK'];
+
+      return Promise.resolve({
+        rows: countries.map((country) => ({ ...all[0], country })),
+        totalCount: countries.length,
+        groupCounts: countries.map((country) => all.filter((row) => row.country === country).length),
+      });
+    }
+
+    const leaves = all.filter((row) => row.country === request.groupKeys[0]);
+
+    return Promise.resolve({ rows: leaves.slice(request.startRow, request.endRow), totalCount: leaves.length });
   });
 
   return { getRows, requests };
@@ -115,6 +145,65 @@ describe('DataGrid data source', () => {
     ref.current!.refresh();
 
     await waitFor(() => expect(source.requests.length).toBeGreaterThan(before));
+  });
+
+  it('groups on the server: the menu comes back, and a group fetches its children when it opens', async () => {
+    const user = userEvent.setup();
+    const source = createGroupingSource();
+
+    render(<DataGrid def={def({ dataSource: { ...source, grouping: true }, visibleRowsCount: 10 })} />);
+    await waitFor(() => expect(screen.getByText('Name 1')).toBeInTheDocument());
+
+    await user.click(screen.getByRole('button', { name: 'Column options for Country' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Group by Country' }));
+
+    // Two groups where there were five hundred rows, and the request said which column to group by.
+    await waitFor(() => expect(screen.getByText('USA (250)')).toBeInTheDocument());
+    expect(screen.getByText('UK (250)')).toBeInTheDocument();
+    expect(source.requests.at(-1)).toMatchObject({ groupBy: ['country'], groupKeys: [] });
+    expect(screen.queryByText('Name 1')).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /USA \(250\)/ }));
+
+    // Only now is a row under it asked for, and only that group's rows come back.
+    await waitFor(() => expect(screen.getByText('Name 1')).toBeInTheDocument());
+    expect(source.requests.at(-1)).toMatchObject({ groupBy: ['country'], groupKeys: ['USA'] });
+    expect(screen.queryByText('Name 2')).not.toBeInTheDocument();
+  });
+
+  // The axe sweep's fixtures can only render a grid that has never been grouped — grouping is reached
+  // through the column menu — so a *group row* has never been through it. This is where one is.
+  it('a grouped server grid, with a group open, has no accessibility violations', async () => {
+    const user = userEvent.setup();
+    const source = createGroupingSource();
+
+    render(
+      <DataGrid def={def({ dataSource: { ...source, grouping: true }, rowSelection: true, title: 'People', visibleRowsCount: 10 })} />,
+    );
+    await waitFor(() => expect(screen.getByText('Name 1')).toBeInTheDocument());
+
+    await user.click(screen.getByRole('button', { name: 'Column options for Country' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Group by Country' }));
+    await waitFor(() => expect(screen.getByText('USA (250)')).toBeInTheDocument());
+
+    await user.click(screen.getByRole('button', { name: /USA \(250\)/ }));
+    await waitFor(() => expect(screen.getByText('Name 1')).toBeInTheDocument());
+
+    const violations = await runAxe(document.body);
+    expect(formatViolations(violations), `${violations.length} violation(s) on a grid with an open server group`).toBe('');
+  }, 20_000);
+
+  it('offers no Group by while the server has not said it answers a group level', async () => {
+    const user = userEvent.setup();
+    const source = createSource();
+
+    render(<DataGrid def={def({ dataSource: source })} />);
+    await waitFor(() => expect(screen.getByText('Name 1')).toBeInTheDocument());
+
+    await user.click(screen.getByRole('button', { name: 'Column options for Country' }));
+
+    expect(await screen.findByRole('menuitem', { name: 'Sort Ascending' })).toBeInTheDocument();
+    expect(screen.queryByRole('menuitem', { name: 'Group by Country' })).not.toBeInTheDocument();
   });
 
   it('pages through the datasource when `def.pagination` is beside it', async () => {
