@@ -9,6 +9,7 @@ import RowModel from './rowModel';
 import SourceGroupRowModel, { groupPathKey } from './sourceGroupRowModel';
 import SourceLevel, { BlockStatus } from './sourceLevel';
 import SourceRowModel from './sourceRowModel';
+import SourceTreeRowModel from './sourceTreeRowModel';
 
 export type { BlockStatus };
 
@@ -60,7 +61,16 @@ export default class DataSourceModel<TRow> {
 
   /** Whether the server answers a group level, which is what puts *Group by* back in the column menu. */
   public get canGroup(): boolean {
-    return !!this.config?.grouping;
+    return !!this.config?.grouping && !this.isTree;
+  }
+
+  /**
+   * Whether the levels are a tree's rather than a grouping's. The two are one mechanism — a path, a level
+   * per open path, the same eviction — and they are mutually exclusive because a level cannot be both:
+   * a tree's own rows are the grouping its data already has.
+   */
+  public get isTree(): boolean {
+    return this.enabled && !!this.grid.props.def.treeData;
   }
 
   /**
@@ -185,8 +195,10 @@ export default class DataSourceModel<TRow> {
     return (this._byLevel = map);
   }
 
-  /** Which rows of a level are open groups, ascending, with the level each one holds. */
+  /** Which rows of a level are open — groups or tree rows — ascending, with the level each one holds. */
   private expansionsOf(level: SourceLevel<TRow>): { rowIndex: number; child: SourceLevel<TRow> }[] {
+    if (this.isTree) return this.treeExpansionsOf(level);
+
     const expanded = this.grid.expandedGroupRow;
     if (!level.isGroupLevel || expanded.size === 0) return [];
 
@@ -196,7 +208,7 @@ export default class DataSourceModel<TRow> {
 
     level.loadedBlocks().forEach(({ index, rows }) => {
       rows.forEach((row, offset) => {
-        const path = [...level.groupKeys, row[columnKey as keyof TRow] as Key];
+        const path = [...level.path, row[columnKey as keyof TRow] as Key];
         if (!expanded.has(groupPathKey(path))) return;
 
         const rowIndex = index * size + offset;
@@ -207,11 +219,54 @@ export default class DataSourceModel<TRow> {
     return found.sort((a, b) => a.rowIndex - b.rowIndex);
   }
 
-  private levelFor(groupKeys: Key[], parent: SourceLevel<TRow>, parentRowIndex: number): SourceLevel<TRow> {
-    const key = SourceLevel.keyOf(groupKeys);
+  /**
+   * The same for a tree, where every level's rows are data rows and any of them may hold more. A row is
+   * open when it says it has children and the tree model has it open — walked over the blocks in hand,
+   * because a row nobody has fetched is a row nobody could have pressed the chevron of.
+   */
+  private treeExpansionsOf(level: SourceLevel<TRow>): { rowIndex: number; child: SourceLevel<TRow> }[] {
+    const { tree } = this.grid;
+    if (!tree.mayExpand) return [];
+
+    const size = this.blockSize;
+    const found: { rowIndex: number; child: SourceLevel<TRow> }[] = [];
+
+    level.loadedBlocks().forEach(({ index, rows }) => {
+      rows.forEach((row, offset) => {
+        if (!tree.rowHasChildren(row)) return;
+
+        const key = this.grid.getRowKey(row);
+        if (!tree.isExpanded(key, level.depth)) return;
+
+        const rowIndex = index * size + offset;
+        found.push({ rowIndex, child: this.levelFor([...level.path, key], level, rowIndex) });
+      });
+    });
+
+    return found.sort((a, b) => a.rowIndex - b.rowIndex);
+  }
+
+  /**
+   * Every tree row that is open *and* reachable, which is what `onExpandedTreeKeysChange` reports. The
+   * levels are exactly that list: one per open path, and the walk disposes of any the rows no longer
+   * reach — so a row under a shut one is not open however it is marked.
+   */
+  public openTreeKeys(): Key[] {
+    if (!this.isTree) return [];
+
+    this.segments();
+
+    const keys: Key[] = [];
+    this.levels.forEach((level) => level.depth > 0 && keys.push(level.path[level.depth - 1]));
+
+    return keys;
+  }
+
+  private levelFor(path: Key[], parent: SourceLevel<TRow>, parentRowIndex: number): SourceLevel<TRow> {
+    const key = SourceLevel.keyOf(path);
     let level = this.levels.get(key);
 
-    if (!level) this.levels.set(key, (level = new SourceLevel(this, groupKeys, parent, parentRowIndex)));
+    if (!level) this.levels.set(key, (level = new SourceLevel(this, path, parent, parentRowIndex)));
     // A sort can move the group row a level hangs off, and eviction reads that position.
     else level.parentRowIndex = parentRowIndex;
 
@@ -376,7 +431,9 @@ export default class DataSourceModel<TRow> {
     if (!model) {
       model = level.isGroupLevel
         ? new SourceGroupRowModel(this.grid, level, this.groupColumnAt(level.depth), index)
-        : new SourceRowModel(this.grid, level, index);
+        : this.isTree
+          ? new SourceTreeRowModel(this.grid, level, index)
+          : new SourceRowModel(this.grid, level, index);
       byIndex.set(index, model);
     }
 

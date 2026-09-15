@@ -4,11 +4,12 @@ import ExpandIcon from '../../../icons/expandIcon';
 import Button from '../../button';
 import Flex from '../../flex';
 import CellModel from '../models/cellModel';
-import TreeRowModel from '../models/treeRowModel';
+import RowModel from '../models/rowModel';
+import { TreeRow } from '../models/treeRow';
 
 interface Props<TRow> {
   cell: CellModel<TRow>;
-  row: TreeRowModel<TRow>;
+  row: RowModel<TRow> & TreeRow;
   /** Whatever the column would have rendered — the value, or a `Cell` of the caller's own. */
   children: React.ReactNode;
 }

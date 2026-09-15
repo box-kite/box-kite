@@ -3,7 +3,7 @@ import Flex from '../../flex';
 import { useGridNavigationContext } from '../gridNavigationContext';
 import CellModel from '../models/cellModel';
 import RowModel from '../models/rowModel';
-import TreeRowModel from '../models/treeRowModel';
+import { isTreeRow } from '../models/treeRow';
 import DataGridCell from './dataGridCell';
 import DataGridCellPlaceholder from './dataGridCellPlaceholder';
 import DataGridCellText from './dataGridCellText';
@@ -20,7 +20,7 @@ export default function DataGridRow<TRow>(props: Props<TRow>) {
   const { selected, expandOnRowClick } = row;
   const navigation = useGridNavigationContext();
   const navRow = (navigation?.headerRowCount ?? 0) + index;
-  const tree = row instanceof TreeRowModel ? row : undefined;
+  const tree = isTreeRow<TRow>(row) ? row : undefined;
   const treeColumnKey = tree && row.grid.tree.columnKey;
 
   const handleRowClick = useCallback(() => {

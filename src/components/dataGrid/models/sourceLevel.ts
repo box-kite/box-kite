@@ -15,9 +15,9 @@ interface Block<TRow> {
 }
 
 /**
- * One level of a `def.dataSource` grid: the blocks answering a single `groupKeys` path, and the count and
- * end-of-data they arrived with. With no grouping there is exactly one of these — the whole of stage 1 —
- * and a group being opened adds another, which is the whole of stage 2.
+ * One level of a `def.dataSource` grid: the blocks answering a single path, and the count and end-of-data
+ * they arrived with. With nothing opened there is exactly one of these; a group or a tree row being opened
+ * adds another, and which of the two the path *is* is the only thing that differs between them.
  *
  * A level knows the row that opened it (`parent`, `parentRowIndex`), because a group's children are worth
  * nothing without it: eviction has to keep the chain above a level in play or the rows on screen would
@@ -26,8 +26,8 @@ interface Block<TRow> {
 export default class SourceLevel<TRow> {
   constructor(
     private readonly source: DataSourceModel<TRow>,
-    /** The group values naming this level, outermost first. `[]` is the top. */
-    public readonly groupKeys: Key[],
+    /** What names this level, outermost first: group values, or a tree row's keys. `[]` is the top. */
+    public readonly path: Key[],
     public readonly parent?: SourceLevel<TRow>,
     /** Where in `parent` the group row that opened this one sits. A sort can move it. */
     public parentRowIndex = 0,
@@ -44,13 +44,23 @@ export default class SourceLevel<TRow> {
   /** True once a block came back shorter than it was asked for: there is nothing past it. */
   private _reachedEnd = false;
 
-  /** Its own identity, and the key it is held under. JSON, so no group value can spell another path. */
-  public static keyOf(groupKeys: Key[]): string {
-    return JSON.stringify(groupKeys);
+  /** Its own identity, and the key it is held under. JSON, so no path value can spell another path. */
+  public static keyOf(path: Key[]): string {
+    return JSON.stringify(path);
   }
 
   public get key(): string {
-    return SourceLevel.keyOf(this.groupKeys);
+    return SourceLevel.keyOf(this.path);
+  }
+
+  /** The group this level sits inside — its path, unless the path is a tree's. */
+  public get groupKeys(): Key[] {
+    return this.source.isTree ? [] : this.path;
+  }
+
+  /** The row this level holds the children of — its path, when the path is a tree's. */
+  public get treeKeys(): Key[] {
+    return this.source.isTree ? this.path : [];
   }
 
   /** What a row of this level that has not arrived is keyed by — unique per level, stable per position. */
@@ -58,9 +68,9 @@ export default class SourceLevel<TRow> {
     return this.depth === 0 ? 'rb-placeholder' : `rb-placeholder-${this.key}`;
   }
 
-  /** How many groups deep this level sits, which is also which column it groups by. */
+  /** How deep this level sits — for a grouped source, which column it groups by. */
   public get depth(): number {
-    return this.groupKeys.length;
+    return this.path.length;
   }
 
   /** Whether its rows are groups rather than data — true until the last grouped column has been named. */
@@ -178,6 +188,7 @@ export default class SourceLevel<TRow> {
       columnFilters: grid.columnFilters,
       groupBy: this.source.groupBy,
       groupKeys: this.groupKeys,
+      treeKeys: this.treeKeys,
       signal: controller.signal,
     };
 
