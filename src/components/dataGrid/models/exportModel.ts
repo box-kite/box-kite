@@ -44,11 +44,17 @@ export default class ExportModel<TRow> {
     return Math.min(80, Math.max(6, Math.round((pixels / PIXELS_PER_CHARACTER) * 10) / 10));
   }
 
-  /** One row's value for one column: the column's own `exportValue` when it has one, else the raw field. */
+  /**
+   * One row's value for one column: the column's own `exportValue` when it has one, else the raw field —
+   * either way through the edits, so a file carries what the grid is showing rather than what it was given.
+   */
   private value(column: ColumnModel<TRow>, row: TRow): unknown {
     const { exportValue } = column.def;
+    const raw = exportValue ? exportValue(row) : row[column.key as keyof TRow];
 
-    return exportValue ? exportValue(row) : row[column.key as keyof TRow];
+    if (!this.grid.edits.edits.length) return raw;
+
+    return this.grid.edits.valueOf(this.grid.getRowKey(row), column.key, raw);
   }
 
   /** A column's aggregate over a set of rows, or null where it has no aggregation. */

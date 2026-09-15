@@ -2,6 +2,7 @@ import { useCallback, useRef } from 'react';
 import useRovingFocus from '../../react/a11y/useRovingFocus';
 import { useIsomorphicLayoutEffect } from '../../react/effects';
 import { GridNavigation } from './gridNavigationContext';
+import { isTypingKey } from './models/editModel';
 import GridModel from './models/gridModel';
 import { isTreeRow } from './models/treeRow';
 
@@ -235,11 +236,29 @@ export default function useGridNavigation<TRow>(options: GridNavigationOptions<T
           return;
         }
 
+        // An editable cell is what Enter and F2 open, ahead of whatever else the cell holds: the editor
+        // is not in the DOM until they are pressed, so there is no widget there to step into yet.
+        if (grid.edits.beginAt(roving.activeIndex - headerRowCount, roving.activeColumn)) {
+          event.preventDefault();
+          return;
+        }
+
         const widget = cell.querySelector<HTMLElement>(FOCUSABLE_SELECTOR);
 
         if (widget) {
           event.preventDefault();
           widget.focus();
+          return;
+        }
+      }
+
+      // One printable character opens the editor on it, replacing the value — the way a spreadsheet
+      // reads a keystroke on a cell, and the reason an edit is never two gestures.
+      if (grid.edits.enabled && isTypingKey(event)) {
+        const at = grid.edits.beginAt(roving.activeIndex - headerRowCount, roving.activeColumn, event.key);
+
+        if (at) {
+          event.preventDefault();
           return;
         }
       }
@@ -251,8 +270,8 @@ export default function useGridNavigation<TRow>(options: GridNavigationOptions<T
 
       rovingKeyDown(event);
     },
-    [headerRows, roving.activeColumn, roving.activeIndex, rovingKeyDown, treeKeyDown],
+    [grid, headerRowCount, headerRows, roving.activeColumn, roving.activeIndex, rovingKeyDown, treeKeyDown],
   );
 
-  return { rowCount, columnCount, headerRowCount, cellProps: roving.cellProps, onKeyDown };
+  return { rowCount, columnCount, headerRowCount, cellProps: roving.cellProps, setActiveCell: roving.setActiveCell, onKeyDown };
 }

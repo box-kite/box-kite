@@ -5,6 +5,7 @@ import CellModel from '../models/cellModel';
 import RowModel from '../models/rowModel';
 import { isTreeRow } from '../models/treeRow';
 import DataGridCell from './dataGridCell';
+import DataGridCellEditor from './dataGridCellEditor';
 import DataGridCellPlaceholder from './dataGridCellPlaceholder';
 import DataGridCellText from './dataGridCellText';
 import DataGridCellTree from './dataGridCellTree';
@@ -28,6 +29,9 @@ export default function DataGridRow<TRow>(props: Props<TRow>) {
   }, [row]);
 
   const renderContent = (cell: CellModel<TRow>, columnIndex: number) => {
+    // The editor replaces what the cell draws, tree chevron included: an open editor is the whole cell.
+    if (cell.editing) return <DataGridCellEditor cell={cell} row={navRow} columnIndex={columnIndex} />;
+
     const content =
       // The row number is known without the row, so it is the one cell a placeholder still fills:
       // a skeleton that hides the position is a grid whose scrollbar has nothing to say.

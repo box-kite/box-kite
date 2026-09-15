@@ -140,6 +140,13 @@
       "description": "The older page-size callback. Both fire."
     },
     {
+      "name": "onCellEditsChange",
+      "type": "ChangeHandler<CellEdit<TRow>[], DataGridEditReason>",
+      "required": false,
+      "default": null,
+      "description": "Fires with every edit the grid has accepted, oldest first — the stream an undo is built out of. It is the whole list rather than the one that changed, so a host keeps no history of its own, and it empties when `clearEdits()` says the host has saved them."
+    },
+    {
       "name": "onSortingChange",
       "type": "ChangeHandler<DataGridSort | undefined, DataGridSortReason>",
       "required": false,
@@ -185,10 +192,33 @@
     {
       "mode": null,
       "keys": "Enter / Space",
-      "action": "Sorts, on a sortable column header. Anywhere else, steps into the cell's own control."
+      "action": "Sorts, on a sortable column header. On an editable cell, opens its editor. Anywhere else, steps into the cell's own control."
     },
-    { "mode": null, "keys": "F2", "action": "Steps into the cell's control even on a header, where Enter is spoken for by the sort." },
-    { "mode": null, "keys": "Escape", "action": "Hands the keyboard back from that control to the cell." },
+    {
+      "mode": null,
+      "keys": "F2",
+      "action": "Steps into the cell's control even on a header, where Enter is spoken for by the sort; on an editable cell it opens the editor, as Enter does."
+    },
+    {
+      "mode": "On an editable cell",
+      "keys": "Any printable character",
+      "action": "Opens the editor on that character, replacing the value the way a spreadsheet does."
+    },
+    {
+      "mode": "In an editor",
+      "keys": "Enter",
+      "action": "Commits and hands the keyboard back to the cell. A value `def.onCellEdit` refuses keeps the editor open, with the message in a `role=\"alert\"` and `aria-invalid` on the field."
+    },
+    {
+      "mode": "In an editor",
+      "keys": "Tab / Shift+Tab",
+      "action": "Commits and opens the next or previous editable cell, along the row and on into the ones after it. With no next one it leaves the grid, as Tab does."
+    },
+    {
+      "mode": null,
+      "keys": "Escape",
+      "action": "Hands the keyboard back from that control to the cell; from an editor it also throws the draft away."
+    },
     {
       "mode": "On a column resizer",
       "keys": "Tab / F2",
@@ -211,6 +241,7 @@
   "axe": {
     "fixtures": [
       "DataGrid",
+      "DataGrid (editing, with a refused value)",
       "DataGrid (paginated)",
       "DataGrid (virtualized, grouped, selectable)",
       "DataGrid (grouped, expanded)",
@@ -285,6 +316,8 @@
         "isLastStartPinned",
         "isFirstEndPinned",
         "isLastEndPinned",
+        "isEditing",
+        "isInvalid",
         "isRowNumber",
         "isRowSelection",
         "isFirstLeaf",
@@ -297,6 +330,8 @@
       ]
     },
     { "path": "datagrid.body.cell.text", "depth": 3, "extends": null, "variants": [] },
+    { "path": "datagrid.body.cell.editor", "depth": 3, "extends": null, "variants": ["isPending"] },
+    { "path": "datagrid.body.cell.error", "depth": 3, "extends": null, "variants": [] },
     { "path": "datagrid.body.cell.placeholder", "depth": 3, "extends": null, "variants": [] },
     { "path": "datagrid.body.cell.placeholder.bar", "depth": 4, "extends": null, "variants": [] },
     { "path": "datagrid.body.cell.tree", "depth": 3, "extends": null, "variants": [] },

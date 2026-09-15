@@ -1,5 +1,6 @@
 import { createContext, useContext } from 'react';
-import { RovingFocusItemProps } from '../../react/a11y/useRovingFocus';
+import { ChangeDetails } from '../../react/a11y/useControllableState';
+import { RovingFocusItemProps, RovingFocusReason } from '../../react/a11y/useRovingFocus';
 
 /**
  * The grid's keyboard coordinates, shared with every cell. Rows are numbered as `aria-rowindex` is —
@@ -15,6 +16,13 @@ export interface GridNavigation {
   headerRowCount: number;
   /** The roving tabindex and the ref for one cell, in the coordinates above. */
   cellProps: (row: number, column: number) => RovingFocusItemProps;
+  /**
+   * Move the tab stop to a cell without a keystroke having done it — what Tab out of an editor and into
+   * the next editable cell moves. `'programmatic'` rather than `'keyboard'` on purpose: a keyboard move
+   * focuses the cell from the navigation's own layout effect, which would take focus off an editor
+   * mounting under it.
+   */
+  setActiveCell: (row: number, column: number, details: ChangeDetails<RovingFocusReason>) => void;
 }
 
 /**
