@@ -1065,10 +1065,10 @@ Box.components({
                 groupDefaultExpanded: 1,
                 footer: true,
                 columns: [
-                  { key: 'first_name', header: 'First name' },
-                  { key: 'last_name', header: 'Last name' },
-                  { key: 'country', header: 'Country' },
-                  { key: 'salary', header: 'Salary', aggregate: 'avg', align: 'end' },
+                  { key: 'first_name', header: 'First name', width: 160 },
+                  { key: 'last_name', header: 'Last name', width: 160 },
+                  { key: 'country', header: 'Country', width: 150 },
+                  { key: 'salary', header: 'Salary', aggregate: 'avg', align: 'end', width: 140 },
                 ],
               }}
             />

@@ -1086,6 +1086,15 @@ Two things it does not pretend. Selection cascades only when you ask (`selection
 makes a half-ticked row read as indeterminate) — a checkbox is otherwise the row it is on, like every
 other row in the grid. And _Group By_ is not offered on a tree at all: the rows are already in a shape.
 
+Measured in Chrome on the built site, on the docs page's own ten-thousand-node tree (12 areas × 25
+modules × 33 files = 10,212 rows): scrolling it is a **18 ms** worst frame gap against **42 ms** for the
+thousand-row flat grid further up the same page, opening a folder is **16 ms** — one frame's work — and
+filtering the whole tree costs **82 ms** on the first keystroke and 11–25 ms after, against 112 ms and
+12–30 ms for that flat grid's own filter over a tenth as many rows. Right-to-left was measured with a real
+`dir`, which no test environment resolves: ArrowLeft opens. **+2.0 KB gz** on the DataGrid entry and ~35 B
+on every entry that carries the engine (the three new style-tree nodes); `/a11y`, `/anchor` and the export
+chunk moved by zero, which is what attributes the rest.
+
 ## Grouping can be declared now, not only clicked
 
 Row grouping was reachable only through a column's menu, which meant a grid could not _start_ grouped —
