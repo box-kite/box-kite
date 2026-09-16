@@ -70,6 +70,28 @@ describe('Dropdown', () => {
       expect(screen.getByRole('combobox')).not.toContainElement(listbox);
     });
 
+    // For a dropdown that only exists because the user asked to choose — a grid's cell editor — where a
+    // second press to open the list that is the whole control is a gesture nobody meant.
+    it('opens on mount with defaultOpen, highlighting the selected option', () => {
+      renderDropdown({ defaultOpen: true, defaultValue: 'b' });
+
+      const trigger = screen.getByRole('combobox');
+
+      expect(trigger.getAttribute('aria-expanded')).toBe('true');
+      // On the selection rather than the top of the list, which is where a press on the trigger leaves it.
+      const active = document.getElementById(trigger.getAttribute('aria-activedescendant') ?? '');
+      expect(active?.textContent).toBe('Beta');
+    });
+
+    it('starts closed without it, and the highlight starts nowhere', () => {
+      renderDropdown({ defaultValue: 'b' });
+
+      const trigger = screen.getByRole('combobox');
+
+      expect(trigger.getAttribute('aria-expanded')).toBe('false');
+      expect(trigger.getAttribute('aria-activedescendant')).toBeNull();
+    });
+
     it('opens dropdown on click', () => {
       renderDropdown();
       openDropdown();

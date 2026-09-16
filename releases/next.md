@@ -30,6 +30,7 @@ The package now carries instructions for the agent writing the code, the documen
 - **[A group the server counts, and children it fetches when you open one](#a-group-the-server-counts-and-children-it-fetches-when-you-open-one)** — `grouping: true` puts _Group By_ back with a datasource set: the request carries `groupBy` and `groupKeys`, a group row brings its own count and totals, and a group nobody has opened costs the page nothing. +1.45 KB gz.
 - **[A grid whose rows hold rows](#a-grid-whose-rows-hold-rows)** — `def.treeData` turns the rows into a tree, nested in the data or named by a path on each row: a chevron and an indent on one column, a `treegrid` with the keyboard APG asks for, a filter that keeps the path to a match, and nothing built under a row nobody has opened.
 - **[A tree the server holds, one level per chevron](#a-tree-the-server-holds-one-level-per-chevron)** — `def.treeData` beside `def.dataSource`: the request carries `treeKeys`, `hasChildren` says which rows have a level to ask for, and 144,732 rows cost the page one of them.
+- **[A cell you can type into, and one place that judges it](#a-cell-you-can-type-into-and-one-place-that-judges-it)** — `column.editable` plus `def.onCellEdit`, which both validates an edit and is told about it, sync or async: four editors read off the value, APG's keys, a refused value announced in a `role="alert"`, and an edit stream for a host's undo.
 - **[Grouping can be declared now, not only clicked](#grouping-can-be-declared-now-not-only-clicked)** — `def.groupBy` and `def.groupDefaultExpanded`: a grid that starts grouped, which is what a server render, a fixture and a demo all needed.
 - **[The component contract, written down and enforced](#the-component-contract-written-down-and-enforced)** — five rules every component keeps: state in `useControllableState`, every change reported with a named reason, Box props on every part, a style tree to replace, and a render prop instead of `asChild`. A check with two ledgers that both fail on a stale entry is what keeps them true.
 
@@ -1189,8 +1190,101 @@ The menu takes it from there, and a group somebody opens or shuts stays where th
 closed a hole in the accessibility sweep: a group row had never been rendered by a fixture, because no
 fixture could produce one.
 
+## A cell you can type into, and one place that judges it
+
+A grid that only shows rows is a report; the thing that makes it an application surface is being able to
+change a value in it. `column.editable` is the whole opt-in, and `def.onCellEdit` is the one function
+that both judges an edit and is told about it — answer nothing to accept the value, or a string to refuse
+it:
+
+```tsx
+<DataGrid
+  data={people}
+  def={{
+    rowKey: 'id',
+    onCellEdit: ({ value, columnKey }) => (columnKey === 'name' && !String(value).trim() ? 'A name is required' : undefined),
+    columns: [
+      { key: 'name', header: 'Name', editable: true },
+      { key: 'salary', header: 'Salary', editable: true, align: 'end' },
+      { key: 'active', header: 'Active', editable: true },
+      { key: 'country', header: 'Country', editable: true, editor: { type: 'select', options: [{ value: 'Japan' }, { value: 'Peru' }] } },
+    ],
+  }}
+/>
+```
+
+**Which editor a cell opens is read off the value in it** — a number gets a numeric field, a boolean a
+checkbox, everything else a text field — so a column of numbers has a numeric keypad on a phone without
+being told. `editor` names one of the four (`text`, `number`, `checkbox`, `select`) or configures it, and
+`EditCell` is a control of your own, bound to `cell.draft` with `cell.commitEdit()` and `cell.cancelEdit()`
+beside it — the same three calls the built-in four make, so a date picker is a component and not a second
+copy of the commit rules.
+
+**A `select` editor opens its list with the editor**, highlighting the value already in the cell, so
+choosing one is the single gesture it looks like. The list is the whole control there — an editor that
+opened and then waited for a second press to show what could be chosen is the interaction AG Grid
+[names as the one flaw](https://www.ag-grid.com/javascript-data-grid/provided-cell-editors-select/) it
+cannot design out of a native `<select>`, and it is the same on every way in: a double press, Enter, F2,
+a printable character, or Tab arriving from the cell before. Escape closes the list and a second Escape
+leaves the editor, which is the two-stage dismissal the pattern already has. `Dropdown` takes the
+behaviour as a prop of its own — `defaultOpen` — for anything else built the same way.
+
+**A double press opens the editor, and a single one only chooses.** A press makes a cell the current
+one — where the arrow keys carry on from — and a double press on an editable cell opens it, the way a
+spreadsheet reads one; a cell that cannot be edited takes both as focus and nothing else. A widget inside
+a cell keeps its own presses, so a double press on a tree chevron, or on a link in a `Cell` of your own,
+belongs to the widget rather than the editor.
+
+**The keyboard is APG's**: Enter or F2 opens the editor, Escape throws the draft away, Enter commits and
+hands the keyboard back to the cell, and **Tab commits and opens the next editable cell** — along the row
+and on into the rows after it, so a row of corrections is one gesture. A printable character opens the
+editor on that character, replacing the value the way a spreadsheet does, and a press somewhere else
+commits. A refused value keeps the editor open and the caret in it, with the message in a `role="alert"`
+in the top layer — a bubble inside the scroller would be clipped away on the last row, which is the row a
+long grid is most often edited on — and `aria-invalid` plus `aria-describedby` on the field itself.
+
+**`def.onCellEdit` may be async**, so a uniqueness check against a server is the same function: the
+editor waits, and an answer to an edit the user has since abandoned is dropped rather than applied to
+whatever they are editing now. A rejected promise is its message.
+
+**The grid does not own `data`, so an accepted value is kept as an edit over the rows it was given** and
+is what every cell, every `Cell` renderer and every export reads from then on — which is what lets a grid
+over a `def.dataSource` be edited at all, since a value that was only reported would be gone on the next
+block. `onCellEditsChange` reports the whole list, oldest first, which is the stream an undo is built out
+of, and `clearEdits()` on the grid's ref is how a host says its own data has caught up. Two consequences
+worth knowing: an edit does **not** re-sort or re-filter the grid — a row jumping out from under the
+pointer as it is typed into is not an edit anybody asked for — and `refresh()` on a datasource drops the
+edits with the blocks, because what the server says next is the newer answer.
+
+## The grid is one tab stop, the way APG says
+
+A grid is a composite widget, and APG is explicit about what that costs the tab order: "Only one of the
+focusable elements contained by the grid is included in the page tab sequence." Until now this one had
+**seventy-eight** — measured on the docs site's own grid: one row-selection checkbox per rendered row,
+one resizer and one menu button per column, one input per filter. Tab from a cell walked into them one
+at a time, so crossing a grid took as many presses as it had rows, and the first of them landed on a
+checkbox in a near-empty column with no cell ring drawn anywhere.
+
+Now Tab leaves. Everything the grid draws inside a cell carries `tabindex="-1"`, and the way in is the
+one APG names: **Enter or F2** steps into the cell's controls, **Tab walks between them** and wraps
+inside that cell, and **Escape** hands the keyboard back. That is also MUI X's default
+(`tabNavigation="none"`), and the editor already worked this way — Tab in an open editor commits and
+opens the next editable cell, which is APG's "when grid navigation is disabled" half.
+
+**`def.tabNavigation="cells"`** is the other reading, for the screens that want it: Tab walks to the
+next cell and on into the rows after it, Shift+Tab walks back, the way AG Grid reads a grid. It is
+opt-in because it costs the keyboard its way out — at either end of the grid the key is let through, so
+Tab still escapes rather than being swallowed for ever.
+
+**Space selects the row** the focused cell is in, and deselects it again; from the header cell the
+select-all box sits in, it toggles every row. This is AG Grid's reading and it is the half that makes
+the rest safe: with the checkboxes out of the tab order, Space is how a grid is selected without a
+mouse. A grid with no row selection has nothing to toggle, so Space there keeps doing what Enter does.
+
 ## Breaking changes
 
+- **Nothing inside a DataGrid cell is a tab stop any more.** The row-selection checkboxes, the select-all box, the column resizers, the column menu buttons and the filter inputs all carry `tabindex="-1"`, so the grid is the single tab stop APG specifies. A page that tabbed into a column's filter box now presses Enter or F2 on that cell instead — or `def.tabNavigation="cells"`, if what it wanted was for Tab to walk the grid at all. A test that tabbed to a grid widget should focus it directly, or drive Enter/F2 from its cell.
+- **Space on a grid cell selects the row rather than acting like Enter.** It was an undocumented synonym for Enter (opening an editor, stepping into a widget); it is the selection key now, on every grid that has `def.rowSelection`. Enter and F2 are unchanged and are still the only ways into a cell. Where a grid has no row selection, Space still does what Enter does.
 - **`Overlay` places a layer instead of translating one, so its four positioning props are gone.** `anchorSide` is `side` (`anchorSide="bottom"` is the default `side="bottom"`; the old `'top'` overlapped the anchor, which `side="bottom" offset={0}` does not — use a negative margin if you need the overlap). `adjustTranslateX`/`adjustTranslateY` are `offset` on the ÷4 scale for the gap and `align` for the sideways nudge (`adjustTranslateY="4px"` is `offset={1}`). `onPositionChange` is `onSideChange`, which reports the side rather than page coordinates — nothing measures a position any more, so there are none to report.
 - **`Tooltip`'s `adjustTranslateX`/`adjustTranslateY` are `side`, `align` and `offset`.** The default gap is unchanged (`offset={1}`, 4px), so a tooltip that took no nudge needs no change.
 - **`flip` on `Overlay` and `Tooltip` is the placement prop, not the CSS one.** It shadows the Box prop that writes `scale`, the way `Tooltip` already shadows `content` and `open` — a mirrored layer is a rarity, and one placement vocabulary is worth more. A child of the layer still takes the CSS `flip`.
@@ -1202,6 +1296,12 @@ fixture could produce one.
 
 <!-- One bullet per fix: **What was wrong.** What it does now. -->
 
+- **A clicked grid cell showed nothing at all.** The current cell was drawn with `:focus-visible`, which is specified _not_ to match pointer input, so the ring appeared only once an arrow key had been pressed — and with an editor now opening on a double press, the cell a press had just chosen was the one thing on screen that did not say so. A body cell draws its ring for the cell that _holds_ focus instead — `:focus-within:not(:has(:focus))`, so a press on a widget the cell holds (a selection checkbox, a tree chevron) leaves the ring where it was rather than drawing a second one around that widget's cell. A header cell keeps `:focus-visible`, because its click sorts and the consequence is already visible. The ring still goes when the grid loses focus: a current cell that survives blur is what a range selection extends from, and it arrives with that.
+
+- **Every option of a grid's `select` editor came up painted as selected text.** A double press selects the word under it before any handler runs, and the editor then replaced the text that selection covered — so Chrome repaired the stranded range to the nearest boundary it could find, and the range reappeared over whatever rendered there next: the whole list, the moment it opened. The press that opens an editor drops the selection it made, since the content it covered is on its way out; and an option is a choice rather than prose, so `dropdown.item` declares `user-select: none` the way the trigger has since it shipped — which also stops a drag across the list painting one.
+
+- **A printable character typed on a `select` or `checkbox` cell became the cell's value.** One character opens the editor on that character, which is what a spreadsheet does with a field — but a list is chosen from rather than typed into, so the draft was seeded with a letter no option could match: the editor came up showing nothing at all, and an Enter after it committed the letter itself into the column. A `checkbox` read the same character as `true`. Only the two editors that are typed into take the keystroke now, and a `number` takes it **as a number** — seeded with the string, an Enter straight after the key committed `'7'` where the column held `7`. A key that is not part of a number opens the field on the value it found.
+
 - **A deprecated _prop_ would have told forty-five coding agents to stop importing the whole component.** The scan behind the skill's "no longer the spelling to write" list took the first `@deprecated` in a component's source and named the **module** after it — fine while every deprecation in `src/components/` was a whole component, and wrong the moment one was a prop: `RadioGroup`'s renamed `onChange` came out as `@box-kite/react/components/radioGroup`, which an agent reads as "do not import this". A tag above a prop signature now names the prop (`…/radioGroup#onChange`) and only a tag elsewhere names the module, and every deprecation in a file is listed rather than just the first.
 
 - **The docs site's own keyboard access, in the two places it was a clickable `<div>`.** The nine category switchers on [/box](https://www.box-kite.dev/box) — the largest prop reference on the site — could only be reached with a mouse, so eight of its nine panels were unreachable and a screen reader was told nothing about them. They are a `role="tablist"` of real buttons over the library's own `useRovingFocus` now, with arrow keys, Home/End and a `role="tabpanel"` that says which tab named it; the forty "Show code" toggles below them are buttons with `aria-expanded`. One caption on the same page also failed contrast at 3.74:1 and does not now.
@@ -1211,4 +1311,5 @@ fixture could produce one.
 - **Three nodes of the DataGrid style tree could not be styled at all.** `clean` tells the engine to use no component styles, so passing it _beside_ a `component` silently voided the very node that `component` named — and the expand chevron (`body.cell.rowDetail`), the group-row expander (`body.groupRow.expandButton`) and the pager buttons (`bottomBar.pagination.button`) all passed both. Anything written under those three keys, by the library or by a `Box.components()` override, was dropped on the floor. The three call sites name a component and no longer also claim to be clean; `clean` still strips a `Button` that names **no** component, which is the use it was meant for.
 - **Every scrolling `DataGrid` showed a horizontal scrollbar it did not need, off by exactly the scrollbar's own width.** The flexible columns were distributed across the width of the **grid container**, but they are laid out inside the scroller — and the vertical scrollbar sits between the two, so the columns came out 15px wider than the space they had and `scrollWidth − clientWidth` measured exactly 15 at every viewport size. The width is measured on the scroller now. Two things follow it. The scroller is `overflow-x: auto` rather than `scroll`, so a grid whose columns genuinely fit no longer reserves a track it never uses; one whose columns do not fit still scrolls, and the virtualized body keeps its vertical scroll from the same rule as before — naming one overflow axis computes the other `visible` companion up to `auto`. And the scroller reserves its vertical scrollbar's space up front (`scrollbar-gutter: stable`), because the columns are now sized to a width the scrollbar can change: without it, opening a row-detail panel on a grid that was not yet scrolling took 15px away and the columns reflowed a frame later, flashing a horizontal scrollbar on the way. A grid that can never scroll vertically — `visibleRowsCount: 'all'` — reserves nothing, since it would only lose the 15px.
 - **Six of the DataGrid pager's controls had no accessible name at all.** The four navigation buttons are chevrons and the chevrons are decorative, so a screen reader reached four buttons called nothing; the rows-per-page `<select>` and the page-number input were unlabelled beside them, both critical axe failures. All six are named now — and the a11y sweep grew a paginated grid fixture, which is what found them: the two DataGrid fixtures it already had never rendered a pager.
+- **The DataGrid's two tree props were spread onto the element it renders.** `expandedTreeKeys` and `onExpandedTreeKeysChange` were never taken off the props on their way through, so they reached `<Box>` with everything else — exactly what the comment above that line forbids ("a new grid prop cannot leak onto the element by being forgotten"). Nothing was visible, since Box forwards only what is in `props`, but a future prop of that name on Box would have been set by a grid that never meant to. Both come off now.
 - **A `DataGrid` given a callback but no value prop did nothing at all.** `<DataGrid onPageChange={track}>` without a `page` beside it fired the callback on every press of the pager and never moved — and the same for `onGlobalFilterChange` without `globalFilterValue`, `onColumnFiltersChange`, `onPageSizeChange` and `onExpandedRowKeysChange`. The grid read the _handler_ as "the caller owns this state", so a grid wired up only to watch its user was left with a pager, a filter box and a set of expanders that could not change anything. A handler is a listener; ownership is the value prop, which still wins wherever it is passed.

@@ -1755,6 +1755,10 @@ const boxComponents = {
           cursor: 'pointer',
           borderRadius: 1,
           lineHeight: 20,
+          // An option is a choice, not prose: dragging across the list while choosing must not paint a
+          // selection, and a range stranded elsewhere on the page must not reach in here. The trigger
+          // has said the same since it shipped.
+          userSelect: 'none',
           hover: {
             bgColor: 'gray-100',
           },
@@ -2652,12 +2656,21 @@ const boxComponents = {
                 // by nothing, so a selected row was legible only by its own checkbox.
                 'grid-row/aria-selected=true': { bgColor: 'indigo-50' },
               },
-              // Same ring as the header cell: in a grid the cell is the thing that holds focus.
-              focusVisible: {
-                outline: 2,
-                outlineStyle: 'solid',
-                outlineOffset: -2,
-                outlineColor: 'indigo-500',
+              // The ring says the *cell* holds focus: `:focus-within:not(:has(:focus))` is the cell itself, where
+              // bare `focus` would light it up for a widget it holds — a selection checkbox, a tree chevron —
+              // on top of that widget's own ring. `:focus-visible` is what it cannot be (bug #64): a pointer
+              // never matches it, so a *clicked* cell drew nothing until an arrow key. Interim, until E6 owns a
+              // current cell the roving state marks — which will be drawn for a widget's cell too, since the
+              // tab stop does move there.
+              focus: {
+                not: {
+                  hasFocus: {
+                    outline: 2,
+                    outlineStyle: 'solid',
+                    outlineOffset: -2,
+                    outlineColor: 'indigo-500',
+                  },
+                },
               },
               theme: {
                 dark: {
@@ -2668,8 +2681,8 @@ const boxComponents = {
                     'grid-row/data-group-row': { bgColor: 'gray-800' },
                     'grid-row/aria-selected=true': { bgColor: 'indigo-950' },
                   },
-                  focusVisible: {
-                    outlineColor: 'indigo-400',
+                  focus: {
+                    not: { hasFocus: { outlineColor: 'indigo-400' } },
                   },
                 },
               },
@@ -2714,6 +2727,31 @@ const boxComponents = {
                 },
               },
               isLastEndPinned: {},
+              // The cell being edited. It stops clipping — a control as tall as the row is cut at both
+              // ends by the cell's own `overflow` — and paints its own surface, since a pinned neighbour
+              // would otherwise show through an editor that has no background of its own.
+              isEditing: {
+                overflow: 'visible',
+                zIndex: 2,
+                bgColor: 'white',
+                outline: 2,
+                outlineStyle: 'solid',
+                outlineOffset: -2,
+                outlineColor: 'indigo-500',
+                theme: {
+                  dark: {
+                    bgColor: 'gray-900',
+                    outlineColor: 'indigo-400',
+                  },
+                },
+              },
+              // A refused value, on the cell rather than on the editor inside it: two rings on the same
+              // rectangle means the editing one paints over this one and a refusal reads as an ordinary
+              // edit (measured in Chrome 152). Declared after `isEditing`, so it wins the outline.
+              isInvalid: {
+                outlineColor: 'red-500',
+                theme: { dark: { outlineColor: 'red-400' } },
+              },
               // Muted, but only as far as contrast allows: `gray-400` on white measures 2.60:1 and `gray-500`
               // on `gray-900` 3.67:1, so the quiet-looking pair is the one that fails both ways round.
               isRowNumber: { jc: 'end', color: 'gray-500', theme: { dark: { color: 'gray-400' } } },
@@ -2756,6 +2794,40 @@ const boxComponents = {
             children: {
               text: {
                 styles: {},
+              },
+              // The open editor. It fills the cell rather than sitting in it, so the value stays exactly
+              // where it was drawn and nothing shifts on the way in — the one thing that makes an inline
+              // edit read as the cell rather than as a box over it.
+              editor: {
+                styles: {
+                  px: 2,
+                  gap: 1,
+                },
+                variants: {
+                  // Being judged by an async validator. Quiet on purpose: a spinner in a cell the size of
+                  // a word is noise, and the value is still there to read.
+                  isPending: { opacity: 0.6 },
+                },
+              },
+              // What a refused value says, in the top layer — a bubble inside the scroller would be
+              // clipped away on the last row, which is the row a long grid is most often edited on.
+              error: {
+                styles: {
+                  bgColor: 'red-600',
+                  color: 'white',
+                  fontSize: 12,
+                  py: 1,
+                  px: 2,
+                  borderRadius: 1,
+                  shadow: 'sm',
+                  maxWidth: 64,
+                  theme: {
+                    dark: {
+                      bgColor: 'red-500',
+                      color: 'gray-950',
+                    },
+                  },
+                },
               },
               // A cell whose block has not arrived. The bar carries the pulse rather than the row, which
               // is `display: contents` and animates nothing; `pulse` is a named preset, so it stops

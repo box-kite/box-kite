@@ -205,6 +205,7 @@ export default function DataGridHeaderCellContextMenu<TRow>(props: Props<TRow>) 
         variant={hc.contextMenuButtonVariant as never}
         type="button"
         props={{
+          tabIndex: -1,
           // Three dots name nothing. The column does, and there is one of these per column.
           'aria-label': `Column options for ${columnName}`,
           'aria-haspopup': 'menu',

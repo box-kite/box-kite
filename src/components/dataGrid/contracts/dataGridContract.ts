@@ -296,6 +296,58 @@ export interface TreeDataConfig<TRow> {
   selection?: 'self' | 'cascade';
 }
 
+// ========== Cell Editing ==========
+
+/**
+ * The four editors the grid draws for itself. A column wanting anything else — a date picker, a colour,
+ * a lookup against a table — declares `EditCell` instead and renders it, driven by the same model.
+ */
+export type CellEditorType = 'text' | 'number' | 'checkbox' | 'select';
+
+/** One option of a `select` editor. `value` is what the cell holds; `label` is what the list shows. */
+export interface CellEditorOption {
+  value: string | number | boolean | null;
+  label?: React.ReactNode;
+}
+
+/** An editor and whatever it needs. A bare name is this with nothing else set. */
+export interface CellEditorConfig<TRow> {
+  type: CellEditorType;
+  /** `select` only: the options, or a function over the row being edited when they depend on it. */
+  options?: CellEditorOption[] | ((row: TRow) => CellEditorOption[]);
+  /** `text`/`number`/`select`: what an empty editor shows. */
+  placeholder?: string;
+  /** `number` only, handed to the input as it stands. */
+  step?: number;
+  min?: number;
+  max?: number;
+}
+
+/** Whether a column can be edited: every row of it, or the rows a predicate says. */
+export type ColumnEditable<TRow> = boolean | ((row: TRow) => boolean);
+
+/**
+ * One cell, changed. It is what `def.onCellEdit` judges and what the edit stream is made of. `row` is the
+ * row as the grid holds it — before this edit, so a validator comparing against a sibling field sees the
+ * values the user saw.
+ */
+export interface CellEdit<TRow> {
+  rowKey: Key;
+  columnKey: Key;
+  row: TRow;
+  value: unknown;
+  oldValue: unknown;
+}
+
+/**
+ * What `def.onCellEdit` answers with. Nothing or `true` accepts the value; a string rejects it and is the
+ * message the cell shows and a screen reader is told; `false` rejects it with the grid's own wording.
+ */
+export type CellEditResult = void | boolean | string;
+
+/** Why the edit stream changed: a cell was accepted, or the host took the edits off the grid's hands. */
+export type DataGridEditReason = 'edit' | 'clear';
+
 // ========== Context Menu ==========
 
 /** Controls which sections appear in the column header context menu */
@@ -422,6 +474,12 @@ export interface DataGridHandle {
    * without a datasource.
    */
   refresh(): void;
+  /**
+   * Drop the edits the grid is holding over its rows, which is how a host says its own data now carries
+   * them. Until it does the grid keeps showing what it accepted, so a value survives a block being
+   * refetched or a `data` prop that never changes; afterwards the rows answer for themselves again.
+   */
+  clearEdits(): void;
 }
 
 // ========== Column Type ==========
@@ -449,6 +507,23 @@ export interface ColumnType<TRow> {
   exportFormat?: string;
   /** Renders this column's aggregate wherever one appears. Without it the value is rendered as it is. */
   AggregateCell?: React.ComponentType<{ cell: AggregateCellModel<TRow> }>;
+  /**
+   * Whether this column's cells can be edited — every row of it, or the rows a predicate says. Without
+   * one it inherits `def.editable`, which is off by default.
+   */
+  editable?: ColumnEditable<TRow>;
+  /**
+   * Which editor a cell opens. Default: `number` for a column whose values are numbers, `checkbox` for
+   * booleans, `text` for everything else — read off the first row that has a value, so a column of
+   * numbers gets a numeric keypad without being told.
+   */
+  editor?: CellEditorType | CellEditorConfig<TRow>;
+  /**
+   * An editor of your own, for what the four built-in ones do not cover. It is handed the cell, and the
+   * cell carries the draft value and the two ways out (`commitEdit`, `cancelEdit`) — so a custom editor
+   * is a control bound to `cell.draft`, not a second copy of the commit rules.
+   */
+  EditCell?: React.ComponentType<{ cell: CellModel<TRow> }>;
   /** Enable filtering for this column. Set to true for default text filter, or provide config */
   filterable?: boolean | ColumnFilterConfig;
   /** Enable sorting for this column. If undefined, inherits from GridDefinition.sortable */
@@ -466,6 +541,14 @@ export interface GridDefinition<TRow> {
   columns: ColumnType<TRow>[];
   showRowNumber?: boolean | { pinned?: boolean; width?: number };
   rowSelection?: boolean | { pinned?: boolean };
+  /**
+   * What Tab does from a cell. `'none'` is APG's grid and the default: the grid is a single tab stop, so
+   * Tab leaves it for the next control on the page and the widgets a cell holds are reached with Enter or
+   * F2. `'cells'` is the spreadsheet reading AG Grid ships — Tab walks to the next cell and on into the
+   * rows after it, and Shift+Tab walks back — which a data-entry screen wants and a page of content does
+   * not, since it costs the keyboard its way out of the grid.
+   */
+  tabNavigation?: 'none' | 'cells';
   rowHeight?: number;
   /** Number of visible rows. Set to 'all' to render all rows without virtualization or vertical scrollbar. */
   visibleRowsCount?: number | 'all';
@@ -479,6 +562,23 @@ export interface GridDefinition<TRow> {
   globalFilter?: boolean;
   /** Keys of columns to search in global filter. If not provided, all columns are searched */
   globalFilterKeys?: (keyof TRow | Key)[];
+  /**
+   * Whether every column can be edited. Default: false — a column says so for itself, and this is the
+   * grid-wide default it falls back to. Individual column settings take priority.
+   */
+  editable?: boolean;
+  /**
+   * Judges an edit and is told about it, in one call: answer nothing to accept the value, or a string to
+   * reject it — the editor stays open, the message is shown on the cell and announced, and nothing is
+   * written. A promise is awaited, so a uniqueness check against a server is the same function; an answer
+   * to an edit the user has since abandoned is dropped.
+   *
+   * The grid does not own `data`, so an accepted value is kept as an **edit over** the rows it was given
+   * and is what every cell, every custom `Cell` and every export reads from then on. It does not re-sort
+   * or re-filter the grid — a row jumping out from under the pointer as it is typed into is not an edit
+   * anybody asked for — and `clearEdits()` on the grid's ref is how a host says its own data has caught up.
+   */
+  onCellEdit?: (edit: CellEdit<TRow>) => CellEditResult | Promise<CellEditResult>;
   /** Enable sorting for all columns. Default is true. Individual column settings take priority. */
   sortable?: boolean;
   /** Enable resizing for all columns. Default is true. Individual column settings take priority. */
@@ -595,6 +695,12 @@ export interface DataGridProps<TRow> extends Omit<BoxProps<'div', 'datagrid'>, '
    * never separate changes. This one still works.
    */
   onPageSizeChange?: (pageSize: number) => void;
+  /**
+   * Fires with every edit the grid has accepted, oldest first — the stream an undo is built out of. It is
+   * the whole list rather than the one that changed, so a host keeps no history of its own, and it empties
+   * when `clearEdits()` says the host has saved them.
+   */
+  onCellEditsChange?: ChangeHandler<CellEdit<TRow>[], DataGridEditReason>;
   /** Fires with the column and direction the grid is sorted by, or `undefined` once the sort is cleared. */
   onSortingChange?: ChangeHandler<DataGridSort | undefined, DataGridSortReason>;
   /**

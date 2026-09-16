@@ -2,6 +2,7 @@ import ArrayUtils from '../../../utils/array/arrayUtils';
 import memo from '../../../utils/memo';
 import {
   ColumnAggregate,
+  ColumnEditable,
   ColumnFilterConfig,
   ColumnType,
   ContextMenuConfig,
@@ -236,6 +237,16 @@ export default class ColumnModel<TRow> {
 
   public clearFilter(): void {
     this.grid.setColumnFilter(this.key, undefined);
+  }
+
+  /**
+   * Whether this column can be edited: the column's own answer, or the grid-wide default it falls back
+   * to. A predicate is passed through as it stands — `EditModel` is what asks it about a row.
+   */
+  public get editable(): ColumnEditable<TRow> {
+    if (this.def.editable !== undefined) return this.def.editable;
+
+    return this.grid.props.def.editable ?? false;
   }
 
   /** Whether sorting is enabled for this column. Column-level setting takes priority over grid-level. */

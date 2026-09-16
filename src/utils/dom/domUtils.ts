@@ -48,3 +48,14 @@ export function isRtl(value: ElementLike): boolean {
 
   return !!element && !!view && view.getComputedStyle(element).direction === 'rtl';
 }
+
+/**
+ * Drop whatever the document has selected. A double press selects the word under it before any handler
+ * runs, so a widget that *replaces* what was pressed leaves a range over content that no longer exists —
+ * which the browser repairs to the nearest boundary and then paints over whatever is rendered inside it.
+ */
+export function clearSelection(element: ElementLike): void {
+  const selection = elementOf(element)?.ownerDocument?.defaultView?.getSelection();
+
+  if (selection && !selection.isCollapsed) selection.removeAllRanges();
+}

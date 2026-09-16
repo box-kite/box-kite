@@ -21,7 +21,8 @@ export default function DataGridCellRowSelection<TRow>(props: Props<TRow>) {
       checked={cell.selected}
       indeterminate={cell.indeterminate}
       onChange={rowSelectedHandler}
-      props={{ 'aria-label': `Select row ${cell.row.rowIndex + 1}` }}
+      // Reached through the cell — Space on any cell in the row toggles this, and Enter steps onto it.
+      props={{ tabIndex: -1, 'aria-label': `Select row ${cell.row.rowIndex + 1}` }}
     />
   );
 }

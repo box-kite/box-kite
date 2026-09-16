@@ -31,6 +31,12 @@ interface Props<TVal, TKey extends keyof ComponentsAndVariants = 'dropdown'> ext
   defaultValue?: TVal | TVal[];
   /** Controlled selection. Pair it with `onValueChange`, or nothing the user picks sticks. */
   value?: TVal | TVal[];
+  /**
+   * Open the listbox as soon as the dropdown mounts, highlighting the selected option the way a press on
+   * the trigger would. For a dropdown that only exists because the user asked to choose — a grid's cell
+   * editor — where a second press to open a list that is the whole control is a gesture nobody meant.
+   */
+  defaultOpen?: boolean;
   /** Let more than one option be chosen. Enter and Space then toggle without closing the listbox. */
   multiple?: boolean;
   /**
@@ -161,6 +167,7 @@ function DropdownImpl<TVal>(props: Props<TVal>, ref: Ref<HTMLInputElement>): Rea
     name,
     defaultValue,
     value,
+    defaultOpen,
     multiple = false,
     isSearchable,
     searchPlaceholder,
@@ -204,7 +211,7 @@ function DropdownImpl<TVal>(props: Props<TVal>, ref: Ref<HTMLInputElement>): Rea
    */
   const [search, setSearch] = useState<string | null>(null);
 
-  const [isOpen, setOpen] = useState(false);
+  const [isOpen, setOpen] = useState(!!defaultOpen);
   const triggerRef = useRef<HTMLElement | null>(null);
   // A callback rather than a ref object: the trigger is a `<button>` in one mode and a `<div>` in
   // the other, and one `RefObject<T>` cannot be handed to both.
@@ -375,10 +382,31 @@ function DropdownImpl<TVal>(props: Props<TVal>, ref: Ref<HTMLInputElement>): Rea
     else applySelection(event, row.element);
   });
 
+  /** The first row the arrows may land on, from either end. */
+  const edgeIndex = (from: 'first' | 'last'): number => {
+    const delta = from === 'first' ? 1 : -1;
+
+    for (let index = from === 'first' ? 0 : rows.length - 1; index >= 0 && index < rows.length; index += delta) {
+      if (!isRowDisabled(index)) return index;
+    }
+
+    return -1;
+  };
+
+  /** Where the highlight lands when the listbox opens: on what is selected, or at the end implied. */
+  const indexOnOpen = (fallback: 'first' | 'last' | 'none'): number => {
+    const selected = rows.findIndex((row) => row.kind === 'item' && valueToUse.includes(row.element.props.value));
+    if (selected !== -1 && !isRowDisabled(selected)) return selected;
+
+    return fallback === 'none' ? -1 : edgeIndex(fallback);
+  };
+
   const roving = useRovingFocus({
     count: rows.length,
     focusItems: false,
-    defaultActiveIndex: -1,
+    // A `defaultOpen` listbox has to start where a press on the trigger leaves it — on the selected
+    // option — or it opens scrolled to the top with the arrows starting from nothing.
+    defaultActiveIndex: defaultOpen ? indexOnOpen('none') : -1,
     isDisabled: isRowDisabled,
     // Typeahead is the list's while the trigger holds the keystrokes. In searchable mode the
     // search box does, and a hidden second buffer racing the one the user can see is worse than
@@ -423,25 +451,6 @@ function DropdownImpl<TVal>(props: Props<TVal>, ref: Ref<HTMLInputElement>): Rea
     // the option does not jump.
     activeItem()?.scrollIntoView?.({ block: 'nearest' });
   }, [isOpen, activeIndex, activeItem]);
-
-  /** The first row the arrows may land on, from either end. */
-  const edgeIndex = (from: 'first' | 'last'): number => {
-    const delta = from === 'first' ? 1 : -1;
-
-    for (let index = from === 'first' ? 0 : rows.length - 1; index >= 0 && index < rows.length; index += delta) {
-      if (!isRowDisabled(index)) return index;
-    }
-
-    return -1;
-  };
-
-  /** Where the highlight lands when the listbox opens: on what is selected, or at the end implied. */
-  const indexOnOpen = (fallback: 'first' | 'last' | 'none'): number => {
-    const selected = rows.findIndex((row) => row.kind === 'item' && valueToUse.includes(row.element.props.value));
-    if (selected !== -1 && !isRowDisabled(selected)) return selected;
-
-    return fallback === 'none' ? -1 : edgeIndex(fallback);
-  };
 
   const openAt = (index: number, event: React.SyntheticEvent) => {
     setOpen(true);

@@ -1,9 +1,13 @@
 import { BoxProps } from '../../../box';
+import { clearSelection } from '../../../utils/dom/domUtils';
 import Flex from '../../flex';
 import { useGridNavigationContext } from '../gridNavigationContext';
 import AggregateCellModel from '../models/aggregateCellModel';
 import CellModel from '../models/cellModel';
 import GroupRowCellModel from '../models/groupRowCellModel';
+
+/** What inside a cell owns its own presses, so a double one landing there is not a way into the editor. */
+const WIDGET_SELECTOR = 'button,a[href],input,select,textarea';
 
 interface Props<TRow> extends BoxProps {
   children: React.ReactNode;
@@ -25,9 +29,30 @@ export default function DataGridCell<TRow>(props: Props<TRow>) {
   if (column.hasAlign) restProps.jc = column.align;
 
   // Column-stable variant (precomputed once) merged with this row's expansion state.
-  const variant = cell.isExpanded
+  let variant: Record<string, boolean> = cell.isExpanded
     ? { ...column.cellVariant.value, isExpanded: true, isExpandedFirstLeaf: cell.isFirst, isExpandedLastLeaf: cell.isLast }
     : column.cellVariant.value;
+
+  // Editing is per cell rather than per column, so it cannot ride the precomputed record — and a cell
+  // whose editor is open stops clipping, or a control as tall as the row is cut off at both ends.
+  if (cell instanceof CellModel && cell.editing) variant = { ...variant, isEditing: true, isInvalid: !!cell.error };
+
+  // A double press opens the editor, the way a spreadsheet reads one. The press before it has already made
+  // this the current cell — the cell carries its own tabindex — so a click needs no handler of its own.
+  const onDoubleClick =
+    cell instanceof CellModel
+      ? (event: React.MouseEvent) => {
+          // A widget in the cell owns its presses — a tree chevron, a link in a custom `Cell` — and an
+          // editor opening over one would swallow the second of them. `beginEdit` judges the rest.
+          if ((event.target as HTMLElement).closest(WIDGET_SELECTOR)) return;
+
+          // The press selected the word it landed on, and the editor is about to replace it. Left alone
+          // the stranded range reappears over anything rendered where it used to be — every option of a
+          // `select` editor's list, painted selected the moment it opens (#169).
+          clearSelection(event.currentTarget as HTMLElement);
+          cell.beginEdit();
+        }
+      : undefined;
 
   return (
     <Flex
@@ -39,6 +64,7 @@ export default function DataGridCell<TRow>(props: Props<TRow>) {
         'aria-colspan': ariaColSpan,
         tabIndex,
         onFocus,
+        onDoubleClick,
       }}
       variant={variant as never}
       style={{ ...column.cellStyleVars.value, ...style }}

@@ -357,6 +357,83 @@ describe('DataGrid accessibility', () => {
     });
   });
 
+  /**
+   * APG's editable-cell keys, driven by a real keyboard. The pattern is Enter or F2 in, Escape out with
+   * nothing written, and Tab out committing — and the editor has to *hold* focus while it is open, which
+   * a roving tabindex over cells is the natural way to get wrong.
+   */
+  describe('Keyboard — editing a cell', () => {
+    const editable = [
+      { key: 'name', header: 'Name', editable: true },
+      { key: 'city', header: 'City', editable: true },
+      { key: 'age', header: 'Age' },
+    ];
+
+    it('opens on Enter, keeps focus in the editor and commits back onto the cell', async () => {
+      const user = keyboard();
+      renderGrid({ columns: editable });
+
+      const cell = cellsOf(rows()[1])[0];
+      await user.click(cell);
+      await user.press('Enter');
+
+      const input = screen.getByRole('textbox', { name: 'Edit Name' });
+      expectFocusOn(input);
+
+      await user.type('Ada Lovelace');
+      await user.press('Enter');
+
+      expectFocusOn(cell);
+      expect(cell.textContent).toContain('Ada Lovelace');
+    });
+
+    it('opens on F2 and Escape hands the keyboard back with nothing written', async () => {
+      const user = keyboard();
+      renderGrid({ columns: editable });
+
+      const cell = cellsOf(rows()[1])[0];
+      await user.click(cell);
+      await user.press('F2');
+      await user.type('Nobody');
+      await user.press('Escape');
+
+      expectFocusOn(cell);
+      expect(cell.textContent).toContain('Ada');
+    });
+
+    it('Tab commits and lands in the next editable cell', async () => {
+      const user = keyboard();
+      renderGrid({ columns: editable });
+
+      await user.click(cellsOf(rows()[1])[0]);
+      await user.press('Enter');
+      await user.type('Ada Lovelace');
+      await user.pressTab();
+
+      expectFocusOn(screen.getByRole('textbox', { name: 'Edit City' }));
+      expect(cellsOf(rows()[1])[0].textContent).toContain('Ada Lovelace');
+    });
+
+    it('says a refused value is refused, in a live region and on the field', async () => {
+      const user = keyboard();
+      renderGrid({ columns: editable, onCellEdit: () => 'Name is taken' });
+
+      await user.click(cellsOf(rows()[1])[0]);
+      await user.press('Enter');
+      await user.type('Grace');
+      await user.press('Enter');
+
+      const alert = screen.getByRole('alert');
+      const input = screen.getByRole('textbox', { name: 'Edit Name' });
+
+      expect(alert.textContent).toBe('Name is taken');
+      expect(input.getAttribute('aria-invalid')).toBe('true');
+      expect(input.getAttribute('aria-describedby')).toBe(alert.id);
+      // Still in the editor: a value nobody accepted is one the keyboard has to stay on.
+      expectFocusOn(input);
+    });
+  });
+
   describe('The controls the grid draws for itself', () => {
     it('names every icon-only control it renders', () => {
       renderGrid({ topBar: true, rowSelection: true, rowDetail: { content: () => <span>detail</span> } });
@@ -585,21 +662,139 @@ describe('DataGrid accessibility', () => {
     });
   });
 
-  describe('Known gaps', () => {
-    it('does not yet keep Tab inside the grid', async () => {
+  /**
+   * APG's grid is a composite widget: "Only one of the focusable elements contained by the grid is
+   * included in the page tab sequence." So Tab leaves, and the widgets a cell holds are reached with
+   * Enter or F2 — which is also MUI's default (`tabNavigation="none"`). AG Grid walks the cells
+   * instead, and `def.tabNavigation: 'cells'` is that reading for the screens that want it.
+   */
+  describe('Keyboard — Tab', () => {
+    it('leaves the grid rather than walking the widgets inside it', async () => {
       const user = keyboard();
-      renderGrid();
+      render(
+        <>
+          <DataGrid<Person> data={people} def={{ rowKey: 'id', columns, visibleRowsCount: 'all', rowSelection: true } as Definition} />
+          <button type="button">After</button>
+        </>,
+      );
 
       await user.pressTab();
       expectFocusOn(headers()[0]);
 
       await user.pressTab();
 
-      // APG says Tab leaves the grid altogether and the widgets inside cells are reached with
-      // Enter/F2. Here they are still their own tab stops, so this lands on the first column's
-      // resizer. Deliberate for now — taking every cell widget out of the tab order is a breaking
-      // change for anyone tabbing into a filter box today. Delete this test when it goes.
-      expect(document.activeElement?.getAttribute('aria-label')).toBe('Resize Name');
+      expectFocusOn(screen.getByRole('button', { name: 'After' }));
+    });
+
+    it('leaves no widget of its own in the page tab sequence', () => {
+      renderGrid({ rowSelection: true });
+
+      const stops = Array.from(grid().querySelectorAll<HTMLElement>('a[href],button,input,select,textarea,[tabindex]')).filter(
+        (element) => element.getAttribute('tabindex') !== '-1',
+      );
+
+      // The roving cell, and nothing else — every checkbox, resizer and menu button carries -1.
+      expect(stops).toHaveLength(1);
+      expect(stops[0].getAttribute('role')).toBe('columnheader');
+    });
+
+    /** APG: with grid navigation disabled, Tab walks the widgets — and may wrap inside the cell. */
+    it('walks the widgets inside a cell once F2 has stepped in, and wraps', async () => {
+      const user = keyboard();
+      renderGrid();
+
+      await user.pressTab();
+      await user.press('F2');
+      expectFocusOn(screen.getByRole('separator', { name: 'Resize Name' }));
+
+      await user.pressTab();
+      expectFocusOn(screen.getByRole('button', { name: 'Column options for Name' }));
+
+      await user.pressTab();
+      expectFocusOn(screen.getByRole('separator', { name: 'Resize Name' }));
+
+      // Escape is the way out, and the only one.
+      await user.press('Escape');
+      expectFocusOn(headers()[0]);
+    });
+
+    it('walks the cells instead under tabNavigation: cells, and on into the next row', async () => {
+      const user = keyboard();
+      renderGrid({ tabNavigation: 'cells' } as Partial<Definition>);
+
+      await user.pressTab();
+      expectFocusOn(headers()[0]);
+
+      await user.pressTab();
+      expectFocusOn(headers()[1]);
+
+      await user.pressTab();
+      expectFocusOn(headers()[2]);
+
+      // The end of the row is the start of the next one, the way a spreadsheet reads it.
+      await user.pressTab();
+      expectFocusOn(cellsOf(rows()[1])[0]);
+
+      await user.pressShiftTab();
+      expectFocusOn(headers()[2]);
+    });
+  });
+
+  /**
+   * Space selects the row, which is AG Grid's reading — and the one this grid needs, since the
+   * selection checkbox is no longer its own tab stop.
+   */
+  describe('Keyboard — Space', () => {
+    const checkboxes = () => screen.getAllByRole('checkbox', { name: /^Select row/ }) as HTMLInputElement[];
+
+    it('selects the row the cell is in, and deselects it again', async () => {
+      const user = keyboard();
+      renderGrid({ rowSelection: true });
+
+      await user.pressTab();
+      await user.pressArrow('Down');
+      await user.press(' ');
+
+      expect(checkboxes()[0].checked).toBe(true);
+
+      await user.press(' ');
+
+      expect(checkboxes()[0].checked).toBe(false);
+    });
+
+    it('selects from any column of the row, not only the checkbox one', async () => {
+      const user = keyboard();
+      renderGrid({ rowSelection: true });
+
+      await user.pressTab();
+      await user.pressArrow('Down');
+      await user.pressArrow('Right');
+      await user.pressArrow('Right');
+      await user.press(' ');
+
+      expect(checkboxes()[0].checked).toBe(true);
+    });
+
+    it('toggles every row from the header cell that governs them', async () => {
+      const user = keyboard();
+      renderGrid({ rowSelection: true });
+
+      await user.pressTab();
+      await user.press(' ');
+
+      expect(checkboxes().every((box) => box.checked)).toBe(true);
+    });
+
+    // A grid with no selection has nothing for Space to toggle, so it keeps doing what Enter does.
+    it('is left to Enter where the grid has no selection', async () => {
+      const user = keyboard();
+      renderGrid();
+
+      await user.pressTab();
+      await user.press(' ');
+
+      expect(screen.queryByRole('checkbox')).toBeNull();
+      expectFocusOn(headers()[0]);
     });
   });
 });

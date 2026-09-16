@@ -32,7 +32,11 @@ export default function DataGridCellRowDetail<TRow>(props: Props<TRow>) {
       width="fit"
       height="fit"
       // A chevron with nothing beside it: the name and the state both have to be spelled out.
-      props={{ 'aria-label': `${expanded ? 'Collapse' : 'Expand'} details for row ${cell.row.rowIndex + 1}`, 'aria-expanded': expanded }}
+      props={{
+        tabIndex: -1,
+        'aria-label': `${expanded ? 'Collapse' : 'Expand'} details for row ${cell.row.rowIndex + 1}`,
+        'aria-expanded': expanded,
+      }}
     >
       <ExpandIcon fill="currentColor" width="14px" height="14px" rotate={expanded ? 0 : -90} />
     </Button>

@@ -32,7 +32,7 @@ function ClearFilterButton(props: { columnName: React.ReactNode; onClear: () => 
       display="flex"
       ai="center"
       onClick={onClear}
-      props={{ 'aria-label': `Clear the ${columnName} filter` }}
+      props={{ tabIndex: -1, 'aria-label': `Clear the ${columnName} filter` }}
     >
       <Box fontSize={10} color="gray-400" hover={{ color: 'gray-600' }}>
         ✕
@@ -91,7 +91,7 @@ function TextFilter<TRow>({ column }: Props<TRow>) {
         bgColor="transparent"
         focus={{ outline: 0 }}
         // A placeholder is not a label, and "Filter..." is the same on every column anyway.
-        props={{ 'aria-label': `Filter ${columnName}` }}
+        props={{ tabIndex: -1, 'aria-label': `Filter ${columnName}` }}
       />
       {localValue && <ClearFilterButton columnName={columnName} onClear={handleClear} />}
     </Flex>
@@ -182,7 +182,7 @@ function NumberFilter<TRow>({ column }: Props<TRow>) {
         focus={{ outline: 0 }}
         // The trigger's content is a mathematical symbol, and a combobox is not named by its
         // content anyway — without this the control announces as nothing at all.
-        props={{ 'aria-label': `Comparison for ${columnName}` }}
+        props={{ tabIndex: -1, 'aria-label': `Comparison for ${columnName}` }}
       >
         <Dropdown.Item value="eq">=</Dropdown.Item>
         <Dropdown.Item value="ne">≠</Dropdown.Item>
@@ -206,7 +206,7 @@ function NumberFilter<TRow>({ column }: Props<TRow>) {
               b={0}
               bgColor="transparent"
               focus={{ outline: 0 }}
-              props={{ 'aria-label': `Filter ${columnName} from` }}
+              props={{ tabIndex: -1, 'aria-label': `Filter ${columnName} from` }}
             />
             {(localValue !== '' || valueTo !== '') && <ClearFilterButton columnName={columnName} onClear={handleClear} />}
           </Flex>
@@ -222,7 +222,7 @@ function NumberFilter<TRow>({ column }: Props<TRow>) {
               b={0}
               bgColor="transparent"
               focus={{ outline: 0 }}
-              props={{ 'aria-label': `Filter ${columnName} to` }}
+              props={{ tabIndex: -1, 'aria-label': `Filter ${columnName} to` }}
             />
           </Flex>
         </Flex>
@@ -239,7 +239,7 @@ function NumberFilter<TRow>({ column }: Props<TRow>) {
             b={0}
             bgColor="transparent"
             focus={{ outline: 0 }}
-            props={{ 'aria-label': `Filter ${columnName}` }}
+            props={{ tabIndex: -1, 'aria-label': `Filter ${columnName}` }}
           />
           {localValue !== '' && <ClearFilterButton columnName={columnName} onClear={handleClear} />}
         </Flex>
@@ -280,7 +280,7 @@ function MultiselectFilter<TRow>({ column }: Props<TRow>) {
         variant="compact"
         b={0}
         focus={{ outline: 0 }}
-        props={{ 'aria-label': `Filter ${columnName}` }}
+        props={{ tabIndex: -1, 'aria-label': `Filter ${columnName}` }}
       >
         <Dropdown.Display>
           {(vals: (string | number | boolean | null)[]) => {

@@ -48,7 +48,7 @@ export default function DataGridCellTree<TRow>(props: Props<TRow>) {
           display="flex"
           ai="center"
           jc="center"
-          props={{ 'aria-label': `${treeExpanded ? 'Collapse' : 'Expand'} ${name}` }}
+          props={{ tabIndex: -1, 'aria-label': `${treeExpanded ? 'Collapse' : 'Expand'} ${name}` }}
         >
           <ExpandIcon fill="currentColor" width="14px" height="14px" rotate={treeExpanded ? 0 : -90} />
         </Button>

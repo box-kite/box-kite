@@ -2208,6 +2208,7 @@ the element wrapping the bars, the rows and the pager. Every callback below is a
 | `expandedRowKeys` / `onExpandedRowKeysChange` | `Key[]` / `(keys, { reason })`                           | Controlled expanded rows; reason: `expand`/`collapse`                                      |
 | `globalFilterValue` / `onGlobalFilterChange`  | `string` / `(value, { reason })`                         | Controlled global filter; reason: `filter`/`clear`                                         |
 | `columnFilters` / `onColumnFiltersChange`     | `ColumnFilters` / `(filters, { reason })`                | Controlled column filters; reason: `filter`/`clear`                                        |
+| `onCellEditsChange`                           | `(edits, { reason })`                                    | Every accepted edit, oldest first; reason: `edit`/`clear`                                  |
 
 `onSelectionChange(event)`, `onSortChange(key, dir)`, `onPageChange(page, size)` and
 `onPageSizeChange(size)` are the pre-contract spellings of the four above. They still fire; the
@@ -2215,30 +2216,32 @@ named ones carry the reason.
 
 ### GridDefinition
 
-| Prop                      | Type                               | Default     | Description                                                                                                    |
-| ------------------------- | ---------------------------------- | ----------- | -------------------------------------------------------------------------------------------------------------- |
-| `columns`                 | `ColumnType[]`                     | required    | Column definitions                                                                                             |
-| `rowKey`                  | `keyof TRow \| (row) => Key`       | auto        | Unique row identifier                                                                                          |
-| `rowHeight`               | `number`                           | `48`        | Row height in px                                                                                               |
-| `visibleRowsCount`        | `number \| 'all'`                  | `10`        | Visible rows. `'all'` disables virtualization                                                                  |
-| `showRowNumber`           | `boolean \| { pinned?, width? }`   | `false`     | Row number column                                                                                              |
-| `rowSelection`            | `boolean \| { pinned? }`           | `false`     | Checkbox selection column                                                                                      |
-| `rowDetail`               | `RowDetailConfig`                  | —           | Expandable detail panel (see below)                                                                            |
-| `treeData`                | `TreeDataConfig`                   | —           | Rows that hold rows: a `treegrid` with a chevron column (see below)                                            |
-| `groupBy`                 | `Key[]`                            | —           | The columns the grid starts grouped by, outermost first. The column menu takes it from there                   |
-| `groupDefaultExpanded`    | `boolean \| number`                | `false`     | Which group rows start open: `true` for all, a number for how many levels down                                 |
-| `dataSource`              | `DataSource`                       | —           | The grid fetches its own rows a block at a time; `data` is not read at all                                     |
-| `pagination`              | `{ totalCount, pageSize? }`        | —           | Server-side pagination. Bypasses client-side filtering                                                         |
-| `topBar` / `bottomBar`    | `boolean`                          | `false`     | Show top/bottom bars                                                                                           |
-| `title` / `topBarContent` | `ReactNode`                        | —           | Top bar content                                                                                                |
-| `globalFilter`            | `boolean`                          | `false`     | Enable global fuzzy search                                                                                     |
-| `globalFilterKeys`        | `(keyof TRow)[]`                   | all         | Limit global filter columns                                                                                    |
-| `sortable` / `resizable`  | `boolean`                          | `true`      | Enable sorting/resizing for all columns                                                                        |
-| `contextMenu`             | `boolean \| ContextMenuConfig`     | `true`      | Control column header context menu. `false` hides it. Object: `{ sort?, pin?, group? }`                        |
-| `resizerStyle`            | `'visible' \| 'hover' \| 'hidden'` | `'visible'` | Resizer handle visibility. `'hover'`: shows on header cell hover. `'hidden'`: invisible but resize still works |
-| `noDataComponent`         | `ReactNode`                        | `'empty'`   | Custom empty state                                                                                             |
-| `footer`                  | `boolean \| { label? }`            | `false`     | A pinned row of grand totals over every column with an `aggregate`. `label` replaces the default `Total`       |
-| `export`                  | `boolean \| ExportConfig`          | `false`     | Export buttons in the top bar: `{ csv?, xlsx?, fileName? }`. The writers load on the first press               |
+| Prop                      | Type                                  | Default     | Description                                                                                                    |
+| ------------------------- | ------------------------------------- | ----------- | -------------------------------------------------------------------------------------------------------------- |
+| `columns`                 | `ColumnType[]`                        | required    | Column definitions                                                                                             |
+| `rowKey`                  | `keyof TRow \| (row) => Key`          | auto        | Unique row identifier                                                                                          |
+| `rowHeight`               | `number`                              | `48`        | Row height in px                                                                                               |
+| `visibleRowsCount`        | `number \| 'all'`                     | `10`        | Visible rows. `'all'` disables virtualization                                                                  |
+| `showRowNumber`           | `boolean \| { pinned?, width? }`      | `false`     | Row number column                                                                                              |
+| `rowSelection`            | `boolean \| { pinned? }`              | `false`     | Checkbox selection column                                                                                      |
+| `rowDetail`               | `RowDetailConfig`                     | —           | Expandable detail panel (see below)                                                                            |
+| `treeData`                | `TreeDataConfig`                      | —           | Rows that hold rows: a `treegrid` with a chevron column (see below)                                            |
+| `groupBy`                 | `Key[]`                               | —           | The columns the grid starts grouped by, outermost first. The column menu takes it from there                   |
+| `groupDefaultExpanded`    | `boolean \| number`                   | `false`     | Which group rows start open: `true` for all, a number for how many levels down                                 |
+| `editable`                | `boolean`                             | `false`     | Whether every column can be edited. A column’s own `editable` takes priority                                   |
+| `onCellEdit`              | `(edit) => void \| boolean \| string` | —           | Judges an edit and is told about it: nothing accepts, a string refuses. May be async                           |
+| `dataSource`              | `DataSource`                          | —           | The grid fetches its own rows a block at a time; `data` is not read at all                                     |
+| `pagination`              | `{ totalCount, pageSize? }`           | —           | Server-side pagination. Bypasses client-side filtering                                                         |
+| `topBar` / `bottomBar`    | `boolean`                             | `false`     | Show top/bottom bars                                                                                           |
+| `title` / `topBarContent` | `ReactNode`                           | —           | Top bar content                                                                                                |
+| `globalFilter`            | `boolean`                             | `false`     | Enable global fuzzy search                                                                                     |
+| `globalFilterKeys`        | `(keyof TRow)[]`                      | all         | Limit global filter columns                                                                                    |
+| `sortable` / `resizable`  | `boolean`                             | `true`      | Enable sorting/resizing for all columns                                                                        |
+| `contextMenu`             | `boolean \| ContextMenuConfig`        | `true`      | Control column header context menu. `false` hides it. Object: `{ sort?, pin?, group? }`                        |
+| `resizerStyle`            | `'visible' \| 'hover' \| 'hidden'`    | `'visible'` | Resizer handle visibility. `'hover'`: shows on header cell hover. `'hidden'`: invisible but resize still works |
+| `noDataComponent`         | `ReactNode`                           | `'empty'`   | Custom empty state                                                                                             |
+| `footer`                  | `boolean \| { label? }`               | `false`     | A pinned row of grand totals over every column with an `aggregate`. `label` replaces the default `Total`       |
+| `export`                  | `boolean \| ExportConfig`             | `false`     | Export buttons in the top bar: `{ csv?, xlsx?, fileName? }`. The writers load on the first press               |
 
 ### ColumnType
 
@@ -2257,6 +2260,9 @@ named ones carry the reason.
 | `contextMenu`            | `boolean \| ContextMenuConfig`                      | inherits  | Override grid-level context menu. `false` hides entirely. `{ sort?, pin?, group? }` controls sections                                           |
 | `aggregate`              | `AggregateName \| (values, rows) => value`          | —         | Total this column over each group row, and over the footer. See below                                                                           |
 | `AggregateCell`          | `({ cell }) => ReactNode`                           | —         | Renders the aggregate. `cell`: `{ value, column, rows, scope }`, `scope` being `'group'` or `'footer'`                                          |
+| `editable`               | `boolean \| (row) => boolean`                       | inherits  | Whether this column’s cells can be edited — every row, or the rows a predicate says                                                             |
+| `editor`                 | `CellEditorType \| CellEditorConfig`                | inferred  | `text`/`number`/`checkbox`/`select`. Without one it is read off the value in the cell                                                           |
+| `EditCell`               | `({ cell }) => ReactNode`                           | —         | An editor of your own, bound to `cell.draft` with `cell.commitEdit()`/`cell.cancelEdit()`                                                       |
 | `exportValue`            | `(row: TRow) => value`                              | the field | What this column writes to an exported file — an export runs no React, so a `Cell` renderer needs it                                            |
 | `exportFormat`           | `string`                                            | —         | The number format its cells wear in a workbook, `'#,##0.00'` or `'yyyy-mm-dd'`                                                                  |
 
@@ -2411,6 +2417,60 @@ row it opens, so name the keys rather than passing `true`.
 />
 ```
 
+### Cell editing
+
+`column.editable` is the opt-in and `def.onCellEdit` is the one function that both **judges** an edit and
+is **told** about it: answer nothing (or `true`) to accept the value, a string to refuse it with that
+message, `false` to refuse it with the grid's own. It may return a promise, so a check against a server is
+the same function — and an answer to an edit the user has since abandoned is dropped.
+
+```tsx
+<DataGrid
+  data={people}
+  def={{
+    rowKey: 'id',
+    onCellEdit: ({ columnKey, value, oldValue, row, rowKey }) => {
+      if (columnKey === 'name' && !String(value).trim()) return 'A name is required';
+    },
+    columns: [
+      { key: 'name', header: 'Name', editable: true },
+      { key: 'salary', header: 'Salary', editable: true, align: 'end' }, // a number, so a number field
+      { key: 'active', header: 'Active', editable: (row) => row.salary > 0 }, // a boolean, so a checkbox
+      { key: 'country', editable: true, editor: { type: 'select', options: [{ value: 'Japan' }, { value: 'Peru' }] } },
+    ],
+  }}
+  onCellEditsChange={(edits) => setEdits(edits)}
+/>
+```
+
+- **Which editor a cell opens is read off the value in it** — a number gets `number`, a boolean
+  `checkbox`, everything else `text` — unless `column.editor` names one (`text`/`number`/`checkbox`/
+  `select`) or configures it (`{ type, options?, placeholder?, step?, min?, max? }`; `options` may be a
+  function of the row). `column.EditCell` is a control of your own, bound to `cell.draft` with
+  `cell.setDraft(v)`, `cell.commitEdit()` and `cell.cancelEdit()` — the same three calls the built-in four
+  make.
+- **Pointer:** a press makes a cell the current one — it takes the ring, whether the pointer or the
+  keyboard put it there — and a **double press opens the editor** on an editable cell. A cell that cannot
+  be edited takes both as focus and nothing else, and a double press landing on a widget inside a cell (a
+  tree chevron, a link in a `Cell` of your own) belongs to the widget rather than the editor.
+- **Keys (APG's editable cell):** Enter or F2 opens the editor, any printable character opens it on that
+  character (replacing the value), Escape throws the draft away, Enter commits and hands the keyboard back
+  to the cell, and **Tab commits and opens the next editable cell** — along the row and on into the rows
+  after it. A press somewhere else commits; `checkbox` and `select` commit on the change instead.
+- **A refused value keeps the editor open**, with the message in a `role="alert"` in the top layer (a
+  bubble inside the scroller would be clipped on the last row) and `aria-invalid` + `aria-describedby` on
+  the field. Typing clears the message.
+- **The grid does not own `data`, so an accepted value is kept as an edit over the rows it was given**, and
+  is what every cell, every `Cell` renderer and every export reads. That is what lets a `def.dataSource`
+  grid be edited at all. `onCellEditsChange(edits, { reason })` reports the whole list, oldest first —
+  the stream an undo is built from — and `ref.clearEdits()` hands them back once your own data holds them.
+  A datasource `refresh()` drops them too.
+- **An edit does not re-sort or re-filter the grid.** Sorting and filtering read the row's own values; only
+  what is _displayed_ reads the edit, so a row never jumps out from under the person typing into it.
+- Style nodes: `datagrid.body.cell` gains `isEditing` and `isInvalid` variants — one ring, red when the
+  value was refused — and `datagrid.body.cell.editor` (`isPending`) and `datagrid.body.cell.error` are
+  the editor and its message.
+
 ### ContextMenuConfig
 
 | Prop    | Type      | Default | Description                                                               |
@@ -2466,7 +2526,8 @@ not add roles or `tabIndex` by hand.
 - Keyboard: one cell is in the tab order at a time. Arrows move it, Home/End go to the row's ends,
   Ctrl+Home/End to the grid's corners (scrolling to a row that has not been rendered), PageUp/Down
   move a screenful. Enter/Space sorts on a sortable header and otherwise steps into the cell's own
-  control; F2 steps in even on a header; Escape hands the keyboard back to the cell. Down/Up keep
+  control — or, on an editable cell, opens its editor; F2 steps in even on a header; Escape hands the
+  keyboard back to the cell, and from an editor throws the draft away as well. Down/Up keep
   the **column**, not the cell ordinal, so they land under where they started even through a
   grouped header or a group row whose cells cover several columns each.
 - The column resizer is APG's window splitter: `role="separator"` with `aria-valuenow`/`-valuemin`/
@@ -2486,50 +2547,52 @@ stops, as they were before A7.
 
 ### Component Style Tree
 
-| Component Name                                            | Description                                      | Variants                                                                                                                                                                                     |
-| --------------------------------------------------------- | ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `datagrid`                                                | Root container                                   | —                                                                                                                                                                                            |
-| `datagrid.content`                                        | Scroll container for header + body               | —                                                                                                                                                                                            |
-| `datagrid.topBar`                                         | Top bar (title, filters, column groups)          | —                                                                                                                                                                                            |
-| `datagrid.topBar.globalFilter`                            | Global search wrapper                            | —                                                                                                                                                                                            |
-| `datagrid.topBar.globalFilter.stats`                      | Filtered rows count badge                        | —                                                                                                                                                                                            |
-| `datagrid.topBar.columnGroups`                            | Column group chips container                     | —                                                                                                                                                                                            |
-| `datagrid.topBar.columnGroups.icon`                       | Column group icon                                | —                                                                                                                                                                                            |
-| `datagrid.topBar.columnGroups.separator`                  | Separator between groups                         | —                                                                                                                                                                                            |
-| `datagrid.topBar.columnGroups.item`                       | Column group chip                                | —                                                                                                                                                                                            |
-| `datagrid.topBar.columnGroups.item.icon`                  | Remove icon on chip                              | —                                                                                                                                                                                            |
-| `datagrid.topBar.columnVisibility`                        | Column visibility dropdown                       | —                                                                                                                                                                                            |
-| `datagrid.topBar.columnVisibility.badge`                  | Hidden columns count badge                       | —                                                                                                                                                                                            |
-| `datagrid.filter.cell`                                    | Filter row cell                                  | `isPinned`, `isFirstLeftPinned`, `isLastLeftPinned`, `isFirstRightPinned`, `isLastRightPinned`                                                                                               |
-| `datagrid.filter.cell.input`                              | Filter input container (text/number/multiselect) | —                                                                                                                                                                                            |
-| `datagrid.header`                                         | Header grid container (sticky)                   | —                                                                                                                                                                                            |
-| `datagrid.header.cell`                                    | Header cell                                      | `isPinned`, `isFirstLeftPinned`, `isLastLeftPinned`, `isFirstRightPinned`, `isLastRightPinned`, `isSortable`, `isRowSelection`, `isRowNumber`, `isFirstLeaf`, `isLastLeaf`, `isEmptyCell`    |
-| `datagrid.header.cell.contextMenu`                        | Column context menu button                       | —                                                                                                                                                                                            |
-| `datagrid.header.cell.contextMenu.icon`                   | Context menu icon                                | —                                                                                                                                                                                            |
-| `datagrid.header.cell.contextMenu.tooltip`                | Context menu popup                               | —                                                                                                                                                                                            |
-| `datagrid.header.cell.contextMenu.tooltip.item`           | Context menu action                              | —                                                                                                                                                                                            |
-| `datagrid.header.cell.contextMenu.tooltip.item.icon`      | Action icon                                      | —                                                                                                                                                                                            |
-| `datagrid.header.cell.contextMenu.tooltip.item.separator` | Menu separator line                              | —                                                                                                                                                                                            |
-| `datagrid.header.cell.resizer`                            | Column resize handle                             | —                                                                                                                                                                                            |
-| `datagrid.body`                                           | Body grid container (virtualized rows)           | —                                                                                                                                                                                            |
-| `datagrid.body.cell`                                      | Body cell                                        | `isPinned`, `isFirstLeftPinned`, `isLastLeftPinned`, `isFirstRightPinned`, `isLastRightPinned`, `isRowNumber`, `isRowSelection`, `isRowSelected`, `isFirstLeaf`, `isLastLeaf`, `isEmptyCell` |
-| `datagrid.body.cell.text`                                 | Default cell text renderer                       | —                                                                                                                                                                                            |
-| `datagrid.body.cell.rowDetail`                            | Row detail expand/collapse button                | —                                                                                                                                                                                            |
-| `datagrid.body.cell.tree`                                 | Tree cell: the indent, the chevron and the value | —                                                                                                                                                                                            |
-| `datagrid.body.cell.tree.toggle`                          | Tree expand/collapse chevron                     | `isExpanded`                                                                                                                                                                                 |
-| `datagrid.body.cell.tree.spacer`                          | What a leaf puts where its chevron would be      | —                                                                                                                                                                                            |
-| `datagrid.body.row`                                       | Data row (display: contents)                     | —                                                                                                                                                                                            |
-| `datagrid.body.groupRow`                                  | Group row (display: contents)                    | —                                                                                                                                                                                            |
-| `datagrid.body.groupRow.expandButton`                     | Group expand/collapse button                     | —                                                                                                                                                                                            |
-| `datagrid.body.detailRow`                                 | Expanded detail row                              | —                                                                                                                                                                                            |
-| `datagrid.body.empty`                                     | Empty state container                            | —                                                                                                                                                                                            |
-| `datagrid.emptyColumns`                                   | No columns selected placeholder                  | —                                                                                                                                                                                            |
-| `datagrid.bottomBar`                                      | Bottom bar (row count, pagination)               | —                                                                                                                                                                                            |
-| `datagrid.bottomBar.info`                                 | Status text ("Rows: ...", "Selected: ...")       | —                                                                                                                                                                                            |
-| `datagrid.bottomBar.clearFilters`                         | "Clear filters" link                             | —                                                                                                                                                                                            |
-| `datagrid.bottomBar.pagination`                           | Pagination controls wrapper                      | —                                                                                                                                                                                            |
-| `datagrid.bottomBar.pagination.button`                    | Pagination nav button                            | —                                                                                                                                                                                            |
-| `datagrid.bottomBar.pagination.info`                      | Page info text ("1 of 5")                        | —                                                                                                                                                                                            |
+| Component Name                                            | Description                                      | Variants                                                                                                                                                                                                               |
+| --------------------------------------------------------- | ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `datagrid`                                                | Root container                                   | —                                                                                                                                                                                                                      |
+| `datagrid.content`                                        | Scroll container for header + body               | —                                                                                                                                                                                                                      |
+| `datagrid.topBar`                                         | Top bar (title, filters, column groups)          | —                                                                                                                                                                                                                      |
+| `datagrid.topBar.globalFilter`                            | Global search wrapper                            | —                                                                                                                                                                                                                      |
+| `datagrid.topBar.globalFilter.stats`                      | Filtered rows count badge                        | —                                                                                                                                                                                                                      |
+| `datagrid.topBar.columnGroups`                            | Column group chips container                     | —                                                                                                                                                                                                                      |
+| `datagrid.topBar.columnGroups.icon`                       | Column group icon                                | —                                                                                                                                                                                                                      |
+| `datagrid.topBar.columnGroups.separator`                  | Separator between groups                         | —                                                                                                                                                                                                                      |
+| `datagrid.topBar.columnGroups.item`                       | Column group chip                                | —                                                                                                                                                                                                                      |
+| `datagrid.topBar.columnGroups.item.icon`                  | Remove icon on chip                              | —                                                                                                                                                                                                                      |
+| `datagrid.topBar.columnVisibility`                        | Column visibility dropdown                       | —                                                                                                                                                                                                                      |
+| `datagrid.topBar.columnVisibility.badge`                  | Hidden columns count badge                       | —                                                                                                                                                                                                                      |
+| `datagrid.filter.cell`                                    | Filter row cell                                  | `isPinned`, `isFirstLeftPinned`, `isLastLeftPinned`, `isFirstRightPinned`, `isLastRightPinned`                                                                                                                         |
+| `datagrid.filter.cell.input`                              | Filter input container (text/number/multiselect) | —                                                                                                                                                                                                                      |
+| `datagrid.header`                                         | Header grid container (sticky)                   | —                                                                                                                                                                                                                      |
+| `datagrid.header.cell`                                    | Header cell                                      | `isPinned`, `isFirstLeftPinned`, `isLastLeftPinned`, `isFirstRightPinned`, `isLastRightPinned`, `isSortable`, `isRowSelection`, `isRowNumber`, `isFirstLeaf`, `isLastLeaf`, `isEmptyCell`                              |
+| `datagrid.header.cell.contextMenu`                        | Column context menu button                       | —                                                                                                                                                                                                                      |
+| `datagrid.header.cell.contextMenu.icon`                   | Context menu icon                                | —                                                                                                                                                                                                                      |
+| `datagrid.header.cell.contextMenu.tooltip`                | Context menu popup                               | —                                                                                                                                                                                                                      |
+| `datagrid.header.cell.contextMenu.tooltip.item`           | Context menu action                              | —                                                                                                                                                                                                                      |
+| `datagrid.header.cell.contextMenu.tooltip.item.icon`      | Action icon                                      | —                                                                                                                                                                                                                      |
+| `datagrid.header.cell.contextMenu.tooltip.item.separator` | Menu separator line                              | —                                                                                                                                                                                                                      |
+| `datagrid.header.cell.resizer`                            | Column resize handle                             | —                                                                                                                                                                                                                      |
+| `datagrid.body`                                           | Body grid container (virtualized rows)           | —                                                                                                                                                                                                                      |
+| `datagrid.body.cell`                                      | Body cell                                        | `isPinned`, `isFirstLeftPinned`, `isLastLeftPinned`, `isFirstRightPinned`, `isLastRightPinned`, `isRowNumber`, `isRowSelection`, `isRowSelected`, `isFirstLeaf`, `isLastLeaf`, `isEmptyCell`, `isEditing`, `isInvalid` |
+| `datagrid.body.cell.text`                                 | Default cell text renderer                       | —                                                                                                                                                                                                                      |
+| `datagrid.body.cell.editor`                               | The open cell editor                             | `isPending`                                                                                                                                                                                                            |
+| `datagrid.body.cell.error`                                | What a refused value says, in the top layer      | —                                                                                                                                                                                                                      |
+| `datagrid.body.cell.rowDetail`                            | Row detail expand/collapse button                | —                                                                                                                                                                                                                      |
+| `datagrid.body.cell.tree`                                 | Tree cell: the indent, the chevron and the value | —                                                                                                                                                                                                                      |
+| `datagrid.body.cell.tree.toggle`                          | Tree expand/collapse chevron                     | `isExpanded`                                                                                                                                                                                                           |
+| `datagrid.body.cell.tree.spacer`                          | What a leaf puts where its chevron would be      | —                                                                                                                                                                                                                      |
+| `datagrid.body.row`                                       | Data row (display: contents)                     | —                                                                                                                                                                                                                      |
+| `datagrid.body.groupRow`                                  | Group row (display: contents)                    | —                                                                                                                                                                                                                      |
+| `datagrid.body.groupRow.expandButton`                     | Group expand/collapse button                     | —                                                                                                                                                                                                                      |
+| `datagrid.body.detailRow`                                 | Expanded detail row                              | —                                                                                                                                                                                                                      |
+| `datagrid.body.empty`                                     | Empty state container                            | —                                                                                                                                                                                                                      |
+| `datagrid.emptyColumns`                                   | No columns selected placeholder                  | —                                                                                                                                                                                                                      |
+| `datagrid.bottomBar`                                      | Bottom bar (row count, pagination)               | —                                                                                                                                                                                                                      |
+| `datagrid.bottomBar.info`                                 | Status text ("Rows: ...", "Selected: ...")       | —                                                                                                                                                                                                                      |
+| `datagrid.bottomBar.clearFilters`                         | "Clear filters" link                             | —                                                                                                                                                                                                                      |
+| `datagrid.bottomBar.pagination`                           | Pagination controls wrapper                      | —                                                                                                                                                                                                                      |
+| `datagrid.bottomBar.pagination.button`                    | Pagination nav button                            | —                                                                                                                                                                                                                      |
+| `datagrid.bottomBar.pagination.info`                      | Page info text ("1 of 5")                        | —                                                                                                                                                                                                                      |
 
 ---
 
