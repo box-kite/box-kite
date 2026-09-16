@@ -541,6 +541,14 @@ export interface GridDefinition<TRow> {
   columns: ColumnType<TRow>[];
   showRowNumber?: boolean | { pinned?: boolean; width?: number };
   rowSelection?: boolean | { pinned?: boolean };
+  /**
+   * What Tab does from a cell. `'none'` is APG's grid and the default: the grid is a single tab stop, so
+   * Tab leaves it for the next control on the page and the widgets a cell holds are reached with Enter or
+   * F2. `'cells'` is the spreadsheet reading AG Grid ships — Tab walks to the next cell and on into the
+   * rows after it, and Shift+Tab walks back — which a data-entry screen wants and a page of content does
+   * not, since it costs the keyboard its way out of the grid.
+   */
+  tabNavigation?: 'none' | 'cells';
   rowHeight?: number;
   /** Number of visible rows. Set to 'all' to render all rows without virtualization or vertical scrollbar. */
   visibleRowsCount?: number | 'all';

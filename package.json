@@ -92,7 +92,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "30.39 KB"
+      "limit": "30.40 KB"
     },
     {
       "name": "Box in a Server Component (react-server entry)",
@@ -138,7 +138,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "32.54 KB"
+      "limit": "32.55 KB"
     },
     {
       "name": "Popover",
@@ -168,7 +168,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "31.75 KB"
+      "limit": "31.76 KB"
     },
     {
       "name": "Tabs",
@@ -228,7 +228,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "74.42 KB"
+      "limit": "74.86 KB"
     },
     {
       "name": "DataGrid export, the chunk fetched on the first press",
@@ -248,7 +248,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "96.36 KB"
+      "limit": "96.82 KB"
     }
   ],
   "repository": {

@@ -6,6 +6,7 @@ import Button from '../../src/components/button';
 import DataGrid from '../../src/components/dataGrid';
 import { DataSourceRequest, DataSourceResult, Key } from '../../src/components/dataGrid/contracts/dataGridContract';
 import Flex from '../../src/components/flex';
+import RadioGroup from '../../src/components/radioGroup';
 import { H2 } from '../../src/components/semantics';
 import ApiReference from '../components/apiReference';
 import Code from '../components/code';
@@ -278,10 +279,17 @@ export default function DataGridPage() {
               first. You write none of that.
             </Box>
             <Flex d="column" gap={3} mt={4}>
-              <Note icon={Table} title="Focus lives on the cells">
-                One cell is in the tab order at a time, so Tab enters the grid in a single press instead of walking through thousands of
-                them. The arrow keys move that cell; a sortable header sorts on Enter; a cell that holds a control hands the keyboard over
-                on Enter or F2 and takes it back on Escape.
+              <Note icon={Table} title="Focus lives on the cells, and the grid is one tab stop">
+                One cell is in the tab order at a time, so Tab enters the grid in a single press and <b>the next one leaves it</b> — APG's
+                rule, since a grid is a composite widget. The arrow keys move that cell; a sortable header sorts on Enter; a cell that holds
+                a control hands the keyboard over on Enter or F2, where Tab then walks that cell's own controls, and Escape takes it back.
+                Nothing the grid draws is a tab stop of its own, so a wide grid costs one press to cross rather than one per checkbox.
+              </Note>
+              <Note icon={Table} title="Space selects the row, and Tab can walk the cells if you ask">
+                <b>Space on any cell selects its row</b> — or all of them, from the header cell the select-all box sits in — which is how a
+                grid is selected without a mouse now that the checkboxes are reached through their cells. For a data-entry screen that wants
+                the spreadsheet reading instead, <Mono>def.tabNavigation="cells"</Mono> makes Tab walk to the next cell and on into the rows
+                after it, the way AG Grid does; the cost is that Tab is then no longer the way out of the grid.
               </Note>
               <Note icon={Table} title="Give it a title">
                 A grid is not named by the rows in it. Pass <Mono>def.title</Mono> and the grid points <Mono>aria-labelledby</Mono> at it.
@@ -1362,6 +1370,13 @@ const dataSource = useMemo(() => ({
                 <b>Tab commits and opens the next editable cell</b>, along the row and on into the rows after it, so a row of corrections is
                 one gesture.
               </Note>
+              <Note icon={Table} title="A select editor opens its list with the editor">
+                A <Mono>select</Mono> cell opens its list as soon as the editor does, highlighting the value already in it, so choosing one
+                is the single gesture it looks like — the list is the whole control, and waiting for a second press to show it asks for a
+                gesture nobody meant. Escape closes the list and a second Escape leaves the editor. A printable character is <i>not</i> a
+                value a list can hold, so on a <Mono>select</Mono> or a <Mono>checkbox</Mono> it opens the editor on the value already
+                there; <Mono>Dropdown</Mono> takes the same behaviour as <Mono>defaultOpen</Mono>.
+              </Note>
               <Note icon={Filter} title="A validator can be async, and a late answer is dropped">
                 <Mono>def.onCellEdit</Mono> may return a promise, so a uniqueness check against a server is the same function. The editor
                 waits; an answer to an edit the user has since abandoned is dropped rather than applied to whatever they are editing now. A
@@ -1404,6 +1419,53 @@ const dataSource = useMemo(() => ({
 />`}
           >
             <EditingDemo />
+          </Code>
+
+          <Section id="tab-navigation" title="Tab through it like a spreadsheet">
+            <Box>
+              A grid is a composite widget, so APG puts <b>one</b> of its cells in the page tab sequence and Tab leaves for whatever comes
+              after it — the arrow keys are how you move inside. That is the default here, and MUI X's. A screen built for data entry often
+              wants the other reading, though, the one Excel and AG Grid have: <Mono>def.tabNavigation="cells"</Mono> makes Tab walk to the
+              next cell and on into the rows after it, and Shift+Tab walk back.
+            </Box>
+            <Flex d="column" gap={3} mt={4}>
+              <Note icon={Table} title="The cost is the way out">
+                Tab is how a keyboard leaves a widget it has finished with. Spend it on the cells and there is nothing left to leave with —
+                so this grid lets the key through at the first and last cell rather than swallowing it, which is the one place it differs
+                from AG Grid. Weigh it the way the two libraries did: a grid on a page of content should stay a single tab stop, and a grid
+                that <i>is</i> the screen can afford to keep the key.
+              </Note>
+              <Note icon={Table} title="It changes Tab and nothing else">
+                Enter and F2 still step into whatever a cell holds, Tab still walks the controls inside that cell and wraps, Escape still
+                hands the keyboard back, and Space still selects the row. In an open editor Tab already committed and opened the next
+                editable cell — that is APG's own rule for a cell whose widget has the keyboard, and it reads the same under either setting.
+              </Note>
+            </Flex>
+          </Section>
+
+          <Code
+            id="tab-navigation-demo"
+            defer
+            label="Spreadsheet tab mode"
+            language="jsx"
+            check={false}
+            code={`<DataGrid
+  data={people}
+  def={{
+    rowKey: 'id',
+    rowSelection: true,
+    // 'none' is the default: one tab stop, and Tab leaves the grid (APG).
+    tabNavigation: 'cells',
+    columns: [
+      { key: 'first_name', header: 'First name', editable: true },
+      { key: 'last_name', header: 'Last name', editable: true },
+      { key: 'country', header: 'Country' },
+      { key: 'salary', header: 'Salary', align: 'end', editable: true },
+    ],
+  }}
+/>`}
+          >
+            <TabNavigationDemo />
           </Code>
 
           <Code
@@ -2196,6 +2258,57 @@ function EditingDemo() {
   );
 }
 
+/**
+ * The two readings of Tab, switchable — with a control on either side of the grid, because what the
+ * setting changes is where the *next* press lands rather than anything visible inside it.
+ */
+function TabNavigationDemo() {
+  const [tabNavigation, setTabNavigation] = useState<'none' | 'cells'>('cells');
+
+  const def = useMemo(
+    () => ({
+      rowHeight: 40,
+      visibleRowsCount: 6,
+      rowSelection: true,
+      tabNavigation,
+      columns: [
+        { key: 'first_name' as const, header: 'First name', width: 160, editable: true },
+        { key: 'last_name' as const, header: 'Last name', width: 160, editable: true },
+        { key: 'country' as const, header: 'Country', width: 160 },
+        { key: 'salary' as const, header: 'Salary', width: 140, align: 'end' as const, editable: true },
+      ],
+    }),
+    [tabNavigation],
+  );
+
+  return (
+    <Flex d="column" gap={4}>
+      <RadioGroup
+        label="What Tab does"
+        orientation="horizontal"
+        value={tabNavigation}
+        onValueChange={(value) => setTabNavigation(value === 'cells' ? 'cells' : 'none')}
+      >
+        <RadioGroup.Item value="none" label="none — leaves the grid (default)" />
+        <RadioGroup.Item value="cells" label="cells — walks the cells" />
+      </RadioGroup>
+
+      <Box fontSize={12} color="gray-500" theme={{ dark: { color: 'gray-400' } }}>
+        Press a cell, then Tab. Under <Mono>none</Mono> the next press is on the button below the grid; under <Mono>cells</Mono> it is the
+        next cell, and the row after that. Space selects a row either way, and Enter or F2 steps into whatever a cell holds.
+      </Box>
+
+      <Button variant="secondary" width="fit-content">
+        Before the grid
+      </Button>
+      <DataGrid data={allData} def={def} />
+      <Button variant="secondary" width="fit-content">
+        After the grid
+      </Button>
+    </Flex>
+  );
+}
+
 function TreeDataDemo() {
   // `defaultExpanded: 1` opens the top level, so the count starts at what is already open.
   const [openRows, setOpenRows] = useState(fileTree.length);
@@ -2378,6 +2491,7 @@ const sidebarLinks = [
   { id: 'data-source-grouping', label: 'Server-side grouping' },
   { id: 'data-source-tree', label: 'Server-side tree' },
   { id: 'editing', label: 'Cell editing' },
+  { id: 'tab-navigation', label: 'Spreadsheet tab mode' },
   { id: 'disable-sort', label: 'Disable Sort' },
   { id: 'context-menu', label: 'Context Menu' },
   { id: 'resizer-style', label: 'Resizer Style' },

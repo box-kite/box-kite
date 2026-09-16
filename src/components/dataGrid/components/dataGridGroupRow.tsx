@@ -73,7 +73,7 @@ export default function DataGridGroupRow<TRow>(props: Props<TRow>) {
                       display="flex"
                       gap={1}
                       ai="center"
-                      props={{ 'aria-expanded': expanded }}
+                      props={{ tabIndex: -1, 'aria-expanded': expanded }}
                     >
                       <ExpandIcon fill="currentColor" width="14px" height="14px" rotate={expanded ? 0 : -90} />
                       {cell.value}
@@ -92,7 +92,7 @@ export default function DataGridGroupRow<TRow>(props: Props<TRow>) {
                   checked={selected}
                   indeterminate={indeterminate}
                   onChange={selectAllHandler}
-                  props={{ 'aria-label': `Select all rows in ${row.groupValue}` }}
+                  props={{ tabIndex: -1, 'aria-label': `Select all rows in ${row.groupValue}` }}
                 />
               </DataGridCell>
             );

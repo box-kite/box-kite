@@ -1220,6 +1220,15 @@ being told. `editor` names one of the four (`text`, `number`, `checkbox`, `selec
 beside it — the same three calls the built-in four make, so a date picker is a component and not a second
 copy of the commit rules.
 
+**A `select` editor opens its list with the editor**, highlighting the value already in the cell, so
+choosing one is the single gesture it looks like. The list is the whole control there — an editor that
+opened and then waited for a second press to show what could be chosen is the interaction AG Grid
+[names as the one flaw](https://www.ag-grid.com/javascript-data-grid/provided-cell-editors-select/) it
+cannot design out of a native `<select>`, and it is the same on every way in: a double press, Enter, F2,
+a printable character, or Tab arriving from the cell before. Escape closes the list and a second Escape
+leaves the editor, which is the two-stage dismissal the pattern already has. `Dropdown` takes the
+behaviour as a prop of its own — `defaultOpen` — for anything else built the same way.
+
 **A double press opens the editor, and a single one only chooses.** A press makes a cell the current
 one — where the arrow keys carry on from — and a double press on an editable cell opens it, the way a
 spreadsheet reads one; a cell that cannot be edited takes both as focus and nothing else. A widget inside
@@ -1247,8 +1256,35 @@ worth knowing: an edit does **not** re-sort or re-filter the grid — a row jump
 pointer as it is typed into is not an edit anybody asked for — and `refresh()` on a datasource drops the
 edits with the blocks, because what the server says next is the newer answer.
 
+## The grid is one tab stop, the way APG says
+
+A grid is a composite widget, and APG is explicit about what that costs the tab order: "Only one of the
+focusable elements contained by the grid is included in the page tab sequence." Until now this one had
+**seventy-eight** — measured on the docs site's own grid: one row-selection checkbox per rendered row,
+one resizer and one menu button per column, one input per filter. Tab from a cell walked into them one
+at a time, so crossing a grid took as many presses as it had rows, and the first of them landed on a
+checkbox in a near-empty column with no cell ring drawn anywhere.
+
+Now Tab leaves. Everything the grid draws inside a cell carries `tabindex="-1"`, and the way in is the
+one APG names: **Enter or F2** steps into the cell's controls, **Tab walks between them** and wraps
+inside that cell, and **Escape** hands the keyboard back. That is also MUI X's default
+(`tabNavigation="none"`), and the editor already worked this way — Tab in an open editor commits and
+opens the next editable cell, which is APG's "when grid navigation is disabled" half.
+
+**`def.tabNavigation="cells"`** is the other reading, for the screens that want it: Tab walks to the
+next cell and on into the rows after it, Shift+Tab walks back, the way AG Grid reads a grid. It is
+opt-in because it costs the keyboard its way out — at either end of the grid the key is let through, so
+Tab still escapes rather than being swallowed for ever.
+
+**Space selects the row** the focused cell is in, and deselects it again; from the header cell the
+select-all box sits in, it toggles every row. This is AG Grid's reading and it is the half that makes
+the rest safe: with the checkboxes out of the tab order, Space is how a grid is selected without a
+mouse. A grid with no row selection has nothing to toggle, so Space there keeps doing what Enter does.
+
 ## Breaking changes
 
+- **Nothing inside a DataGrid cell is a tab stop any more.** The row-selection checkboxes, the select-all box, the column resizers, the column menu buttons and the filter inputs all carry `tabindex="-1"`, so the grid is the single tab stop APG specifies. A page that tabbed into a column's filter box now presses Enter or F2 on that cell instead — or `def.tabNavigation="cells"`, if what it wanted was for Tab to walk the grid at all. A test that tabbed to a grid widget should focus it directly, or drive Enter/F2 from its cell.
+- **Space on a grid cell selects the row rather than acting like Enter.** It was an undocumented synonym for Enter (opening an editor, stepping into a widget); it is the selection key now, on every grid that has `def.rowSelection`. Enter and F2 are unchanged and are still the only ways into a cell. Where a grid has no row selection, Space still does what Enter does.
 - **`Overlay` places a layer instead of translating one, so its four positioning props are gone.** `anchorSide` is `side` (`anchorSide="bottom"` is the default `side="bottom"`; the old `'top'` overlapped the anchor, which `side="bottom" offset={0}` does not — use a negative margin if you need the overlap). `adjustTranslateX`/`adjustTranslateY` are `offset` on the ÷4 scale for the gap and `align` for the sideways nudge (`adjustTranslateY="4px"` is `offset={1}`). `onPositionChange` is `onSideChange`, which reports the side rather than page coordinates — nothing measures a position any more, so there are none to report.
 - **`Tooltip`'s `adjustTranslateX`/`adjustTranslateY` are `side`, `align` and `offset`.** The default gap is unchanged (`offset={1}`, 4px), so a tooltip that took no nudge needs no change.
 - **`flip` on `Overlay` and `Tooltip` is the placement prop, not the CSS one.** It shadows the Box prop that writes `scale`, the way `Tooltip` already shadows `content` and `open` — a mirrored layer is a rarity, and one placement vocabulary is worth more. A child of the layer still takes the CSS `flip`.
@@ -1261,6 +1297,10 @@ edits with the blocks, because what the server says next is the newer answer.
 <!-- One bullet per fix: **What was wrong.** What it does now. -->
 
 - **A clicked grid cell showed nothing at all.** The current cell was drawn with `:focus-visible`, which is specified _not_ to match pointer input, so the ring appeared only once an arrow key had been pressed — and with an editor now opening on a double press, the cell a press had just chosen was the one thing on screen that did not say so. A body cell draws its ring for the cell that _holds_ focus instead — `:focus-within:not(:has(:focus))`, so a press on a widget the cell holds (a selection checkbox, a tree chevron) leaves the ring where it was rather than drawing a second one around that widget's cell. A header cell keeps `:focus-visible`, because its click sorts and the consequence is already visible. The ring still goes when the grid loses focus: a current cell that survives blur is what a range selection extends from, and it arrives with that.
+
+- **Every option of a grid's `select` editor came up painted as selected text.** A double press selects the word under it before any handler runs, and the editor then replaced the text that selection covered — so Chrome repaired the stranded range to the nearest boundary it could find, and the range reappeared over whatever rendered there next: the whole list, the moment it opened. The press that opens an editor drops the selection it made, since the content it covered is on its way out; and an option is a choice rather than prose, so `dropdown.item` declares `user-select: none` the way the trigger has since it shipped — which also stops a drag across the list painting one.
+
+- **A printable character typed on a `select` or `checkbox` cell became the cell's value.** One character opens the editor on that character, which is what a spreadsheet does with a field — but a list is chosen from rather than typed into, so the draft was seeded with a letter no option could match: the editor came up showing nothing at all, and an Enter after it committed the letter itself into the column. A `checkbox` read the same character as `true`. Only the two editors that are typed into take the keystroke now, and a `number` takes it **as a number** — seeded with the string, an Enter straight after the key committed `'7'` where the column held `7`. A key that is not part of a number opens the field on the value it found.
 
 - **A deprecated _prop_ would have told forty-five coding agents to stop importing the whole component.** The scan behind the skill's "no longer the spelling to write" list took the first `@deprecated` in a component's source and named the **module** after it — fine while every deprecation in `src/components/` was a whole component, and wrong the moment one was a prop: `RadioGroup`'s renamed `onChange` came out as `@box-kite/react/components/radioGroup`, which an agent reads as "do not import this". A tag above a prop signature now names the prop (`…/radioGroup#onChange`) and only a tag elsewhere names the module, and every deprecation in a file is listed rather than just the first.
 

@@ -41,7 +41,7 @@ export default function DataGridHeaderCell<TRow>(props: Props<TRow>) {
       checked={grid.allRowsSelected}
       onChange={toggleSelectAll}
       // The column it sits in has no header text, so the checkbox has nothing to be named by.
-      props={{ 'aria-label': 'Select all rows' }}
+      props={{ tabIndex: -1, 'aria-label': 'Select all rows' }}
     />
   ) : headerCell.hiddenLabel ? (
     <VisuallyHidden tag="span">{headerCell.hiddenLabel}</VisuallyHidden>

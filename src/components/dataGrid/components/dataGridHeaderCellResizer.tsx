@@ -212,7 +212,7 @@ export default function DataGridHeaderCellResizer<TRow>(props: Props<TRow>) {
             'aria-valuemin': headerCell.minWidth,
             'aria-valuemax': headerCell.maxWidth,
             'aria-valuetext': `${headerCell.width} pixels`,
-            tabIndex: 0,
+            tabIndex: -1,
             onKeyDown: resizeByKey,
             // Where a key gesture ends, and so where the widths reach React and `aria-valuenow`
             // reaches a screen reader. The timer above is only the safety net behind this.

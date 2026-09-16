@@ -4,14 +4,19 @@ import { useIsomorphicLayoutEffect } from '../../react/effects';
 import { GridNavigation } from './gridNavigationContext';
 import { isTypingKey } from './models/editModel';
 import GridModel from './models/gridModel';
+import RowModel from './models/rowModel';
 import { isTreeRow } from './models/treeRow';
 
 /** A cell, header or body — what a keystroke has to land on for the grid to own it. */
 const CELL_SELECTOR = '[role="gridcell"],[role="columnheader"]';
 
-/** Everything focusable a cell can hold. Enter and F2 hand the keyboard to the first of them. */
+/**
+ * Everything focusable a cell can hold. Enter and F2 hand the keyboard to the first of them — and it
+ * matches `tabindex="-1"` on purpose, because the grid's own widgets all carry one now: a cell's
+ * contents are reached *through* the cell, which is what makes the grid a single tab stop.
+ */
 const FOCUSABLE_SELECTOR =
-  'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+  'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]';
 
 /** Rows kept between a keyboard jump and the edge of the rendered window. */
 const RENDERED_MARGIN = 2;
@@ -206,6 +211,76 @@ export default function useGridNavigation<TRow>(options: GridNavigationOptions<T
     [bodyRows, grid, headerRowCount, roving],
   );
 
+  /**
+   * The next cell Tab lands on under `tabNavigation: 'cells'` — along the row and on into the rows after
+   * it, which is the order a spreadsheet walks. At either end of the grid it gives up and lets the key
+   * through, so Tab is still the way out rather than something the grid swallows for ever.
+   */
+  const stepCell = useCallback(
+    (back: boolean): boolean => {
+      const { activeIndex, activeColumn } = roving;
+      const step = back ? -1 : 1;
+      const column = activeColumn + step;
+
+      if (column >= 0 && column < columnsIn(activeIndex)) {
+        roving.setActiveCell(activeIndex, column, { reason: 'keyboard' });
+        return true;
+      }
+
+      const row = activeIndex + step;
+      if (row < 0 || row >= rowCount) return false;
+
+      roving.setActiveCell(row, back ? Math.max(0, columnsIn(row) - 1) : 0, { reason: 'keyboard' });
+
+      return true;
+    },
+    [columnsIn, roving, rowCount],
+  );
+
+  /**
+   * Space on a cell selects the row it is in — or the whole grid, from the header cell that governs it.
+   * Nothing when the grid has no selection to toggle, where Space falls through to what Enter does.
+   */
+  const toggleSelectionAt = useCallback(
+    (row: number, column: number): boolean => {
+      if (!grid.props.def.rowSelection) return false;
+
+      // In the header it is the selection column that governs all of them — the column the select-all
+      // checkbox sits in. Every other header cell is left to Enter, which sorts it.
+      if (row < headerRowCount) {
+        if (row >= headerRows.length || !grid.columns.value.visibleLeafs[column]?.isRowSelection) return false;
+
+        grid.toggleSelectAllRows();
+        return true;
+      }
+
+      // A group row and a detail row have no selection of their own: Space there is Enter's.
+      const bodyRow = grid.flatRows.value[row - headerRowCount];
+      if (!(bodyRow instanceof RowModel)) return false;
+
+      bodyRow.toggleSelection();
+
+      return true;
+    },
+    [grid, headerRowCount, headerRows.length],
+  );
+
+  /**
+   * The next widget along inside one cell, wrapping at either end. Nothing when the cell holds one or
+   * none, where Tab is left alone — there is nothing for it to move between.
+   */
+  const stepWidget = useCallback((cell: HTMLElement, from: HTMLElement, back: boolean): boolean => {
+    const widgets = Array.from(cell.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR));
+    if (widgets.length < 2) return false;
+
+    const at = widgets.indexOf(from);
+    if (at === -1) return false;
+
+    widgets[(at + (back ? -1 : 1) + widgets.length) % widgets.length].focus();
+
+    return true;
+  }, []);
+
   const rovingKeyDown = roving.onKeyDown;
   const onKeyDown = useCallback(
     (event: React.KeyboardEvent) => {
@@ -220,8 +295,32 @@ export default function useGridNavigation<TRow>(options: GridNavigationOptions<T
         if (event.key === 'Escape' && !cell.querySelector('[aria-expanded="true"]')) {
           event.preventDefault();
           cell.focus();
+
+          return;
         }
 
+        // APG's other half: with grid navigation disabled, Tab walks the widgets rather than leaving.
+        // It wraps inside the cell — which the pattern allows explicitly — because every widget here is
+        // out of the page tab sequence, so letting the key through would jump clean out of the grid
+        // from halfway inside a cell. Escape is the way out, and it is the only one.
+        if (event.key === 'Tab' && stepWidget(cell, target, event.shiftKey)) event.preventDefault();
+
+        return;
+      }
+
+      // Tab is the grid's only when the caller asked for the spreadsheet reading. Left alone it is the
+      // browser's, and since every widget a cell holds is out of the tab order the next stop is past the
+      // grid — which is APG's single tab stop, and the whole reason it is the default.
+      if (event.key === 'Tab' && grid.props.def.tabNavigation === 'cells') {
+        if (stepCell(event.shiftKey)) event.preventDefault();
+
+        return;
+      }
+
+      // Space selects the row, the way AG Grid reads it — and the way this grid has to, now that the
+      // selection checkbox is no longer its own tab stop. Enter and F2 keep the editor and the widgets.
+      if (event.key === ' ' && toggleSelectionAt(roving.activeIndex, roving.activeColumn)) {
+        event.preventDefault();
         return;
       }
 
@@ -270,7 +369,18 @@ export default function useGridNavigation<TRow>(options: GridNavigationOptions<T
 
       rovingKeyDown(event);
     },
-    [grid, headerRowCount, headerRows, roving.activeColumn, roving.activeIndex, rovingKeyDown, treeKeyDown],
+    [
+      grid,
+      headerRowCount,
+      headerRows,
+      roving.activeColumn,
+      roving.activeIndex,
+      rovingKeyDown,
+      stepCell,
+      stepWidget,
+      toggleSelectionAt,
+      treeKeyDown,
+    ],
   );
 
   return { rowCount, columnCount, headerRowCount, cellProps: roving.cellProps, setActiveCell: roving.setActiveCell, onKeyDown };
