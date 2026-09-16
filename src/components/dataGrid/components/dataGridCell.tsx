@@ -1,4 +1,5 @@
 import { BoxProps } from '../../../box';
+import { clearSelection } from '../../../utils/dom/domUtils';
 import Flex from '../../flex';
 import { useGridNavigationContext } from '../gridNavigationContext';
 import AggregateCellModel from '../models/aggregateCellModel';
@@ -43,7 +44,13 @@ export default function DataGridCell<TRow>(props: Props<TRow>) {
       ? (event: React.MouseEvent) => {
           // A widget in the cell owns its presses — a tree chevron, a link in a custom `Cell` — and an
           // editor opening over one would swallow the second of them. `beginEdit` judges the rest.
-          if (!(event.target as HTMLElement).closest(WIDGET_SELECTOR)) cell.beginEdit();
+          if ((event.target as HTMLElement).closest(WIDGET_SELECTOR)) return;
+
+          // The press selected the word it landed on, and the editor is about to replace it. Left alone
+          // the stranded range reappears over anything rendered where it used to be — every option of a
+          // `select` editor's list, painted selected the moment it opens (#169).
+          clearSelection(event.currentTarget as HTMLElement);
+          cell.beginEdit();
         }
       : undefined;
 

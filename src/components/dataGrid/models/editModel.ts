@@ -29,6 +29,20 @@ function inferEditor(value: unknown): CellEditorType {
   return 'text';
 }
 
+/**
+ * What a printable key opens the editor on, or nothing when the key is not a value that editor can
+ * hold. A `select` and a `checkbox` are chosen rather than typed, and a number field has to start as a
+ * *number* or an Enter straight after the keystroke commits the character itself (#171).
+ */
+function seedFor(type: CellEditorType, initial: string): unknown {
+  if (type === 'text') return initial;
+  if (type !== 'number' || initial.trim() === '') return undefined;
+
+  const parsed = Number(initial);
+
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
+
 /** A key that starts an edit by replacing the value: one printable character, unmodified. */
 export function isTypingKey(event: React.KeyboardEvent): boolean {
   return event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey;
@@ -114,14 +128,18 @@ export default class EditModel<TRow> {
 
   /**
    * Open an editor. `initial` is what a printable key typed on the cell starts it with — the value it
-   * replaces rather than one it is appended to, which is how every spreadsheet reads a keystroke.
+   * replaces rather than one it is appended to, which is how every spreadsheet reads a keystroke. Only
+   * the two editors that are *typed into* take it; see `seedFor`.
    */
   public begin(row: RowModel<TRow>, column: ColumnModel<TRow>, value: unknown, initial?: string): void {
+    const seed = initial === undefined ? undefined : seedFor(this.editorFor(column, value).type, initial);
+
     this._active = {
       row,
       rowKey: row.key,
       columnKey: column.key,
-      draft: initial ?? value,
+      // `??`, not `||`: typing `0` on a number cell seeds a zero, and a falsy seed is still a seed.
+      draft: seed ?? value,
       token: ++this._token,
       pending: false,
     };

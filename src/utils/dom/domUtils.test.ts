@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { elementOf, htmlElementOf, isEventInside, isRtl } from './domUtils';
+import { clearSelection, elementOf, htmlElementOf, isEventInside, isRtl } from './domUtils';
 
 describe('DomUtils', () => {
   afterEach(() => {
@@ -119,6 +119,49 @@ describe('DomUtils', () => {
       Object.defineProperty(event, 'composedPath', { value: undefined });
 
       expect(isEventInside(event, [popup])).toBe(true);
+    });
+  });
+
+  describe('clearSelection', () => {
+    /** Select the whole of an element's text, the way a double press on a word does. */
+    function select(element: HTMLElement): Selection {
+      const range = document.createRange();
+      range.selectNodeContents(element);
+      const selection = window.getSelection()!;
+      selection.removeAllRanges();
+      selection.addRange(range);
+
+      return selection;
+    }
+
+    it('drops a range the caller is about to strand', () => {
+      const element = render('<div>a word</div>');
+      const selection = select(element);
+
+      expect(selection.isCollapsed).toBe(false);
+
+      clearSelection(element);
+
+      expect(selection.rangeCount).toBe(0);
+    });
+
+    // A collapsed selection is a caret, and a caret in a field the press did not touch is not ours to move.
+    it('leaves a caret alone', () => {
+      const element = render('<div>a word</div>');
+      const selection = window.getSelection()!;
+      selection.removeAllRanges();
+      const range = document.createRange();
+      range.setStart(element.firstChild!, 2);
+      range.collapse(true);
+      selection.addRange(range);
+
+      clearSelection(element);
+
+      expect(selection.rangeCount).toBe(1);
+    });
+
+    it('does nothing when there is no element to read a window off', () => {
+      expect(() => clearSelection(null)).not.toThrow();
     });
   });
 });

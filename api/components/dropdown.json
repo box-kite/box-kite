@@ -27,6 +27,13 @@
       "description": "Controlled selection. Pair it with `onValueChange`, or nothing the user picks sticks."
     },
     {
+      "name": "defaultOpen",
+      "type": "boolean",
+      "required": false,
+      "default": null,
+      "description": "Open the listbox as soon as the dropdown mounts, highlighting the selected option the way a press on the trigger would. For a dropdown that only exists because the user asked to choose — a grid's cell editor — where a second press to open a list that is the whole control is a gesture nobody meant."
+    },
+    {
       "name": "multiple",
       "type": "boolean",
       "required": false,

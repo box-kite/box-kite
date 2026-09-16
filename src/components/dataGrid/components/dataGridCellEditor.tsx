@@ -198,6 +198,10 @@ function EditorControl<TRow>(props: ControlProps<TRow>) {
     return (
       <Dropdown<string | number | boolean | null>
         value={cell.draft as string | number | boolean | null}
+        // The list is the whole control: an editor that opened and then waited for a second press to
+        // show what can be chosen is the interaction AG Grid calls out as the one its native select
+        // cannot avoid. Every way in is a deliberate "change this cell", so every way in opens it.
+        defaultOpen
         width="fit"
         variant="compact"
         b={0}

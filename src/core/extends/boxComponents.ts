@@ -1755,6 +1755,10 @@ const boxComponents = {
           cursor: 'pointer',
           borderRadius: 1,
           lineHeight: 20,
+          // An option is a choice, not prose: dragging across the list while choosing must not paint a
+          // selection, and a range stranded elsewhere on the page must not reach in here. The trigger
+          // has said the same since it shipped.
+          userSelect: 'none',
           hover: {
             bgColor: 'gray-100',
           },

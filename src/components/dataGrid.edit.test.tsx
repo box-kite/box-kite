@@ -26,6 +26,12 @@ const baseDef: GridDefinition<Person> = {
   ],
 };
 
+/** A first-name column chosen from a list rather than typed into. */
+const selectColumns: GridDefinition<Person>['columns'] = [
+  { key: 'firstName', header: 'First Name', editable: true, editor: { type: 'select', options: [{ value: 'John' }, { value: 'Jo' }] } },
+  ...baseDef.columns.slice(1),
+];
+
 function renderGrid(def?: Partial<GridDefinition<Person>>, props?: Partial<DataGridProps<Person>>) {
   return render(<DataGrid data={data} def={{ ...baseDef, ...def }} {...props} />);
 }
@@ -112,6 +118,25 @@ describe('DataGrid cell editing', () => {
 
     expect((screen.getByRole('textbox', { name: 'Edit First Name' }) as HTMLInputElement).value).toBe('John');
     expect(cell.getAttribute('tabindex')).toBe('0');
+  });
+
+  /**
+   * #169: the press selects the word under it before any handler runs, and the editor then replaces the
+   * text that range covered. Chrome repairs the stranded range to the nearest boundary, and it reappears
+   * painted over whatever renders there next — every option of a `select` editor's list, on open.
+   */
+  it('a double press drops the selection it made, since the editor replaces what it covered', () => {
+    renderGrid();
+    const cell = focusCell(1, 0);
+    const range = document.createRange();
+    range.selectNodeContents(cell);
+    const selection = window.getSelection()!;
+    selection.removeAllRanges();
+    selection.addRange(range);
+
+    fireEvent.doubleClick(cell);
+
+    expect(selection.rangeCount).toBe(0);
   });
 
   it('a double press on a column that is not editable opens nothing and still leaves the cell current', () => {
@@ -219,20 +244,71 @@ describe('DataGrid cell editing', () => {
   });
 
   it('a select column offers the options it was given', () => {
-    renderGrid({
-      columns: [
-        {
-          key: 'firstName',
-          header: 'First Name',
-          editable: true,
-          editor: { type: 'select', options: [{ value: 'John' }, { value: 'Jo' }] },
-        },
-        ...baseDef.columns.slice(1),
-      ],
-    });
+    renderGrid({ columns: selectColumns });
     fireEvent.keyDown(focusCell(1, 0), { key: 'Enter' });
 
     expect(screen.getByRole('combobox', { name: 'Edit First Name' })).toBeTruthy();
+  });
+
+  // The list is the whole control, so an editor that opened and waited for a second press to show it
+  // would ask for a gesture nobody meant — the interaction AG Grid names as its native select's one flaw.
+  it('a select editor opens its list, highlighting the value already in the cell', () => {
+    renderGrid({ columns: selectColumns });
+    fireEvent.keyDown(focusCell(1, 0), { key: 'Enter' });
+
+    const combobox = screen.getByRole('combobox', { name: 'Edit First Name' });
+
+    expect(combobox.getAttribute('aria-expanded')).toBe('true');
+    expect(screen.getByRole('listbox')).toBeTruthy();
+    // On the current value rather than the top of the list: where a press on the trigger leaves it.
+    const active = document.getElementById(combobox.getAttribute('aria-activedescendant') ?? '');
+    expect(active?.textContent).toBe('John');
+  });
+
+  // #171: a character is not a value a list can hold. Seeding the draft with one blanked the option
+  // shown and then committed the character itself into the column.
+  it('a printable key on a select cell keeps the value instead of becoming it', () => {
+    const onCellEdit = vi.fn();
+    renderGrid({ onCellEdit, columns: selectColumns });
+
+    fireEvent.keyDown(focusCell(1, 0), { key: 'z' });
+    const combobox = screen.getByRole('combobox', { name: 'Edit First Name' });
+
+    expect(combobox.textContent).toContain('John');
+
+    fireEvent.keyDown(combobox, { key: 'Enter' });
+
+    expect(onCellEdit).not.toHaveBeenCalled();
+  });
+
+  // Same rule for the other editor nobody types into: `!!draft` read the character as `true`.
+  it('a printable key on a checkbox cell keeps the value instead of becoming it', () => {
+    const onCellEdit = vi.fn();
+    renderGrid({ onCellEdit, columns: [...baseDef.columns.slice(0, 2), { key: 'active', header: 'Active', editable: true }] });
+
+    fireEvent.keyDown(focusCell(2, 2), { key: 'z' });
+
+    expect((screen.getByRole('checkbox', { name: 'Edit Active' }) as HTMLInputElement).checked).toBe(false);
+  });
+
+  // A number field seeded with the string would commit the string on an Enter straight after the key.
+  it('a printable key on a number cell seeds the field with a number', () => {
+    const onCellEdit = vi.fn();
+    renderGrid({ onCellEdit });
+
+    fireEvent.keyDown(focusCell(1, 1), { key: '7' });
+    fireEvent.keyDown(screen.getByRole('spinbutton', { name: 'Edit Age' }), { key: 'Enter' });
+
+    expect(onCellEdit).toHaveBeenCalledWith(expect.objectContaining({ value: 7 }));
+  });
+
+  // A letter is no more a number than it is an option, so it opens the field on the value it found.
+  it('a key that is not part of a number leaves a number cell on its own value', () => {
+    renderGrid();
+
+    fireEvent.keyDown(focusCell(1, 1), { key: 'z' });
+
+    expect((screen.getByRole('spinbutton', { name: 'Edit Age' }) as HTMLInputElement).value).toBe('30');
   });
 
   it('an EditCell of your own drives the same three calls', () => {
