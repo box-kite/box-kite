@@ -4,6 +4,7 @@ The release notes live in [`releases/`](releases/), one file per version, and ea
 [GitHub Release](https://github.com/box-kite/box-kite/releases). Versions before 1.0.0 were published as
 `@cronocode/react-box`; their notes are on the releases page.
 
-| Version                    | Date       | In one line                                                     |
-| -------------------------- | ---------- | --------------------------------------------------------------- |
-| [1.0.0](releases/1.0.0.md) | 2026-09-04 | The library becomes Box Kite, and the engine becomes a package. |
+| Version                    | Date       | In one line                                                                                            |
+| -------------------------- | ---------- | ------------------------------------------------------------------------------------------------------ |
+| [2.0.0](releases/2.0.0.md) | 2026-09-16 | Every floating layer moves onto the browser’s own, and the package teaches the agent writing the code. |
+| [1.0.0](releases/1.0.0.md) | 2026-09-04 | The library becomes Box Kite, and the engine becomes a package.                                        |
