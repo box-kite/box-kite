@@ -2652,8 +2652,10 @@ const boxComponents = {
                 // by nothing, so a selected row was legible only by its own checkbox.
                 'grid-row/aria-selected=true': { bgColor: 'indigo-50' },
               },
-              // Same ring as the header cell: in a grid the cell is the thing that holds focus.
-              focusVisible: {
+              // `focus` is `:focus-within`, not `:focus-visible` (bug #64): a pointer never matches the latter, so
+              // a *clicked* cell drew no ring at all — and unlike a header, whose click sorts, a body cell click
+              // only chooses. Interim, until E6 owns a current cell the roving state marks and blur survives.
+              focus: {
                 outline: 2,
                 outlineStyle: 'solid',
                 outlineOffset: -2,
@@ -2668,7 +2670,7 @@ const boxComponents = {
                     'grid-row/data-group-row': { bgColor: 'gray-800' },
                     'grid-row/aria-selected=true': { bgColor: 'indigo-950' },
                   },
-                  focusVisible: {
+                  focus: {
                     outlineColor: 'indigo-400',
                   },
                 },
@@ -2737,7 +2739,10 @@ const boxComponents = {
               // edit (measured in Chrome 152). Declared after `isEditing`, so it wins the outline.
               isInvalid: {
                 outlineColor: 'red-500',
-                theme: { dark: { outlineColor: 'red-400' } },
+                // The cell holds the open editor, so it is `:focus-within` too — and a variant merges *into*
+                // the base styles, so the red has to be written inside the same block or the ring stays indigo.
+                focus: { outlineColor: 'red-500' },
+                theme: { dark: { outlineColor: 'red-400', focus: { outlineColor: 'red-400' } } },
               },
               // Muted, but only as far as contrast allows: `gray-400` on white measures 2.60:1 and `gray-500`
               // on `gray-900` 3.67:1, so the quiet-looking pair is the one that fails both ways round.

@@ -104,6 +104,45 @@ describe('DataGrid cell editing', () => {
     expect(screen.queryByRole('textbox')).toBeNull();
   });
 
+  it('a double press opens the editor, and the press before it left the cell current', () => {
+    renderGrid();
+    const cell = focusCell(1, 0);
+
+    fireEvent.doubleClick(cell);
+
+    expect((screen.getByRole('textbox', { name: 'Edit First Name' }) as HTMLInputElement).value).toBe('John');
+    expect(cell.getAttribute('tabindex')).toBe('0');
+  });
+
+  it('a double press on a column that is not editable opens nothing and still leaves the cell current', () => {
+    renderGrid();
+    const cell = focusCell(1, 2);
+
+    fireEvent.doubleClick(cell);
+
+    expect(screen.queryByRole('textbox')).toBeNull();
+    expect(cell.getAttribute('tabindex')).toBe('0');
+  });
+
+  it('a double press landing on a widget in the cell belongs to the widget', () => {
+    renderGrid({
+      columns: [
+        {
+          key: 'firstName',
+          header: 'First Name',
+          editable: true,
+          Cell: ({ cell }) => <button type="button">{String(cell.value)}</button>,
+        },
+        ...baseDef.columns.slice(1),
+      ],
+    });
+    focusCell(1, 0);
+
+    fireEvent.doubleClick(screen.getByRole('button', { name: 'John' }));
+
+    expect(screen.queryByRole('textbox', { name: 'Edit First Name' })).toBeNull();
+  });
+
   it('a number column opens a number field and commits a number', () => {
     const onCellEdit = vi.fn();
     renderGrid({ onCellEdit });

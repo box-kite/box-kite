@@ -2449,6 +2449,10 @@ the same function — and an answer to an edit the user has since abandoned is d
   function of the row). `column.EditCell` is a control of your own, bound to `cell.draft` with
   `cell.setDraft(v)`, `cell.commitEdit()` and `cell.cancelEdit()` — the same three calls the built-in four
   make.
+- **Pointer:** a press makes a cell the current one — it takes the ring, whether the pointer or the
+  keyboard put it there — and a **double press opens the editor** on an editable cell. A cell that cannot
+  be edited takes both as focus and nothing else, and a double press landing on a widget inside a cell (a
+  tree chevron, a link in a `Cell` of your own) belongs to the widget rather than the editor.
 - **Keys (APG's editable cell):** Enter or F2 opens the editor, any printable character opens it on that
   character (replacing the value), Escape throws the draft away, Enter commits and hands the keyboard back
   to the cell, and **Tab commits and opens the next editable cell** — along the row and on into the rows

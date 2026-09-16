@@ -1220,6 +1220,12 @@ being told. `editor` names one of the four (`text`, `number`, `checkbox`, `selec
 beside it — the same three calls the built-in four make, so a date picker is a component and not a second
 copy of the commit rules.
 
+**A double press opens the editor, and a single one only chooses.** A press makes a cell the current
+one — where the arrow keys carry on from — and a double press on an editable cell opens it, the way a
+spreadsheet reads one; a cell that cannot be edited takes both as focus and nothing else. A widget inside
+a cell keeps its own presses, so a double press on a tree chevron, or on a link in a `Cell` of your own,
+belongs to the widget rather than the editor.
+
 **The keyboard is APG's**: Enter or F2 opens the editor, Escape throws the draft away, Enter commits and
 hands the keyboard back to the cell, and **Tab commits and opens the next editable cell** — along the row
 and on into the rows after it, so a row of corrections is one gesture. A printable character opens the
@@ -1253,6 +1259,8 @@ edits with the blocks, because what the server says next is the newer answer.
 ## Fixes
 
 <!-- One bullet per fix: **What was wrong.** What it does now. -->
+
+- **A clicked grid cell showed nothing at all.** The current cell was drawn with `:focus-visible`, which is specified _not_ to match pointer input, so the ring appeared only once an arrow key had been pressed — and with an editor now opening on a double press, the cell a press had just chosen was the one thing on screen that did not say so. A body cell draws its ring on `:focus-within` instead; a header cell keeps `:focus-visible`, because its click sorts and the consequence is already visible. The ring still goes when the grid loses focus: a current cell that survives blur is what a range selection extends from, and it arrives with that.
 
 - **A deprecated _prop_ would have told forty-five coding agents to stop importing the whole component.** The scan behind the skill's "no longer the spelling to write" list took the first `@deprecated` in a component's source and named the **module** after it — fine while every deprecation in `src/components/` was a whole component, and wrong the moment one was a prop: `RadioGroup`'s renamed `onChange` came out as `@box-kite/react/components/radioGroup`, which an agent reads as "do not import this". A tag above a prop signature now names the prop (`…/radioGroup#onChange`) and only a tag elsewhere names the module, and every deprecation in a file is listed rather than just the first.
 

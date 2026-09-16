@@ -5,6 +5,9 @@ import AggregateCellModel from '../models/aggregateCellModel';
 import CellModel from '../models/cellModel';
 import GroupRowCellModel from '../models/groupRowCellModel';
 
+/** What inside a cell owns its own presses, so a double one landing there is not a way into the editor. */
+const WIDGET_SELECTOR = 'button,a[href],input,select,textarea';
+
 interface Props<TRow> extends BoxProps {
   children: React.ReactNode;
   cell: CellModel<TRow> | GroupRowCellModel<TRow> | AggregateCellModel<TRow>;
@@ -33,6 +36,17 @@ export default function DataGridCell<TRow>(props: Props<TRow>) {
   // whose editor is open stops clipping, or a control as tall as the row is cut off at both ends.
   if (cell instanceof CellModel && cell.editing) variant = { ...variant, isEditing: true, isInvalid: !!cell.error };
 
+  // A double press opens the editor, the way a spreadsheet reads one. The press before it has already made
+  // this the current cell — the cell carries its own tabindex — so a click needs no handler of its own.
+  const onDoubleClick =
+    cell instanceof CellModel
+      ? (event: React.MouseEvent) => {
+          // A widget in the cell owns its presses — a tree chevron, a link in a custom `Cell` — and an
+          // editor opening over one would swallow the second of them. `beginEdit` judges the rest.
+          if (!(event.target as HTMLElement).closest(WIDGET_SELECTOR)) cell.beginEdit();
+        }
+      : undefined;
+
   return (
     <Flex
       ref={ref}
@@ -43,6 +57,7 @@ export default function DataGridCell<TRow>(props: Props<TRow>) {
         'aria-colspan': ariaColSpan,
         tabIndex,
         onFocus,
+        onDoubleClick,
       }}
       variant={variant as never}
       style={{ ...column.cellStyleVars.value, ...style }}

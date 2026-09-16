@@ -1350,6 +1350,12 @@ const dataSource = useMemo(() => ({
               your own bound to <Mono>cell.draft</Mono>.
             </Box>
             <Flex d="column" gap={3} mt={4}>
+              <Note icon={Table} title="A press chooses the cell, a double press opens it">
+                A press makes a cell the current one and marks it, wherever the arrows would carry on from — and a{' '}
+                <b>double press opens the editor</b>, the way a spreadsheet reads one. A cell that cannot be edited takes both as focus and
+                nothing else, and a widget inside a cell keeps its own presses: a double press on a chevron, or on a link in a{' '}
+                <Mono>Cell</Mono> of your own, belongs to the widget rather than the editor.
+              </Note>
               <Note icon={Table} title="The keyboard is APG's, and Tab is the one that matters">
                 Enter or F2 opens the editor, Escape throws the draft away, Enter commits and hands the keyboard back to the cell. A
                 printable character opens the editor on that character, replacing the value the way a spreadsheet does — and{' '}
@@ -2181,7 +2187,7 @@ function EditingDemo() {
     <Flex d="column" gap={3}>
       <Box fontSize={12} color="gray-500" theme={{ dark: { color: 'gray-400' } }}>
         {edits.length === 0
-          ? 'Press Enter on a cell, or just start typing. Tab walks the row. An empty name is refused.'
+          ? 'Double-press a cell, press Enter on it, or just start typing. Tab walks the row. An empty name is refused.'
           : `${edits.length} edit${edits.length === 1 ? '' : 's'} · last: ${String(last?.columnKey)} ${String(last?.oldValue)} → ${String(last?.value)}`}
       </Box>
 
