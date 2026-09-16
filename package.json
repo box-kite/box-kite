@@ -128,7 +128,7 @@
       "name": "Core engine (@box-kite/core, no React)",
       "path": "dist-core/core.mjs",
       "gzip": true,
-      "limit": "28.16 KB"
+      "limit": "28.17 KB"
     },
     {
       "name": "Dialog",
@@ -188,7 +188,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "32.11 KB"
+      "limit": "32.12 KB"
     },
     {
       "name": "Progress",

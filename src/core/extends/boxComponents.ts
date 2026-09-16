@@ -2652,14 +2652,21 @@ const boxComponents = {
                 // by nothing, so a selected row was legible only by its own checkbox.
                 'grid-row/aria-selected=true': { bgColor: 'indigo-50' },
               },
-              // `focus` is `:focus-within`, not `:focus-visible` (bug #64): a pointer never matches the latter, so
-              // a *clicked* cell drew no ring at all — and unlike a header, whose click sorts, a body cell click
-              // only chooses. Interim, until E6 owns a current cell the roving state marks and blur survives.
+              // The ring says the *cell* holds focus: `:focus-within:not(:has(:focus))` is the cell itself, where
+              // bare `focus` would light it up for a widget it holds — a selection checkbox, a tree chevron —
+              // on top of that widget's own ring. `:focus-visible` is what it cannot be (bug #64): a pointer
+              // never matches it, so a *clicked* cell drew nothing until an arrow key. Interim, until E6 owns a
+              // current cell the roving state marks — which will be drawn for a widget's cell too, since the
+              // tab stop does move there.
               focus: {
-                outline: 2,
-                outlineStyle: 'solid',
-                outlineOffset: -2,
-                outlineColor: 'indigo-500',
+                not: {
+                  hasFocus: {
+                    outline: 2,
+                    outlineStyle: 'solid',
+                    outlineOffset: -2,
+                    outlineColor: 'indigo-500',
+                  },
+                },
               },
               theme: {
                 dark: {
@@ -2671,7 +2678,7 @@ const boxComponents = {
                     'grid-row/aria-selected=true': { bgColor: 'indigo-950' },
                   },
                   focus: {
-                    outlineColor: 'indigo-400',
+                    not: { hasFocus: { outlineColor: 'indigo-400' } },
                   },
                 },
               },
@@ -2739,10 +2746,7 @@ const boxComponents = {
               // edit (measured in Chrome 152). Declared after `isEditing`, so it wins the outline.
               isInvalid: {
                 outlineColor: 'red-500',
-                // The cell holds the open editor, so it is `:focus-within` too — and a variant merges *into*
-                // the base styles, so the red has to be written inside the same block or the ring stays indigo.
-                focus: { outlineColor: 'red-500' },
-                theme: { dark: { outlineColor: 'red-400', focus: { outlineColor: 'red-400' } } },
+                theme: { dark: { outlineColor: 'red-400' } },
               },
               // Muted, but only as far as contrast allows: `gray-400` on white measures 2.60:1 and `gray-500`
               // on `gray-900` 3.67:1, so the quiet-looking pair is the one that fails both ways round.
