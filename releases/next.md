@@ -8,6 +8,7 @@ _Unreleased. A PR that changes what a consumer sees adds its section here — se
 
 - **[A block of cells, and Ctrl+C](#a-block-of-cells-and-ctrlc)** — drag or Shift+arrow across a DataGrid and copy it straight into a spreadsheet.
 - **[Ctrl+V, one judgement per cell](#ctrlv-one-judgement-per-cell)** — paste a block back in, judged by the same `def.onCellEdit` an editor is.
+- **[A hundred thousand rows, and a page that measures them](#a-hundred-thousand-rows-and-a-page-that-measures-them)** — the grid benchmark is public, reruns in your own browser, and found a scroll five times slower than it needed to be.
 
 <!-- One bullet per section below, linking to it: **[Heading](#heading)** — one line on why it matters. -->
 
@@ -68,8 +69,7 @@ nothing could be written to.
       { key: 'first_name', header: 'First name', editable: true },
       { key: 'salary', header: 'Salary', align: 'end', editable: true },
     ],
-    onCellEdit: ({ columnKey, value }) =>
-      columnKey === 'salary' && Number(value) < 0 ? 'Salary cannot be negative' : undefined,
+    onCellEdit: ({ columnKey, value }) => (columnKey === 'salary' && Number(value) < 0 ? 'Salary cannot be negative' : undefined),
   }}
   onPaste={({ applied, rejected }) => setReport({ written: applied.length, refused: rejected.length })}
 />
@@ -91,6 +91,28 @@ filled. Everything a paste accepts lands in the same stream a typed value does, 
 
 [Ctrl+V, one judgement per cell](https://box-kite.dev/datagrid#paste)
 
+## A hundred thousand rows, and a page that measures them
+
+There is a benchmark page on the docs site now — [box-kite.dev/benchmark](https://box-kite.dev/benchmark) —
+and it is not a table of numbers somebody typed in. It generates a hundred thousand rows of twenty columns
+in your own browser, drives the grid through five operations and reports what it measured on your machine:
+first render, a two-second fling, a column filter, a sort and a grouping with totals. What it leaves out is
+on the page beside the numbers, because a benchmark that only flatters the thing it measures is an
+advertisement.
+
+Writing it found two renders the `DataGrid` was doing for nothing, and both are fixed here. A scroll that
+did not change which rows were on screen was re-rendering every cell in the window; it now costs the
+transform and nothing else. A scroll that brought one new row in was re-rendering every row in the window;
+it now renders the row that arrived. On the machine the published figures come from, the median frame of a
+fast fling over a hundred thousand rows **halved, from 24 ms to 12 ms** — forty-one frames a second to
+eighty-two, with the worst frame down from 38 ms to 24 — and not a prop changed.
+
+`npm run bench` is the same measurement headless, and it is the whole harness: the page is the benchmark
+and the script only presses its button, so a rerun in CI measures the code a reader measures. It runs on
+every pull request that touches the grid or the engine, against budgets sized for a shared runner.
+
+[The benchmark](https://box-kite.dev/benchmark)
+
 ## Breaking changes
 
 None.
@@ -99,4 +121,5 @@ None.
 
 <!-- One bullet per fix: **What was wrong.** What it does now. -->
 
+- **A DataGrid re-rendered every cell on screen on every scroll event.** A scroll that does not change which rows are shown now costs nothing but the transform, and one that brings a row in renders that row rather than the window it landed in — the median frame of a fast fling over a hundred thousand rows halved, 24 ms to 12 ms.
 - **A DataGrid cell chosen with the pointer showed nothing, and no cell stayed marked once the grid lost focus.** The mark is the grid's own state now rather than a `:focus-visible` ring, so a clicked cell wears it, it survives a blur and a scroll, and `Ctrl+C` has something to copy. (#64)

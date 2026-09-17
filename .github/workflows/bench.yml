@@ -1,0 +1,34 @@
+# The 100k-row grid benchmark, against the budgets in `bench/budgets.json`.
+#
+# It catches a regression, not a drift: a shared runner is several times slower than any laptop and
+# noisy with it, so the budgets are sized for the runner and set well above what it measures. A change
+# that makes the grid an order of magnitude slower fails here; one that costs it five per cent does not,
+# and no budget could tell that apart from the runner having a bad afternoon.
+name: Benchmark
+
+on:
+  pull_request:
+    paths:
+      - 'src/components/dataGrid/**'
+      - 'src/core/**'
+      - 'src/react/**'
+      - 'pages/benchmark/**'
+      - 'bench/**'
+      - '.github/workflows/bench.yml'
+  workflow_dispatch:
+
+jobs:
+  bench:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+
+      - run: npm ci
+      - run: npm run build:pages
+
+      # Three runs rather than five: the median of three is enough to catch an order of magnitude, and
+      # the runner is paying for every one of them.
+      - run: npm run bench -- --check --runs 3

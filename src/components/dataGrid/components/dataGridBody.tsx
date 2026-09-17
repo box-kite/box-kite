@@ -12,13 +12,13 @@ import DataGridFooter from './dataGridFooter';
 import DataGridGroupRow from './dataGridGroupRow';
 import DataGridRow from './dataGridRow';
 
-function renderRow<TRow>(row: RowModel<TRow> | GroupRowModel<TRow> | DetailRowModel<TRow>, index: number) {
+function renderRow<TRow>(row: RowModel<TRow> | GroupRowModel<TRow> | DetailRowModel<TRow>, index: number, version: number) {
   if (row instanceof DetailRowModel) {
-    return <DataGridDetailRow key={row.key} row={row} index={index} />;
+    return <DataGridDetailRow key={row.key} row={row} index={index} version={version} />;
   } else if (row instanceof GroupRowModel) {
-    return <DataGridGroupRow key={row.key} row={row} index={index} />;
+    return <DataGridGroupRow key={row.key} row={row} index={index} version={version} />;
   } else {
-    return <DataGridRow key={row.key} row={row as RowModel<TRow>} index={index} />;
+    return <DataGridRow key={row.key} row={row as RowModel<TRow>} index={index} version={version} />;
   }
 }
 
@@ -36,13 +36,19 @@ export default function DataGridBody<TRow>(props: Props<TRow>) {
   const isEmpty = viewport.isEmpty;
   const flatRows = grid.flatRows.value;
 
+  // A cell reads mutable model state as it renders — its range mark, its edit, its expansion — so the
+  // elements have to be rebuilt whenever the model moves, and the store version is what says it has. It is
+  // *not* in the list for a scroll, which is the point: the window holding still is a frame that costs
+  // nothing but the transform.
+  const version = grid.getSnapshot();
+
   const rows = useMemo(() => {
     if (isEmpty) return null;
 
     // The index a row is rendered with is its index in the *whole* list, not in the window: that
     // is what `aria-rowindex` means, and what the keyboard navigation counts in.
-    return ArrayUtils.take(flatRows, take, startIndex).map((row, offset) => renderRow(row, startIndex + offset));
-  }, [flatRows, isEmpty, take, startIndex]);
+    return ArrayUtils.take(flatRows, take, startIndex).map((row, offset) => renderRow(row, startIndex + offset, version));
+  }, [flatRows, isEmpty, take, startIndex, version]);
 
   // Render empty state outside the CSS Grid to ensure full width
   if (isEmpty) {

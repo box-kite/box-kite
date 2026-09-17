@@ -1,0 +1,24 @@
+{
+  "measuredAt": "2026-09-17",
+  "machine": "Windows 11 laptop, 12-core AMD Ryzen",
+  "browser": "Chrome/153.0.8010.48",
+  "runs": [
+    {
+      "impl": "box-kite",
+      "label": "Box Kite",
+      "version": "2.0.1",
+      "rows": 100000,
+      "columns": 20,
+      "runs": 5,
+      "dataMs": 155,
+      "frameBaseline": 6.1,
+      "scenarios": [
+        { "scenario": "mount", "ms": 82, "min": 73.5, "max": 100, "blockingMs": 0 },
+        { "scenario": "scroll", "ms": 12.2, "min": 3.8, "max": 36.3, "fps": 82, "worstFrame": 24.3, "slowFrames": 25, "blockingMs": 0 },
+        { "scenario": "filter", "ms": 55.6, "min": 32.7, "max": 59.5, "blockingMs": 0 },
+        { "scenario": "sort", "ms": 89.1, "min": 82.4, "max": 90.9, "blockingMs": 16 },
+        { "scenario": "group", "ms": 38.2, "min": 28.9, "max": 40.7, "blockingMs": 0 }
+      ]
+    }
+  ]
+}

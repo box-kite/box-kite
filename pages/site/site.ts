@@ -242,6 +242,13 @@ export const siteRoutes = [
     description: 'A virtualized data grid with sorting, filtering, grouping, column resizing and full keyboard navigation.',
   },
   {
+    path: '/benchmark',
+    name: 'Benchmark',
+    title: 'Data grid benchmark — 100,000 rows in your browser',
+    description:
+      'A hundred thousand rows by twenty columns, measured in your own browser: first render, scroll frames, filter, sort and grouped totals.',
+  },
+  {
     path: '/flex',
     name: 'Flex',
     description: 'A shortcut component for display: flex, with alignment, direction and spacing props.',

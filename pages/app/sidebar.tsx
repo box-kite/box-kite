@@ -13,6 +13,7 @@ import {
   Columns3,
   DoorOpen,
   Download,
+  Gauge,
   Highlighter,
   Languages,
   Layers,
@@ -289,6 +290,9 @@ export default function Sidebar({ toggleTheme, onClose }: SidebarProps) {
           </MenuItem>
           <MenuItem to="/datagrid" icon={<Table />}>
             Data Grid
+          </MenuItem>
+          <MenuItem to="/benchmark" icon={<Gauge />}>
+            Benchmark
           </MenuItem>
         </MenuSection>
 
