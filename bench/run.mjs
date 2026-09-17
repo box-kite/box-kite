@@ -8,6 +8,7 @@
  *
  *   node bench/run.mjs                        # builds nothing; serves dist-pages and measures it
  *   node bench/run.mjs --runs 5 --rows 100000
+ *   node bench/run.mjs --impls box-kite,ag-grid,mui-x,tanstack   # the comparison, in one go
  *   node bench/run.mjs --url http://localhost:4173/benchmark/
  *   node bench/run.mjs --check                # compare against budgets.json and fail on a breach
  */
@@ -45,7 +46,9 @@ function findChrome() {
 }
 
 function parseArgs(argv) {
-  const parsed = { runs: 5, rows: 100000, url: undefined, check: false, machine: process.env.BENCH_MACHINE };
+  // Box Kite alone by default, here and in CI: the other three are a comparison somebody asks for, and
+  // four grids is four times the runner's time for three numbers no budget is set against.
+  const parsed = { runs: 5, rows: 100000, url: undefined, check: false, impls: ['box-kite'], machine: process.env.BENCH_MACHINE };
 
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
@@ -53,6 +56,7 @@ function parseArgs(argv) {
     else if (arg === '--runs') parsed.runs = Number(argv[++i]);
     else if (arg === '--rows') parsed.rows = Number(argv[++i]);
     else if (arg === '--url') parsed.url = argv[++i];
+    else if (arg === '--impls') parsed.impls = argv[++i].split(',').map((id) => id.trim());
     else if (arg === '--machine') parsed.machine = argv[++i];
     else throw new Error(`Unknown argument: ${arg}`);
   }
@@ -207,12 +211,14 @@ async function measure(url) {
       await wait(200);
     }
 
-    const run = await evaluate(send, `window.boxKiteBench.run({ rows: ${options.rows}, runs: ${options.runs} })`, 20 * 60 * 1000);
+    const impls = JSON.stringify(options.impls);
+    const call = `window.boxKiteBench.run({ rows: ${options.rows}, runs: ${options.runs}, impls: ${impls} })`;
+    const runs = await evaluate(send, call, 60 * 60 * 1000);
 
     const browserVersion = await send('Browser.getVersion');
     socket.close();
 
-    return { run, browser: browserVersion.product };
+    return { runs, browser: browserVersion.product };
   } finally {
     browser.kill();
     // Windows holds the profile open for a moment after the process goes; a leftover temp directory is
@@ -232,12 +238,14 @@ function printRun(run, budgets) {
     const budget = budgets?.[scenario.scenario];
     const over = budget !== undefined && scenario.ms > budget;
 
+    if (scenario.unavailable) return `${scenario.scenario.padEnd(8)}  ${'—'.padStart(7)}     not in this tier (${scenario.unavailable})`;
+
     return [
       scenario.scenario.padEnd(8),
       `${String(scenario.ms).padStart(7)} ms`,
       budget === undefined ? '' : `budget ${String(budget).padStart(6)} ms`,
       over ? 'OVER' : '',
-      scenario.fps === undefined ? '' : `${scenario.fps} fps, worst frame ${scenario.worstFrame} ms`,
+      scenario.fps === undefined ? '' : `${scenario.workMs} ms of work, ${scenario.fps} fps, worst frame ${scenario.worstFrame} ms`,
     ]
       .filter(Boolean)
       .join('  ');
@@ -259,19 +267,25 @@ async function main() {
   }
 
   try {
-    const { run, browser } = await measure(url);
+    const { runs, browser } = await measure(url);
     const budgets = options.check && existsSync(budgetsPath) ? JSON.parse(readFileSync(budgetsPath, 'utf8')) : undefined;
 
-    printRun(run, budgets?.[run.impl]);
+    runs.forEach((run) => printRun(run, budgets?.[run.impl]));
 
     if (options.check) {
-      const breaches = run.scenarios.filter((scenario) => {
-        const budget = budgets?.[run.impl]?.[scenario.scenario];
-        return budget !== undefined && scenario.ms > budget;
-      });
+      // Only a grid with a budget is checked, so adding a comparison run to a command never fails it:
+      // what the other libraries do on a shared runner is not this repository's regression to catch.
+      const breaches = runs.flatMap((run) =>
+        run.scenarios
+          .filter((scenario) => {
+            const budget = budgets?.[run.impl]?.[scenario.scenario];
+            return budget !== undefined && scenario.ms > budget;
+          })
+          .map((scenario) => `${run.impl}/${scenario.scenario}`),
+      );
 
       if (breaches.length > 0) {
-        console.error(`Over budget: ${breaches.map((breach) => breach.scenario).join(', ')}`);
+        console.error(`Over budget: ${breaches.join(', ')}`);
         process.exitCode = 1;
       }
 
@@ -282,7 +296,7 @@ async function main() {
       measuredAt: new Date().toISOString().slice(0, 10),
       machine: options.machine ?? 'unnamed machine (pass --machine)',
       browser,
-      runs: [run],
+      runs,
     };
 
     // Through prettier, so `npx prettier --check` stays green over a generated file.

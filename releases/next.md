@@ -8,7 +8,7 @@ _Unreleased. A PR that changes what a consumer sees adds its section here — se
 
 - **[A block of cells, and Ctrl+C](#a-block-of-cells-and-ctrlc)** — drag or Shift+arrow across a DataGrid and copy it straight into a spreadsheet.
 - **[Ctrl+V, one judgement per cell](#ctrlv-one-judgement-per-cell)** — paste a block back in, judged by the same `def.onCellEdit` an editor is.
-- **[A hundred thousand rows, and a page that measures them](#a-hundred-thousand-rows-and-a-page-that-measures-them)** — the grid benchmark is public, reruns in your own browser, and found a scroll five times slower than it needed to be.
+- **[A hundred thousand rows, and a page that measures them](#a-hundred-thousand-rows-and-a-page-that-measures-them)** — the grid benchmark is public, reruns in your own browser against AG Grid, MUI X and TanStack, and says where this grid wins and where it does not.
 
 <!-- One bullet per section below, linking to it: **[Heading](#heading)** — one line on why it matters. -->
 
@@ -107,9 +107,25 @@ it now renders the row that arrived. On the machine the published figures come f
 fast fling over a hundred thousand rows **halved, from 24 ms to 12 ms** — forty-one frames a second to
 eighty-two, with the worst frame down from 38 ms to 24 — and not a prop changed.
 
+**It measures the other grids too.** Tick AG Grid Community, the free MUI X Data Grid or TanStack Table
+with a hand-written UI, and the page drives each of them through the same five operations, one after the
+other, and prints them side by side — each library downloaded only when it is picked, so reading the page
+costs nothing. Two of the cells are not about speed at all: AG Grid puts row grouping behind Enterprise and
+MUI X behind Premium, and the free MUI grid forces pagination at a hundred rows a page, so it has no
+hundred thousand rows to fling. Those cells carry the reason rather than a number, because a grid measured
+doing something else is worse than a blank.
+
+What it says about this grid, on one quiet laptop, five runs of a hundred thousand rows by twenty columns:
+first render, filter and sort are in the same class as AG Grid's and MUI X's, the grouping is the fastest of
+the four and only two of them can do it at all — and **the fling is the one this grid is behind on**, about
+20 ms of work a frame against AG Grid's 2.6 and a hand-rolled TanStack table's 2.8, eighty-one frames a
+second against a hundred and sixty-four. It is published rather than left out, and it is the next thing to
+work on.
+
 `npm run bench` is the same measurement headless, and it is the whole harness: the page is the benchmark
 and the script only presses its button, so a rerun in CI measures the code a reader measures. It runs on
-every pull request that touches the grid or the engine, against budgets sized for a shared runner.
+every pull request that touches the grid or the engine, against budgets sized for a shared runner — and
+only for this grid, so asking it for a comparison never fails a build.
 
 [The benchmark](https://box-kite.dev/benchmark)
 

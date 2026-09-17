@@ -1,6 +1,6 @@
 {
   "measuredAt": "2026-09-17",
-  "machine": "Windows 11 laptop, 12-core AMD Ryzen",
+  "machine": "Windows 11 laptop, 8 cores",
   "browser": "Chrome/153.0.8010.48",
   "runs": [
     {
@@ -10,14 +10,95 @@
       "rows": 100000,
       "columns": 20,
       "runs": 5,
-      "dataMs": 155,
+      "dataMs": 153,
       "frameBaseline": 6.1,
       "scenarios": [
-        { "scenario": "mount", "ms": 82, "min": 73.5, "max": 100, "blockingMs": 0 },
-        { "scenario": "scroll", "ms": 12.2, "min": 3.8, "max": 36.3, "fps": 82, "worstFrame": 24.3, "slowFrames": 25, "blockingMs": 0 },
-        { "scenario": "filter", "ms": 55.6, "min": 32.7, "max": 59.5, "blockingMs": 0 },
-        { "scenario": "sort", "ms": 89.1, "min": 82.4, "max": 90.9, "blockingMs": 16 },
-        { "scenario": "group", "ms": 38.2, "min": 28.9, "max": 40.7, "blockingMs": 0 }
+        { "scenario": "mount", "ms": 86.7, "min": 75.5, "max": 87.8, "blockingMs": 0 },
+        {
+          "scenario": "scroll",
+          "ms": 12.3,
+          "min": 2.1,
+          "max": 26.6,
+          "fps": 81,
+          "workMs": 19.8,
+          "worstFrame": 24.2,
+          "slowFrames": 33,
+          "blockingMs": 0
+        },
+        { "scenario": "filter", "ms": 52.8, "min": 50, "max": 77.9, "blockingMs": 0 },
+        { "scenario": "sort", "ms": 89.6, "min": 82.7, "max": 92.8, "blockingMs": 12 },
+        { "scenario": "group", "ms": 41, "min": 31.1, "max": 46.1, "blockingMs": 0 }
+      ]
+    },
+    {
+      "impl": "ag-grid",
+      "label": "AG Grid Community",
+      "version": "36.2.0",
+      "rows": 100000,
+      "columns": 20,
+      "runs": 5,
+      "dataMs": 153,
+      "frameBaseline": 6.1,
+      "scenarios": [
+        { "scenario": "mount", "ms": 69.3, "min": 67.3, "max": 122, "blockingMs": 0 },
+        {
+          "scenario": "scroll",
+          "ms": 6.1,
+          "min": 1.1,
+          "max": 25.6,
+          "fps": 164,
+          "workMs": 2.6,
+          "worstFrame": 10.7,
+          "slowFrames": 0,
+          "blockingMs": 0
+        },
+        { "scenario": "filter", "ms": 59.8, "min": 49.9, "max": 91.5, "blockingMs": 3 },
+        { "scenario": "sort", "ms": 86.1, "min": 84.2, "max": 87, "blockingMs": 28 },
+        { "scenario": "group", "unavailable": "Enterprise" }
+      ]
+    },
+    {
+      "impl": "mui-x",
+      "label": "MUI X Data Grid",
+      "version": "9.14.0",
+      "rows": 100000,
+      "columns": 20,
+      "runs": 5,
+      "dataMs": 153,
+      "frameBaseline": 6,
+      "scenarios": [
+        { "scenario": "mount", "ms": 34.5, "min": 30.6, "max": 45.9, "blockingMs": 0 },
+        { "scenario": "scroll", "unavailable": "paginated" },
+        { "scenario": "filter", "ms": 47.1, "min": 43.9, "max": 56.3, "blockingMs": 0 },
+        { "scenario": "sort", "ms": 99.3, "min": 94.7, "max": 100, "blockingMs": 45 },
+        { "scenario": "group", "unavailable": "Premium" }
+      ]
+    },
+    {
+      "impl": "tanstack",
+      "label": "TanStack Table + own UI",
+      "version": "9.2.4",
+      "rows": 100000,
+      "columns": 20,
+      "runs": 5,
+      "dataMs": 153,
+      "frameBaseline": 6,
+      "scenarios": [
+        { "scenario": "mount", "ms": 76.4, "min": 60.4, "max": 82.2, "blockingMs": 20 },
+        {
+          "scenario": "scroll",
+          "ms": 6,
+          "min": 1.4,
+          "max": 14.1,
+          "fps": 167,
+          "workMs": 2.8,
+          "worstFrame": 9.4,
+          "slowFrames": 0,
+          "blockingMs": 0
+        },
+        { "scenario": "filter", "ms": 42.3, "min": 40, "max": 48.4, "blockingMs": 0 },
+        { "scenario": "sort", "ms": 126, "min": 107, "max": 135, "blockingMs": 70 },
+        { "scenario": "group", "ms": 66.4, "min": 52.8, "max": 75, "blockingMs": 10 }
       ]
     }
   ]

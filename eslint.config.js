@@ -104,6 +104,17 @@ export default tseslint.config(
     },
   },
   {
+    // One grid under test per file, each exporting the component *and* the two gestures the benchmark
+    // needs from that library — which have to live beside the component that knows its DOM. The
+    // virtualizer in the TanStack baseline is a library the React Compiler declines to memoize through,
+    // and that is the baseline's own cost rather than something to work around here.
+    files: ['pages/benchmark/*Grid.tsx'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
+      'react-hooks/incompatible-library': 'off',
+    },
+  },
+  {
     // The DataGrid engine must stay headless (framework-agnostic): no React, no DOM.
     // Rendering/adapter logic belongs in the components layer.
     files: ['src/components/dataGrid/models/**/*.ts'],
