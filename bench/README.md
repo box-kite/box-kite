@@ -43,6 +43,10 @@ which is several times slower than any laptop and noisy with it: they catch a ch
 order of magnitude slower, and nothing finer. Anything tighter would fail on the runner having a bad
 afternoon.
 
-To refresh them, read the numbers off a CI run of this workflow and leave roughly 3× the headroom.
+To refresh them, read the numbers off a CI run of this workflow and leave roughly 3× the headroom. What
+is there now is three times a runner that measured 78 ms to mount, a 16.7 ms median frame (the runner is
+vsync-capped at 60 fps, so a grid that keeps up reports exactly that), 120 ms to filter, 178 ms to sort
+and 69 ms to group.
+
 `results.json` is a different thing and is never written by `--check`: it is one named machine's
 measurement, for scale.
