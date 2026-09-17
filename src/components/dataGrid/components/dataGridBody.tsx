@@ -7,6 +7,7 @@ import DetailRowModel from '../models/detailRowModel';
 import GridModel from '../models/gridModel';
 import GroupRowModel from '../models/groupRowModel';
 import RowModel from '../models/rowModel';
+import { ScrollPosition } from '../models/viewportModel';
 import DataGridDetailRow from './dataGridDetailRow';
 import DataGridFooter from './dataGridFooter';
 import DataGridGroupRow from './dataGridGroupRow';
@@ -24,14 +25,14 @@ function renderRow<TRow>(row: RowModel<TRow> | GroupRowModel<TRow> | DetailRowMo
 
 interface Props<TRow> {
   grid: GridModel<TRow>;
-  scrollTop: number;
+  scroll: ScrollPosition;
 }
 
 export default function DataGridBody<TRow>(props: Props<TRow>) {
-  const { grid, scrollTop } = props;
+  const { grid, scroll } = props;
   const { viewport } = grid;
 
-  const { startIndex, take, translateY, totalHeight, viewHeight } = viewport.window(scrollTop);
+  const { startIndex, take, translateY, totalHeight, viewHeight } = viewport.window(scroll.top, scroll.direction);
   const showAll = viewport.showAll;
   const isEmpty = viewport.isEmpty;
   const flatRows = grid.flatRows.value;

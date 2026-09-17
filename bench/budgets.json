@@ -4,6 +4,7 @@
     "scroll": 85,
     "filter": 350,
     "sort": 450,
-    "group": 180
+    "group": 180,
+    "blankFrames": 50
   }
 }

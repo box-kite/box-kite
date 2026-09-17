@@ -61,6 +61,7 @@ const impl: GridImpl = {
   // Found in the browser rather than guessed: AG's scroller is `ag-grid-viewport`, an ancestor of the
   // element the cells sit in.
   scroller: (container) => container.querySelector<HTMLElement>('.ag-grid-viewport'),
+  rowSelector: '.ag-row',
   // The label inside the header cell, which is what AG puts its own sort handler on. AG virtualizes
   // columns, so this only exists for a column that is on screen — which is why the scenario presses a
   // heading near the left edge.

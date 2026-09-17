@@ -7,6 +7,7 @@ import { isTypingKey } from './models/editModel';
 import GridModel from './models/gridModel';
 import RowModel from './models/rowModel';
 import { isTreeRow } from './models/treeRow';
+import { ScrollPosition } from './models/viewportModel';
 
 /** A cell, header or body — what a keystroke has to land on for the grid to own it. */
 const CELL_SELECTOR = '[role="gridcell"],[role="columnheader"]';
@@ -35,7 +36,8 @@ export interface GridNavigationOptions<TRow> {
   grid: GridModel<TRow>;
   /** The scrolling element — a jump to a row outside the rendered window has to scroll first. */
   scrollerRef: React.RefObject<HTMLElement | null>;
-  scrollTop: number;
+  /** Read rather than written: a jump has to know which rows are rendered, which the direction decides. */
+  scroll: ScrollPosition;
   onScrollTo: (top: number) => void;
 }
 
@@ -58,7 +60,7 @@ export interface GridNavigator {
  * or F2 got focus there while Escape takes it out.
  */
 export default function useGridNavigation<TRow>(options: GridNavigationOptions<TRow>): GridNavigator {
-  const { grid, scrollerRef, scrollTop, onScrollTo } = options;
+  const { grid, scrollerRef, scroll, onScrollTo } = options;
 
   const headerRows = grid.headerRows.value;
   const hasFilterRow = grid.filter.hasFilterableColumns;
@@ -132,7 +134,7 @@ export default function useGridNavigation<TRow>(options: GridNavigationOptions<T
         return;
       }
 
-      const { startIndex, take } = viewport.window(scrollTop);
+      const { startIndex, take } = viewport.window(scroll.top, scroll.direction);
       if (bodyIndex >= startIndex + RENDERED_MARGIN && bodyIndex < startIndex + take - RENDERED_MARGIN) return;
 
       // The scroll position is announced to the virtualization as well as written to the element:
@@ -142,7 +144,7 @@ export default function useGridNavigation<TRow>(options: GridNavigationOptions<T
       scroller.scrollTop = top;
       onScrollTo(top);
     },
-    [bodyRows.length, grid, headerRowCount, onScrollTo, scrollTop, scrollerRef],
+    [bodyRows.length, grid, headerRowCount, onScrollTo, scroll, scrollerRef],
   );
 
   // Which row the move started from, which only a scroll out of the body cares about.

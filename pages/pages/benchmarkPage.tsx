@@ -10,6 +10,7 @@ import { BenchRow, BENCH_COLUMN_COUNT, FILTER_COUNTRY, generateRows, GROUP_COLUM
 import {
   BenchDriver,
   BenchRun,
+  FLICK_VELOCITY,
   ScenarioId,
   ScenarioInfo,
   ScenarioResult,
@@ -70,12 +71,13 @@ export default function BenchmarkPage() {
               </Box>
             )}
             <Box mt={5}>
-              <Note icon={Ruler} title="The fling is the one this grid is behind on">
+              <Note icon={Ruler} title="The fling is inside a frame, and the work inside it is still the gap">
                 First render, filter and sort are in the same class as AG Grid's and MUI X's, the grouping is the quickest of the four and
-                only two of them can group at all — and the scroll is not: about 20 ms of work a frame against AG Grid's 2.6 and the
-                hand-written TanStack table's 2.8. It renders fifty-eight rows around an eighteen-row viewport where those two render about
-                half that, which is the lead being followed. It is published rather than left out: a benchmark you can rerun is the only
-                kind worth having, and the number it gives you is the one being worked on.
+                only two of them can group at all. The fling was the one this grid was behind on — twenty milliseconds of work a frame
+                against AG Grid's 2.6 — because it rendered fifty-eight rows around an eighteen-row viewport where those two render about
+                half that. It keeps twelve rows ahead of the scroll and four behind it now, thirty-six in all, and the frame is inside a
+                sixtieth of a second with none of a hard flick blank. What is left is the work inside that frame, which is still several
+                times theirs: published rather than left out, and the number being worked on.
               </Note>
             </Box>
           </Section>
@@ -184,6 +186,14 @@ export default function BenchmarkPage() {
                   between them is two milliseconds. The comparison therefore prints what one frame <em>cost</em> — the same
                   change-to-after-the-paint measurement the other four operations use — and the frames per second beside it, which is what
                   the display allowed. The grid's own table keeps both.
+                </Note>
+                <Note icon={ScanEye} title="A grid that renders nothing is the fastest grid on the page">
+                  A frame time says what the rendering cost, never whether there was anything to render — and a grid that renders nothing is
+                  the fastest grid on the page. So a pass of its own flicks the rows past at {FLICK_VELOCITY.toLocaleString('en-US')} pixels
+                  a second — the top of what a hard flick reaches, five rows between one frame and the next at 60 fps — and hit-tests four
+                  points down the grid at the start of every frame, against the scroll position that frame is about to paint. The share of
+                  frames that found a hole is printed beside the scroll, and a window that renders too few rows ahead of itself shows up
+                  there and in no other number on this page.
                 </Note>
               </Flex>
             </Box>
@@ -524,7 +534,7 @@ function ResultTable({ run }: { run: BenchRun }) {
                   {scenario.unavailable
                     ? `Not in this tier — ${scenario.unavailable}`
                     : scenario.fps !== undefined
-                      ? `${scenario.workMs} ms of work a frame · ${scenario.fps} fps · worst frame ${scenario.worstFrame} ms · ${scenario.slowFrames}% under 60 fps`
+                      ? `${scenario.workMs} ms of work a frame · ${scenario.fps} fps · worst frame ${scenario.worstFrame} ms · ${scenario.slowFrames}% under 60 fps · ${scenario.blankFrames ?? 0}% of a hard flick blank`
                       : ''}
                 </Cell>
               </TableRow>
@@ -595,6 +605,7 @@ function makeDriver(
       else if (scenario === 'sort' && container.current) impl.sort(container.current);
     },
     scroller: () => (container.current ? impl.scroller(container.current) : null),
+    rowSelector: impl.rowSelector,
   };
 }
 

@@ -3,6 +3,7 @@ import Box from '../../../box';
 import { useIsomorphicLayoutEffect } from '../../../react/effects';
 import GridNavigationContext from '../gridNavigationContext';
 import GridModel from '../models/gridModel';
+import ViewportModel, { ScrollPosition } from '../models/viewportModel';
 import useGridNavigation from '../useGridNavigation';
 import DataGridBody from './dataGridBody';
 import DataGridEmptyColumns from './dataGridEmptyColumns';
@@ -17,23 +18,33 @@ export default function DataGridContent<TRow>(props: Props<TRow>) {
   const { grid } = props;
 
   const scrollerRef = useRef<HTMLDivElement>(null);
-  const [scrollTop, setScrollTop] = useState(0);
+  // Where the rows are and which way they are going: the buffer the viewport renders is only cover in
+  // the direction of travel, so the window needs both. The same object back when the position did not
+  // move is what keeps a horizontal scroll from re-rendering the body.
+  const [scroll, setScroll] = useState<ScrollPosition>({ top: 0, direction: 'down' });
   const rafRef = useRef<number | null>(null);
 
-  const handleScroll = useCallback((event: React.UIEvent) => {
-    if (rafRef.current !== null) {
-      cancelAnimationFrame(rafRef.current);
-    }
-
-    rafRef.current = requestAnimationFrame(() => {
-      setScrollTop((event.target as HTMLDivElement).scrollTop);
-      rafRef.current = null;
-    });
+  const scrollTo = useCallback((top: number) => {
+    setScroll((last) => (top === last.top ? last : { top, direction: ViewportModel.directionOf(last.top, top, last.direction) }));
   }, []);
+
+  const handleScroll = useCallback(
+    (event: React.UIEvent) => {
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current);
+      }
+
+      rafRef.current = requestAnimationFrame(() => {
+        scrollTo((event.target as HTMLDivElement).scrollTop);
+        rafRef.current = null;
+      });
+    },
+    [scrollTo],
+  );
 
   // A keyboard jump writes the scroll position straight through, ahead of the animation frame the
   // pointer path can afford: the row has to be rendered by the time focus goes looking for it.
-  const { navigation, onKeyDown } = useGridNavigation({ grid, scrollerRef, scrollTop, onScrollTo: setScrollTop });
+  const { navigation, onKeyDown } = useGridNavigation({ grid, scrollerRef, scroll, onScrollTo: scrollTo });
 
   const { source } = grid;
   const { queryVersion } = source;
@@ -51,10 +62,10 @@ export default function DataGridContent<TRow>(props: Props<TRow>) {
   useEffect(() => {
     if (!source.enabled) return;
 
-    const { startIndex, take } = grid.viewport.window(scrollerRef.current?.scrollTop ?? 0);
+    const { startIndex, take } = grid.viewport.window(scrollerRef.current?.scrollTop ?? 0, scroll.direction);
 
     source.request(startIndex, startIndex + take);
-  }, [grid, source, queryVersion, scrollTop, grid.totalRowCount, grid.page, grid.pageSize, grid.expansionVersion]);
+  }, [grid, source, queryVersion, scroll, grid.totalRowCount, grid.page, grid.pageSize, grid.expansionVersion]);
 
   // A drag that leaves the grid — or the window — still has to end, so the release is listened for where
   // it lands rather than on a cell. Only while one is running: nothing is bound by a grid at rest.
@@ -129,7 +140,7 @@ export default function DataGridContent<TRow>(props: Props<TRow>) {
 
         {(grid.props.loading || source.isLoading) && <DataGridLoader grid={grid} />}
 
-        <DataGridBody grid={grid} scrollTop={scrollTop} />
+        <DataGridBody grid={grid} scroll={scroll} />
       </Box>
     </GridNavigationContext.Provider>
   );

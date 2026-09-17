@@ -1,5 +1,14 @@
 import GridModel from './gridModel';
 
+/** Which way the reader is going. The rendered buffer is only worth its cost in the direction of travel. */
+export type ScrollDirection = 'down' | 'up';
+
+/** Everything the window needs of a scroll: where the rows are, and which way they are moving. */
+export interface ScrollPosition {
+  top: number;
+  direction: ScrollDirection;
+}
+
 /** Windowing parameters for the virtualized body. Rows are sliced by the adapter from these. */
 export interface ViewportWindow {
   /** Index of the first row to render. */
@@ -21,7 +30,26 @@ export interface ViewportWindow {
  */
 export default class ViewportModel<TRow> {
   static readonly DEFAULT_VISIBLE_ROWS_COUNT = 10;
-  static readonly ROWS_TO_PRELOAD = 20;
+  /**
+   * Rows rendered outside the viewport, and the reason the two numbers differ: the buffer is cover for
+   * the frame between a scroll and the render that answers it, so it is only ever needed ahead. Twenty
+   * each way rendered fifty-eight rows around an eighteen-row viewport, and cost seven times the fling
+   * of a grid rendering twenty-eight (bug #178).
+   */
+  static readonly ROWS_AHEAD = 12;
+  static readonly ROWS_BEHIND = 4;
+  /** The row a scroll cuts through at the top, and the fifth of one `viewHeight` adds at the bottom. */
+  private static readonly PARTIAL_ROWS = 2;
+
+  /**
+   * Which way the reader is going, given where they were. A scroll that stops keeps the direction it
+   * arrived in: the cover belongs ahead of the fling that is about to carry on, not behind it.
+   */
+  static directionOf(from: number, to: number, last: ScrollDirection): ScrollDirection {
+    if (to === from) return last;
+
+    return to > from ? 'down' : 'up';
+  }
 
   constructor(public readonly grid: GridModel<TRow>) {}
 
@@ -97,7 +125,7 @@ export default class ViewportModel<TRow> {
     return lo;
   }
 
-  public window(scrollTop: number): ViewportWindow {
+  public window(scrollTop: number, direction: ScrollDirection = 'down'): ViewportWindow {
     const length = this.grid.flatRows.value.length;
 
     if (this.showAll) {
@@ -105,15 +133,17 @@ export default class ViewportModel<TRow> {
     }
 
     const { rowHeight } = this.grid;
-    const preload = ViewportModel.ROWS_TO_PRELOAD;
+    const { ROWS_AHEAD, ROWS_BEHIND, PARTIAL_ROWS } = ViewportModel;
+    const behind = direction === 'down' ? ROWS_BEHIND : ROWS_AHEAD;
     const { offsets } = this.grid.rowOffsets.value;
 
-    const startIndex = this.hasDetailRows
-      ? Math.max(0, this.findStartIndex(offsets, scrollTop) - preload)
-      : Math.max(0, Math.floor(scrollTop / rowHeight) - preload);
+    const first = this.hasDetailRows ? this.findStartIndex(offsets, scrollTop) : Math.floor(scrollTop / rowHeight);
+    const startIndex = Math.max(0, first - behind);
 
     const translateY = this.hasDetailRows ? (offsets[startIndex] ?? 0) : startIndex * rowHeight;
-    const take = this.visibleRowsCount + preload * 2;
+    // The window is the same size whichever way it is going — only where it sits moves — so a reversal
+    // re-renders the rows that changed rather than the whole body.
+    const take = this.visibleRowsCount + PARTIAL_ROWS + ROWS_BEHIND + ROWS_AHEAD;
 
     return { startIndex, take, translateY, totalHeight: this.totalHeight, viewHeight: this.viewHeight };
   }

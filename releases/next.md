@@ -9,6 +9,7 @@ _Unreleased. A PR that changes what a consumer sees adds its section here — se
 - **[A block of cells, and Ctrl+C](#a-block-of-cells-and-ctrlc)** — drag or Shift+arrow across a DataGrid and copy it straight into a spreadsheet.
 - **[Ctrl+V, one judgement per cell](#ctrlv-one-judgement-per-cell)** — paste a block back in, judged by the same `def.onCellEdit` an editor is.
 - **[A hundred thousand rows, and a page that measures them](#a-hundred-thousand-rows-and-a-page-that-measures-them)** — the grid benchmark is public, reruns in your own browser against AG Grid, MUI X and TanStack, and says where this grid wins and where it does not.
+- **[A fling renders where you are going](#a-fling-renders-where-you-are-going)** — the DataGrid keeps its rendered rows ahead of the scroll instead of on both sides of it: 36 rows around an 18-row screen where it used to be 58, and a fling at 125 frames a second where it was 81.
 
 <!-- One bullet per section below, linking to it: **[Heading](#heading)** — one line on why it matters. -->
 
@@ -117,15 +118,38 @@ doing something else is worse than a blank.
 
 What it says about this grid, on one quiet laptop, five runs of a hundred thousand rows by twenty columns:
 first render, filter and sort are in the same class as AG Grid's and MUI X's, the grouping is the fastest of
-the four and only two of them can do it at all — and **the fling is the one this grid is behind on**, about
-20 ms of work a frame against AG Grid's 2.6 and a hand-rolled TanStack table's 2.8, eighty-one frames a
-second against a hundred and sixty-four. It is published rather than left out, and it is the next thing to
-work on.
+the four and only two of them can do it at all — and **the fling was the one this grid was behind on**,
+about 20 ms of work a frame against AG Grid's 2.6 and a hand-rolled TanStack table's 2.8, eighty-one frames
+a second against a hundred and sixty-four. That is what the next section is about: the fling is inside a
+frame now, and what is left of the gap is the work inside it.
 
 `npm run bench` is the same measurement headless, and it is the whole harness: the page is the benchmark
 and the script only presses its button, so a rerun in CI measures the code a reader measures. It runs on
 every pull request that touches the grid or the engine, against budgets sized for a shared runner — and
 only for this grid, so asking it for a comparison never fails a build.
+
+[The benchmark](https://box-kite.dev/benchmark)
+
+## A fling renders where you are going
+
+A `DataGrid` kept twenty rows rendered on each side of its viewport, whichever way the rows were actually
+moving — fifty-eight of them around an eighteen-row screen, where AG Grid renders about twenty-eight and a
+hand-written virtual table twenty-six. A buffer is cover for the frame between a scroll and the render that
+answers it, so it is only ever wanted in the direction of travel. It is **twelve rows ahead and four
+behind** now, and it turns round when the reader does. Nothing to configure, and no prop changed.
+
+Thirty-six rows instead of fifty-eight, on the same quiet laptop the benchmark's published figures come
+from: the median frame of a fling over a hundred thousand rows went from **12.3 ms to 8.0 ms** — 81 frames
+a second to 125 — with the work inside the frame down from 19.8 ms to 15.3, and first render 89 ms to 81,
+filter 65 to 42 and sort 89 to 76 carried along with it.
+
+The number that keeps that honest is new, because a grid that renders nothing at all is the fastest grid on
+the page. The benchmark now flicks each grid past at ten thousand pixels a second — the top of what a hard
+flick reaches, five rows between one frame and the next at 60 fps — and hit-tests four points down it at
+the start of every frame, against the scroll position that frame is about to paint. Box Kite, AG Grid
+Community and the TanStack baseline paint every one of those frames. With the buffer taken away altogether
+the same pass reports every frame blank, which is what says it is looking at something; with eight rows of
+cover instead of twelve, four frames in a hundred.
 
 [The benchmark](https://box-kite.dev/benchmark)
 
@@ -137,5 +161,6 @@ None.
 
 <!-- One bullet per fix: **What was wrong.** What it does now. -->
 
+- **A DataGrid rendered fifty-eight rows around an eighteen-row viewport.** Twenty rows each side became twelve ahead of the scroll and four behind it, so the same cover costs thirty-six rows: a fling over a hundred thousand rows went from 12.3 ms a frame to 8.0, and first render, filter and sort came down with it. (#178)
 - **A DataGrid re-rendered every cell on screen on every scroll event.** A scroll that does not change which rows are shown now costs nothing but the transform, and one that brings a row in renders that row rather than the window it landed in — the median frame of a fast fling over a hundred thousand rows halved, 24 ms to 12 ms.
 - **A DataGrid cell chosen with the pointer showed nothing, and no cell stayed marked once the grid lost focus.** The mark is the grid's own state now rather than a `:focus-visible` ring, so a clicked cell wears it, it survives a blur and a scroll, and `Ctrl+C` has something to copy. (#64)
