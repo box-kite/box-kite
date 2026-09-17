@@ -32,6 +32,11 @@ jobs:
         with:
           ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
+      # The body is assembled by a script, so the Node the runner happens to ship is not the one that runs it.
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+
       - name: Tag, release and publish the version the manifest names
         env:
           GH_TOKEN: ${{ github.token }}
@@ -45,11 +50,11 @@ jobs:
             exit 1
           fi
 
-          # The H1 repeats the release title, so the body starts at the line under it — after one line
-          # pointing at the same notes on the site, which is the one thing the file cannot say about itself.
+          # The body is a script, because the notes outgrew what a release body may hold: over GitHub's
+          # 125,000-character cap it keeps Highlights, Breaking changes and Fixes and points the detail
+          # at the site. The line it puts on top is the one thing the notes file cannot say about itself.
           body=$(mktemp)
-          printf '_Read these notes on [box-kite.dev](https://www.box-kite.dev/releases/%s/)._\n\n' "$version" > "$body"
-          sed '1{/^# /d}' "$notes" | sed '1{/^$/d}' >> "$body"
+          node scripts/release-body.mjs "$version" > "$body"
 
           if git ls-remote --exit-code --tags origin "refs/tags/$tag" > /dev/null; then
             echo "$tag is already tagged"
@@ -67,8 +72,19 @@ jobs:
             exit 0
           fi
 
-          gh release create "$tag" --title "$version" --notes-file "$body" --latest
+          # The publish is dispatched whether or not the body was accepted: a release body is prose and
+          # the two packages are the release. 2.0.0 tagged, took a 422 on an over-long body, and shipped
+          # nothing at all — the tag then made it look done.
+          released=1
+          gh release create "$tag" --title "$version" --notes-file "$body" --latest || released=0
+
           # A release created with the workflow token fires no `release: published` run — GitHub's rule
           # against recursive workflows — so the publish is dispatched by name instead.
           gh workflow run publish.yml --ref main -f "ref=$tag"
-          echo "released $tag and dispatched publish.yml for it"
+          echo "dispatched publish.yml for $tag"
+
+          if [ "$released" = 0 ]; then
+            echo "::error::$tag is tagged and on its way to npm, but the GitHub Release could not be created"
+            exit 1
+          fi
+          echo "released $tag"

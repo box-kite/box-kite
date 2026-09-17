@@ -40,7 +40,7 @@ Read `.claude/rules/box-kite-rules.md` — the shortest complete answer — befo
 | `npm run size:published -- accordion tabs` | The "N KB gz on top of Box" figure a release note quotes, measured rather than transcribed                        |
 | `npm run release -- minor`                 | Turn `releases/next.md` into the versioned notes, bump the manifest and open the release PR — merging it releases |
 
-Node version: v24 (pinned in .nvmrc).
+Node version: v26 (pinned in .nvmrc).
 
 ## Architecture
 

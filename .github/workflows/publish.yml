@@ -11,6 +11,13 @@ on:
         description: 'Tag to publish (e.g. v1.0.1). Defaults to the ref this is run from.'
         required: false
 
+# There is no NPM token anywhere in this repository on purpose. Both packages authenticate by
+# **trusted publishing**: `id-token: write` lets npm exchange a GitHub OIDC token for a short-lived
+# registry credential, which is also what signs the provenance. It only works while npmjs.com lists
+# this repository and *this filename* as a trusted publisher for the package — organisation
+# `box-kite`, repository `box-kite`, workflow `publish.yml`. Renaming this file, moving the publish
+# into a reusable workflow or forking the repo all break the match, and the registry says so with
+# `403 ... OIDC permission denied`, which is what every publish since the 1.0.0 rename hit.
 permissions:
   id-token: write
   contents: read
@@ -28,6 +35,20 @@ jobs:
         with:
           node-version-file: '.nvmrc'
           registry-url: https://registry.npmjs.org
+
+      # Trusted publishing landed in npm 11.5.1. An older npm does not attempt the OIDC exchange at
+      # all — it reaches for the token setup-node stubbed out and fails as an auth error instead, so
+      # the floor is checked rather than assumed of whatever npm the Node 24 image ships that week.
+      - name: npm new enough to publish with OIDC
+        run: |
+          set -euo pipefail
+          need=11.5.1
+          have=$(npm --version)
+          if [ "$(printf '%s\n%s\n' "$need" "$have" | sort -V | head -1)" != "$need" ]; then
+            echo "npm $have is older than $need — upgrading"
+            npm install -g npm@latest
+          fi
+          echo "npm $(npm --version)"
 
       - run: npm ci
       - run: npm run build
@@ -54,3 +75,20 @@ jobs:
           else
             npm publish ./dist --access public --provenance
           fi
+
+      # `403 ... OIDC permission denied` is the registry saying the trusted publisher does not match,
+      # and it names none of the four things that have to. A config created after 3 September 2026
+      # allows `npm stage publish` and nothing else until `npm publish` is ticked as well, so the
+      # likeliest cause of a first failure here is a setting that looks configured.
+      - name: What a denied publish means
+        if: failure()
+        run: |
+          cat <<'EOF'
+          ::error::npm refused the publish. Check the trusted publisher on npmjs.com for BOTH
+          @box-kite/core and @box-kite/react (Package → Settings → Trusted Publisher):
+            organisation/user  box-kite
+            repository         box-kite
+            workflow filename  publish.yml
+            environment        (empty — this job declares none)
+            allowed actions    "npm publish" ticked, not "npm stage publish" alone
+          EOF
