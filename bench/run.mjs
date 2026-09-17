@@ -113,13 +113,18 @@ async function startPreview() {
 async function connect(port) {
   let target;
 
-  for (let attempt = 0; attempt < 50 && !target; attempt++) {
+  // The wait is outside the `catch`: a Chrome that is listening but has not opened its tab yet answers
+  // with an empty list, and a loop that only slept on a refused connection burned every attempt in a
+  // few milliseconds and gave up on a browser that was still starting.
+  for (let attempt = 0; attempt < 150 && !target; attempt++) {
     try {
       const list = await fetch(`http://127.0.0.1:${port}/json/list`).then((response) => response.json());
       target = list.find((entry) => entry.type === 'page');
     } catch {
-      await wait(200);
+      /* not listening yet */
     }
+
+    if (!target) await wait(200);
   }
 
   if (!target) throw new Error('Chrome never reported a page target.');
@@ -182,6 +187,9 @@ async function measure(url) {
       // A CI container often has no user namespaces to build a sandbox in, and Chrome refuses to start
       // rather than saying so.
       ...(process.env.CI ? ['--no-sandbox'] : []),
+      // An explicit first page, so there is a target to attach to rather than a window Chrome has not
+      // put a tab in yet.
+      'about:blank',
     ],
     { stdio: 'ignore' },
   );
