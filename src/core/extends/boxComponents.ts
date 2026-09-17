@@ -2763,8 +2763,13 @@ const boxComponents = {
               },
               // A refused value, on the cell rather than on the editor inside it: two rings on the same
               // rectangle means the editing one paints over this one and a refusal reads as an ordinary
-              // edit (measured in Chrome 152). Declared after `isEditing`, so it wins the outline.
+              // edit (measured in Chrome 152). Declared after `isEditing`, so it wins the outline — and
+              // it draws the whole ring rather than just recolouring one, because a paste refused on a
+              // cell has no editor open behind it to have drawn one.
               isInvalid: {
+                outline: 2,
+                outlineStyle: 'solid',
+                outlineOffset: -2,
                 outlineColor: 'red-500',
                 theme: { dark: { outlineColor: 'red-400' } },
               },

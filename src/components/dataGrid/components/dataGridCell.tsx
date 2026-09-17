@@ -48,7 +48,11 @@ export default function DataGridCell<TRow>(props: Props<TRow>) {
 
   // Editing is per cell rather than per column, so it cannot ride the precomputed record — and a cell
   // whose editor is open stops clipping, or a control as tall as the row is cut off at both ends.
+  const rejected = cell instanceof CellModel && !cell.editing && cell.rejected;
   if (cell instanceof CellModel && cell.editing) variant = { ...variant, isEditing: true, isInvalid: !!cell.error };
+  // A cell a paste was refused on wears the same ring with no editor behind it: a batch has none to show
+  // the message in, so the cells say which ones did not take a value and `onPaste` says why.
+  else if (rejected) variant = { ...variant, isInvalid: true };
 
   // A double press opens the editor, the way a spreadsheet reads one. The press before it has already made
   // this the current cell — the cell carries its own tabindex — so a click needs no handler of its own.
@@ -103,6 +107,7 @@ export default function DataGridCell<TRow>(props: Props<TRow>) {
         // Only a block of cells is *selected*. A lone current cell is the cursor, and saying "selected"
         // on every arrow key would be an announcement about nothing having been chosen.
         'aria-selected': isSelected || undefined,
+        'aria-invalid': rejected || undefined,
         tabIndex,
         onFocus,
         onDoubleClick,

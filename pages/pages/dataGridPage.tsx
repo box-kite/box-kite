@@ -4,7 +4,14 @@ import dataGridApi from '../../api/components/datagrid.json';
 import Box from '../../src/box';
 import Button from '../../src/components/button';
 import DataGrid from '../../src/components/dataGrid';
-import { CellRange, DataSourceRequest, DataSourceResult, Key } from '../../src/components/dataGrid/contracts/dataGridContract';
+import {
+  CellEdit,
+  CellRange,
+  DataGridPaste,
+  DataSourceRequest,
+  DataSourceResult,
+  Key,
+} from '../../src/components/dataGrid/contracts/dataGridContract';
 import Flex from '../../src/components/flex';
 import RadioGroup from '../../src/components/radioGroup';
 import { H2 } from '../../src/components/semantics';
@@ -1523,6 +1530,63 @@ const dataSource = useMemo(() => ({
             <RangeSelectionDemo />
           </Code>
 
+          <Section id="paste" title="Ctrl+V, one judgement per cell">
+            <Box>
+              A block of cells goes back the other way too. <Mono>Ctrl+V</Mono> fills from the current cell, or the block that is marked
+              where one is, and every cell it covers goes through the same <Mono>def.onCellEdit</Mono> an editor would — so a paste needs no
+              second validator, no second event and no second way of writing a value. <Mono>onPaste</Mono> reports the lot once.
+            </Box>
+            <Flex d="column" gap={3} mt={4}>
+              <Note icon={Table} title="The bigger of the block and the clipboard wins, on each axis">
+                A block bigger than the clipboard is tiled with it, the way a spreadsheet fills a column from one cell; a clipboard bigger
+                than the block spills past it. Both stop at the edge of the grid. One rule, and the degenerate case falls out of it: a paste
+                onto the current cell alone starts from a block of one.
+              </Note>
+              <Note icon={Filter} title="A refusal skips its own cell and nothing else">
+                A paste is many independent judgements, and stopping at the first bad value would leave the block half written with no way
+                back. The cells that were refused wear the red ring and report <Mono>aria-invalid</Mono> — there is no editor open on any of
+                them to show a message in — and <Mono>onPaste</Mono> carries each one with what it was refused with.
+              </Note>
+              <Note icon={Table} title="The clipboard carries no types, so the cell says how to read it">
+                A number column parses the text and refuses what is not a number, a checkbox takes <Mono>true</Mono>/<Mono>false</Mono> (and{' '}
+                <Mono>1</Mono>/<Mono>0</Mono>), and a <Mono>select</Mono> keeps to its own options and holds the option's value rather than
+                its spelling. A value that did not change is not an edit at all, so pasting a column back over itself costs nothing.
+              </Note>
+              <Note icon={Table} title="A paste inside an open editor belongs to the editor">
+                That one is a value being typed, not a block being filled — so the grid hands it back rather than filling the cells under
+                it. Everything a paste accepts lands in the same edit stream a typed value does, with a <Mono>reason</Mono> of{' '}
+                <Mono>paste</Mono>.
+              </Note>
+            </Flex>
+          </Section>
+
+          <Code
+            id="paste-demo"
+            defer
+            label="Paste into a block"
+            language="jsx"
+            check={false}
+            code={`<DataGrid
+  data={people}
+  def={{
+    rowKey: 'id',
+    rangeSelection: true,
+    columns: [
+      { key: 'first_name', header: 'First name', editable: true },
+      { key: 'country', header: 'Country', editable: true },
+      { key: 'age', header: 'Age', align: 'end', editable: true },
+      { key: 'salary', header: 'Salary', align: 'end', editable: true },
+    ],
+    // The same function a typed value is judged by. Answer a string to refuse the cell.
+    onCellEdit: ({ columnKey, value }) =>
+      columnKey === 'salary' && Number(value) < 0 ? 'Salary cannot be negative' : undefined,
+  }}
+  onPaste={({ applied, rejected, skipped }) => setReport({ applied, rejected, skipped })}
+/>`}
+          >
+            <PasteDemo />
+          </Code>
+
           <Code
             id="disable-sort"
             defer
@@ -2361,6 +2425,39 @@ function RangeSelectionDemo() {
   );
 }
 
+function PasteDemo() {
+  const [report, setReport] = useState<DataGridPaste<(typeof allData)[number]> | undefined>(undefined);
+
+  const def = useMemo(
+    () => ({
+      rowHeight: 40,
+      visibleRowsCount: 7,
+      rangeSelection: true,
+      columns: [
+        { key: 'first_name' as const, header: 'First name', width: 160, editable: true },
+        { key: 'country' as const, header: 'Country', width: 160, editable: true },
+        { key: 'age' as const, header: 'Age', width: 100, align: 'end' as const, editable: true },
+        { key: 'salary' as const, header: 'Salary', width: 140, align: 'end' as const, editable: true },
+      ],
+      onCellEdit: ({ columnKey, value }: CellEdit<(typeof allData)[number]>) =>
+        columnKey === 'salary' && Number(value) < 0 ? 'Salary cannot be negative' : undefined,
+    }),
+    [],
+  );
+
+  return (
+    <Flex d="column" gap={3}>
+      <Box fontSize={12} color="gray-500" theme={{ dark: { color: 'gray-400' } }}>
+        {report
+          ? `${report.applied.length} written · ${report.rejected.length} refused · ${report.skipped} not editable`
+          : 'Mark a block above, copy it, then press a cell here and paste. A negative salary is refused.'}
+      </Box>
+
+      <DataGrid data={allData} def={def} onPaste={setReport} />
+    </Flex>
+  );
+}
+
 function TabNavigationDemo() {
   const [tabNavigation, setTabNavigation] = useState<'none' | 'cells'>('cells');
 
@@ -2592,6 +2689,7 @@ const sidebarLinks = [
   { id: 'editing', label: 'Cell editing' },
   { id: 'tab-navigation', label: 'Spreadsheet tab mode' },
   { id: 'range-selection', label: 'Range selection and copy' },
+  { id: 'paste', label: 'Paste into a block' },
   { id: 'disable-sort', label: 'Disable Sort' },
   { id: 'context-menu', label: 'Context Menu' },
   { id: 'resizer-style', label: 'Resizer Style' },

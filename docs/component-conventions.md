@@ -72,8 +72,10 @@ target, it is what a form library already wired up, and React's own types descri
 ours would. Inventing a second channel beside it would mean two ways to hear about one keystroke.
 
 Also sanctioned: `Menu.Item`'s `onSelect`, which is a **command** — there is no new value and no
-reason to give — and `Overlay`'s `onSideChange`, which **reports** where the browser put the layer
-rather than announcing a state the caller owns.
+reason to give — and the two **reports**: `Overlay`'s `onSideChange`, which says where the browser put
+the layer, and `DataGrid`'s `onPaste`, which says what one Ctrl+V did to a block of cells. Neither
+announces a state the caller owns, and what a paste _changed_ is reported by `onCellEditsChange`,
+which is a `ChangeHandler` and carries `'paste'` as its reason.
 
 **Deprecated:** `Dropdown.onChange`, whose `(value, values)` pair predates the contract, and the four
 `DataGrid` callbacks whose shape could not be fixed in place — `onSelectionChange`, `onSortChange`,

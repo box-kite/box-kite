@@ -154,6 +154,13 @@
       "description": "Fires with the block of cells that is marked, or `undefined` once the grid has given it up. It reports the single current cell too, which is the degenerate range and what Ctrl+C acts on — so a status bar summing the selection is `range?.values()`, and a `reason` of `'select'` is the press or the arrow key that collapsed it back to one."
     },
     {
+      "name": "onPaste",
+      "type": "(paste: DataGridPaste<TRow>) => void",
+      "required": false,
+      "default": null,
+      "description": "Fires once with everything a Ctrl+V did: the cells that were written, the cells `def.onCellEdit` refused and the message each was refused with, and how many the block covered that nothing could be written to. It fires after the values have landed, so `range.values()` reads what the grid now shows."
+    },
+    {
       "name": "onSortingChange",
       "type": "ChangeHandler<DataGridSort | undefined, DataGridSortReason>",
       "required": false,

@@ -120,6 +120,9 @@ export default function DataGridContent<TRow>(props: Props<TRow>) {
           // Ctrl+C arrives as the browser's own copy event, which is the one place `clipboardData` is
           // writable with no permission — and the one that still lets a text selection win.
           onCopy: range.onCopy,
+          // And Ctrl+V as the paste event, which carries the text with no permission to ask for. One
+          // reaching an open editor bubbles through here too, so the range hands that one back.
+          onPaste: range.onPaste,
         }}
       >
         <DataGridHeader grid={grid} />
