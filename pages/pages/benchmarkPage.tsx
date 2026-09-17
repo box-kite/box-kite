@@ -1,15 +1,25 @@
 import { Gauge, MonitorSmartphone, Ruler, ScanEye } from 'lucide-react';
-import { ReactNode, memo, useCallback, useEffect, useRef, useState } from 'react';
+import { ComponentType, ReactNode, memo, useCallback, useEffect, useRef, useState } from 'react';
 import Box from '../../src/box';
 import Button from '../../src/components/button';
+import Checkbox from '../../src/components/checkbox';
 import Flex from '../../src/components/flex';
 import RadioGroup from '../../src/components/radioGroup';
-import { H2 } from '../../src/components/semantics';
+import { H2, Link } from '../../src/components/semantics';
 import { BenchRow, BENCH_COLUMN_COUNT, FILTER_COUNTRY, generateRows, GROUP_COLUMN } from '../benchmark/benchData';
-import { BenchDriver, BenchRun, ScenarioId, nextPaint, runBenchmark, scenarios } from '../benchmark/benchModel';
+import {
+  BenchDriver,
+  BenchRun,
+  ScenarioId,
+  ScenarioInfo,
+  ScenarioResult,
+  nextPaint,
+  runBenchmark,
+  scenarios,
+} from '../benchmark/benchModel';
 import referenceResults from '../benchmark/benchResults';
-import { BenchGridProps, ROW_HEIGHT, VISIBLE_ROWS } from '../benchmark/gridImpl';
-import { boxKite } from '../benchmark/impls';
+import { BenchGridProps, GridImpl, ROW_HEIGHT, VISIBLE_ROWS } from '../benchmark/gridImpl';
+import impls, { DEFAULT_IMPL } from '../benchmark/impls';
 import Code from '../components/code';
 import Mono from '../components/mono';
 import PageHeader from '../components/pageHeader';
@@ -36,8 +46,9 @@ export default function BenchmarkPage() {
           <Box fontSize={15} lineHeight={26} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
             Every grid claims to be fast. This page is the claim with an instrument attached: it generates{' '}
             {rowChoices[1].toLocaleString('en-US')} rows of {BENCH_COLUMN_COUNT} columns in your browser, drives the grid through five
-            operations and reports what it measured — on your machine, in your browser, at your window size. The numbers below it are from
-            one laptop and are here for scale; the button is the point.
+            operations and reports what it measured — on your machine, in your browser, at your window size. Tick another library and it
+            drives that one through the same five, one after the other. The numbers below are from one laptop and are here for scale; the
+            button is the point.
           </Box>
 
           <Section id="run" title="Run it">
@@ -51,15 +62,76 @@ export default function BenchmarkPage() {
               on what the one before it left behind.
             </Box>
             <Box mt={5}>
-              {referenceResults.runs.map((run) => (
-                <ResultTable key={run.impl} run={run} />
-              ))}
+              <Results runs={referenceResults.runs} />
             </Box>
             {referenceResults.note && (
               <Box mt={4} fontSize={13} theme={{ dark: { color: 'slate-500' }, light: { color: 'slate-500' } }}>
                 {referenceResults.note}
               </Box>
             )}
+            <Box mt={5}>
+              <Note icon={Ruler} title="The fling is the one this grid is behind on">
+                First render, filter and sort are in the same class as AG Grid's and MUI X's, the grouping is the quickest of the four and
+                only two of them can group at all — and the scroll is not: about 20 ms of work a frame against AG Grid's 2.6 and the
+                hand-written TanStack table's 2.8. It renders fifty-eight rows around an eighteen-row viewport where those two render about
+                half that, which is the lead being followed. It is published rather than left out: a benchmark you can rerun is the only
+                kind worth having, and the number it gives you is the one being worked on.
+              </Note>
+            </Box>
+          </Section>
+
+          <Section id="tiers" title="What each grid is allowed to do">
+            <Box>
+              Three of the four are MIT-licensed and free, and two of them still cannot run all five operations — not because they are slow
+              at them, but because the feature is in a tier that is not free. A missing number below is that, and it is the comparison worth
+              having: the fastest grouping is the one you are allowed to use.
+            </Box>
+            <Box mt={5}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <HeadCell>Grid</HeadCell>
+                    <HeadCell>The tier measured</HeadCell>
+                    <HeadCell>What it cannot run here</HeadCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {impls.map((info) => (
+                    <TableRow key={info.id}>
+                      <Cell theme={{ dark: { color: 'slate-200' }, light: { color: 'slate-800' } }}>
+                        <Link props={{ href: info.href, target: '_blank', rel: 'noreferrer' }}>{info.label}</Link>
+                      </Cell>
+                      <Cell>{info.tier}</Cell>
+                      <Cell>
+                        {Object.entries(info.unavailable ?? {})
+                          .map(([id, reason]) => `${scenarios.find((scenario) => scenario.id === id)?.label ?? id} (${reason})`)
+                          .join(', ') || 'Nothing — it runs all five'}
+                      </Cell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </Box>
+            <Box mt={5}>
+              <Flex d="column" gap={3}>
+                <Note icon={ScanEye} title="The free MUI grid paginates, so there is no fling to measure">
+                  <Mono>DataGrid</Mono> forces <Mono>pagination</Mono> on and caps a page at a hundred rows — both are in the package, not
+                  in the documentation — so the grid never holds more than a hundred of the hundred thousand rows at once. It sorts and
+                  filters all of them, which is what the other two numbers measure; scrolling past the first page is a paid tier, so there
+                  is a reason in that cell rather than a frame time for a hundred rows.
+                </Note>
+                <Note icon={ScanEye} title="Grouping is the paid feature in both of the big grids">
+                  AG Grid Community ships no row-grouping module at all, and MUI X puts row grouping and aggregation in Premium. Neither can
+                  be driven through the grouping scenario, so neither is given a number for it. Box Kite and a hand-written TanStack table
+                  both group and total a hundred thousand rows for nothing.
+                </Note>
+                <Note icon={ScanEye} title="The TanStack column is a baseline, not a product">
+                  TanStack Table is free and does every one of the five, and the grid around it is yours to write: the virtualized body, the
+                  header presses, the group rows and the aggregates on this page are about a hundred and fifty lines in this repository,
+                  with no pinned columns, no keyboard, no editing and no accessibility. That is the trade the number is there to price.
+                </Note>
+              </Flex>
+            </Box>
           </Section>
 
           <Section id="method" title="How each number is taken">
@@ -90,7 +162,7 @@ export default function BenchmarkPage() {
               </Table>
             </Box>
             <Box mt={5}>
-              The filter is the <Mono>{FILTER_COUNTRY}</Mono> rows of a twenty-value country column, the sort is a press on the salary
+              The filter is the <Mono>{FILTER_COUNTRY}</Mono> rows of a twenty-value country column, the sort is a press on the last-name
               header, and the grouping is <Mono>{GROUP_COLUMN}</Mono> with a total on two money columns and a mean on a third, first level
               open — so the aggregates are computed over every row rather than over the dozen on screen. The grid is {VISIBLE_ROWS} rows
               tall at {ROW_HEIGHT}px a row, with all {BENCH_COLUMN_COUNT} columns rendered.
@@ -105,6 +177,13 @@ export default function BenchmarkPage() {
                   The page samples an idle animation-frame loop first and takes the slower of that interval and 16.7 ms as the budget. A
                   frame inside 16.7 ms is smooth on any screen anybody owns, and a headless browser runs its animation loop several times
                   faster than a display does — so the idle interval on its own would score a perfectly smooth scroll as dropping most of it.
+                </Note>
+                <Note icon={MonitorSmartphone} title="A frame interval is quantized, so the scroll is compared on work">
+                  Frames arrive on the display's own clock, so a grid that needs 9 ms on a 130 Hz screen misses the 7.7 ms interval and
+                  waits for the next one: it reports 15 ms and reads as twice as slow as a grid that needed 7 ms, when the difference
+                  between them is two milliseconds. The comparison therefore prints what one frame <em>cost</em> — the same
+                  change-to-after-the-paint measurement the other four operations use — and the frames per second beside it, which is what
+                  the display allowed. The grid's own table keeps both.
                 </Note>
               </Flex>
             </Box>
@@ -127,6 +206,12 @@ export default function BenchmarkPage() {
                   The scroll scenario sets <Mono>scrollTop</Mono> on every animation frame, at a speed taken from the clock rather than a
                   fixed number of pixels — so a frame that took 100 ms to render lands 400 px further down, the way a real fling does. What
                   it exercises is the virtualization and the re-render, not the compositor path a wheel or a touch drag also takes.
+                </Note>
+                <Note icon={ScanEye} title="Two of the four render only the columns on screen">
+                  Every grid here is left at its own defaults apart from the geometry — the same twenty columns at the same widths, 32px
+                  rows, a 40px header — and AG Grid and MUI X virtualize columns by default where Box Kite and the TanStack baseline render
+                  all twenty. On a page narrower than the table that is roughly a third of the cells, and it is a real advantage of theirs
+                  rather than a thumb on the scale: what a default does is what a reader gets.
                 </Note>
                 <Note icon={ScanEye} title="The rows are already in memory">
                   Nothing here crosses a network. A grid whose rows arrive from a server a block at a time is a different measurement, and
@@ -169,16 +254,21 @@ export default function BenchmarkPage() {
 function Runner() {
   const [rows, setRows] = useState(rowChoices[1]);
   const [runs, setRuns] = useState(3);
+  const [picked, setPicked] = useState<readonly string[]>([DEFAULT_IMPL]);
   const [stage, setStage] = useState<StageState>({ mounted: false, filtered: false, grouped: false, generation: 0 });
   const [status, setStatus] = useState<string | undefined>();
-  const [result, setResult] = useState<BenchRun | undefined>();
+  const [results, setResults] = useState<BenchRun[] | undefined>();
   const [dataset, setDataset] = useState<Dataset | undefined>();
   const containerRef = useRef<HTMLDivElement>(null);
   const running = status !== undefined;
 
   const run = useCallback(
-    async (options: { rows: number; runs: number }): Promise<BenchRun> => {
-      setResult(undefined);
+    async (options: { rows: number; runs: number; impls?: readonly string[] }): Promise<BenchRun[]> => {
+      // In the order asked for rather than the registry's: measuring the same four the other way
+      // round is how a run says whether the machine drifted under it.
+      const chosen = (options.impls ?? [DEFAULT_IMPL]).flatMap((id) => impls.filter((info) => info.id === id));
+
+      setResults(undefined);
       setStatus('Generating rows…');
       // Let the label paint before a hundred thousand objects block the thread for a quarter of a second.
       await nextPaint();
@@ -192,20 +282,33 @@ function Runner() {
         await nextPaint();
       }
 
-      const driver = makeDriver(setStage, containerRef, boxKite.scroller, boxKite.sort);
+      const measured: BenchRun[] = [];
 
-      const measured = await runBenchmark(driver, {
-        rows: options.rows,
-        columns: BENCH_COLUMN_COUNT,
-        runs: options.runs,
-        impl: boxKite.id,
-        label: boxKite.label,
-        version: boxKite.version,
-        dataMs: rowData.ms,
-        onProgress: (done, total, scenario) => setStatus(progressLabel(done, total, scenario)),
-      });
+      for (const info of chosen) {
+        setStatus(`Loading ${info.label}…`);
+        // Fetched here rather than imported: a reader who measures one grid downloads one grid.
+        const impl = await info.load();
+        const driver = makeDriver(setStage, containerRef, impl);
 
-      setResult(measured);
+        measured.push(
+          await runBenchmark(driver, {
+            rows: options.rows,
+            columns: BENCH_COLUMN_COUNT,
+            runs: options.runs,
+            impl: impl.id,
+            label: impl.label,
+            version: impl.version,
+            dataMs: rowData.ms,
+            unavailable: info.unavailable,
+            onProgress: (done, total, scenario) => setStatus(progressLabel(info.label, done, total, scenario)),
+          }),
+        );
+
+        // Published as each grid finishes: a four-grid run takes minutes, and a reader watching one
+        // should not have to wait for the last of them to see the first.
+        setResults([...measured]);
+      }
+
       setStatus(undefined);
 
       return measured;
@@ -237,34 +340,63 @@ function Runner() {
             <RadioGroup.Item key={choice} value={String(choice)} label={String(choice)} disabled={running} />
           ))}
         </RadioGroup>
-        <Button onClick={() => void run({ rows, runs })} disabled={running}>
+        <Button onClick={() => void run({ rows, runs, impls: picked })} disabled={running}>
           {running ? 'Running…' : 'Run the benchmark'}
         </Button>
       </Flex>
 
-      <Box mt={4} minHeight={6} fontSize={13} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-500' } }}>
-        <Box props={{ role: 'status' }}>
-          {status ??
-            (result
-              ? `Done — ${result.runs === 1 ? 'one run' : `${result.runs} runs`} of ${result.rows.toLocaleString('en-US')} rows.`
-              : '')}
+      <Box mt={5} props={{ role: 'group', 'aria-label': 'Grids' }}>
+        <Box fontSize={13} fontWeight={600} mb={2} theme={{ dark: { color: 'slate-300' }, light: { color: 'slate-700' } }}>
+          Grids — each one is downloaded when you pick it, and measured one after another
         </Box>
+        <Flex gap={6} flexWrap="wrap">
+          {impls.map((info) => (
+            <Checkbox
+              key={info.id}
+              label={info.label}
+              checked={picked.includes(info.id)}
+              // The last one ticked stays ticked: a run with nothing to measure is a button that
+              // does nothing and says nothing about why.
+              disabled={running || (picked.length === 1 && picked.includes(info.id))}
+              onChange={(event) =>
+                setPicked((current) =>
+                  event.target.checked
+                    ? impls.filter((one) => one.id === info.id || current.includes(one.id)).map((one) => one.id)
+                    : current.filter((id) => id !== info.id),
+                )
+              }
+            />
+          ))}
+        </Flex>
       </Box>
 
-      {result && (
+      <Box mt={4} minHeight={6} fontSize={13} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-500' } }}>
+        <Box props={{ role: 'status' }}>{status ?? doneLabel(results)}</Box>
+      </Box>
+
+      {results && results.length > 0 && (
         <Box mt={5}>
-          <ResultTable run={result} />
+          <Results runs={results} />
         </Box>
       )}
 
-      {result && (
+      {results && results.length > 0 && stage.impl && (
         <Box mt={6} fontSize={13} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-500' } }}>
-          The grid the run measured, still on the page — {result.rows.toLocaleString('en-US')} rows of {result.columns} columns. Scroll it.
+          {stage.impl.label}, still on the page with the rows the run measured — {rows.toLocaleString('en-US')} of them,{' '}
+          {BENCH_COLUMN_COUNT} columns. Scroll it.
         </Box>
       )}
 
       <Box mt={4} ref={containerRef}>
-        {stage.mounted && dataset && <Stage key={stage.generation} data={dataset.data} filtered={stage.filtered} grouped={stage.grouped} />}
+        {stage.mounted && stage.impl && dataset && (
+          <Stage
+            key={`${stage.impl.id}-${stage.generation}`}
+            Grid={stage.impl.Grid}
+            data={dataset.data}
+            filtered={stage.filtered}
+            grouped={stage.grouped}
+          />
+        )}
       </Box>
     </Box>
   );
@@ -274,9 +406,79 @@ function Runner() {
  * The grid under test, behind a `memo` so the status line above it can update between scenarios without
  * re-rendering a hundred thousand rows into the next measurement.
  */
-const Stage = memo(function Stage(props: BenchGridProps) {
-  return <boxKite.Grid {...props} />;
+const Stage = memo(function Stage({ Grid, ...props }: BenchGridProps & { Grid: ComponentType<BenchGridProps> }) {
+  return <Grid {...props} />;
 });
+
+/** Every grid that has finished: the comparison first where there is one, then each grid's own detail. */
+function Results({ runs }: { runs: BenchRun[] }) {
+  return (
+    <Flex d="column" gap={7}>
+      {runs.length > 1 && <ComparisonTable runs={runs} />}
+      {runs.map((run) => (
+        <ResultTable key={run.impl} run={run} />
+      ))}
+    </Flex>
+  );
+}
+
+/** One row per operation, one column per grid — the table the comparison is actually about. */
+function ComparisonTable({ runs }: { runs: BenchRun[] }) {
+  return (
+    <Box>
+      <Box mb={3} fontSize={13} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-500' } }}>
+        <Mono>{runs.map((run) => `${run.label} ${run.version}`).join(' · ')}</Mono> · {runs[0].rows.toLocaleString('en-US')} rows ×{' '}
+        {runs[0].columns} columns · median of {runs[0].runs} · lower is better. The scroll is what one frame cost the grid, with the frames
+        a second the display allowed beside it.
+      </Box>
+      <Table>
+        <TableHead>
+          <TableRow>
+            <HeadCell>Operation</HeadCell>
+            {runs.map((run) => (
+              <HeadCell key={run.impl} textAlign="end">
+                {run.label}
+              </HeadCell>
+            ))}
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {scenarios.map((scenario) => (
+            <TableRow key={scenario.id}>
+              <Cell theme={{ dark: { color: 'slate-200' }, light: { color: 'slate-800' } }}>{scenario.label}</Cell>
+              {runs.map((run) => (
+                <Cell key={run.impl} textAlign="end" textWrap="nowrap">
+                  {figure(
+                    run.scenarios.find((result) => result.scenario === scenario.id),
+                    scenario,
+                  )}
+                </Cell>
+              ))}
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </Box>
+  );
+}
+
+/** What one cell of the comparison says: the number, or the reason there is not one. */
+function figure(result: ScenarioResult | undefined, scenario: ScenarioInfo): string {
+  if (!result) return '';
+  if (result.unavailable) return result.unavailable;
+  if (result.ms === undefined) return '';
+
+  // The scroll compares on *work*, not on the interval: the interval is what the display allowed.
+  return scenario.kind === 'frames' ? `${result.workMs} ms · ${result.fps} fps` : `${result.ms} ms`;
+}
+
+function doneLabel(runs: BenchRun[] | undefined): string {
+  if (!runs || runs.length === 0) return '';
+  const first = runs[0];
+  const what = runs.length === 1 ? first.label : `${runs.length} grids`;
+
+  return `Done — ${what}, ${first.runs === 1 ? 'one run' : `${first.runs} runs`} of ${first.rows.toLocaleString('en-US')} rows.`;
+}
 
 function ResultTable({ run }: { run: BenchRun }) {
   return (
@@ -307,21 +509,23 @@ function ResultTable({ run }: { run: BenchRun }) {
               <TableRow key={scenario.scenario}>
                 <Cell theme={{ dark: { color: 'slate-200' }, light: { color: 'slate-800' } }}>{info?.label ?? scenario.scenario}</Cell>
                 <Cell textAlign="end" textWrap="nowrap">
-                  {scenario.ms} ms
+                  {ms(scenario.ms)}
                 </Cell>
                 <Cell textAlign="end" textWrap="nowrap">
-                  {scenario.min} ms
+                  {ms(scenario.min)}
                 </Cell>
                 <Cell textAlign="end" textWrap="nowrap">
-                  {scenario.max} ms
+                  {ms(scenario.max)}
                 </Cell>
                 <Cell textAlign="end" textWrap="nowrap">
-                  {scenario.blockingMs} ms
+                  {ms(scenario.blockingMs)}
                 </Cell>
                 <Cell>
-                  {scenario.fps !== undefined
-                    ? `${scenario.fps} fps · worst frame ${scenario.worstFrame} ms · ${scenario.slowFrames}% of frames under 60 fps`
-                    : ''}
+                  {scenario.unavailable
+                    ? `Not in this tier — ${scenario.unavailable}`
+                    : scenario.fps !== undefined
+                      ? `${scenario.workMs} ms of work a frame · ${scenario.fps} fps · worst frame ${scenario.worstFrame} ms · ${scenario.slowFrames}% under 60 fps`
+                      : ''}
                 </Cell>
               </TableRow>
             );
@@ -340,6 +544,8 @@ interface Dataset {
 }
 
 interface StageState {
+  /** The grid on the stage, which changes as a run moves from one library to the next. */
+  impl?: GridImpl;
   mounted: boolean;
   filtered: boolean;
   grouped: boolean;
@@ -348,7 +554,12 @@ interface StageState {
 }
 
 interface BenchWindow extends Window {
-  boxKiteBench?: { run: (options: { rows: number; runs: number }) => Promise<BenchRun> };
+  boxKiteBench?: { run: (options: { rows: number; runs: number; impls?: readonly string[] }) => Promise<BenchRun[]> };
+}
+
+/** A millisecond figure, or nothing at all where the grid was never driven through the scenario. */
+function ms(value: number | undefined): string {
+  return value === undefined ? '—' : `${value} ms`;
 }
 
 /**
@@ -358,10 +569,10 @@ interface BenchWindow extends Window {
 function makeDriver(
   setStage: (update: (state: StageState) => StageState) => void,
   container: { current: HTMLDivElement | null },
-  scroller: (element: HTMLElement) => HTMLElement | null,
-  sort: (element: HTMLElement) => void,
+  impl: GridImpl,
 ): BenchDriver {
   const fresh = (state: StageState): StageState => ({
+    impl,
     mounted: true,
     filtered: false,
     grouped: false,
@@ -381,21 +592,22 @@ function makeDriver(
       if (scenario === 'mount') setStage(fresh);
       else if (scenario === 'filter') setStage((state) => ({ ...state, filtered: true }));
       else if (scenario === 'group') setStage((state) => ({ ...state, grouped: true }));
-      else if (scenario === 'sort' && container.current) sort(container.current);
+      else if (scenario === 'sort' && container.current) impl.sort(container.current);
     },
-    scroller: () => (container.current ? scroller(container.current) : null),
+    scroller: () => (container.current ? impl.scroller(container.current) : null),
   };
 }
 
-function progressLabel(done: number, total: number, scenario: ScenarioId): string {
+function progressLabel(label: string, done: number, total: number, scenario: ScenarioId): string {
   const info = scenarios.find((s) => s.id === scenario);
 
-  return `${done} of ${total} — ${info?.label ?? scenario}…`;
+  return `${label} — ${done} of ${total}, ${info?.label ?? scenario}…`;
 }
 
 const sidebarLinks = [
   { id: 'run', label: 'Run it' },
   { id: 'results', label: 'What it measured' },
+  { id: 'tiers', label: 'What each grid may do' },
   { id: 'method', label: 'How it is taken' },
   { id: 'limits', label: 'What it leaves out' },
   { id: 'rerun', label: 'Rerunning it' },

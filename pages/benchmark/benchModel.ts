@@ -35,7 +35,7 @@ export const scenarios: readonly ScenarioInfo[] = [
     what: 'Filter one text column down to about a twentieth of the rows.',
     kind: 'latency',
   },
-  { id: 'sort', label: 'Sort', what: 'Press the salary header and sort every row by it.', kind: 'latency' },
+  { id: 'sort', label: 'Sort', what: 'Press the last-name header and sort every row by it.', kind: 'latency' },
   {
     id: 'group',
     label: 'Group + aggregate',
@@ -55,12 +55,24 @@ const CALIBRATION_FRAMES = 30;
 
 export interface ScenarioResult {
   scenario: ScenarioId;
+  /**
+   * Why this grid was not driven through the scenario — the tier cannot do it, so there is no number.
+   * Every other field is absent when this one is present: a zero here would read as "instant".
+   */
+  unavailable?: string;
   /** The run the table prints: median latency, or median frame time for the scroll. */
-  ms: number;
-  min: number;
-  max: number;
+  ms?: number;
+  min?: number;
+  max?: number;
   /** Frames per second over the scripted scroll. */
   fps?: number;
+  /**
+   * What one frame of the scroll cost the grid — from the frame callback to the task after the paint,
+   * the same instrument the other four scenarios use. It is the figure to compare between grids: a
+   * frame *interval* is quantized to the display, so a grid that misses one by a millisecond reports
+   * the next whole interval and reads as twice as slow as it is.
+   */
+  workMs?: number;
   /** The slowest single frame of the scroll — the stutter a mean hides. */
   worstFrame?: number;
   /**
@@ -71,7 +83,7 @@ export interface ScenarioResult {
    */
   slowFrames?: number;
   /** Total blocking time while the scenario ran: the part of every long task past 50 ms. */
-  blockingMs: number;
+  blockingMs?: number;
 }
 
 export interface BenchRun {
@@ -121,6 +133,8 @@ export interface BenchOptions {
   label: string;
   version: string;
   dataMs: number;
+  /** Scenarios this grid's tier cannot run, and the reason that goes where the number would be. */
+  unavailable?: Partial<Record<ScenarioId, string>>;
   onProgress?: (done: number, total: number, scenario: ScenarioId) => void;
 }
 
@@ -167,14 +181,23 @@ export function measureFrameBaseline(frames = CALIBRATION_FRAMES): Promise<numbe
   });
 }
 
+/** What a scripted fling produces: the gap between frames, and what the grid spent inside each one. */
+export interface ScrollSamples {
+  /** Frame to frame, which is what the reader feels — and what the display quantizes. */
+  intervals: number[];
+  /** Frame callback to the task after that frame's paint: the grid's own cost, unquantized. */
+  work: number[];
+}
+
 /**
- * Flings `element` past at a fixed speed for `duration` milliseconds and reports how long each frame took.
+ * Flings `element` past at a fixed speed for `duration` milliseconds and reports what each frame cost.
  * The step is taken from the clock rather than being a fixed number of pixels, which is what a real fling
  * does: a frame that took 100 ms to render is 400 px further down the list, not 400 px behind it.
  */
-export function scrollFrames(element: HTMLElement, velocity = SCROLL_VELOCITY, duration = SCROLL_MS): Promise<number[]> {
+export function scrollFrames(element: HTMLElement, velocity = SCROLL_VELOCITY, duration = SCROLL_MS): Promise<ScrollSamples> {
   return new Promise((resolve) => {
     const intervals: number[] = [];
+    const work: number[] = [];
     let start = 0;
     let last = 0;
     let top = 0;
@@ -185,6 +208,9 @@ export function scrollFrames(element: HTMLElement, velocity = SCROLL_VELOCITY, d
         top += (velocity * (now - last)) / 1000;
         if (top + element.clientHeight >= element.scrollHeight) top = 0;
         element.scrollTop = top;
+        // The task posted from inside the frame runs after its paint, so this is render, layout and
+        // paint for that one frame — the same instrument the four latency scenarios use.
+        setTimeout(() => work.push(performance.now() - now), 0);
       } else {
         start = now;
       }
@@ -192,7 +218,8 @@ export function scrollFrames(element: HTMLElement, velocity = SCROLL_VELOCITY, d
       last = now;
 
       if (now - start < duration) requestAnimationFrame(tick);
-      else resolve(intervals);
+      // A timer behind the last frame's own, so every sample is in before the fling reports.
+      else setTimeout(() => resolve({ intervals, work }), 0);
     };
 
     requestAnimationFrame(tick);
@@ -253,20 +280,23 @@ export function round(ms: number): number {
  * a filtered table, and a run is never scored on what the run before it left behind.
  */
 export async function runBenchmark(driver: BenchDriver, options: BenchOptions): Promise<BenchRun> {
-  const { runs, onProgress } = options;
+  const { runs, unavailable, onProgress } = options;
   const samples = new Map<ScenarioId, number[]>(scenarios.map((s) => [s.id, []]));
-  const scrollSamples: number[] = [];
+  const scroll: ScrollSamples = { intervals: [], work: [] };
   const blocking = new Map<ScenarioId, number[]>(scenarios.map((s) => [s.id, []]));
+  // A tier that cannot group is not driven through the grouping scenario: a grid measured doing
+  // something else is a number that invites exactly the comparison it cannot support.
+  const measured = scenarios.filter((scenario) => !unavailable?.[scenario.id]);
 
   await driver.reset();
   const frameBaseline = await measureFrameBaseline();
   await driver.unmount();
 
-  const total = runs * scenarios.length;
+  const total = runs * measured.length;
   let done = 0;
 
   for (let run = 0; run < runs; run++) {
-    for (const scenario of scenarios) {
+    for (const scenario of measured) {
       onProgress?.(done, total, scenario.id);
 
       if (scenario.id === 'mount') await driver.unmount();
@@ -274,16 +304,22 @@ export async function runBenchmark(driver: BenchDriver, options: BenchOptions): 
 
       await idle(60);
 
-      const [measured, blocked] = await withBlocking(async () => {
-        if (scenario.id !== 'scroll') return [await timeToPaint(() => driver.apply(scenario.id))];
+      const [measured, blocked] = await withBlocking<number | ScrollSamples>(async () => {
+        if (scenario.id !== 'scroll') return timeToPaint(() => driver.apply(scenario.id));
 
         const element = driver.scroller();
+        // Loudly, because the alternative is a median of no samples: a zero-millisecond frame, which
+        // reads as the fastest grid on the page rather than as a selector that stopped matching.
+        if (!element) throw new Error(`${options.label}: the scroll scenario found nothing to scroll.`);
 
-        return element ? scrollFrames(element) : [];
+        return scrollFrames(element);
       });
 
-      if (scenario.id === 'scroll') scrollSamples.push(...measured);
-      else samples.get(scenario.id)!.push(measured[0]);
+      if (typeof measured === 'number') samples.get(scenario.id)!.push(measured);
+      else {
+        scroll.intervals.push(...measured.intervals);
+        scroll.work.push(...measured.work);
+      }
 
       blocking.get(scenario.id)!.push(blocked);
       done++;
@@ -304,31 +340,37 @@ export async function runBenchmark(driver: BenchDriver, options: BenchOptions): 
     runs,
     dataMs: round(options.dataMs),
     frameBaseline: round(frameBaseline),
-    scenarios: scenarios.map((scenario) => result(scenario, samples, scrollSamples, blocking, frameBaseline)),
+    scenarios: scenarios.map((scenario) =>
+      unavailable?.[scenario.id]
+        ? { scenario: scenario.id, unavailable: unavailable[scenario.id] }
+        : result(scenario, samples, scroll, blocking, frameBaseline),
+    ),
   };
 }
 
 function result(
   scenario: ScenarioInfo,
   samples: Map<ScenarioId, number[]>,
-  scrollSamples: number[],
+  scroll: ScrollSamples,
   blocking: Map<ScenarioId, number[]>,
   frameBaseline: number,
 ): ScenarioResult {
   const blockingMs = Math.round(median(blocking.get(scenario.id)!));
 
   if (scenario.kind === 'frames') {
+    const { intervals, work } = scroll;
     const budget = Math.max(frameBaseline, 1000 / 60);
-    const slow = scrollSamples.filter((interval) => interval > budget).length;
+    const slow = intervals.filter((interval) => interval > budget).length;
 
     return {
       scenario: scenario.id,
-      ms: round(median(scrollSamples)),
-      min: round(Math.min(...scrollSamples)),
-      max: round(Math.max(...scrollSamples)),
-      fps: Math.round(1000 / Math.max(median(scrollSamples), 0.001)),
-      worstFrame: round(percentile(scrollSamples, 99)),
-      slowFrames: Math.round((slow / Math.max(scrollSamples.length, 1)) * 100),
+      ms: round(median(intervals)),
+      min: round(Math.min(...intervals)),
+      max: round(Math.max(...intervals)),
+      fps: Math.round(1000 / Math.max(median(intervals), 0.001)),
+      workMs: round(median(work)),
+      worstFrame: round(percentile(intervals, 99)),
+      slowFrames: Math.round((slow / Math.max(intervals.length, 1)) * 100),
       blockingMs,
     };
   }

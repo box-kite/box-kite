@@ -5,9 +5,17 @@ column filter, a sort and a grouping with totals. What it measures and what it d
 written on the page itself — [box-kite.dev/benchmark](https://www.box-kite.dev/benchmark/).
 
 **The page is the benchmark.** Everything that decides what is timed lives in `pages/benchmark/`, and the
-page exposes it as `window.boxKiteBench.run({ rows, runs })`. `run.mjs` only presses that button in
+page exposes it as `window.boxKiteBench.run({ rows, runs, impls })`. `run.mjs` only presses that button in
 headless Chrome and writes the answer down, so a rerun in CI measures exactly the code a reader measures
 when they press Run themselves.
+
+**Four grids, one set of scenarios.** `impls.ts` is the registry: Box Kite, AG Grid Community, the free MUI
+X Data Grid and TanStack Table with the UI written by hand (`pages/benchmark/*Grid.tsx`, one file each, each
+exporting the component plus the two gestures a scenario needs — which element scrolls, and how that library
+sorts from its own header). A library is fetched only when it is picked, so the page costs a reader nothing
+until they tick a box. Where a free tier cannot run a scenario at all the registry says so and the grid is
+never driven through it: AG Grid and MUI X put row grouping behind Enterprise and Premium, and the free MUI
+grid forces pagination at a hundred rows a page, so it has no hundred thousand rows to fling.
 
 ## Running it
 
@@ -28,6 +36,7 @@ BENCH_MACHINE="Windows 11 laptop, 12-core AMD Ryzen" npm run bench -- --runs 5
 | ------------------ | -------- | ----------------------------------------------------------------------- |
 | `--runs <n>`       | `5`      | How many times each operation is measured. The table prints the median. |
 | `--rows <n>`       | `100000` | How many rows to generate.                                              |
+| `--impls <ids>`    | `box-kite` | Comma-separated, from `pages/benchmark/impls.ts`: `box-kite`, `ag-grid`, `mui-x`, `tanstack`. |
 | `--url <address>`  | —        | Measure a server you are already running instead of starting one.       |
 | `--machine <name>` | —        | What to record as the machine. `BENCH_MACHINE` does the same.           |
 | `--check`          | off      | Compare against `budgets.json` and exit non-zero on a breach.           |
@@ -50,4 +59,17 @@ the whole reason these budgets are not the tight ones a laptop would suggest. A 
 60 fps, so a grid keeping up reports a 16.7 ms frame exactly.
 
 `results.json` is a different thing and is never written by `--check`: it is one named machine's
-measurement, for scale.
+measurement, for scale. Only a grid that has a budget is checked, so adding `--impls` to a command never
+fails it — what another library does on a shared runner is not this repository's regression to catch.
+
+## Two things that decide whether a number means anything
+
+**A quiet machine.** The same commit, same build, measured twice: 309 ms to mount with a few Chromes and a
+dev server left running, 87 ms with nothing else on the machine. Close everything, and check for orphaned
+headless Chromes before believing a comparison.
+
+**A frame interval is quantized and the work is not.** The scroll reports both. Frames arrive on the
+display's clock, so a grid needing 9 ms on a 130 Hz screen misses the 7.7 ms interval, waits for the next
+one and reports 15 ms — twice the number of a grid that needed 7 ms, for a two-millisecond difference. The
+`workMs` beside it is that frame's own cost, measured from the frame callback to the task after its paint,
+and it is the figure to compare between libraries.
