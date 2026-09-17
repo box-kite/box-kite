@@ -43,10 +43,11 @@ which is several times slower than any laptop and noisy with it: they catch a ch
 order of magnitude slower, and nothing finer. Anything tighter would fail on the runner having a bad
 afternoon.
 
-To refresh them, read the numbers off a CI run of this workflow and leave roughly 3× the headroom. What
-is there now is three times a runner that measured 78 ms to mount, a 16.7 ms median frame (the runner is
-vsync-capped at 60 fps, so a grid that keeps up reports exactly that), 120 ms to filter, 178 ms to sort
-and 69 ms to group.
+To refresh them, read the numbers off a few CI runs of this workflow and take **two and a half times the
+slowest**. One run is not enough: two runs of the same commit measured 78 ms and 196 ms to mount, and a
+16.7 ms and a 33.2 ms median frame — a runner varies by a factor of two and a half on its own, which is
+the whole reason these budgets are not the tight ones a laptop would suggest. A runner is vsync-capped at
+60 fps, so a grid keeping up reports a 16.7 ms frame exactly.
 
 `results.json` is a different thing and is never written by `--check`: it is one named machine's
 measurement, for scale.
