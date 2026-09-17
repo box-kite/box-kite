@@ -33,7 +33,7 @@ export default function DataGridContent<TRow>(props: Props<TRow>) {
 
   // A keyboard jump writes the scroll position straight through, ahead of the animation frame the
   // pointer path can afford: the row has to be rendered by the time focus goes looking for it.
-  const navigation = useGridNavigation({ grid, scrollerRef, scrollTop, onScrollTo: setScrollTop });
+  const { navigation, onKeyDown } = useGridNavigation({ grid, scrollerRef, scrollTop, onScrollTo: setScrollTop });
 
   const { source } = grid;
   const { queryVersion } = source;
@@ -116,7 +116,7 @@ export default function DataGridContent<TRow>(props: Props<TRow>) {
           'aria-labelledby': grid.props.def.title ? grid.titleId : undefined,
           'aria-busy': grid.props.loading || source.isLoading ? true : undefined,
           onScroll: handleScroll,
-          onKeyDown: navigation.onKeyDown,
+          onKeyDown,
           // Ctrl+C arrives as the browser's own copy event, which is the one place `clipboardData` is
           // writable with no permission — and the one that still lets a text selection win.
           onCopy: range.onCopy,

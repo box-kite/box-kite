@@ -1,0 +1,9 @@
+{
+  "box-kite": {
+    "mount": 500,
+    "scroll": 85,
+    "filter": 350,
+    "sort": 450,
+    "group": 180
+  }
+}

@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import { ChangeDetails } from '../../react/a11y/useControllableState';
 import useRovingFocus, { RovingFocusReason } from '../../react/a11y/useRovingFocus';
 import { useIsomorphicLayoutEffect } from '../../react/effects';
@@ -39,7 +39,13 @@ export interface GridNavigationOptions<TRow> {
   onScrollTo: (top: number) => void;
 }
 
-export interface GridNavigator extends GridNavigation {
+export interface GridNavigator {
+  /**
+   * What every cell reads, through the context. Held apart from `onKeyDown` because it has to be the
+   * same object between two renders that changed nothing a cell can see: a scroll re-renders the content,
+   * and a fresh context value there re-renders every cell in the window whatever their elements memoize.
+   */
+  navigation: GridNavigation;
   /** Put this on the `role="grid"` element: cell keystrokes bubble to it. */
   onKeyDown: (event: React.KeyboardEvent) => void;
 }
@@ -412,5 +418,12 @@ export default function useGridNavigation<TRow>(options: GridNavigationOptions<T
     ],
   );
 
-  return { rowCount, columnCount, headerRowCount, cellProps: roving.cellProps, setActiveCell: roving.setActiveCell, onKeyDown };
+  const { cellProps, setActiveCell } = roving;
+
+  const navigation = useMemo<GridNavigation>(
+    () => ({ rowCount, columnCount, headerRowCount, cellProps, setActiveCell }),
+    [cellProps, columnCount, headerRowCount, rowCount, setActiveCell],
+  );
+
+  return { navigation, onKeyDown };
 }

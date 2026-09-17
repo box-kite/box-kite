@@ -79,6 +79,7 @@
     "check:agents": "node scripts/check-agent-files.mjs",
     "docs:agents": "node scripts/check-agent-files.mjs --fix",
     "check:package": "publint dist && attw --pack dist --ignore-rules false-esm cjs-resolves-to-esm internal-resolution-error && publint dist-core && attw --pack dist-core --ignore-rules false-esm cjs-resolves-to-esm internal-resolution-error",
+    "bench": "node bench/run.mjs",
     "size": "size-limit",
     "size:published": "node dev/published-size.mjs",
     "release": "node scripts/release.mjs"
@@ -228,7 +229,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "77.17 KB"
+      "limit": "77.25 KB"
     },
     {
       "name": "DataGrid export, the chunk fetched on the first press",
@@ -248,7 +249,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "99.2 KB"
+      "limit": "99.26 KB"
     }
   ],
   "repository": {

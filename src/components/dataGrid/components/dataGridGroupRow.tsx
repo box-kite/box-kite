@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { memo, useCallback } from 'react';
 import Box from '../../../box';
 import ExpandIcon from '../../../icons/expandIcon';
 import Button from '../../button';
@@ -14,9 +14,14 @@ interface Props<TRow> {
   row: GroupRowModel<TRow>;
   /** Position in the whole row list, not in the rendered window. */
   index: number;
+  /**
+   * The grid's store version. Not read: it is what tells the memo below that something the row draws
+   * from the model has moved, since every other prop it takes holds still while the window slides.
+   */
+  version: number;
 }
 
-export default function DataGridGroupRow<TRow>(props: Props<TRow>) {
+function DataGridGroupRowImpl<TRow>(props: Props<TRow>) {
   const { row, index } = props;
   const { selected, indeterminate, expanded, placeholder } = row;
   const navigation = useGridNavigationContext();
@@ -126,4 +131,13 @@ export default function DataGridGroupRow<TRow>(props: Props<TRow>) {
   );
 }
 
-(DataGridGroupRow as React.FunctionComponent).displayName = 'DataGridGroupRow';
+(DataGridGroupRowImpl as React.FunctionComponent).displayName = 'DataGridGroupRow';
+
+/**
+ * Memoized on its props, which is what makes a scroll cost one row rather than a window of them: the
+ * rows either side of the new one are handed the same model and the same index, so they bail out.
+ * `memo` loses the type parameter, and the cast is what hands it back.
+ */
+const DataGridGroupRow = memo(DataGridGroupRowImpl) as typeof DataGridGroupRowImpl;
+
+export default DataGridGroupRow;
