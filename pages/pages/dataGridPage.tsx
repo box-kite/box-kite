@@ -4,7 +4,7 @@ import dataGridApi from '../../api/components/datagrid.json';
 import Box from '../../src/box';
 import Button from '../../src/components/button';
 import DataGrid from '../../src/components/dataGrid';
-import { DataSourceRequest, DataSourceResult, Key } from '../../src/components/dataGrid/contracts/dataGridContract';
+import { CellRange, DataSourceRequest, DataSourceResult, Key } from '../../src/components/dataGrid/contracts/dataGridContract';
 import Flex from '../../src/components/flex';
 import RadioGroup from '../../src/components/radioGroup';
 import { H2 } from '../../src/components/semantics';
@@ -1468,6 +1468,61 @@ const dataSource = useMemo(() => ({
             <TabNavigationDemo />
           </Code>
 
+          <Section id="range-selection" title="A block of cells, and Ctrl+C">
+            <Box>
+              Every grid marks the cell its arrows carry on from — whether the pointer or the keyboard put it there, and it stays marked
+              once the grid loses focus, because otherwise a copy has nothing to act on. <Mono>Ctrl+C</Mono> on it copies that cell.{' '}
+              <Mono>def.rangeSelection</Mono> is the rest: drag across cells, or hold Shift with the arrow keys, and the block that is
+              marked is what <Mono>Ctrl+C</Mono> writes — tab-separated, which is what Excel, Sheets and Numbers paste as columns.
+            </Box>
+            <Flex d="column" gap={3} mt={4}>
+              <Note icon={Table} title="The mark is the model's, not a focus ring">
+                A <Mono>:focus-visible</Mono> ring never matches a pointer, so a <i>clicked</i> cell drew nothing — and any ring made of
+                focus goes out the moment the grid loses it. The current cell is state here instead: it survives a press, a blur and a
+                scroll, and it is the corner a Shift+arrow grows the block from.
+              </Note>
+              <Note icon={Table} title="A block is selected; one cell is a cursor">
+                The cells in a block report <Mono>aria-selected</Mono> and the grid is <Mono>aria-multiselectable</Mono>. A lone current
+                cell reports neither: it has chosen nothing, and saying "selected" on every arrow key is an announcement about nothing. The
+                block is tinted <i>around</i> the current cell, which keeps its ring — the way a sheet says where typing would land.
+              </Note>
+              <Note icon={Filter} title="A copied figure is the one a file would carry">
+                The clipboard is an export: a column's <Mono>exportValue</Mono> is used where it has one, an accepted edit wins over the
+                row, and a group row copies its own value in the column that spans it. Ctrl+C rides the browser's own copy event, so text
+                you have selected on the page still belongs to the page.
+              </Note>
+              <Note icon={Table} title="Marking cells is a drag, so text selection is not">
+                A drag can mark cells or select text, never both, so a grid with <Mono>rangeSelection</Mono> on gives text selection up — an
+                open editor hands it back for the value being typed. A touch is left alone entirely: that press is how the grid scrolls.
+              </Note>
+            </Flex>
+          </Section>
+
+          <Code
+            id="range-selection-demo"
+            defer
+            label="Range selection and copy"
+            language="jsx"
+            check={false}
+            code={`<DataGrid
+  data={people}
+  def={{
+    rowKey: 'id',
+    // Drag, or Shift with the arrow keys. Ctrl+C copies the block as TSV.
+    rangeSelection: true,
+    columns: [
+      { key: 'first_name', header: 'First name' },
+      { key: 'country', header: 'Country' },
+      { key: 'age', header: 'Age', align: 'end' },
+      { key: 'salary', header: 'Salary', align: 'end' },
+    ],
+  }}
+  onRangeChange={(range) => setSummary(range?.values())}
+/>`}
+          >
+            <RangeSelectionDemo />
+          </Code>
+
           <Code
             id="disable-sort"
             defer
@@ -2262,6 +2317,50 @@ function EditingDemo() {
  * The two readings of Tab, switchable — with a control on either side of the grid, because what the
  * setting changes is where the *next* press lands rather than anything visible inside it.
  */
+/**
+ * Marking a block of cells, and what a page does with one: the count and the sum of the numbers in it,
+ * which is the status bar every spreadsheet has and the reason `onRangeChange` reports the values at all.
+ */
+function RangeSelectionDemo() {
+  const [summary, setSummary] = useState<{ cells: number; total: number } | undefined>(undefined);
+
+  const def = useMemo(
+    () => ({
+      rowHeight: 40,
+      visibleRowsCount: 7,
+      rangeSelection: true,
+      columns: [
+        { key: 'first_name' as const, header: 'First name', width: 160 },
+        { key: 'country' as const, header: 'Country', width: 160 },
+        { key: 'age' as const, header: 'Age', width: 100, align: 'end' as const },
+        { key: 'salary' as const, header: 'Salary', width: 140, align: 'end' as const },
+      ],
+    }),
+    [],
+  );
+
+  const onRangeChange = useCallback((range: CellRange | undefined) => {
+    if (!range) return setSummary(undefined);
+
+    const values = range.values().flat();
+    const numbers = values.filter((value): value is number => typeof value === 'number');
+
+    setSummary({ cells: values.length, total: numbers.reduce((sum, value) => sum + value, 0) });
+  }, []);
+
+  return (
+    <Flex d="column" gap={3}>
+      <Box fontSize={12} color="gray-500" theme={{ dark: { color: 'gray-400' } }}>
+        {summary && summary.cells > 1
+          ? `${summary.cells} cells · sum ${summary.total.toLocaleString('en-US')}`
+          : 'Drag across cells, or press one and hold Shift with the arrow keys. Ctrl+C copies the block.'}
+      </Box>
+
+      <DataGrid data={allData} def={def} onRangeChange={onRangeChange} />
+    </Flex>
+  );
+}
+
 function TabNavigationDemo() {
   const [tabNavigation, setTabNavigation] = useState<'none' | 'cells'>('cells');
 
@@ -2492,6 +2591,7 @@ const sidebarLinks = [
   { id: 'data-source-tree', label: 'Server-side tree' },
   { id: 'editing', label: 'Cell editing' },
   { id: 'tab-navigation', label: 'Spreadsheet tab mode' },
+  { id: 'range-selection', label: 'Range selection and copy' },
   { id: 'disable-sort', label: 'Disable Sort' },
   { id: 'context-menu', label: 'Context Menu' },
   { id: 'resizer-style', label: 'Resizer Style' },

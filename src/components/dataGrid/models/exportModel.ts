@@ -47,8 +47,9 @@ export default class ExportModel<TRow> {
   /**
    * One row's value for one column: the column's own `exportValue` when it has one, else the raw field —
    * either way through the edits, so a file carries what the grid is showing rather than what it was given.
+   * Public because the clipboard is an export too: a copied figure is the one a `.csv` would hold.
    */
-  private value(column: ColumnModel<TRow>, row: TRow): unknown {
+  public value(column: ColumnModel<TRow>, row: TRow): unknown {
     const { exportValue } = column.def;
     const raw = exportValue ? exportValue(row) : row[column.key as keyof TRow];
 

@@ -92,7 +92,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "30.40 KB"
+      "limit": "30.44 KB"
     },
     {
       "name": "Box in a Server Component (react-server entry)",
@@ -102,7 +102,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "28.90 KB"
+      "limit": "28.94 KB"
     },
     {
       "name": "Behavior primitives (a11y entry)",
@@ -128,7 +128,7 @@
       "name": "Core engine (@box-kite/core, no React)",
       "path": "dist-core/core.mjs",
       "gzip": true,
-      "limit": "28.17 KB"
+      "limit": "28.21 KB"
     },
     {
       "name": "Dialog",
@@ -138,7 +138,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "32.55 KB"
+      "limit": "32.59 KB"
     },
     {
       "name": "Popover",
@@ -148,7 +148,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "34.02 KB"
+      "limit": "34.06 KB"
     },
     {
       "name": "Menu",
@@ -158,7 +158,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "36.27 KB"
+      "limit": "36.31 KB"
     },
     {
       "name": "Accordion",
@@ -168,7 +168,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "31.76 KB"
+      "limit": "31.80 KB"
     },
     {
       "name": "Tabs",
@@ -178,7 +178,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "32.96 KB"
+      "limit": "33.00 KB"
     },
     {
       "name": "Slider",
@@ -188,7 +188,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "32.12 KB"
+      "limit": "32.17 KB"
     },
     {
       "name": "Progress",
@@ -198,7 +198,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "30.28 KB"
+      "limit": "30.32 KB"
     },
     {
       "name": "Toaster",
@@ -208,7 +208,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "33.77 KB"
+      "limit": "33.82 KB"
     },
     {
       "name": "Combobox",
@@ -218,7 +218,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "39.54 KB"
+      "limit": "39.59 KB"
     },
     {
       "name": "DataGrid",
@@ -228,7 +228,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "74.86 KB"
+      "limit": "76.09 KB"
     },
     {
       "name": "DataGrid export, the chunk fetched on the first press",
@@ -248,7 +248,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "96.82 KB"
+      "limit": "98.06 KB"
     }
   ],
   "repository": {

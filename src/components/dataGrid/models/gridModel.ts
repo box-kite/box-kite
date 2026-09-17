@@ -35,6 +35,7 @@ import ExportModel from './exportModel';
 import FilterModel from './filterModel';
 import GroupRowModel from './groupRowModel';
 import PaginationModel from './paginationModel';
+import RangeModel from './rangeModel';
 import RowModel from './rowModel';
 import TreeModel from './treeModel';
 import ViewportModel from './viewportModel';
@@ -976,6 +977,9 @@ export default class GridModel<TRow> {
 
   /** Cell editing: which cell is open, what a commit is judged by, and the values the grid has accepted. */
   public readonly edits = new EditModel(this);
+
+  /** The current cell, the block of cells marked around it, and what the clipboard is written from. */
+  public readonly range = new RangeModel(this);
 
   /**
    * Throw the fetched blocks away and ask for them again. The grid invalidates on its own whenever it

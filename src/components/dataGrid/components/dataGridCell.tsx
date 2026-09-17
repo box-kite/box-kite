@@ -25,6 +25,14 @@ export default function DataGridCell<TRow>(props: Props<TRow>) {
   const { column } = cell;
   const navigation = useGridNavigationContext();
   const { ref, tabIndex, onFocus } = navigation?.cellProps(row, columnIndex) ?? {};
+  const { range } = column.grid;
+
+  // The range's own coordinates: a body row, and a column ordinal that is a column index because a data
+  // row holds one cell per column. Only a data row has one — a group row's cells span, and a footer's
+  // are not rows of the table at all.
+  const bodyRow = cell instanceof CellModel ? row - (navigation?.headerRowCount ?? 0) : -1;
+  const isCurrent = bodyRow >= 0 && range.isCurrent(bodyRow, columnIndex);
+  const isSelected = bodyRow >= 0 && range.isSelected(bodyRow, columnIndex);
 
   if (column.hasAlign) restProps.jc = column.align;
 
@@ -32,6 +40,11 @@ export default function DataGridCell<TRow>(props: Props<TRow>) {
   let variant: Record<string, boolean> = cell.isExpanded
     ? { ...column.cellVariant.value, isExpanded: true, isExpandedFirstLeaf: cell.isFirst, isExpandedLastLeaf: cell.isLast }
     : column.cellVariant.value;
+
+  // The mark and the block are per cell too, and they go on before the editing pair: a merged variant
+  // wins property by property in the order the record names them, so the editor keeps its own ring.
+  // `isInRange` leaves the current cell alone — the block is tinted *around* it, the way a sheet reads.
+  if (isCurrent || isSelected) variant = { ...variant, isInRange: isSelected && !isCurrent, isCurrentCell: isCurrent };
 
   // Editing is per cell rather than per column, so it cannot ride the precomputed record — and a cell
   // whose editor is open stops clipping, or a control as tall as the row is cut off at both ends.
@@ -54,6 +67,31 @@ export default function DataGridCell<TRow>(props: Props<TRow>) {
         }
       : undefined;
 
+  // Marking cells is a pointer gesture, so the handlers are only there where it was asked for. A touch
+  // is left alone entirely: the same press is how the grid is scrolled, and it cannot be both.
+  const marking = range.enabled && bodyRow >= 0;
+  const onPointerDown = marking
+    ? (event: React.PointerEvent) => {
+        if (event.button !== 0 || event.pointerType === 'touch') return;
+        // A press that landed on a widget belongs to the widget: a drag inside an open editor selects its
+        // text, and a chevron is pressed rather than dragged. The focus it takes still moves the mark.
+        if ((event.target as HTMLElement).closest(WIDGET_SELECTOR)) return;
+
+        range.press(bodyRow, columnIndex, event.shiftKey);
+      }
+    : undefined;
+
+  // Attached only while a drag is running, so a grid at rest carries no per-cell pointer tracking at all.
+  // The keyboard follows the pointer: the ring, the tab stop and the corner a Shift+arrow would move next
+  // are one cell, and focusing *after* the model has moved is what keeps the focus from collapsing it.
+  const onPointerEnter =
+    marking && range.isDragging
+      ? (event: React.PointerEvent) => {
+          range.dragTo(bodyRow, columnIndex);
+          (event.currentTarget as HTMLElement).focus();
+        }
+      : undefined;
+
   return (
     <Flex
       ref={ref}
@@ -62,9 +100,14 @@ export default function DataGridCell<TRow>(props: Props<TRow>) {
         role: 'gridcell',
         'aria-colindex': ariaColIndex ?? columnIndex + 1,
         'aria-colspan': ariaColSpan,
+        // Only a block of cells is *selected*. A lone current cell is the cursor, and saying "selected"
+        // on every arrow key would be an announcement about nothing having been chosen.
+        'aria-selected': isSelected || undefined,
         tabIndex,
         onFocus,
         onDoubleClick,
+        onPointerDown,
+        onPointerEnter,
       }}
       variant={variant as never}
       style={{ ...column.cellStyleVars.value, ...style }}

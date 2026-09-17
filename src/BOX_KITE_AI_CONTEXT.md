@@ -2209,6 +2209,7 @@ the element wrapping the bars, the rows and the pager. Every callback below is a
 | `globalFilterValue` / `onGlobalFilterChange`  | `string` / `(value, { reason })`                         | Controlled global filter; reason: `filter`/`clear`                                         |
 | `columnFilters` / `onColumnFiltersChange`     | `ColumnFilters` / `(filters, { reason })`                | Controlled column filters; reason: `filter`/`clear`                                        |
 | `onCellEditsChange`                           | `(edits, { reason })`                                    | Every accepted edit, oldest first; reason: `edit`/`clear`                                  |
+| `onRangeChange`                               | `(range, { reason })`                                    | The block of cells marked, or `undefined`; reason: `select`/`extend`/`clear`               |
 
 `onSelectionChange(event)`, `onSortChange(key, dir)`, `onPageChange(page, size)` and
 `onPageSizeChange(size)` are the pre-contract spellings of the four above. They still fire; the
@@ -2242,6 +2243,8 @@ named ones carry the reason.
 | `noDataComponent`         | `ReactNode`                           | `'empty'`   | Custom empty state                                                                                             |
 | `footer`                  | `boolean \| { label? }`               | `false`     | A pinned row of grand totals over every column with an `aggregate`. `label` replaces the default `Total`       |
 | `export`                  | `boolean \| ExportConfig`             | `false`     | Export buttons in the top bar: `{ csv?, xlsx?, fileName? }`. The writers load on the first press               |
+| `tabNavigation`           | `'none' \| 'cells'`                   | `'none'`    | What Tab does. `'none'` is APG's single tab stop; `'cells'` is the spreadsheet reading                         |
+| `rangeSelection`          | `boolean`                             | `false`     | A drag or Shift+arrow marks a block of cells, and `Ctrl+C` copies it as TSV (see below)                        |
 
 ### ColumnType
 
@@ -2470,6 +2473,53 @@ the same function — and an answer to an edit the user has since abandoned is d
 - Style nodes: `datagrid.body.cell` gains `isEditing` and `isInvalid` variants — one ring, red when the
   value was refused — and `datagrid.body.cell.editor` (`isPending`) and `datagrid.body.cell.error` are
   the editor and its message.
+
+### Range selection and the clipboard
+
+Every grid marks the cell its arrows carry on from — whether the pointer or the keyboard put it there —
+and the mark **survives the grid losing focus**. `Ctrl+C` on it copies that cell, with no opt-in.
+`def.rangeSelection` is the rest: a drag, or Shift with the arrow keys, marks a rectangle, and `Ctrl+C`
+writes it as the tab-separated text a spreadsheet pastes as columns.
+
+```tsx
+<DataGrid
+  data={people}
+  def={{
+    rowKey: 'id',
+    rangeSelection: true,
+    columns: [
+      { key: 'name', header: 'Name' },
+      { key: 'country', header: 'Country' },
+      { key: 'salary', header: 'Salary', align: 'end' },
+    ],
+  }}
+  onRangeChange={(range, { reason }) => setSum(sumOf(range?.values()))}
+/>
+```
+
+- **The mark is state, not a focus ring.** `:focus-visible` never matches a pointer, so a _clicked_ cell
+  drew nothing (bug #64), and any ring made of focus goes out with it — leaving a copy with nothing to act
+  on. It is the corner a Shift+arrow grows the block from, and after a drag it is the cell the drag ended
+  on, so the ring, the tab stop and the next Shift+arrow are one cell.
+- **Extending:** drag across cells, hold Shift with the arrow keys (Home/End, Ctrl+Home/End and
+  PageUp/PageDown extend too), or Shift+press to extend from wherever the block was anchored. A move with
+  no modifier collapses the block onto the cell it landed on.
+- **A block is selected; one cell is a cursor.** The cells of a block carry `aria-selected` and the grid is
+  `aria-multiselectable`; a lone current cell carries neither, because it has chosen nothing. The block is
+  tinted _around_ the current cell, which keeps its ring — the way a sheet says where typing would land.
+- **What is copied is what a file would carry.** The clipboard is an export: a column's `exportValue` wins
+  where it has one, an accepted edit wins over the row, and a group row copies its own value in the column
+  that spans it. Fields are joined with tabs and rows with CRLF; a field carrying a tab, a newline or a
+  quote is quoted with its quotes doubled. The copy rides the browser's own `copy` event, so text you have
+  selected on the page still belongs to the page.
+- **Marking cells is a drag, so text selection is not.** A grid with `rangeSelection` on gives text
+  selection up; an open editor hands it back for the value being typed. A press that lands on a widget
+  belongs to the widget, and a touch is left alone entirely — that press is how the grid scrolls.
+- **`onRangeChange(range, { reason })`** reports `{ startRow, endRow, columns, values() }` or `undefined`,
+  with `select` / `extend` / `clear`. Rows are **indices into the rows on screen** rather than keys,
+  because a block may reach rows a datasource has not fetched — and `values()` is a call for the same
+  reason, gathering the rectangle when it is asked for.
+- Style nodes: `datagrid.body.cell` gains `isCurrentCell` (the ring) and `isInRange` (the tint).
 
 ### ContextMenuConfig
 
