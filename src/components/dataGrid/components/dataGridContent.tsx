@@ -56,6 +56,23 @@ export default function DataGridContent<TRow>(props: Props<TRow>) {
     source.request(startIndex, startIndex + take);
   }, [grid, source, queryVersion, scrollTop, grid.totalRowCount, grid.page, grid.pageSize, grid.expansionVersion]);
 
+  // A drag that leaves the grid — or the window — still has to end, so the release is listened for where
+  // it lands rather than on a cell. Only while one is running: nothing is bound by a grid at rest.
+  const { range } = grid;
+  const { isDragging } = range;
+
+  useEffect(() => {
+    if (!isDragging) return;
+
+    window.addEventListener('pointerup', range.endDrag);
+    window.addEventListener('pointercancel', range.endDrag);
+
+    return () => {
+      window.removeEventListener('pointerup', range.endDrag);
+      window.removeEventListener('pointercancel', range.endDrag);
+    };
+  }, [isDragging, range]);
+
   // The width the flexible columns are distributed across is the scroller's, not the grid container's:
   // the vertical scrollbar sits between the two, so measuring the container made every scrolling grid
   // lay its columns out 15px too wide and show a horizontal scrollbar it did not need (bug #156).
@@ -95,11 +112,14 @@ export default function DataGridContent<TRow>(props: Props<TRow>) {
           role: grid.tree.enabled ? 'treegrid' : 'grid',
           'aria-rowcount': navigation.rowCount,
           'aria-colcount': navigation.columnCount,
-          'aria-multiselectable': grid.props.def.rowSelection ? true : undefined,
+          'aria-multiselectable': grid.props.def.rowSelection || range.enabled ? true : undefined,
           'aria-labelledby': grid.props.def.title ? grid.titleId : undefined,
           'aria-busy': grid.props.loading || source.isLoading ? true : undefined,
           onScroll: handleScroll,
           onKeyDown: navigation.onKeyDown,
+          // Ctrl+C arrives as the browser's own copy event, which is the one place `clipboardData` is
+          // writable with no permission — and the one that still lets a text selection win.
+          onCopy: range.onCopy,
         }}
       >
         <DataGridHeader grid={grid} />

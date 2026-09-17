@@ -2656,22 +2656,6 @@ const boxComponents = {
                 // by nothing, so a selected row was legible only by its own checkbox.
                 'grid-row/aria-selected=true': { bgColor: 'indigo-50' },
               },
-              // The ring says the *cell* holds focus: `:focus-within:not(:has(:focus))` is the cell itself, where
-              // bare `focus` would light it up for a widget it holds — a selection checkbox, a tree chevron —
-              // on top of that widget's own ring. `:focus-visible` is what it cannot be (bug #64): a pointer
-              // never matches it, so a *clicked* cell drew nothing until an arrow key. Interim, until E6 owns a
-              // current cell the roving state marks — which will be drawn for a widget's cell too, since the
-              // tab stop does move there.
-              focus: {
-                not: {
-                  hasFocus: {
-                    outline: 2,
-                    outlineStyle: 'solid',
-                    outlineOffset: -2,
-                    outlineColor: 'indigo-500',
-                  },
-                },
-              },
               theme: {
                 dark: {
                   borderColor: 'gray-800',
@@ -2680,9 +2664,6 @@ const boxComponents = {
                     'grid-row/hover': { bgColor: 'gray-800' },
                     'grid-row/data-group-row': { bgColor: 'gray-800' },
                     'grid-row/aria-selected=true': { bgColor: 'indigo-950' },
-                  },
-                  focus: {
-                    not: { hasFocus: { outlineColor: 'indigo-400' } },
                   },
                 },
               },
@@ -2727,13 +2708,48 @@ const boxComponents = {
                 },
               },
               isLastEndPinned: {},
+              // A cell inside the marked block, but not the one the arrows carry on from — that keeps the
+              // ring instead, which is how a sheet says where typing would land. It carries the row states
+              // for the reason `isPinned` does: it paints a background, so a hovered or selected row under
+              // it would otherwise win the colour and the block would disappear one row at a time.
+              isInRange: {
+                bgColor: 'indigo-50',
+                group: {
+                  'grid-row/hover': { bgColor: 'indigo-100' },
+                  'grid-row/data-group-row': { bgColor: 'indigo-50' },
+                  'grid-row/aria-selected=true': { bgColor: 'indigo-100' },
+                },
+                theme: {
+                  dark: {
+                    bgColor: 'indigo-950',
+                    group: {
+                      'grid-row/hover': { bgColor: 'indigo-900' },
+                      'grid-row/data-group-row': { bgColor: 'indigo-950' },
+                      'grid-row/aria-selected=true': { bgColor: 'indigo-900' },
+                    },
+                  },
+                },
+              },
+              // The current cell: where the arrows carry on from, what Ctrl+C copies, and the corner a
+              // Shift+arrow moves. Owned by the model rather than by a pseudo-class (bug #64), so a
+              // *clicked* cell wears it — `:focus-visible` matches no pointer — and it survives the grid
+              // losing focus, without which a copy has nothing to act on.
+              isCurrentCell: {
+                outline: 2,
+                outlineStyle: 'solid',
+                outlineOffset: -2,
+                outlineColor: 'indigo-500',
+                theme: { dark: { outlineColor: 'indigo-400' } },
+              },
               // The cell being edited. It stops clipping — a control as tall as the row is cut at both
               // ends by the cell's own `overflow` — and paints its own surface, since a pinned neighbour
-              // would otherwise show through an editor that has no background of its own.
+              // would otherwise show through an editor that has no background of its own. It hands text
+              // selection back, which the body takes away wherever cells are marked with a drag.
               isEditing: {
                 overflow: 'visible',
                 zIndex: 2,
                 bgColor: 'white',
+                userSelect: 'text',
                 outline: 2,
                 outlineStyle: 'solid',
                 outlineOffset: -2,

@@ -147,6 +147,13 @@
       "description": "Fires with every edit the grid has accepted, oldest first — the stream an undo is built out of. It is the whole list rather than the one that changed, so a host keeps no history of its own, and it empties when `clearEdits()` says the host has saved them."
     },
     {
+      "name": "onRangeChange",
+      "type": "ChangeHandler<CellRange | undefined, DataGridRangeReason>",
+      "required": false,
+      "default": null,
+      "description": "Fires with the block of cells that is marked, or `undefined` once the grid has given it up. It reports the single current cell too, which is the degenerate range and what Ctrl+C acts on — so a status bar summing the selection is `range?.values()`, and a `reason` of `'select'` is the press or the arrow key that collapsed it back to one."
+    },
+    {
       "name": "onSortingChange",
       "type": "ChangeHandler<DataGridSort | undefined, DataGridSortReason>",
       "required": false,
@@ -316,6 +323,8 @@
         "isLastStartPinned",
         "isFirstEndPinned",
         "isLastEndPinned",
+        "isInRange",
+        "isCurrentCell",
         "isEditing",
         "isInvalid",
         "isRowNumber",

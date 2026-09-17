@@ -348,6 +348,31 @@ export type CellEditResult = void | boolean | string;
 /** Why the edit stream changed: a cell was accepted, or the host took the edits off the grid's hands. */
 export type DataGridEditReason = 'edit' | 'clear';
 
+// ========== Range selection ==========
+
+/**
+ * The block of cells that is marked, in display order. `startRow`/`endRow` are indices into the rows on
+ * screen rather than keys, because a range may reach rows a datasource has not fetched — and building a
+ * key for each of them is exactly what a lazily-listed grid must not do.
+ */
+export interface CellRange {
+  /** The first row the rectangle covers. */
+  startRow: number;
+  /** The last row it covers, inclusive. */
+  endRow: number;
+  /** The columns it covers, by key, in display order. */
+  columns: Key[];
+  /**
+   * What is in it, row by row in display order — through the same pipeline an export uses, so a figure
+   * read here is the one a `.csv` would carry. A call rather than a field: a range can cover more rows
+   * than anybody has fetched, so the values are gathered when they are asked for.
+   */
+  values: () => unknown[][];
+}
+
+/** Why the range changed: a cell became the current one, the block grew, or the grid gave it up. */
+export type DataGridRangeReason = 'select' | 'extend' | 'clear';
+
 // ========== Context Menu ==========
 
 /** Controls which sections appear in the column header context menu */
@@ -549,6 +574,15 @@ export interface GridDefinition<TRow> {
    * not, since it costs the keyboard its way out of the grid.
    */
   tabNavigation?: 'none' | 'cells';
+  /**
+   * Rectangular cell selection: a drag or Shift with the arrow keys marks a block of cells, and Ctrl+C
+   * copies it as the tab-separated text a spreadsheet pastes. Off by default, because a drag that marks
+   * cells is a drag that no longer selects text — which is a decision about the page, not about the grid.
+   *
+   * The *current* cell needs no opt-in and never did: every grid marks the cell its arrows carry on from,
+   * whether the pointer or the keyboard put it there, and Ctrl+C on it copies that one cell.
+   */
+  rangeSelection?: boolean;
   rowHeight?: number;
   /** Number of visible rows. Set to 'all' to render all rows without virtualization or vertical scrollbar. */
   visibleRowsCount?: number | 'all';
@@ -701,6 +735,13 @@ export interface DataGridProps<TRow> extends Omit<BoxProps<'div', 'datagrid'>, '
    * when `clearEdits()` says the host has saved them.
    */
   onCellEditsChange?: ChangeHandler<CellEdit<TRow>[], DataGridEditReason>;
+  /**
+   * Fires with the block of cells that is marked, or `undefined` once the grid has given it up. It
+   * reports the single current cell too, which is the degenerate range and what Ctrl+C acts on — so a
+   * status bar summing the selection is `range?.values()`, and a `reason` of `'select'` is the press or
+   * the arrow key that collapsed it back to one.
+   */
+  onRangeChange?: ChangeHandler<CellRange | undefined, DataGridRangeReason>;
   /** Fires with the column and direction the grid is sorted by, or `undefined` once the sort is cleared. */
   onSortingChange?: ChangeHandler<DataGridSort | undefined, DataGridSortReason>;
   /**

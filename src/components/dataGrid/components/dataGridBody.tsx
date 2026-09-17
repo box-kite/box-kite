@@ -77,6 +77,9 @@ export default function DataGridBody<TRow>(props: Props<TRow>) {
           width="max-content"
           minWidth="fit"
           transition="none"
+          // Marking cells and selecting text are the same drag, so a grid that does one cannot do the
+          // other. The editor's cell hands it back, which is where typing into a value happens.
+          userSelect={grid.range.enabled ? 'none' : undefined}
           props={{ role: 'rowgroup' }}
           style={{ gridTemplateColumns: grid.gridTemplateColumns.value }}
         >
@@ -97,6 +100,9 @@ export default function DataGridBody<TRow>(props: Props<TRow>) {
           width="max-content"
           minWidth="fit"
           transition="none"
+          // Marking cells and selecting text are the same drag, so a grid that does one cannot do the
+          // other. The editor's cell hands it back, which is where typing into a value happens.
+          userSelect={grid.range.enabled ? 'none' : undefined}
           props={{ role: 'rowgroup' }}
           style={{
             transform: `translate3d(0, ${translateY}px, 0)`,

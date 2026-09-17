@@ -1,5 +1,6 @@
 import { useCallback, useRef } from 'react';
-import useRovingFocus from '../../react/a11y/useRovingFocus';
+import { ChangeDetails } from '../../react/a11y/useControllableState';
+import useRovingFocus, { RovingFocusReason } from '../../react/a11y/useRovingFocus';
 import { useIsomorphicLayoutEffect } from '../../react/effects';
 import { GridNavigation } from './gridNavigationContext';
 import { isTypingKey } from './models/editModel';
@@ -141,6 +142,32 @@ export default function useGridNavigation<TRow>(options: GridNavigationOptions<T
   // Which row the move started from, which only a scroll out of the body cares about.
   const lastRow = useRef(0);
 
+  /**
+   * Mirror the tab stop onto the range model, which owns the *mark*: the roving focus is where the
+   * keyboard is, and the range is what a copy acts on and a Shift+arrow grows. A move into the header or
+   * the footer leaves no body cell to be current, so the mark goes with it.
+   */
+  const trackRange = useCallback(
+    (row: number, column: number, details: ChangeDetails<RovingFocusReason>) => {
+      const bodyRow = row - headerRowCount;
+
+      if (bodyRow < 0 || bodyRow >= bodyRows.length) {
+        grid.range.clear();
+        return;
+      }
+
+      // Only a keystroke carries the modifier, and only a keystroke may extend: a press has already said
+      // what it meant by the time the browser focuses the cell it landed on.
+      if (details.reason === 'keyboard') {
+        grid.range.setCurrent(bodyRow, columnIndexOf(row, column), !!(details.event as React.KeyboardEvent | undefined)?.shiftKey);
+        return;
+      }
+
+      grid.range.syncCurrent(bodyRow, columnIndexOf(row, column));
+    },
+    [bodyRows.length, columnIndexOf, grid, headerRowCount],
+  );
+
   const roving = useRovingFocus({
     count: rowCount,
     columns: columnsIn,
@@ -149,6 +176,8 @@ export default function useGridNavigation<TRow>(options: GridNavigationOptions<T
     onActiveCellChange: (cell, details) => {
       const from = lastRow.current;
       lastRow.current = cell.row;
+
+      trackRange(cell.row, cell.column, details);
 
       if (details.reason !== 'keyboard') return;
 
