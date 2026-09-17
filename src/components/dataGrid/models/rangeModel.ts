@@ -41,6 +41,56 @@ export function toTsv(rows: unknown[][]): string {
   return rows.map((row) => row.map(fieldText).join('\t')).join('\r\n');
 }
 
+/**
+ * The same text back, as a rectangle. Scanned character by character rather than split on the separators,
+ * because inside a quoted field a tab is a character and a newline is not the end of a row — which is the
+ * whole reason the quoting exists. A trailing newline ends the last row rather than opening an empty one.
+ */
+export function fromTsv(text: string): string[][] {
+  const rows: string[][] = [];
+  let row: string[] = [];
+  let field = '';
+  let quoted = false;
+
+  for (let at = 0; at < text.length; at++) {
+    const char = text[at];
+
+    if (quoted) {
+      // A doubled quote is one quote; a lone one ends the quoting, and anything after it is literal.
+      if (char === '"' && text[at + 1] === '"') {
+        field += '"';
+        at++;
+      } else if (char === '"') {
+        quoted = false;
+      } else {
+        field += char;
+      }
+    } else if (char === '"' && field === '') {
+      quoted = true;
+    } else if (char === '\t') {
+      row.push(field);
+      field = '';
+    } else if (char === '\r' || char === '\n') {
+      // CRLF is one break. Excel writes it, and splitting on both would put a blank row between every pair.
+      if (char === '\r' && text[at + 1] === '\n') at++;
+
+      row.push(field);
+      rows.push(row);
+      row = [];
+      field = '';
+    } else {
+      field += char;
+    }
+  }
+
+  if (field !== '' || row.length > 0) {
+    row.push(field);
+    rows.push(row);
+  }
+
+  return rows;
+}
+
 function samePosition(a: CellPosition | undefined, b: CellPosition | undefined): boolean {
   return a?.row === b?.row && a?.column === b?.column;
 }
@@ -185,10 +235,8 @@ export default class RangeModel<TRow> {
 
   // ========== What is in it ==========
 
-  /** The columns the rectangle covers, in display order. */
-  public get columns(): ColumnModel<TRow>[] {
-    const bounds = this.bounds;
-
+  /** The columns a rectangle covers, in display order. The marked one when none is named. */
+  public columnsOf(bounds = this.bounds): ColumnModel<TRow>[] {
     if (!bounds) return [];
 
     return this.grid.columns.value.visibleLeafs.slice(bounds.startColumn, bounds.endColumn + 1);
@@ -211,12 +259,10 @@ export default class RangeModel<TRow> {
    * the gap — a group row carries its own value in the column it groups by, and a detail panel or a block
    * nobody has fetched copies as blanks, so what is pasted is the shape that was on screen.
    */
-  public values(): unknown[][] {
-    const bounds = this.bounds;
-
+  public values(bounds = this.bounds): unknown[][] {
     if (!bounds) return [];
 
-    const columns = this.columns;
+    const columns = this.columnsOf(bounds);
     const rows = this.grid.flatRows.value;
     const table: unknown[][] = [];
 
@@ -241,15 +287,17 @@ export default class RangeModel<TRow> {
     return table;
   }
 
-  /** The rectangle as a consumer hears about it. `values` is a call because a range can be very large. */
+  /** A rectangle as a consumer hears about it. `values` is a call because a range can be very large. */
+  public rangeOf(bounds: RangeBounds): CellRange {
+    const columns: Key[] = this.columnsOf(bounds).map((column) => column.key);
+
+    return { startRow: bounds.startRow, endRow: bounds.endRow, columns, values: () => this.values(bounds) };
+  }
+
   private get range(): CellRange | undefined {
     const bounds = this.bounds;
 
-    if (!bounds) return undefined;
-
-    const columns: Key[] = this.columns.map((column) => column.key);
-
-    return { startRow: bounds.startRow, endRow: bounds.endRow, columns, values: () => this.values() };
+    return bounds && this.rangeOf(bounds);
   }
 
   private emit(reason: DataGridRangeReason): void {
@@ -271,5 +319,50 @@ export default class RangeModel<TRow> {
 
     event.clipboardData.setData('text/plain', toTsv(this.values()));
     event.preventDefault();
+  };
+
+  /**
+   * Where a paste lands. Each axis takes whichever is longer — the block that is marked, or the clipboard
+   * — so a block bigger than the clipboard is tiled with it and a clipboard bigger than the block spills
+   * past it, both clipped at the edge of the grid. That one rule covers the two cases a spreadsheet keeps
+   * apart, and the degenerate one with it: a paste onto the current cell alone starts from a 1×1 block.
+   */
+  private pasteBounds(rows: number, columns: number): RangeBounds | undefined {
+    const bounds = this.bounds;
+
+    if (!bounds || rows === 0 || columns === 0) return undefined;
+
+    const lastRow = this.grid.flatRows.value.length - 1;
+    const lastColumn = this.grid.columns.value.visibleLeafs.length - 1;
+
+    return {
+      startRow: bounds.startRow,
+      endRow: Math.min(lastRow, bounds.startRow + Math.max(bounds.endRow - bounds.startRow + 1, rows) - 1),
+      startColumn: bounds.startColumn,
+      endColumn: Math.min(lastColumn, bounds.startColumn + Math.max(bounds.endColumn - bounds.startColumn + 1, columns) - 1),
+    };
+  }
+
+  /**
+   * Ctrl+V, through the browser's own paste event for the reason the copy rides its own: the text is on
+   * the event, with no permission to ask for and no promise to wait on. A paste that reaches an open
+   * editor belongs to the editor — that is a value being typed, not a block being filled.
+   */
+  public onPaste = (event: React.ClipboardEvent): void => {
+    if (!this._focus || !event.clipboardData || this.grid.edits.isOpen || !this.grid.edits.enabled) return;
+
+    const text = event.clipboardData.getData('text/plain');
+    if (!text) return;
+
+    const cells = fromTsv(text);
+    const width = cells.reduce((widest, row) => Math.max(widest, row.length), 0);
+    const bounds = this.pasteBounds(cells.length, width);
+
+    if (!bounds) return;
+
+    event.preventDefault();
+    // The offsets are into the block, and they wrap: a short clipboard repeats to fill a longer block, and
+    // a ragged row — a spreadsheet writes one wherever a trailing cell was empty — reads as blank.
+    this.grid.edits.paste(bounds, (row, column) => cells[row % cells.length][column % width] ?? '');
   };
 }

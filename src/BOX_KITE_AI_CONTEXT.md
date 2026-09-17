@@ -2208,8 +2208,9 @@ the element wrapping the bars, the rows and the pager. Every callback below is a
 | `expandedRowKeys` / `onExpandedRowKeysChange` | `Key[]` / `(keys, { reason })`                           | Controlled expanded rows; reason: `expand`/`collapse`                                      |
 | `globalFilterValue` / `onGlobalFilterChange`  | `string` / `(value, { reason })`                         | Controlled global filter; reason: `filter`/`clear`                                         |
 | `columnFilters` / `onColumnFiltersChange`     | `ColumnFilters` / `(filters, { reason })`                | Controlled column filters; reason: `filter`/`clear`                                        |
-| `onCellEditsChange`                           | `(edits, { reason })`                                    | Every accepted edit, oldest first; reason: `edit`/`clear`                                  |
+| `onCellEditsChange`                           | `(edits, { reason })`                                    | Every accepted edit, oldest first; reason: `edit`/`paste`/`clear`                          |
 | `onRangeChange`                               | `(range, { reason })`                                    | The block of cells marked, or `undefined`; reason: `select`/`extend`/`clear`               |
+| `onPaste`                                     | `(paste)`                                                | One Ctrl+V: `{ range, applied, rejected, skipped }`, once for the whole block               |
 
 `onSelectionChange(event)`, `onSortChange(key, dir)`, `onPageChange(page, size)` and
 `onPageSizeChange(size)` are the pre-contract spellings of the four above. They still fire; the
@@ -2244,7 +2245,7 @@ named ones carry the reason.
 | `footer`                  | `boolean \| { label? }`               | `false`     | A pinned row of grand totals over every column with an `aggregate`. `label` replaces the default `Total`       |
 | `export`                  | `boolean \| ExportConfig`             | `false`     | Export buttons in the top bar: `{ csv?, xlsx?, fileName? }`. The writers load on the first press               |
 | `tabNavigation`           | `'none' \| 'cells'`                   | `'none'`    | What Tab does. `'none'` is APG's single tab stop; `'cells'` is the spreadsheet reading                         |
-| `rangeSelection`          | `boolean`                             | `false`     | A drag or Shift+arrow marks a block of cells, and `Ctrl+C` copies it as TSV (see below)                        |
+| `rangeSelection`          | `boolean`                             | `false`     | A drag or Shift+arrow marks a block of cells, and `Ctrl+C`/`Ctrl+V` copy and paste it as TSV (see below)       |
 
 ### ColumnType
 
@@ -2520,6 +2521,49 @@ writes it as the tab-separated text a spreadsheet pastes as columns.
   because a block may reach rows a datasource has not fetched — and `values()` is a call for the same
   reason, gathering the rectangle when it is asked for.
 - Style nodes: `datagrid.body.cell` gains `isCurrentCell` (the ring) and `isInRange` (the tint).
+
+### Paste: Ctrl+V, one judgement per cell
+
+The block goes back the other way. `Ctrl+V` fills from the current cell — or from the block that is marked,
+where one is — and every cell it covers goes through the same `def.onCellEdit` an editor would, so a paste
+needs no second validator and no second way of writing a value. It needs no opt-in either: `rangeSelection`
+only gives it a bigger target.
+
+```tsx
+<DataGrid
+  data={people}
+  def={{
+    rowKey: 'id',
+    rangeSelection: true,
+    columns: [
+      { key: 'name', header: 'Name', editable: true },
+      { key: 'salary', header: 'Salary', align: 'end', editable: true },
+    ],
+    onCellEdit: ({ columnKey, value }) => (columnKey === 'salary' && Number(value) < 0 ? 'Salary cannot be negative' : undefined),
+  }}
+  onPaste={({ applied, rejected, skipped }) => setReport({ applied, rejected, skipped })}
+/>
+```
+
+- **Each axis takes whichever is longer, the block or the clipboard.** A block bigger than the clipboard is
+  tiled with it, a clipboard bigger than the block spills past it, and both stop at the edge of the grid.
+  One rule, with the degenerate case falling out of it: a paste onto the current cell alone starts from a
+  block of one.
+- **A refusal skips its own cell and nothing else.** A paste is many independent judgements, and stopping at
+  the first bad value would leave the block half written with no way back. The refused cells wear the red
+  ring (`datagrid.body.cell`'s `isInvalid`, with no editor open behind it) and report `aria-invalid`, so the
+  cells say which ones and `onPaste` says why.
+- **The clipboard carries no types, so the cell says how to read the text.** A number column parses it and
+  refuses what is not a number, a checkbox takes `true`/`false` (and `1`/`0`), and a `select` keeps to its
+  own options and holds the option's value rather than its spelling. A value that did not change is not an
+  edit at all, so pasting a column back over itself costs nothing.
+- **A paste that reaches an open editor belongs to the editor** — that is a value being typed, not a block
+  being filled — and a cell that cannot be edited at all is skipped before anything is asked about it, so a
+  validator only ever hears about cells that could have taken a value.
+- **`onPaste({ range, applied, rejected, skipped })`** fires once for the whole block, after the values have
+  landed, so `range.values()` reads what the grid now shows. Everything it accepted lands in the same
+  stream a typed value does: `onCellEditsChange(edits, { reason: 'paste' })`.
+
 
 ### ContextMenuConfig
 

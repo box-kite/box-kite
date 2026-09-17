@@ -80,6 +80,11 @@ export default class CellModel<TRow> {
     return this.grid.edits.error;
   }
 
+  /** Whether the last paste was refused on this cell. A batch shows its refusals on the cells, not in
+   *  an editor: there is no editor open on any of them, and the messages go to `onPaste`. */
+  public get rejected(): boolean {
+    return this.grid.edits.isRejected(this.row.key, this.column.key);
+  }
   /** Whether an async `def.onCellEdit` has been asked about this cell and has not answered. */
   public get pending(): boolean {
     return this.grid.edits.pending;

@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { ignoreLogs } from '../../../../dev/tests';
 import { CellRange, GridDefinition } from '../contracts/dataGridContract';
 import GridModel from './gridModel';
-import { toTsv } from './rangeModel';
+import { fromTsv, toTsv } from './rangeModel';
 
 interface Row {
   id: string;
@@ -205,5 +205,40 @@ describe('toTsv', () => {
 
   it('writes a date as one a spreadsheet can read back', () => {
     expect(toTsv([[new Date(Date.UTC(2026, 8, 17))]])).toBe('2026-09-17T00:00:00.000Z');
+  });
+});
+
+describe('fromTsv', () => {
+  it('reads tabs as cells and either newline as a row, with CRLF counting once', () => {
+    expect(fromTsv('Ada\t10\r\nBen\t20')).toEqual([
+      ['Ada', '10'],
+      ['Ben', '20'],
+    ]);
+    expect(fromTsv('a\nb')).toEqual([['a'], ['b']]);
+    expect(fromTsv('a\rb')).toEqual([['a'], ['b']]);
+  });
+
+  it('ends the last row on a trailing newline rather than opening an empty one', () => {
+    expect(fromTsv('a\tb\r\n')).toEqual([['a', 'b']]);
+    expect(fromTsv('')).toEqual([]);
+  });
+
+  it('keeps an empty field, wherever in the row it is', () => {
+    expect(fromTsv('a\t\tb\t')).toEqual([['a', '', 'b', '']]);
+  });
+
+  it('reads a quoted field as one, separators and all, and undoubles its quotes', () => {
+    expect(fromTsv('"a\tb"\tc')).toEqual([['a\tb', 'c']]);
+    expect(fromTsv('"a\r\nb"')).toEqual([['a\r\nb']]);
+    expect(fromTsv('"say ""hi"""')).toEqual([['say "hi"']]);
+  });
+
+  it('is the writer the other way round, which is what makes the round trip hold', () => {
+    const table = [
+      ['a\tb', 'plain'],
+      ['say "hi"', 'line\r\nbreak'],
+    ];
+
+    expect(fromTsv(toTsv(table))).toEqual(table);
   });
 });

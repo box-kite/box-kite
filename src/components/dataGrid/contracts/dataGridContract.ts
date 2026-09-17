@@ -345,8 +345,29 @@ export interface CellEdit<TRow> {
  */
 export type CellEditResult = void | boolean | string;
 
-/** Why the edit stream changed: a cell was accepted, or the host took the edits off the grid's hands. */
-export type DataGridEditReason = 'edit' | 'clear';
+/** Why the edit stream changed: a cell was accepted, a block was pasted, or the host took the edits. */
+export type DataGridEditReason = 'edit' | 'paste' | 'clear';
+
+/** One cell a paste could not write, and the message `def.onCellEdit` refused it with. */
+export interface RejectedCellEdit<TRow> extends CellEdit<TRow> {
+  error: string;
+}
+
+/**
+ * What one Ctrl+V did, reported once for the whole block however many cells it covered. A refusal skips
+ * its own cell and nothing else — a paste is many independent judgements, and one bad value must not lose
+ * the ninety-nine good ones — so `applied` and `rejected` together are every cell that was asked about.
+ */
+export interface DataGridPaste<TRow> {
+  /** The block it landed in. It reads the values the grid now shows, so `values()` is the result. */
+  range: CellRange;
+  /** The cells that were written, in the order they were judged. */
+  applied: CellEdit<TRow>[];
+  /** The cells that were refused, each with what it was refused with. */
+  rejected: RejectedCellEdit<TRow>[];
+  /** How many cells the block covered that cannot be edited at all — a read-only column, a group row, a row nobody has fetched. */
+  skipped: number;
+}
 
 // ========== Range selection ==========
 
@@ -580,7 +601,9 @@ export interface GridDefinition<TRow> {
    * cells is a drag that no longer selects text — which is a decision about the page, not about the grid.
    *
    * The *current* cell needs no opt-in and never did: every grid marks the cell its arrows carry on from,
-   * whether the pointer or the keyboard put it there, and Ctrl+C on it copies that one cell.
+   * whether the pointer or the keyboard put it there, and Ctrl+C on it copies that one cell. Ctrl+V is
+   * the same — it fills from the current cell wherever a column is editable, and a block only gives it a
+   * bigger target.
    */
   rangeSelection?: boolean;
   rowHeight?: number;
@@ -742,6 +765,12 @@ export interface DataGridProps<TRow> extends Omit<BoxProps<'div', 'datagrid'>, '
    * the arrow key that collapsed it back to one.
    */
   onRangeChange?: ChangeHandler<CellRange | undefined, DataGridRangeReason>;
+  /**
+   * Fires once with everything a Ctrl+V did: the cells that were written, the cells `def.onCellEdit`
+   * refused and the message each was refused with, and how many the block covered that nothing could be
+   * written to. It fires after the values have landed, so `range.values()` reads what the grid now shows.
+   */
+  onPaste?: (paste: DataGridPaste<TRow>) => void;
   /** Fires with the column and direction the grid is sorted by, or `undefined` once the sort is cleared. */
   onSortingChange?: ChangeHandler<DataGridSort | undefined, DataGridSortReason>;
   /**

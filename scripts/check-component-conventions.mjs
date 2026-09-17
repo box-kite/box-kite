@@ -42,6 +42,7 @@ const SANCTIONED = {
   // the browser did rather than what the component decided; neither has a reason the caller could act on.
   'Menu.Item.onSelect': 'a command, not a change: no new value, and no reason to give',
   'Overlay.onSideChange': 'a report of where the browser put the layer, not a state the caller owns',
+  'DataGrid.onPaste': 'a report of what one Ctrl+V did, not a state the caller owns',
   // A component rendering no element of its own has nothing for `Box.components()` to reach.
   'Flex.styles': 'Box with one prop set, so the style tree is Box',
   'Grid.styles': 'Box with one prop set, so the style tree is Box',
