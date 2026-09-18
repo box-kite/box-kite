@@ -153,3 +153,9 @@ const DataGrid = forwardRef(DataGridImpl) as <TRow extends object>(
 (DataGridImpl as React.FunctionComponent).displayName = 'DataGrid';
 
 export default DataGrid;
+// Every other component exports its own types; this one exported none, so a consumer typing a column
+// list, a ref or a cell renderer had to reach into `dataGrid/contracts/`. `export type *` rather than a
+// list, so a type added to the contract is public without a second edit here.
+export type * from './dataGrid/contracts/dataGridContract';
+export type { default as AggregateCellModel } from './dataGrid/models/aggregateCellModel';
+export type { default as CellModel } from './dataGrid/models/cellModel';

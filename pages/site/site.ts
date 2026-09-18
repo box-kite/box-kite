@@ -40,6 +40,13 @@ export const siteRoutes = [
     description: 'Install Box Kite and render your first Box: two dependencies, no bundler plugin, and no stylesheet to import.',
   },
   {
+    path: '/registry',
+    name: 'Blocks',
+    title: 'Blocks, installed by the shadcn CLI — Box Kite',
+    description:
+      'Finished sections the shadcn CLI installs into your own repository: an invoices data grid, a settings form and a dashboard shell, each one code you then own.',
+  },
+  {
     path: '/migrating',
     name: 'Migrating',
     title: 'Migrating to Box Kite — from @cronocode/react-box',

@@ -79,6 +79,28 @@ export function siteMarkdown(entry) {
     cursor: () => agentFile(CURSOR_FILE),
 
     /**
+     * The shadcn registry (F4): the catalog at both addresses the CLI and a directory ask for, and one
+     * file per item carrying the block's sources inlined. A block file the glob missed fails here — an
+     * item published with no content installs nothing and says nothing.
+     */
+    registry() {
+      const missing = entry.missingSources();
+
+      if (missing.length > 0) throw new Error(`Registry blocks not found: ${missing.join(', ')}`);
+
+      const catalog = entry.buildRegistryIndex();
+
+      return [
+        { path: entry.REGISTRY_PATH, content: catalog },
+        { path: entry.CATALOG_PATH, content: catalog },
+        ...entry.registryItems.map((item) => ({
+          path: entry.itemPath(item.name),
+          content: entry.buildRegistryItem(item, entry.registrySources),
+        })),
+      ];
+    },
+
+    /**
      * What a mirror address answers with, or `null` for an address that is not one — the dev server's
      * entry point, where nothing is on disk to serve.
      */
@@ -88,6 +110,10 @@ export function siteMarkdown(entry) {
       if (url === '/props.md') return this.props();
       if (url === '/skill.md') return this.skill();
       if (url === '/box-kite.mdc') return this.cursor();
+
+      const registryFile = this.registry().find((file) => file.path === url);
+
+      if (registryFile) return registryFile.content;
 
       const route = routeFor(url);
 
