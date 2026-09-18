@@ -1,4 +1,11 @@
-# The component catalog
+# Generative UI
+
+Two halves of one loop, in two entries. `catalog()` (`@box-kite/react/catalog`) describes what a
+generated UI is allowed to build, and `<SpecRenderer>` (`@box-kite/react/spec`) renders what came
+back — against the same description, so the thing a model is constrained to and the thing that renders
+cannot disagree.
+
+## The catalog
 
 `catalog()` describes what a generated UI is allowed to build: every component a spec may name, and every
 value its props may take, as JSON Schema. It is the piece a generative-UI runtime needs and the one no
@@ -75,7 +82,230 @@ open ones (a percentage, a ratio, an `anchor-size()`). A prop the registry leave
 `{ type: 'string' }` with its listed values as `examples`, which is the honest shape: the catalog never
 states a constraint the library does not enforce.
 
-## Rendering a spec: json-render
+## The allow-list is yours
+
+`catalog()` with no options describes all 78 components and all 221 style props. That is ~4.6 MB
+serialized, and a prompt carrying it would spend more tokens on the catalog than on the UI. It is the
+library saying what it _can_ render; narrowing it is the app's job, and the app is the only one that knows
+which components it wants a generator reaching for.
+
+| Option       | What it does                                                                                       |
+| ------------ | -------------------------------------------------------------------------------------------------- |
+| `include`    | Only these components, by name.                                                                    |
+| `exclude`    | Everything but these. Applied after `include`.                                                     |
+| `styleProps` | `true` (every registered prop, the default), `false` (the component's own props alone), or a list. |
+
+## What is not in it
+
+**Function props are `events`, named rather than described.** A JSON spec cannot carry a function, so
+`onValueChange` is listed on the component as an event and the host binds it — which is where a
+human-in-the-loop decision belongs anyway.
+
+**A `ReactNode` prop is a slot.** `children` is the `default` slot and a named one (`Tooltip`'s
+`content`) is a slot of its own name. Every component that can hold children has `default`; one whose
+element takes none — `Img`, `Textbox`, `Textarea` — has no default slot at all, and that is what tells
+a generator (and `<SpecRenderer>`) that children have nowhere to go there.
+
+**Anything else a JSON spec cannot express is left out.** A prop whose type is a grid definition or a row
+renderer is absent rather than half-described: a partial schema would state a constraint that is not true.
+
+## Rendering what came back: `<SpecRenderer>`
+
+The catalog says what a model may write. `@box-kite/react/spec` renders what it wrote — against a
+registry the app builds, which is the same allow-list one step further on: the catalog is what the
+library _can_ render, the registry is what this app _will_.
+
+```tsx
+import { catalog } from '@box-kite/react/catalog';
+import Button from '@box-kite/react/components/button';
+import { Sparkline } from '@box-kite/react/components/chart';
+import Flex from '@box-kite/react/components/flex';
+import { H2, P } from '@box-kite/react/components/semantics';
+import SpecRenderer, { createSpecRegistry } from '@box-kite/react/spec';
+
+const allowed = catalog({ include: ['Flex', 'H2', 'P', 'Button', 'Sparkline'], styleProps: ['d', 'gap', 'p', 'bgColor', 'fontSize'] });
+
+const registry = createSpecRegistry({ catalog: allowed, components: { Flex, H2, P, Button, Sparkline } });
+
+export default function Generated({ spec, data }: { spec: unknown; data: unknown }) {
+  return <SpecRenderer spec={spec} registry={registry} data={data} onAction={(action) => run(action)} />;
+}
+```
+
+A spec is a tree of nodes, and a node is JSON:
+
+```jsonc
+{
+  "type": "Flex",
+  "props": { "d": "column", "gap": 4, "p": 4, "bgColor": "sky-500/10" },
+  "children": [
+    { "type": "H2", "props": { "fontSize": 24 }, "children": ["Revenue"] },
+    { "type": "Sparkline", "props": { "data": { "$data": "weekly" } } },
+    { "type": "Button", "props": { "label": "Refresh" }, "on": { "onClick": "refresh" } },
+  ],
+}
+```
+
+`type` names a component, `props` is everything its own schema allows, `children` is the default slot,
+`slots` fills a named one, `on` binds an event to an action, and `repeat` renders the node once per item
+of an array. Nothing else is a field, and every one of them is checked.
+
+## What a spec cannot do
+
+The list is short because the design is: a node is data, and the only things it can reach are the ones
+the app registered.
+
+- **It cannot name a component the app did not register.** The node renders nothing and the app is told
+  which name was asked for. There is no tag from the spec, no `eval`, no `dangerouslySetInnerHTML`.
+- **It cannot set a prop the component's schema refuses.** Every prop is validated against the
+  catalog's own schema for that component — so a colour is a palette token, a `d` is one of four
+  values, and a prop nobody has is dropped. The prop is dropped, not the node.
+- **It cannot make a function.** `on` binds only the props the catalog lists as `events`, and what it
+  binds is a _name_: `onAction(action, details)` is called, and what that means is the app's. That is
+  human-in-the-loop by construction — an action can open a confirmation as easily as it can run.
+- **It cannot reach outside the data it was given.** A `{ $data: … }` reference is a path, read with
+  own properties only, against the object passed as `data`. There is no expression to evaluate.
+- **It cannot run away.** `maxNodes` (1,000) and `maxDepth` (32) end a tree that recurses or repeats
+  over something enormous, and both are props.
+- **It cannot take the page down.** Every node renders inside an error boundary of its own, so a
+  component that throws on the props it was handed costs that node and nothing around it.
+
+Everything refused is reported rather than swallowed: `onIssues` is called with the whole list after
+each render whose issues changed, and `renderSpec()` returns it. Each issue carries a `code`
+(`unknown-component`, `invalid-prop`, `unknown-event`, `unresolved-data`, `too-deep`, `render-error`…),
+the `path` it happened at (`spec.children.1.props.bgColor`) and a sentence.
+
+```tsx
+<SpecRenderer
+  spec={spec}
+  registry={registry}
+  onIssues={(issues) => issues.forEach((issue) => track('generated-ui-issue', issue))}
+  fallback={(issue) => <P color="rose-500">{issue.message}</P>}
+/>
+```
+
+`fallback` renders nothing by default: a generated dashboard is shown to somebody who did not write it,
+and a red box is a worse answer than a missing card. In development it is the fastest way to see what a
+model got wrong.
+
+## Still arriving
+
+A spec streams. `streamObject`'s `partialObjectStream` hands over the same object a few more characters
+at a time, so the renderer treats a half-written tree as the normal case rather than the error case:
+
+- a node whose `type` has not arrived renders nothing **and reports nothing** — it is a frame, not a
+  fault;
+- a prop whose value is still half a string fails its schema and is dropped, so `sky-5` never paints
+  and `sky-500` appears when it is whole;
+- a node that threw on one frame is tried again on the next, because the spec object itself is what
+  resets the boundaries.
+
+```tsx
+const { partialObjectStream } = streamObject({ model, schema: z.fromJSONSchema(specSchema(registry)), prompt });
+
+for await (const partial of partialObjectStream) setSpec(partial);
+```
+
+## `specSchema()`: what the model is allowed to write
+
+The other direction. `specSchema(registry)` turns the registry into one JSON Schema for a whole tree —
+the component names are an enum of what the app allowed, each one's props are its own schema, and
+`children` is offered only where there is a slot to put them in. It is what goes to `streamObject`, to a
+structured-output API, or through `z.fromJSONSchema` to validate a finished spec before rendering it.
+
+```ts
+import { specSchema } from '@box-kite/react/spec';
+
+const schema = specSchema(registry, { bindings: true });
+```
+
+`bindings` widens every prop to "this, or a reference to it" and adds `repeat`; it is off by default,
+because it nearly doubles the document and a static view needs none of it. `root` narrows what may
+stand at the top of the tree without narrowing what may stand inside it.
+
+The constraint and the renderer are built from the same rules, so what a model is told it may write and
+what the renderer lets through cannot drift apart.
+
+## Data, and the one thing the host still owns
+
+A model writes the shape of a view; the numbers are the app's. A reference stands anywhere a value can:
+
+| Written                        | Resolves to                                                   |
+| ------------------------------ | ------------------------------------------------------------- |
+| `{ "$data": "stats.revenue" }` | a path into `data` — a dot path, or a JSON Pointer (`/a/b/0`) |
+| `{ "$item": "label" }`         | a field of the current `repeat` item (`""` is the item)       |
+| `{ "$index": true }`           | the current `repeat` index                                    |
+
+```jsonc
+{ "type": "Ul", "children": [{ "type": "Li", "repeat": { "$data": "rows" }, "children": [{ "$item": "label" }] }] }
+```
+
+**A reference is resolved before it is validated**, so the value the host supplied is the one the
+schema judges: a `$data` that resolves to a string cannot land in a numeric prop. A reference that
+resolves to nothing drops its prop and reports `unresolved-data`, which mid-stream is ordinary.
+
+## Registering a component of your own
+
+A registry entry is a component, or a component with the rules around it:
+
+```tsx
+const registry = createSpecRegistry({
+  catalog: allowed,
+  components: {
+    Flex,
+    H2,
+    StatCard: {
+      component: StatCard,
+      props: {
+        type: 'object',
+        properties: { label: { type: 'string' }, value: { type: 'number' }, tone: { type: 'string', enum: ['up', 'down'] } },
+        required: ['label', 'value'],
+        additionalProperties: false,
+      },
+      slots: [],
+      events: ['onSelect'],
+    },
+  },
+});
+```
+
+**A component registered with no schema takes no props at all.** That is the safe direction to be wrong
+in, and writing the schema is the point: it is what the model is constrained to and what the renderer
+enforces.
+
+The same mechanism is how an HTML attribute gets through. The catalog leaves them out — `href` is not a
+prop, it goes in `props={{ href }}` — so a generated `<Link>` can point nowhere until the app says where
+it may point:
+
+```tsx
+Link: {
+  component: Link,
+  props: {
+    ...allowed.components.Link.props,
+    properties: {
+      ...allowed.components.Link.props.properties,
+      props: { type: 'object', properties: { href: { type: 'string', pattern: '^(?:/|https://)' } }, additionalProperties: false },
+    },
+  },
+},
+```
+
+A `javascript:` URL then fails the pattern and is dropped, with an `invalid-prop` to say so. Note that
+JSON Schema's `pattern` is unanchored: anchor yours.
+
+## On a server, and without React at all
+
+`renderSpec(spec, options)` is `<SpecRenderer>` with no hook in it — it returns `{ element, issues }`,
+which is what a test asserts on and what a server render uses when there is nothing to report to:
+
+```tsx
+const { element, issues } = renderSpec(spec, { registry, data });
+```
+
+A static spec renders through the ordinary SSR path with its CSS, like any other Box tree. The entry
+carries a `'use client'` banner, since `<SpecRenderer>` itself holds an effect.
+
+## Rendering it somewhere else: json-render
 
 [`@json-render/react`](https://json-render.dev) wants a Zod schema per component, and `z.fromJSONSchema` is
 the whole adapter:
@@ -106,28 +336,3 @@ before you render it.
 
 The same shape serves a structured-output API (`components[name].props` is a strict JSON Schema) and any
 runtime that takes a component catalog: assistant-ui, CopilotKit, A2UI.
-
-## The allow-list is yours
-
-`catalog()` with no options describes all 78 components and all 221 style props. That is ~4.6 MB
-serialized, and a prompt carrying it would spend more tokens on the catalog than on the UI. It is the
-library saying what it _can_ render; narrowing it is the app's job, and the app is the only one that knows
-which components it wants a generator reaching for.
-
-| Option       | What it does                                                                                       |
-| ------------ | -------------------------------------------------------------------------------------------------- |
-| `include`    | Only these components, by name.                                                                    |
-| `exclude`    | Everything but these. Applied after `include`.                                                     |
-| `styleProps` | `true` (every registered prop, the default), `false` (the component's own props alone), or a list. |
-
-## What is not in it
-
-**Function props are `events`, named rather than described.** A JSON spec cannot carry a function, so
-`onValueChange` is listed on the component as an event and the host binds it — which is where a
-human-in-the-loop decision belongs anyway.
-
-**A `ReactNode` prop is a slot.** `children` is the `default` slot; a named one (`Tooltip`'s `content`) is
-a slot of its own name.
-
-**Anything else a JSON spec cannot express is left out.** A prop whose type is a grid definition or a row
-renderer is absent rather than half-described: a partial schema would state a constraint that is not true.

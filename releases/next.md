@@ -13,6 +13,7 @@ _Unreleased. A PR that changes what a consumer sees adds its section here — se
 - **[A fling renders where you are going](#a-fling-renders-where-you-are-going)** — the DataGrid keeps its rendered rows ahead of the scroll instead of on both sides of it: 36 rows around an 18-row screen where it used to be 58, and a fling at 125 frames a second where it was 81.
 - **[`npx shadcn add @box-kite/data-grid`](#npx-shadcn-add-box-kitedata-grid)** — three finished sections the shadcn CLI installs into your own repository, from a registry on box-kite.dev.
 - **[What an AI may build, as JSON Schema](#what-an-ai-may-build-as-json-schema)** — `catalog()` describes every component and every value its props take, so a generated UI can be validated before it renders and cannot invent a colour.
+- **[What a model wrote, rendered safely](#what-a-model-wrote-rendered-safely)** — `<SpecRenderer>` renders a generated spec against the components your app allows: unknown names render nothing, refused props are dropped, and only an event can become a function.
 - **[The DataGrid exports its types](#the-datagrid-exports-its-types)** — `ColumnType`, `GridDefinition`, `CellModel` and the rest come off `components/dataGrid` now instead of a path inside it.
 
 <!-- One bullet per section below, linking to it: **[Heading](#heading)** — one line on why it matters. -->
@@ -297,6 +298,66 @@ const definition: GridDefinition<Invoice> = { rowKey: 'id', columns: [{ key: 'st
 Types only — nothing is added to the bundle, and the deep import still resolves, so nothing that works today
 stops working.
 
+## What a model wrote, rendered safely
+
+A second new entry, `@box-kite/react/spec`, and the other half of the catalog above. The catalog says what
+a model may build; `<SpecRenderer>` renders what it built — against a registry the app puts together,
+which is the same allow-list one step further on.
+
+```tsx
+import { catalog } from '@box-kite/react/catalog';
+import Flex from '@box-kite/react/components/flex';
+import { H2, P } from '@box-kite/react/components/semantics';
+import SpecRenderer, { createSpecRegistry } from '@box-kite/react/spec';
+
+const allowed = catalog({ include: ['Flex', 'H2', 'P'], styleProps: ['d', 'gap', 'p', 'bgColor', 'fontSize'] });
+const registry = createSpecRegistry({ catalog: allowed, components: { Flex, H2, P } });
+
+<SpecRenderer spec={spec} registry={registry} data={data} onAction={(action) => run(action)} />;
+```
+
+A node is `{ type, props, children, slots, on, repeat }`, all of it JSON, and every field of it is checked
+before anything renders. A `type` the registry does not hold renders nothing. A prop the component's own
+schema refuses is dropped — the prop, not the node — so a colour has to be one the palette has and a value
+still half-written mid-stream simply does not paint until it is whole. The only prop that can ever become a
+function is one the catalog lists as an event: `on: { onClick: 'refresh' }` calls `onAction('refresh',
+details)`, and what that means is the app's, which is human-in-the-loop by construction. There is no tag
+that comes from the spec, no `eval` and no `dangerouslySetInnerHTML` anywhere in it.
+
+**A spec arrives in pieces, and that is the ordinary case.** `streamObject`'s `partialObjectStream` hands
+over the same object a few more characters at a time, so a node whose `type` has not been written yet
+renders nothing _and reports nothing_ — it is a frame, not a fault. Every node also has an error boundary
+of its own, so a component that throws on props a model invented costs that node and nothing around it,
+and is tried again on the next frame.
+
+Whatever did not render is reported rather than swallowed: `onIssues` gets a code (`unknown-component`,
+`invalid-prop`, `unknown-event`, `unresolved-data`, `too-deep`, `render-error`…) and the path in the spec
+it happened at. `fallback` is what stands where a node could not render, and renders nothing unless you
+say otherwise — a red box is a poor thing to show somebody who did not write the page.
+
+**Data stays the app's.** A model writes the shape of a view and the host owns the numbers, so a prop can
+be `{ $data: 'stats.revenue' }`, a child can be `{ $item: 'label' }` inside a `repeat`, and a reference is
+resolved _before_ it is validated: the value the host supplied is the one the schema judges. A path, never
+an expression.
+
+And the other direction, so the constraint and the renderer cannot drift apart:
+
+```ts
+import { specSchema } from '@box-kite/react/spec';
+
+const { partialObjectStream } = streamObject({ model, schema: z.fromJSONSchema(specSchema(registry)), prompt });
+```
+
+`specSchema(registry)` is one JSON Schema for a whole tree, built from the same rules the renderer
+enforces: the component names are an enum of what the app allowed, each one's props are its own schema,
+and `children` is offered only where there is a slot to put them in.
+
+The entry is 4.4 KB gzipped and carries no engine at all — the components come from the app, so nothing in
+it imports Box. `renderSpec(spec, options)` is the same walk with no hook in it, returning
+`{ element, issues }`, so a static spec renders on a server.
+
+[Generative UI](https://box-kite.dev/ai-context)
+
 ## Breaking changes
 
 None.
@@ -305,6 +366,7 @@ None.
 
 <!-- One bullet per fix: **What was wrong.** What it does now. -->
 
+- **The catalog said a layout component could hold nothing.** `Flex`, `Grid`, `Button`, `Icon`, `Overlay` and eleven others reported no `default` slot, because they declare no `children` prop of their own — they take Box’s props whole — while `Img` reported one it cannot have. A generated tree read off that catalog could not nest anything in a `Flex`. Every component that can hold children says so now, and one whose element takes none (`Img`, `Textbox`, `Textarea`) says that instead. (#180)
 - **A DataGrid rendered fifty-eight rows around an eighteen-row viewport.** Twenty rows each side became twelve ahead of the scroll and four behind it, so the same cover costs thirty-six rows: a fling over a hundred thousand rows went from 12.3 ms a frame to 8.0, and first render, filter and sort came down with it. (#178)
 - **A DataGrid re-rendered every cell on screen on every scroll event.** A scroll that does not change which rows are shown now costs nothing but the transform, and one that brings a row in renders that row rather than the window it landed in — the median frame of a fast fling over a hundred thousand rows halved, 24 ms to 12 ms.
 - **A DataGrid cell chosen with the pointer showed nothing, and no cell stayed marked once the grid lost focus.** The mark is the grid's own state now rather than a `:focus-visible` ring, so a clicked cell wears it, it survives a blur and a scroll, and `Ctrl+C` has something to copy. (#64)

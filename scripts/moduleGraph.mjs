@@ -70,7 +70,7 @@ export const CLIENT_ONLY_COMPONENTS = [
  * Entries that are hooks all the way down. Same `'use client'` banner: importing `useDismiss` from a
  * Server Component should open a client boundary, not fail to resolve `useRef`.
  */
-export const CLIENT_ONLY_ENTRIES = ['a11y', 'anchor'];
+export const CLIENT_ONLY_ENTRIES = ['a11y', 'anchor', 'spec'];
 
 // Hooks and APIs React's server renderer has no dispatcher for. `useMemo`, `useCallback`, `useId`,
 // `useDebugValue` and `use` are the ones it does support, so they are deliberately absent here.

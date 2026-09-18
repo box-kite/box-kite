@@ -36,6 +36,9 @@ const entry = {
   // What a generated UI may build, as JSON Schema — see src/catalog.ts. Its own entry because the prose
   // half is 15 KB gzipped, which an app that renders no generated UI should not carry.
   catalog: path.resolve(import.meta.dirname, './src/catalog.ts'),
+  // A generated UI, rendered against what the app allows — see src/spec.ts. It carries no engine: the
+  // components come from the app, so the entry is the renderer and the model under it.
+  spec: path.resolve(import.meta.dirname, './src/spec.ts'),
   ...componentsEntry,
 };
 
@@ -209,11 +212,15 @@ export default defineConfig(({ mode }) => {
 
                   // Entry modules stay their own chunks — grouping them would drag one entry's
                   // imports (`react-dom/server`, say) into every other entry that shares the group.
-                  if (!source.includes('/src/') || /^src\/(a11y|anchor|box|catalog|core|rsc|ssg)\.ts$/.test(module)) return null;
+                  if (!source.includes('/src/') || /^src\/(a11y|anchor|box|catalog|core|rsc|spec|ssg)\.ts$/.test(module)) return null;
                   // The catalog's generated prose, 15 KB gzipped of it. Inlined into the one entry that
                   // imports it: grouped by the rules below it would land in `client`, and every component
                   // in the library would carry a description of every prop.
                   if (module.startsWith('src/utils/catalog/')) return null;
+                  // The spec renderer and the model under it, which that one entry reaches. Ungrouped they
+                  // would fall through to 'client' — the styling binding, the theme provider and the engine
+                  // behind them — for a renderer that imports no Box at all.
+                  if (module.startsWith('src/react/spec/') || module.startsWith('src/utils/spec/')) return null;
                   // Component entries keep the chunks rolldown gives them, one per component.
                   if (module.startsWith('src/components/')) return null;
 

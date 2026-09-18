@@ -558,7 +558,7 @@ const catalogManifest: CatalogManifest = {
     Img: {
       description: 'A `<img>` element, with every style prop on it.',
       import: "import { Img } from '@box-kite/react/components/semantics';",
-      slots: ['default'],
+      slots: [],
       events: [],
       props: {},
       required: [],
@@ -568,7 +568,7 @@ const catalogManifest: CatalogManifest = {
       description:
         'A real `<button>` with the `button` component style on it — the variants are `primary` (the default), `secondary` and `ghost`, and every Box prop styles it on top of them.',
       import: "import Button from '@box-kite/react/components/button';",
-      slots: [],
+      slots: ['default'],
       events: ['onClick'],
       props: {},
       required: [],
@@ -738,7 +738,7 @@ const catalogManifest: CatalogManifest = {
     Overlay: {
       description: "A floating layer: anchored by the browser, and in the browser's **top layer** for the stacking order.",
       import: "import Overlay from '@box-kite/react/components/overlay';",
-      slots: [],
+      slots: ['default'],
       events: [],
       props: {
         side: {
@@ -818,7 +818,7 @@ const catalogManifest: CatalogManifest = {
       description:
         "The dialog's heading, and what names it: rendering one is what puts `aria-labelledby` on the dialog, so a name and a visible title cannot drift apart.",
       import: "import Dialog from '@box-kite/react/components/dialog';",
-      slots: [],
+      slots: ['default'],
       events: [],
       props: {},
       required: [],
@@ -827,7 +827,7 @@ const catalogManifest: CatalogManifest = {
     'Dialog.Description': {
       description: "The dialog's supporting text, and what describes it: rendering one puts `aria-describedby` on the dialog.",
       import: "import Dialog from '@box-kite/react/components/dialog';",
-      slots: [],
+      slots: ['default'],
       events: [],
       props: {},
       required: [],
@@ -837,7 +837,7 @@ const catalogManifest: CatalogManifest = {
       description:
         'A dialog that interrupts to ask something: `role="alertdialog"`, always modal, and **never dismissed by a press outside**, because a decision that can be clicked away is one the user did not make.',
       import: "import { AlertDialog } from '@box-kite/react/components/dialog';",
-      slots: [],
+      slots: ['default'],
       events: [],
       props: {},
       required: [],
@@ -887,7 +887,7 @@ const catalogManifest: CatalogManifest = {
     'Menu.CheckboxItem': {
       description: 'An item that carries a state of its own: `role="menuitemcheckbox"` and a tick.',
       import: "import Menu from '@box-kite/react/components/menu';",
-      slots: [],
+      slots: ['default'],
       events: ['onCheckedChange'],
       props: {
         checked: { type: 'boolean', description: 'Controlled checked state.' },
@@ -912,7 +912,7 @@ const catalogManifest: CatalogManifest = {
     'Menu.RadioItem': {
       description: "One of a radio group's choices.",
       import: "import Menu from '@box-kite/react/components/menu';",
-      slots: [],
+      slots: ['default'],
       events: [],
       props: {
         value: { type: 'string', description: "What this item stands for, compared against the group's `value`." },
@@ -933,7 +933,7 @@ const catalogManifest: CatalogManifest = {
     'Menu.Separator': {
       description: 'The line between two sections.',
       import: "import Menu from '@box-kite/react/components/menu';",
-      slots: [],
+      slots: ['default'],
       events: [],
       props: {},
       required: [],
@@ -1089,7 +1089,7 @@ const catalogManifest: CatalogManifest = {
     Slider: {
       description: 'A value chosen by dragging a thumb along a track.',
       import: "import Slider from '@box-kite/react/components/slider';",
-      slots: [],
+      slots: ['default'],
       events: ['onValueChange', 'onValueCommit', 'format'],
       props: {
         min: { type: 'number', description: 'The bottom of the range.' },
@@ -1109,7 +1109,7 @@ const catalogManifest: CatalogManifest = {
     Progress: {
       description: 'How far a task has got.',
       import: "import Progress from '@box-kite/react/components/progress';",
-      slots: [],
+      slots: ['default'],
       events: ['format'],
       props: {
         value: { type: 'number', description: 'How far along it is.' },
@@ -1124,7 +1124,7 @@ const catalogManifest: CatalogManifest = {
     Toaster: {
       description: 'The viewport every toast is drawn in, and the live region they are announced from.',
       import: "import Toaster from '@box-kite/react/components/toaster';",
-      slots: [],
+      slots: ['default'],
       events: [],
       props: {
         position: {
@@ -1201,7 +1201,7 @@ const catalogManifest: CatalogManifest = {
       description:
         'The data grid: sorting, filtering, grouping, pinned columns, row selection, detail rows, pagination and virtualization, with every part of it styled through the `datagrid` component tree rather than a stylesheet of its own.',
       import: "import DataGrid from '@box-kite/react/components/dataGrid';",
-      slots: [],
+      slots: ['default'],
       events: [
         'onSelectedRowKeysChange',
         'onSelectionChange',
@@ -1242,7 +1242,7 @@ const catalogManifest: CatalogManifest = {
     Flex: {
       description: '`Box` with `display: flex` on it — `inline` makes that `inline-flex`.',
       import: "import Flex from '@box-kite/react/components/flex';",
-      slots: [],
+      slots: ['default'],
       events: [],
       props: {},
       required: [],
@@ -1251,7 +1251,7 @@ const catalogManifest: CatalogManifest = {
     Grid: {
       description: '`Box` with `display: grid` on it — `inline` makes that `inline-grid`.',
       import: "import Grid from '@box-kite/react/components/grid';",
-      slots: [],
+      slots: ['default'],
       events: [],
       props: {},
       required: [],
@@ -1260,7 +1260,7 @@ const catalogManifest: CatalogManifest = {
     Icon: {
       description: 'Box props on an icon somebody else drew — lucide, Tabler, react-icons, an Iconify set, a raw `<svg>`.',
       import: "import Icon from '@box-kite/react/components/icon';",
-      slots: [],
+      slots: ['default'],
       events: [],
       props: { label: { type: 'string', description: 'Names the icon — `role="img"` and this text.' } },
       required: [],
@@ -1279,7 +1279,7 @@ const catalogManifest: CatalogManifest = {
     Sparkline: {
       description: 'A trend line with no axes, no legend and no labels: the shape of a series, small enough to sit in a table cell.',
       import: "import { Sparkline } from '@box-kite/react/components/chart';",
-      slots: [],
+      slots: ['default'],
       events: [],
       props: {
         data: { type: 'array', items: { type: 'number' }, description: 'The numbers to draw, oldest first.' },
@@ -1297,7 +1297,7 @@ const catalogManifest: CatalogManifest = {
     ProgressRing: {
       description: 'A circular progress arc: one value from 0 to 1, drawn as the filled part of a ring over its own track.',
       import: "import { ProgressRing } from '@box-kite/react/components/chart';",
-      slots: [],
+      slots: ['default'],
       events: [],
       props: {
         value: { type: 'number', description: 'How full the arc is, from 0 to 1.' },
@@ -1310,7 +1310,7 @@ const catalogManifest: CatalogManifest = {
       description:
         'A `ProgressRing` that stops short of a full turn: `sweep` is how far round the dial goes and `start` where it begins, so a value reads as a needle position rather than as a proportion.',
       import: "import { Gauge } from '@box-kite/react/components/chart';",
-      slots: [],
+      slots: ['default'],
       events: [],
       props: {
         sweep: { type: 'number', description: 'How far round the dial goes, in degrees.' },
@@ -1323,7 +1323,7 @@ const catalogManifest: CatalogManifest = {
       description:
         'A ring of segments, each drawn as its share of the whole — so the values need no total, and the colours cycle through the six a `ChartContainer` declares.',
       import: "import { MiniDonut } from '@box-kite/react/components/chart';",
-      slots: [],
+      slots: ['default'],
       events: [],
       props: {
         data: { type: 'array', items: { type: 'number' }, description: 'One value per segment.' },
@@ -1336,7 +1336,7 @@ const catalogManifest: CatalogManifest = {
       description:
         'The theming bridge for a chart somebody else draws: a Box that declares `--chart-1` … `--chart-6` in both themes plus one `--color-<series>` per series, so a Recharts `<Line stroke="var(--color-revenue)">` names no colour of its own and its dark mode belongs to the page.',
       import: "import { ChartContainer } from '@box-kite/react/components/chart';",
-      slots: [],
+      slots: ['default'],
       events: [],
       props: {},
       required: [],
