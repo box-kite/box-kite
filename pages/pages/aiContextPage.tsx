@@ -176,7 +176,7 @@ export default function AiContextPage() {
   docs/props.md            every prop, the CSS it writes and one measured example
   docs/components.md       every component, its import, and whether it renders on a server
   docs/a11y.md             the behaviour hooks, for a pattern this library does not ship
-  docs/catalog.md          what a generated UI may build, as JSON Schema
+  docs/catalog.md          what a generated UI may build, and how it renders
   BOX_KITE_AI_CONTEXT.md   the long-form reference
   .claude/skills/box-kite/ the same rules as a skill, with four references beside it
   .cursor/rules/           and as a Cursor rule, to copy into .cursor/rules/`}
@@ -253,17 +253,25 @@ curl ${SITE_URL}/llms-full.txt # all of it in one file, for a tool that indexes 
             Everything above is for whatever writes your code. <Mono>catalog()</Mono> is the other half: what a model is allowed to compose
             while your app is running. It describes every component and every value its props take, as JSON Schema — so a generated tree can
             be validated before it renders, and a colour it asks for has to be one the theme has. The prop registry is read live, so a{' '}
-            <Mono>Box.extend()</Mono> prop is in the catalog with nothing regenerated.
+            <Mono>Box.extend()</Mono> prop is in the catalog with nothing regenerated. <Mono>&lt;SpecRenderer&gt;</Mono> is what renders the
+            answer: a name the app did not register renders nothing, a prop the schema refuses is dropped, and the only prop that can become
+            a function is one the catalog calls an event.
           </Box>
           <Code
             language="javascript"
             code={`import { catalog } from '@box-kite/react/catalog';
+import SpecRenderer, { createSpecRegistry } from '@box-kite/react/spec';
 
 // The allow-list is yours: the library ships everything it can render.
 const allowed = catalog({ include: ['Flex', 'H2', 'P', 'Sparkline'], styleProps: ['d', 'gap', 'p', 'bgColor', 'fontSize'] });
 
 allowed.components.Flex.props;   // a strict JSON Schema, ready for a structured-output API
-allowed.rules;                   // the dividers — what a schema cannot say and a prompt must`}
+allowed.rules;                   // the dividers — what a schema cannot say and a prompt must
+
+// And the other half: render what came back, against the components this app allows.
+const registry = createSpecRegistry({ catalog: allowed, components: { Flex, H2, P, Sparkline } });
+
+<SpecRenderer spec={spec} registry={registry} data={data} onAction={(action) => run(action)} />;`}
           />
         </Box>
       </Reveal>

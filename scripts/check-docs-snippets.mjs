@@ -31,6 +31,7 @@ const PACKAGE_PATHS = {
   '@box-kite/react/catalog': ['src/catalog.ts'],
   '@box-kite/core': ['src/core.ts'],
   '@box-kite/react/rsc': ['src/rsc.ts'],
+  '@box-kite/react/spec': ['src/spec.ts'],
   '@box-kite/react/ssg': ['src/ssg.ts'],
   '@box-kite/core/types': ['src/types.ts'],
   '@box-kite/react/components/*': ['src/components/*'],

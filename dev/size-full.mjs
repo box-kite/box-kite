@@ -7,8 +7,9 @@
 // namespace, so nothing in it tree-shakes here — this and the core budget are the two numbers that move
 // when the engine gains an export, even one no component reaches.
 //
-// `catalog` is deliberately absent: it is opt-in and 15 KB gzipped of it is prose, so counting it would
-// stop this being the figure a consumer downloads.
+// `catalog` and `spec` are deliberately absent: both are opt-in halves of the generative-UI story — one is
+// 15 KB gzipped of prose and the other renders components it is handed — so counting either would stop
+// this being the figure a consumer downloads.
 import * as box from '../dist/box.mjs';
 import * as a11y from '../dist/a11y.mjs';
 import * as anchor from '../dist/anchor.mjs';

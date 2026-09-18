@@ -39,6 +39,11 @@
       "import": "./catalog.mjs",
       "require": "./catalog.cjs"
     },
+    "./spec": {
+      "types": "./spec.d.ts",
+      "import": "./spec.mjs",
+      "require": "./spec.cjs"
+    },
     "./ssg": {
       "types": "./ssg.d.ts",
       "import": "./ssg.mjs",
@@ -141,6 +146,16 @@
       ],
       "gzip": true,
       "limit": "44.61 KB"
+    },
+    {
+      "name": "Spec renderer (spec entry)",
+      "path": "dist/spec.mjs",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "gzip": true,
+      "limit": "4.44 KB"
     },
     {
       "name": "Core engine (@box-kite/core, no React)",

@@ -26,7 +26,7 @@ const DOCS = [
   ['components.md', 'every component, its import specifier and whether it renders on a server'],
   ['a11y.md', `the behaviour hooks (\`${PACKAGE_NAME}/a11y\`) for a pattern this library does not ship`],
   ['anchor.md', `where a floating layer goes (\`${PACKAGE_NAME}/anchor\`), in CSS and in the measured fallback`],
-  ['catalog.md', `what a generated UI may build (\`${PACKAGE_NAME}/catalog\`), as JSON Schema`],
+  ['catalog.md', `what a generated UI may build (\`${PACKAGE_NAME}/catalog\`) and how it renders (\`${PACKAGE_NAME}/spec\`)`],
 ];
 
 const read = (file) => readFileSync(join(root, file), 'utf8');

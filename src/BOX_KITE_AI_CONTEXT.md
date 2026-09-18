@@ -2927,3 +2927,71 @@ allowed.tokens; // the colours, the @keyframes names and the style-tree nodes a 
   ~4.6 MB serialized. `include`, `exclude` and `styleProps` are how an app narrows it.
 
 Full reference: `docs/catalog.md`.
+
+---
+
+## The spec renderer (`@box-kite/react/spec`)
+
+The other half of the catalog: the catalog says what a model may write, this renders what it wrote.
+Nothing in it imports Box — the components are the app's, handed over in a registry — so the entry
+carries no engine.
+
+```tsx
+import { catalog } from '@box-kite/react/catalog';
+import Flex from '@box-kite/react/components/flex';
+import { H2, P } from '@box-kite/react/components/semantics';
+import SpecRenderer, { createSpecRegistry } from '@box-kite/react/spec';
+
+const allowed = catalog({ include: ['Flex', 'H2', 'P'], styleProps: ['d', 'gap', 'p', 'bgColor', 'fontSize'] });
+const registry = createSpecRegistry({ catalog: allowed, components: { Flex, H2, P } });
+
+<SpecRenderer spec={spec} registry={registry} data={data} onAction={(action, details) => run(action, details)} />;
+```
+
+A node is JSON, and these are all the fields it has:
+
+| Field      | What it is                                                                                   |
+| ---------- | -------------------------------------------------------------------------------------------- |
+| `type`     | The component. A name the registry does not hold renders nothing.                            |
+| `props`    | Everything that component's own schema allows. A prop it refuses is dropped, not the node.   |
+| `children` | The default slot: nodes, text, or `{ $data }` references to text.                            |
+| `slots`    | A named slot (`Tooltip`'s `content`, a control's `label`).                                   |
+| `on`       | An event the catalog lists, bound to an action name: `{ onClick: 'refresh' }`.               |
+| `repeat`   | A reference to an array. The node renders once per item, with `$item` and `$index` in scope. |
+| `key`      | React's key, where a node's identity has to survive a re-order.                              |
+
+```jsonc
+{
+  "type": "Flex",
+  "props": { "d": "column", "gap": 4, "bgColor": "sky-500/10" },
+  "children": [
+    { "type": "H2", "props": { "fontSize": 24 }, "children": ["Revenue"] },
+    { "type": "P", "children": [{ "$data": "summary" }] },
+  ],
+}
+```
+
+- **The registry is the allow-list.** `createSpecRegistry({ catalog, components })` pairs an
+  implementation with the catalog's rules for it; a component of your own takes `{ component, props,
+slots, events }` with its own JSON Schema, and one registered **without** a schema takes no props at
+  all.
+- **Only an `event` can become a function.** `on` binds nothing else, and what an action does is the
+  host's — `onAction(action, { payload, args, prop, component, path })`. There is no tag from the
+  spec, no `eval` and no `dangerouslySetInnerHTML`.
+- **A reference resolves before it is validated.** `{ $data: 'stats.revenue' }` (a dot path or a JSON
+  Pointer), `{ $item: 'label' }` and `{ $index: true }` read from `data`, own properties only, and the
+  resolved value is what the schema judges.
+- **A partial spec is the normal case.** A node with no `type` yet renders nothing and reports nothing;
+  a half-written value fails its schema and is dropped until it is whole.
+- **One node cannot take the tree down.** Every node has an error boundary; `fallback` is what stands
+  in its place (nothing, by default), and `maxNodes` (1,000) and `maxDepth` (32) end a runaway tree.
+- **Everything refused is reported.** `onIssues` gets a `{ code, path, message, component, prop }` per
+  render whose issues changed: `unknown-component`, `unknown-prop`, `invalid-prop`, `unknown-slot`,
+  `unknown-event`, `unresolved-data`, `invalid-child`, `invalid-repeat`, `too-deep`, `too-many-nodes`,
+  `render-error`.
+
+`specSchema(registry, { bindings, root })` is the other direction: one JSON Schema for a whole tree,
+for `streamObject`, a structured-output API or `z.fromJSONSchema`. `renderSpec(spec, options)` is the
+same walk with no hook in it — it returns `{ element, issues }`, so a static spec renders on a server.
+
+Full reference: `docs/catalog.md`.

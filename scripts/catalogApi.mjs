@@ -28,6 +28,18 @@ const STYLED = ['BoxProps', 'BoxStyleProps'];
 /** A prop whose name is this and whose type is a node is the ordinary children slot, not a named one. */
 const CHILDREN = 'children';
 
+/**
+ * The elements that take no children at all. A component says which one it renders by the tag it hands
+ * Box, so the set is read off its source rather than listed by hand: `<Box tag="input">` is `Textbox`,
+ * and the same line is what makes `Checkbox` a leaf while `Flex` is not.
+ */
+const VOID_TAGS = ['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'source', 'textarea', 'track', 'wbr'];
+
+/** Whether this component renders one of them, and so cannot carry the default slot. */
+function isLeaf(source) {
+  return VOID_TAGS.some((tag) => (source ?? '').includes(`tag="${tag}"`));
+}
+
 /** A name a spec can write: the component, or one of its dotted parts. */
 const IDENTIFIER = /^[A-Z]\w*(\.[A-Z]\w*)*$/;
 
@@ -177,7 +189,9 @@ function schemaFor(text, file, declared, depth = 0) {
   const union = members(type);
 
   if (union.length > 1) {
-    const mapped = union.filter((member) => member !== 'undefined' && member !== 'null').map((member) => schemaFor(member, file, declared, depth + 1));
+    const mapped = union
+      .filter((member) => member !== 'undefined' && member !== 'null')
+      .map((member) => schemaFor(member, file, declared, depth + 1));
 
     if (mapped.some((schema) => schema === null || schema.event || schema.slot)) return null;
 
@@ -240,6 +254,16 @@ function manifestComponent({ file, props: interfaceName }, api, declared) {
     if (prop.required) required.push(prop.name);
   }
 
+  const styled = isStyled(file, interfaceName, declared);
+
+  // A Box renders its children, and `Flex`, `Button` and `Icon` declare none of their own — they take
+  // Box's props whole, so nothing in their props interface says where children go, and the catalog said
+  // a layout component could hold nothing (bug #180). Three exceptions, each of them a component that
+  // has already said where content goes: a leaf element takes no children at all, a render-prop
+  // `children` is a function no JSON can carry (it lands in `events`), and a component declaring a named
+  // slot has named the one it means.
+  if (styled && !slots.length && !events.includes(CHILDREN) && !isLeaf(declared.sources.get(file))) slots.push('default');
+
   return {
     description: firstSentence(api.description),
     import: api.import,
@@ -247,7 +271,7 @@ function manifestComponent({ file, props: interfaceName }, api, declared) {
     events,
     props,
     required,
-    styled: isStyled(file, interfaceName, declared),
+    styled,
   };
 }
 
@@ -261,7 +285,15 @@ function elements(sources) {
   const source = sources.get(SEMANTICS) ?? '';
   const entry = (name, tag, importLine, description) => [
     name,
-    { description, import: importLine, slots: ['default'], events: [], props: {}, required: [], styled: true },
+    {
+      description,
+      import: importLine,
+      slots: VOID_TAGS.includes(tag) ? [] : ['default'],
+      events: [],
+      props: {},
+      required: [],
+      styled: true,
+    },
   ];
 
   return Object.fromEntries([
@@ -272,7 +304,12 @@ function elements(sources) {
       'Any element at all, with every style prop on it: `tag` chooses the element where no component names one.',
     ),
     ...[...source.matchAll(/export const (\w+) = semantic\('([\w-]+)'\)/g)].map(([, name, tag]) =>
-      entry(name, tag, `import { ${name} } from '@box-kite/react/components/semantics';`, `A \`<${tag}>\` element, with every style prop on it.`),
+      entry(
+        name,
+        tag,
+        `import { ${name} } from '@box-kite/react/components/semantics';`,
+        `A \`<${tag}>\` element, with every style prop on it.`,
+      ),
     ),
   ]);
 }
