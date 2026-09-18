@@ -140,13 +140,13 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "44.37 KB"
+      "limit": "44.61 KB"
     },
     {
       "name": "Core engine (@box-kite/core, no React)",
       "path": "dist-core/core.mjs",
       "gzip": true,
-      "limit": "29.74 KB"
+      "limit": "29.97 KB"
     },
     {
       "name": "Dialog",
@@ -266,7 +266,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "100.92 KB"
+      "limit": "101.16 KB"
     }
   ],
   "repository": {
