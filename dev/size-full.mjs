@@ -3,7 +3,12 @@
 // Add a line here when a new component entry is added to the build.
 //
 // The engine comes from its own package now, so this measures what a React consumer actually
-// downloads: @box-kite/react plus the @box-kite/core it depends on.
+// downloads: @box-kite/react plus the @box-kite/core it depends on. `@box-kite/core` is imported as a
+// namespace, so nothing in it tree-shakes here — this and the core budget are the two numbers that move
+// when the engine gains an export, even one no component reaches.
+//
+// `catalog` is deliberately absent: it is opt-in and 15 KB gzipped of it is prose, so counting it would
+// stop this being the figure a consumer downloads.
 import * as box from '../dist/box.mjs';
 import * as a11y from '../dist/a11y.mjs';
 import * as anchor from '../dist/anchor.mjs';

@@ -2210,7 +2210,7 @@ the element wrapping the bars, the rows and the pager. Every callback below is a
 | `columnFilters` / `onColumnFiltersChange`     | `ColumnFilters` / `(filters, { reason })`                | Controlled column filters; reason: `filter`/`clear`                                        |
 | `onCellEditsChange`                           | `(edits, { reason })`                                    | Every accepted edit, oldest first; reason: `edit`/`paste`/`clear`                          |
 | `onRangeChange`                               | `(range, { reason })`                                    | The block of cells marked, or `undefined`; reason: `select`/`extend`/`clear`               |
-| `onPaste`                                     | `(paste)`                                                | One Ctrl+V: `{ range, applied, rejected, skipped }`, once for the whole block               |
+| `onPaste`                                     | `(paste)`                                                | One Ctrl+V: `{ range, applied, rejected, skipped }`, once for the whole block              |
 
 `onSelectionChange(event)`, `onSortChange(key, dir)`, `onPageChange(page, size)` and
 `onPageSizeChange(size)` are the pre-contract spellings of the four above. They still fire; the
@@ -2564,7 +2564,6 @@ only gives it a bigger target.
   landed, so `range.values()` reads what the grid now shows. Everything it accepted lands in the same
   stream a typed value does: `onCellEditsChange(edits, { reason: 'paste' })`.
 
-
 ### ContextMenuConfig
 
 | Prop    | Type      | Default | Description                                                               |
@@ -2896,3 +2895,35 @@ Also accepts: `data` (TRow[]), `value`/`defaultValue`, `label`/`labelProps`, `mu
 3. **CSS variables**: In `:root` rules
 4. **Theme issues**: Ensure `<Box.Theme>` wraps your app
 5. **Layer theming**: a tooltip or dropdown popup stays where it was declared and inherits the theme; only the no-Popover-API fallback uses the `#box-kite-portal` container
+
+---
+
+## The catalog (`@box-kite/react/catalog`)
+
+What a **generated** UI is allowed to build, as JSON Schema — the runtime counterpart to everything
+above, which is for whatever writes the code at dev time. A generative-UI runtime (json-render,
+assistant-ui, CopilotKit, A2UI) takes a component catalog; this is that catalog, read off the live prop
+registry rather than written down.
+
+```ts
+import { catalog } from '@box-kite/react/catalog';
+
+const allowed = catalog({ include: ['Flex', 'H2', 'P', 'Sparkline'], styleProps: ['d', 'gap', 'p', 'bgColor', 'fontSize'] });
+
+allowed.components.Flex.props; // a strict JSON Schema: additionalProperties false, colours patterned to the palette
+allowed.rules; // the dividers — what a schema cannot state and a prompt must
+allowed.tokens; // the colours, the @keyframes names and the style-tree nodes a host may restyle
+```
+
+- **The engine says what a prop accepts, the manifest says what it means.** Values come off the live
+  registry, so a `Box.extend()` prop or colour is in the catalog with nothing regenerated — call
+  `catalog()` after the `extend()`. Prose is generated from the same JSDoc as the prop reference.
+- **A colour prop is a `pattern` over the palette**, so a generated tree cannot invent `#ff00ff`. Every
+  closed value list is an `enum`; a prop the registry leaves open is `{ type: 'string' }` with its
+  values as `examples`, never a constraint the library does not enforce.
+- **Function props are `events`** (named, for the host to bind) and a `ReactNode` prop is a **slot**
+  (`children` is `default`). A prop a JSON spec cannot express is left out rather than half-described.
+- **The allow-list is the app's.** `catalog()` with no options is all 78 components and all 221 props —
+  ~4.6 MB serialized. `include`, `exclude` and `styleProps` are how an app narrows it.
+
+Full reference: `docs/catalog.md`.

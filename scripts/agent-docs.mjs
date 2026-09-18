@@ -18,12 +18,15 @@ const A11Y_FILE = 'docs/a11y-primitives.md';
 
 const ANCHOR_FILE = 'docs/anchor-positioning.md';
 
+const CATALOG_FILE = 'docs/generative-ui.md';
+
 /** What `docs/index.md` says each file is, in the order it lists them. */
 const DOCS = [
   ['props.md', 'every prop, the CSS it writes and one measured example'],
   ['components.md', 'every component, its import specifier and whether it renders on a server'],
   ['a11y.md', `the behaviour hooks (\`${PACKAGE_NAME}/a11y\`) for a pattern this library does not ship`],
   ['anchor.md', `where a floating layer goes (\`${PACKAGE_NAME}/anchor\`), in CSS and in the measured fallback`],
+  ['catalog.md', `what a generated UI may build (\`${PACKAGE_NAME}/catalog\`), as JSON Schema`],
 ];
 
 const read = (file) => readFileSync(join(root, file), 'utf8');
@@ -224,6 +227,7 @@ export function writeAgentDocs() {
     ['docs/components.md', componentsFile(componentExports())],
     ['docs/a11y.md', read(A11Y_FILE)],
     ['docs/anchor.md', read(ANCHOR_FILE)],
+    ['docs/catalog.md', read(CATALOG_FILE)],
   ];
 
   mkdirSync(join(root, 'dist/docs'), { recursive: true });

@@ -21,6 +21,8 @@ export { default as Springs } from './core/springs';
 export { createStyleEngine, DEFAULT_STYLE_ELEMENT_ID } from './core/engine/styleEngine';
 export { default as getDefaultEngine } from './core/engine/defaultEngine';
 export { default as BoxExtends } from './core/extends/boxExtends';
+export * as BoxCatalogs from './core/catalog/boxCatalog';
+export type { BoxCatalog, CatalogComponent, CatalogManifest, CatalogOptions, CatalogSchema } from './core/catalog/catalogTypes';
 export type { StyleEngine, StyleEngineOptions, StylesConfiguration } from './core/engine/styleEngine';
 export { manualScheduler, microtaskScheduler, syncScheduler } from './core/engine/flushScheduler';
 export type { KeyframeStop, KeyframeStops, Keyframes } from './core/engine/keyframes';

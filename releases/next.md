@@ -12,6 +12,7 @@ _Unreleased. A PR that changes what a consumer sees adds its section here — se
 - **[Free here, paid elsewhere](#free-here-paid-elsewhere)** — fourteen data grid features against seven tiers of AG Grid, MUI X and TanStack, with what each one costs and where it was checked.
 - **[A fling renders where you are going](#a-fling-renders-where-you-are-going)** — the DataGrid keeps its rendered rows ahead of the scroll instead of on both sides of it: 36 rows around an 18-row screen where it used to be 58, and a fling at 125 frames a second where it was 81.
 - **[`npx shadcn add @box-kite/data-grid`](#npx-shadcn-add-box-kitedata-grid)** — three finished sections the shadcn CLI installs into your own repository, from a registry on box-kite.dev.
+- **[What an AI may build, as JSON Schema](#what-an-ai-may-build-as-json-schema)** — `catalog()` describes every component and every value its props take, so a generated UI can be validated before it renders and cannot invent a colour.
 - **[The DataGrid exports its types](#the-datagrid-exports-its-types)** — `ColumnType`, `GridDefinition`, `CellModel` and the rest come off `components/dataGrid` now instead of a path inside it.
 
 <!-- One bullet per section below, linking to it: **[Heading](#heading)** — one line on why it matters. -->
@@ -216,6 +217,65 @@ are inlined into the JSON at build time. So a block that stops compiling cannot 
 CLI writes is what the page is running.
 
 [The blocks](https://box-kite.dev/registry)
+
+## What an AI may build, as JSON Schema
+
+There is a new entry point, `@box-kite/react/catalog`. It answers the question a generative-UI runtime
+asks: which components may a model compose, and what may it put in their props? Everything else the package
+ships for AI is read at development time by whatever writes your code. This is the runtime half — what a
+model is allowed to build while your app is running.
+
+```ts
+import { catalog } from '@box-kite/react/catalog';
+
+// The allow-list is yours: the library ships everything it can render, and the app says what it wants.
+const allowed = catalog({ include: ['Flex', 'H2', 'P', 'Sparkline'], styleProps: ['d', 'gap', 'p', 'bgColor', 'fontSize'] });
+
+allowed.components.Flex.props; // a strict JSON Schema, ready for a structured-output API
+allowed.rules; // the dividers — what a schema cannot state and a prompt must
+```
+
+The reason this library can answer it at all is that the props already _are_ a constrained, serializable
+design language: a Box tree and a JSON UI spec are the same thing written twice. So a colour prop comes out
+as a pattern over the palette rather than a free string, and a generated tree that asks for `#ff00ff` fails
+validation instead of painting an off-brand card. Every closed value list is an `enum`, every component
+schema is `additionalProperties: false`, and a prop the registry genuinely leaves open is `{ type: 'string' }`
+with its listed values as `examples` — the catalog never states a constraint the library does not enforce.
+
+**Two sources meet in it, and neither would do alone.** What a prop _accepts_ is read off the live prop
+registry when you call `catalog()`, so a prop or a colour added by `Box.extend()` is in the catalog with
+nothing regenerated and no build step — call `catalog()` after the `extend()` that should be in it. What a
+prop _means_ is generated from the same JSDoc as the prop reference, because no registry entry knows that
+`fontSize` divides by 16. What neither can say is in `rules`: the dividers, the millisecond times, the
+unitless SVG lengths. Put those in the prompt — they are the mistakes that still validate and still render.
+
+Getting it into a runtime is one adapter. [json-render](https://json-render.dev) wants Zod, and
+`z.fromJSONSchema` is the whole of it:
+
+```ts
+const jsonRender = schema.createCatalog({
+  actions: {},
+  components: Object.fromEntries(
+    Object.entries(allowed.components).map(([name, component]) => [
+      name,
+      { props: z.fromJSONSchema(component.props), slots: component.slots, description: component.description, example: {} },
+    ]),
+  ),
+});
+```
+
+One thing to know if you use that runtime, measured against `@json-render/react` 0.20.0: its `propsOf`
+schema type resolves to `z.record(z.string(), z.unknown())` for any catalog holding more than one
+component, so `jsonRender.validate(spec)` checks which components a spec names and lets any props through.
+Each component's `props` is a self-contained schema for exactly this reason — check a node against its own
+before rendering it. The same schema serves a structured-output API, and any other runtime that takes a
+component catalog.
+
+Function props are listed as `events` rather than described, since a JSON spec cannot carry a function and
+the host is where binding one belongs. A `ReactNode` prop is a slot. A prop whose type a JSON spec cannot
+express is left out rather than half-described.
+
+[The catalog](https://box-kite.dev/ai-context)
 
 ## The DataGrid exports its types
 

@@ -14,6 +14,8 @@ export interface KeyframesRegistry {
   register(keyframes: Keyframes): void;
   /** Mark the names a rule just referenced, so the ones this registry knows reach the stylesheet. */
   use(names: readonly string[]): void;
+  /** Every sequence registered, used or not — the names `animation` and `animationName` may be given. */
+  names(): string[];
   hasPending(): boolean;
   /** The sequences waiting to be written, as `[name, stops]`, and they are no longer waiting after. */
   drainPending(): [string, KeyframeStops][];
@@ -76,6 +78,10 @@ export default function createKeyframesRegistry(): KeyframesRegistry {
 
         pending.set(name, stops);
       }
+    },
+
+    names() {
+      return [...registered.keys()];
     },
 
     hasPending() {
