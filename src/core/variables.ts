@@ -244,6 +244,8 @@ namespace Variables {
     hasPendingVariables(): boolean;
     /** Whether `name` was declared through `Box.extend({ variables })`. */
     isUserVariable(name: string): boolean;
+    /** All of them, for a catalog that has to say which tokens a colour prop accepts beside the palette. */
+    userVariableNames(): string[];
     /**
      * Forget which variables have been used, so the next `:root` block is built from scratch. Variables from
      * `Box.extend({ variables })` are registration rather than per-render state, and survive.
@@ -300,6 +302,10 @@ namespace Variables {
 
       isUserVariable(name: string) {
         return name in _userVariables;
+      },
+
+      userVariableNames() {
+        return Object.keys(_userVariables);
       },
 
       reset() {

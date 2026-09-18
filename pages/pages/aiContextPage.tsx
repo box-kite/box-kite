@@ -176,6 +176,7 @@ export default function AiContextPage() {
   docs/props.md            every prop, the CSS it writes and one measured example
   docs/components.md       every component, its import, and whether it renders on a server
   docs/a11y.md             the behaviour hooks, for a pattern this library does not ship
+  docs/catalog.md          what a generated UI may build, as JSON Schema
   BOX_KITE_AI_CONTEXT.md   the long-form reference
   .claude/skills/box-kite/ the same rules as a skill, with four references beside it
   .cursor/rules/           and as a Cursor rule, to copy into .cursor/rules/`}
@@ -238,6 +239,31 @@ curl ${SITE_URL}/props.md      # every prop, the CSS it writes, one measured exa
 curl ${SITE_URL}/skill.md      # the skill itself, for an agent with no install command
 curl ${SITE_URL}/box-kite.mdc  # and the Cursor rule
 curl ${SITE_URL}/llms-full.txt # all of it in one file, for a tool that indexes a site`}
+          />
+        </Box>
+      </Reveal>
+
+      {/* The catalog: what an AI may build at runtime, not what it writes at dev time */}
+      <Reveal delay={0.38}>
+        <Box mb={12}>
+          <Box tag="h3" fontSize={20} fontWeight={600} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }} mb={3}>
+            And what an AI may build at runtime
+          </Box>
+          <Box fontSize={14} lineHeight={22} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }} mb={5}>
+            Everything above is for whatever writes your code. <Mono>catalog()</Mono> is the other half: what a model is allowed to compose
+            while your app is running. It describes every component and every value its props take, as JSON Schema — so a generated tree can
+            be validated before it renders, and a colour it asks for has to be one the theme has. The prop registry is read live, so a{' '}
+            <Mono>Box.extend()</Mono> prop is in the catalog with nothing regenerated.
+          </Box>
+          <Code
+            language="javascript"
+            code={`import { catalog } from '@box-kite/react/catalog';
+
+// The allow-list is yours: the library ships everything it can render.
+const allowed = catalog({ include: ['Flex', 'H2', 'P', 'Sparkline'], styleProps: ['d', 'gap', 'p', 'bgColor', 'fontSize'] });
+
+allowed.components.Flex.props;   // a strict JSON Schema, ready for a structured-output API
+allowed.rules;                   // the dividers — what a schema cannot say and a prompt must`}
           />
         </Box>
       </Reveal>

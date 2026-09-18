@@ -34,6 +34,11 @@
       "import": "./anchor.mjs",
       "require": "./anchor.cjs"
     },
+    "./catalog": {
+      "types": "./catalog.d.ts",
+      "import": "./catalog.mjs",
+      "require": "./catalog.cjs"
+    },
     "./ssg": {
       "types": "./ssg.d.ts",
       "import": "./ssg.mjs",
@@ -75,6 +80,8 @@
     "docs:props": "node scripts/check-props-api.mjs --fix",
     "check:components": "node scripts/check-components-api.mjs",
     "docs:components": "node scripts/check-components-api.mjs --fix",
+    "check:catalog": "node scripts/check-catalog-api.mjs",
+    "docs:catalog": "node scripts/check-catalog-api.mjs --fix",
     "check:conventions": "node scripts/check-component-conventions.mjs",
     "check:agents": "node scripts/check-agent-files.mjs",
     "docs:agents": "node scripts/check-agent-files.mjs --fix",
@@ -93,7 +100,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "30.44 KB"
+      "limit": "30.71 KB"
     },
     {
       "name": "Box in a Server Component (react-server entry)",
@@ -103,7 +110,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "28.94 KB"
+      "limit": "29.21 KB"
     },
     {
       "name": "Behavior primitives (a11y entry)",
@@ -126,10 +133,20 @@
       "limit": "2.25 KB"
     },
     {
+      "name": "Component catalog (catalog entry)",
+      "path": "dist/catalog.mjs",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "gzip": true,
+      "limit": "44.37 KB"
+    },
+    {
       "name": "Core engine (@box-kite/core, no React)",
       "path": "dist-core/core.mjs",
       "gzip": true,
-      "limit": "28.21 KB"
+      "limit": "29.74 KB"
     },
     {
       "name": "Dialog",
@@ -139,7 +156,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "32.59 KB"
+      "limit": "32.85 KB"
     },
     {
       "name": "Popover",
@@ -149,7 +166,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "34.06 KB"
+      "limit": "34.31 KB"
     },
     {
       "name": "Menu",
@@ -159,7 +176,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "36.31 KB"
+      "limit": "36.57 KB"
     },
     {
       "name": "Accordion",
@@ -169,7 +186,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "31.80 KB"
+      "limit": "32.06 KB"
     },
     {
       "name": "Tabs",
@@ -179,7 +196,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "33.00 KB"
+      "limit": "33.27 KB"
     },
     {
       "name": "Slider",
@@ -189,7 +206,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "32.17 KB"
+      "limit": "32.44 KB"
     },
     {
       "name": "Progress",
@@ -199,7 +216,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "30.32 KB"
+      "limit": "30.59 KB"
     },
     {
       "name": "Toaster",
@@ -209,7 +226,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "33.82 KB"
+      "limit": "34.08 KB"
     },
     {
       "name": "Combobox",
@@ -219,7 +236,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "39.59 KB"
+      "limit": "39.84 KB"
     },
     {
       "name": "DataGrid",
@@ -229,7 +246,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "77.5 KB"
+      "limit": "77.74 KB"
     },
     {
       "name": "DataGrid export, the chunk fetched on the first press",
@@ -249,7 +266,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "99.5 KB"
+      "limit": "100.92 KB"
     }
   ],
   "repository": {
@@ -293,6 +310,8 @@
     "@eslint/js": "^10.0.1",
     "@iconify-json/simple-icons": "^1.2.94",
     "@iconify/react": "^6.0.2",
+    "@json-render/core": "^0.20.0",
+    "@json-render/react": "^0.20.0",
     "@mui/material": "^9.4.0",
     "@mui/x-data-grid": "^9.14.0",
     "@size-limit/preset-small-lib": "^13.0.3",
@@ -338,6 +357,7 @@
     "unplugin-icons": "^23.0.1",
     "vite": "^8.2.0",
     "vite-plugin-dts": "^5.0.3",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.10",
+    "zod": "^4.6.5"
   }
 }

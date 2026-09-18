@@ -24,6 +24,7 @@ import {
   StyleQuery,
   themeGroupClass,
 } from '../boxStyles';
+import { CatalogSource } from '../catalog/boxCatalog';
 import Containers from '../containers';
 import { BoxStyle, BoxStyleValue } from '../coreTypes';
 import defaultBoxComponents, { BoxComponent, Components } from '../extends/boxComponents';
@@ -120,6 +121,12 @@ export interface StyleEngine {
   keyframes<T extends Keyframes>(keyframes: T): T;
   getComponentsStyles(): Components;
   getVariableValue(name: string): string;
+  /**
+   * What this engine can render, for `catalog()` to describe: the prop registry with `extend()`'s additions
+   * in it, every colour name a colour prop takes, and the `@keyframes` sequences registered. One method
+   * rather than three getters, because nothing but a catalog has a use for any of them.
+   */
+  getCatalogSource(): Pick<CatalogSource, 'styleProps' | 'colors' | 'animations'>;
 }
 
 export const DEFAULT_STYLE_ELEMENT_ID = 'box-kite-styles';
@@ -1039,6 +1046,14 @@ export function createStyleEngine(options: StyleEngineOptions = {}): StyleEngine
       scheduleFlush();
 
       return value;
+    },
+
+    getCatalogSource() {
+      return {
+        styleProps: cssStyles,
+        colors: [...Object.keys(Palette.colors), ...variables.userVariableNames()],
+        animations: keyframesRegistry.names(),
+      };
     },
   };
 }
