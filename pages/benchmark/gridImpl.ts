@@ -23,6 +23,8 @@ export interface GridImpl {
   Grid: ComponentType<BenchGridProps>;
   /** The element that scrolls, inside the container the grid was mounted in. */
   scroller: (container: HTMLElement) => HTMLElement | null;
+  /** What a painted body row looks like to a hit test — the blank-space probe's whole knowledge of a grid. */
+  rowSelector: string;
   /** Sort by the salary column the way a reader would: this library's own header press. */
   sort: (container: HTMLElement) => void;
 }

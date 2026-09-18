@@ -27,21 +27,59 @@ describe('ViewportModel', () => {
   });
 
   describe('fixed-height windowing', () => {
-    it('at scrollTop 0: startIndex 0, take = visibleRows + 2*preload, translateY 0', () => {
+    it('at scrollTop 0: startIndex 0, take = the viewport plus both buffers, translateY 0', () => {
       const grid = getGrid();
       const w = grid.viewport.window(0);
       expect(w.startIndex).toBe(0);
-      expect(w.take).toBe(10 + ViewportModel.ROWS_TO_PRELOAD * 2);
+      expect(w.take).toBe(10 + 2 + ViewportModel.ROWS_BEHIND + ViewportModel.ROWS_AHEAD);
       expect(w.translateY).toBe(0);
     });
 
-    it('scrolling down moves the window start back by the preload margin', () => {
+    it('scrolling down keeps only the small buffer behind the viewport', () => {
       const grid = getGrid();
       const rowHeight = grid.rowHeight;
       // scroll to row 50
-      const w = grid.viewport.window(rowHeight * 50);
-      expect(w.startIndex).toBe(50 - ViewportModel.ROWS_TO_PRELOAD);
+      const w = grid.viewport.window(rowHeight * 50, 'down');
+      expect(w.startIndex).toBe(50 - ViewportModel.ROWS_BEHIND);
       expect(w.translateY).toBe(w.startIndex * rowHeight);
+    });
+
+    it('scrolling up puts the cover above the viewport and keeps the window the same size', () => {
+      const grid = getGrid();
+      const down = grid.viewport.window(grid.rowHeight * 50, 'down');
+      const up = grid.viewport.window(grid.rowHeight * 50, 'up');
+
+      expect(up.startIndex).toBe(50 - ViewportModel.ROWS_AHEAD);
+      expect(up.take).toBe(down.take);
+    });
+
+    it('covers more than one frame of a hard flick ahead of the viewport, both ways', () => {
+      const grid = getGrid({}, 1000);
+      const { rowHeight } = grid;
+      const scrollTop = rowHeight * 500;
+      // A hard flick reaches about ten thousand pixels a second, which is 167 of them in a 60 fps frame.
+      const frames = (px: number) => px / (10000 / 60);
+
+      const down = grid.viewport.window(scrollTop, 'down');
+      expect(frames((down.startIndex + down.take) * rowHeight - (scrollTop + grid.viewport.viewHeight!))).toBeGreaterThan(2);
+
+      const up = grid.viewport.window(scrollTop, 'up');
+      expect(frames(scrollTop - up.startIndex * rowHeight)).toBeGreaterThan(2);
+    });
+
+    it('the rendered window always covers the viewport itself, wherever the scroll stops', () => {
+      const grid = getGrid({}, 1000);
+      const { rowHeight, viewport } = grid;
+
+      for (const offset of [0, 1, rowHeight / 2, rowHeight - 1, rowHeight * 3.7]) {
+        for (const direction of ['down', 'up'] as const) {
+          const scrollTop = rowHeight * 200 + offset;
+          const w = viewport.window(scrollTop, direction);
+
+          expect(w.startIndex * rowHeight).toBeLessThanOrEqual(scrollTop);
+          expect((w.startIndex + w.take) * rowHeight).toBeGreaterThanOrEqual(scrollTop + viewport.viewHeight!);
+        }
+      }
     });
 
     it('totalHeight = rowCount * rowHeight and viewHeight is fixed', () => {
@@ -72,11 +110,20 @@ describe('ViewportModel', () => {
       expect(grid.viewport.hasDetailRows).toBe(true);
       const { offsets } = grid.rowOffsets.value;
       const target = offsets[40];
-      const w = grid.viewport.window(target);
-      // start is the found index minus preload
-      expect(w.startIndex).toBe(Math.max(0, 40 - ViewportModel.ROWS_TO_PRELOAD));
+      const w = grid.viewport.window(target, 'down');
+      // start is the found index minus the rows kept behind it
+      expect(w.startIndex).toBe(Math.max(0, 40 - ViewportModel.ROWS_BEHIND));
       expect(w.translateY).toBe(offsets[w.startIndex]);
       expect(w.totalHeight).toBe(grid.rowOffsets.value.totalHeight);
+    });
+  });
+
+  describe('directionOf', () => {
+    it('reads the direction off the move, and a stop keeps the one it arrived in', () => {
+      expect(ViewportModel.directionOf(0, 100, 'up')).toBe('down');
+      expect(ViewportModel.directionOf(100, 0, 'down')).toBe('up');
+      expect(ViewportModel.directionOf(100, 100, 'down')).toBe('down');
+      expect(ViewportModel.directionOf(100, 100, 'up')).toBe('up');
     });
   });
 

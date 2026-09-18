@@ -10,24 +10,25 @@
       "rows": 100000,
       "columns": 20,
       "runs": 5,
-      "dataMs": 153,
-      "frameBaseline": 6.1,
+      "dataMs": 155,
+      "frameBaseline": 7.9,
       "scenarios": [
-        { "scenario": "mount", "ms": 86.7, "min": 75.5, "max": 87.8, "blockingMs": 0 },
+        { "scenario": "mount", "ms": 80.6, "min": 64.8, "max": 87.1, "blockingMs": 0 },
         {
           "scenario": "scroll",
-          "ms": 12.3,
-          "min": 2.1,
-          "max": 26.6,
-          "fps": 81,
-          "workMs": 19.8,
-          "worstFrame": 24.2,
-          "slowFrames": 33,
+          "ms": 8,
+          "min": 7.1,
+          "max": 23.7,
+          "fps": 125,
+          "workMs": 15.3,
+          "worstFrame": 22.3,
+          "slowFrames": 2,
+          "blankFrames": 0,
           "blockingMs": 0
         },
-        { "scenario": "filter", "ms": 52.8, "min": 50, "max": 77.9, "blockingMs": 0 },
-        { "scenario": "sort", "ms": 89.6, "min": 82.7, "max": 92.8, "blockingMs": 12 },
-        { "scenario": "group", "ms": 41, "min": 31.1, "max": 46.1, "blockingMs": 0 }
+        { "scenario": "filter", "ms": 41.8, "min": 34.1, "max": 54, "blockingMs": 0 },
+        { "scenario": "sort", "ms": 76.4, "min": 70.4, "max": 85.9, "blockingMs": 12 },
+        { "scenario": "group", "ms": 39.2, "min": 34.2, "max": 54.3, "blockingMs": 0 }
       ]
     },
     {
@@ -37,23 +38,24 @@
       "rows": 100000,
       "columns": 20,
       "runs": 5,
-      "dataMs": 153,
-      "frameBaseline": 6.1,
+      "dataMs": 155,
+      "frameBaseline": 7.7,
       "scenarios": [
-        { "scenario": "mount", "ms": 69.3, "min": 67.3, "max": 122, "blockingMs": 0 },
+        { "scenario": "mount", "ms": 75.5, "min": 61.9, "max": 79.8, "blockingMs": 0 },
         {
           "scenario": "scroll",
-          "ms": 6.1,
-          "min": 1.1,
-          "max": 25.6,
-          "fps": 164,
-          "workMs": 2.6,
-          "worstFrame": 10.7,
+          "ms": 7.7,
+          "min": 7,
+          "max": 23.1,
+          "fps": 130,
+          "workMs": 3.4,
+          "worstFrame": 8.8,
           "slowFrames": 0,
+          "blankFrames": 0,
           "blockingMs": 0
         },
-        { "scenario": "filter", "ms": 59.8, "min": 49.9, "max": 91.5, "blockingMs": 3 },
-        { "scenario": "sort", "ms": 86.1, "min": 84.2, "max": 87, "blockingMs": 28 },
+        { "scenario": "filter", "ms": 49.1, "min": 39.3, "max": 56, "blockingMs": 0 },
+        { "scenario": "sort", "ms": 86.5, "min": 83, "max": 90.6, "blockingMs": 29 },
         { "scenario": "group", "unavailable": "Enterprise" }
       ]
     },
@@ -64,13 +66,13 @@
       "rows": 100000,
       "columns": 20,
       "runs": 5,
-      "dataMs": 153,
-      "frameBaseline": 6,
+      "dataMs": 155,
+      "frameBaseline": 7.9,
       "scenarios": [
-        { "scenario": "mount", "ms": 34.5, "min": 30.6, "max": 45.9, "blockingMs": 0 },
+        { "scenario": "mount", "ms": 35.2, "min": 29.6, "max": 42.8, "blockingMs": 0 },
         { "scenario": "scroll", "unavailable": "paginated" },
-        { "scenario": "filter", "ms": 47.1, "min": 43.9, "max": 56.3, "blockingMs": 0 },
-        { "scenario": "sort", "ms": 99.3, "min": 94.7, "max": 100, "blockingMs": 45 },
+        { "scenario": "filter", "ms": 44.1, "min": 40.6, "max": 49.2, "blockingMs": 0 },
+        { "scenario": "sort", "ms": 93, "min": 83.5, "max": 98.6, "blockingMs": 38 },
         { "scenario": "group", "unavailable": "Premium" }
       ]
     },
@@ -81,24 +83,25 @@
       "rows": 100000,
       "columns": 20,
       "runs": 5,
-      "dataMs": 153,
-      "frameBaseline": 6,
+      "dataMs": 155,
+      "frameBaseline": 7.9,
       "scenarios": [
-        { "scenario": "mount", "ms": 76.4, "min": 60.4, "max": 82.2, "blockingMs": 20 },
+        { "scenario": "mount", "ms": 80.3, "min": 61.6, "max": 84, "blockingMs": 23 },
         {
           "scenario": "scroll",
-          "ms": 6,
-          "min": 1.4,
-          "max": 14.1,
-          "fps": 167,
-          "workMs": 2.8,
-          "worstFrame": 9.4,
+          "ms": 7.7,
+          "min": 2.2,
+          "max": 16.9,
+          "fps": 130,
+          "workMs": 3,
+          "worstFrame": 10,
           "slowFrames": 0,
+          "blankFrames": 0,
           "blockingMs": 0
         },
-        { "scenario": "filter", "ms": 42.3, "min": 40, "max": 48.4, "blockingMs": 0 },
-        { "scenario": "sort", "ms": 126, "min": 107, "max": 135, "blockingMs": 70 },
-        { "scenario": "group", "ms": 66.4, "min": 52.8, "max": 75, "blockingMs": 10 }
+        { "scenario": "filter", "ms": 43.7, "min": 36.7, "max": 51.5, "blockingMs": 0 },
+        { "scenario": "sort", "ms": 129, "min": 112, "max": 140, "blockingMs": 73 },
+        { "scenario": "group", "ms": 61.8, "min": 60.4, "max": 69, "blockingMs": 5 }
       ]
     }
   ]

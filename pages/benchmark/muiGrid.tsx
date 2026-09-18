@@ -54,6 +54,7 @@ const impl: GridImpl = {
   version,
   Grid: MuiGrid,
   scroller: (container) => container.querySelector<HTMLElement>('.MuiDataGrid-virtualScroller'),
+  rowSelector: '.MuiDataGrid-row',
   sort: (container) => {
     const header = container.querySelector<HTMLElement>(`.MuiDataGrid-columnHeader[data-field="${SORT_COLUMN}"]`);
     header?.querySelector<HTMLElement>('.MuiDataGrid-columnHeaderTitleContainer')?.click();

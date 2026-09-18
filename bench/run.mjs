@@ -246,6 +246,7 @@ function printRun(run, budgets) {
       budget === undefined ? '' : `budget ${String(budget).padStart(6)} ms`,
       over ? 'OVER' : '',
       scenario.fps === undefined ? '' : `${scenario.workMs} ms of work, ${scenario.fps} fps, worst frame ${scenario.worstFrame} ms`,
+      scenario.blankFrames === undefined ? '' : `${scenario.blankFrames}% of a hard flick blank`,
     ]
       .filter(Boolean)
       .join('  ');
@@ -282,6 +283,19 @@ async function main() {
             return budget !== undefined && scenario.ms > budget;
           })
           .map((scenario) => `${run.impl}/${scenario.scenario}`),
+      );
+
+      // The one budget a faster number cannot satisfy: a window with no cover ahead of it renders fewer
+      // rows and so reads quicker on every scenario there is, and only the blank-space pass notices. Loose
+      // on purpose — a runner half the speed of a laptop blanks some frames of a hard flick honestly,
+      // where the regression this catches measures a hundred percent.
+      breaches.push(
+        ...runs.flatMap((run) => {
+          const budget = budgets?.[run.impl]?.blankFrames;
+          const measured = run.scenarios.find((scenario) => scenario.scenario === 'scroll')?.blankFrames;
+
+          return budget !== undefined && measured !== undefined && measured > budget ? [`${run.impl}/blank (${measured}%)`] : [];
+        }),
       );
 
       if (breaches.length > 0) {

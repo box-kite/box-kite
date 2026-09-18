@@ -121,7 +121,7 @@ function TanstackGrid({ data, filtered, grouped }: BenchGridProps) {
             const row = rows[item.index];
 
             return (
-              <div key={row.id} style={{ ...rowStyle, height: ROW_HEIGHT, transform: `translateY(${item.start}px)` }}>
+              <div key={row.id} data-bench-row style={{ ...rowStyle, height: ROW_HEIGHT, transform: `translateY(${item.start}px)` }}>
                 {row.getAllCells().map((cell, index) => (
                   <div key={cell.id} style={cellStyles[index]}>
                     {cellContent(cell)}
@@ -210,6 +210,8 @@ const impl: GridImpl = {
   version,
   Grid: TanstackGrid,
   scroller: (container) => container.firstElementChild as HTMLElement | null,
+  // The attribute exists for the probe: the rows this UI writes carry no class and no role of their own.
+  rowSelector: '[data-bench-row]',
   sort: (container) => container.querySelector<HTMLElement>(`[data-column="${SORT_COLUMN}"]`)?.click(),
 };
 

@@ -32,14 +32,14 @@ nothing to whoever reads them:
 BENCH_MACHINE="Windows 11 laptop, 12-core AMD Ryzen" npm run bench -- --runs 5
 ```
 
-| Flag               | Default  | What it does                                                            |
-| ------------------ | -------- | ----------------------------------------------------------------------- |
-| `--runs <n>`       | `5`      | How many times each operation is measured. The table prints the median. |
-| `--rows <n>`       | `100000` | How many rows to generate.                                              |
+| Flag               | Default    | What it does                                                                                  |
+| ------------------ | ---------- | --------------------------------------------------------------------------------------------- |
+| `--runs <n>`       | `5`        | How many times each operation is measured. The table prints the median.                       |
+| `--rows <n>`       | `100000`   | How many rows to generate.                                                                    |
 | `--impls <ids>`    | `box-kite` | Comma-separated, from `pages/benchmark/impls.ts`: `box-kite`, `ag-grid`, `mui-x`, `tanstack`. |
-| `--url <address>`  | —        | Measure a server you are already running instead of starting one.       |
-| `--machine <name>` | —        | What to record as the machine. `BENCH_MACHINE` does the same.           |
-| `--check`          | off      | Compare against `budgets.json` and exit non-zero on a breach.           |
+| `--url <address>`  | —          | Measure a server you are already running instead of starting one.                             |
+| `--machine <name>` | —          | What to record as the machine. `BENCH_MACHINE` does the same.                                 |
+| `--check`          | off        | Compare against `budgets.json` and exit non-zero on a breach.                                 |
 
 Chrome is found at the usual places for the platform; `CHROME_PATH` overrides it. No browser is installed
 as a dependency, for the reason a benchmark should not ship one.
@@ -52,6 +52,12 @@ which is several times slower than any laptop and noisy with it: they catch a ch
 order of magnitude slower, and nothing finer. Anything tighter would fail on the runner having a bad
 afternoon.
 
+`blankFrames` is the one budget a _faster_ number cannot satisfy, and it is why the others cannot be
+gamed by rendering less: a window with no cover ahead of it renders fewer rows and comes out quicker on
+every scenario there is. Taking the buffer away entirely measures 100% blank, eight rows of cover instead
+of twelve measures 4%, and the budget sits at 50 — loose, because a runner half the speed of a laptop
+blanks some frames of a hard flick honestly.
+
 To refresh them, read the numbers off a few CI runs of this workflow and take **two and a half times the
 slowest**. One run is not enough: two runs of the same commit measured 78 ms and 196 ms to mount, and a
 16.7 ms and a 33.2 ms median frame — a runner varies by a factor of two and a half on its own, which is
@@ -61,6 +67,13 @@ the whole reason these budgets are not the tight ones a laptop would suggest. A 
 `results.json` is a different thing and is never written by `--check`: it is one named machine's
 measurement, for scale. Only a grid that has a budget is checked, so adding `--impls` to a command never
 fails it — what another library does on a shared runner is not this repository's regression to catch.
+
+**Blank space is asked separately.** A frame time says what the rendering cost, never whether there was
+anything to render, so a grid that renders too few rows around the viewport scores _better_ on the fling
+it stutters through. After the five scenarios each grid is flicked past at 10,000 pixels a second —
+the top of what a hard flick reaches, five rows between one frame and the next at 60 fps — and four points
+down it are hit-tested at the start of every frame, against the position that frame is about to paint. `blankFrames` is the share of
+them that found a hole, and it is the number that keeps the window honest.
 
 ## Two things that decide whether a number means anything
 

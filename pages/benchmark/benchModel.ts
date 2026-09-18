@@ -53,6 +53,24 @@ export const SCROLL_VELOCITY = 4000;
 export const SCROLL_MS = 2000;
 const CALIBRATION_FRAMES = 30;
 
+/**
+ * The flick the blank-space pass uses, which is not the one the scroll scenario times. Ten thousand
+ * pixels a second is the top of what a hard flick reaches — three hundred rows of them, five rows
+ * between one frame and the next at 60 fps. A speed rather than a step a frame, because the hole a
+ * reader sees is the travel during the grid's own lag: a display running faster than 60 Hz hands the
+ * grid more chances to catch up over the same pixels, and that is a real advantage rather than a
+ * lenient instrument.
+ */
+export const FLICK_VELOCITY = 10000;
+export const FLICK_MS = 1000;
+
+/**
+ * Where down the scroller each frame is hit-tested. The bottom half, because that is where a downward
+ * fling's hole opens — and the half no grid's sticky header sits in, so a probe needs to know nothing
+ * about the one it is looking at beyond what a row looks like.
+ */
+const PROBE_POINTS = [0.5, 0.7, 0.85, 0.98];
+
 export interface ScenarioResult {
   scenario: ScenarioId;
   /**
@@ -84,6 +102,12 @@ export interface ScenarioResult {
   slowFrames?: number;
   /** Total blocking time while the scenario ran: the part of every long task past 50 ms. */
   blockingMs?: number;
+  /**
+   * The percentage of frames of a hard flick that painted a hole — a point inside the body with no row
+   * under it. Measured on its own pass at `FLICK_VELOCITY`, because it is a question about what the
+   * grid renders around the viewport rather than about what a frame cost.
+   */
+  blankFrames?: number;
 }
 
 export interface BenchRun {
@@ -123,6 +147,8 @@ export interface BenchDriver {
   apply: (scenario: ScenarioId) => void;
   /** The element that scrolls, once the grid is mounted. */
   scroller: () => HTMLElement | null;
+  /** What the blank-space probe hit-tests for: a CSS selector a painted body row, or a cell of one, matches. */
+  rowSelector: string;
 }
 
 export interface BenchOptions {
@@ -220,6 +246,80 @@ export function scrollFrames(element: HTMLElement, velocity = SCROLL_VELOCITY, d
       if (now - start < duration) requestAnimationFrame(tick);
       // A timer behind the last frame's own, so every sample is in before the fling reports.
       else setTimeout(() => resolve({ intervals, work }), 0);
+    };
+
+    requestAnimationFrame(tick);
+  });
+}
+
+/** What a blank-space pass counted: frames flicked past, and how many of them painted a hole. */
+export interface CoverageSamples {
+  frames: number;
+  blank: number;
+}
+
+/**
+ * Flicks the element past at `velocity` and counts the frames that painted a hole. The hit test is taken
+ * inside the frame callback and after the scroll is written, which is the DOM that frame goes on to paint:
+ * the re-render answering this scroll arrives on a task after it.
+ */
+export async function flickCoverage(element: HTMLElement, selector: string, velocity = FLICK_VELOCITY, duration = FLICK_MS) {
+  element.scrollTop = 0;
+  // Hit testing is in the window's own coordinates, so a grid below the fold would report every frame
+  // blank. Bringing it into view is also what a reader does before flinging it.
+  element.scrollIntoView({ block: 'center' });
+  await nextPaint();
+
+  const box = element.getBoundingClientRect();
+  const x = box.left + Math.min(40, box.width / 2);
+  // Clamped to the window as well as to the grid: a point below the fold is not a hole, it is a point
+  // `elementFromPoint` cannot see.
+  const bottom = Math.min(box.bottom, window.innerHeight) - 2;
+  const points = PROBE_POINTS.map((point) => box.top + (bottom - box.top) * point);
+
+  // Every element at the point rather than the top one: a grid's own furniture — AG Grid's horizontal
+  // scrollbar strip, which covers the last fifteen pixels of its viewport — is over the rows rather than
+  // instead of them, and a probe that read only the topmost element scored that as a hole on every frame.
+  const covered = (): boolean => points.every((y) => document.elementsFromPoint(x, y).some((element) => element.closest(selector)));
+
+  // Loudly, for the reason the missing scroller is: a probe that matches nothing reports a grid with no
+  // holes in it as having none, which is the answer it would give for a grid that is all hole.
+  if (!covered()) throw new Error('The blank-space probe found no rows under a grid standing still.');
+
+  return new Promise<CoverageSamples>((resolve) => {
+    let start = 0;
+    let last = 0;
+    let top = 0;
+    let frames = 0;
+    let blank = 0;
+    let wrapped = false;
+
+    const tick = (now: number): void => {
+      // What this frame is about to paint: the scroll position it was given before it began, and
+      // whatever rows have been committed since. The wrap back to the top is a teleport rather than a
+      // fling and no window covers one, so the frame it lands on is not counted.
+      if (last > 0 && !wrapped) {
+        frames++;
+        if (!covered()) blank++;
+      }
+
+      if (last > 0) {
+        top += (velocity * (now - last)) / 1000;
+        wrapped = top + element.clientHeight >= element.scrollHeight;
+        if (wrapped) top = 0;
+
+        // From a task rather than from here: a browser scrolls *before* the frame it paints, so a grid
+        // that reads the scroll event — which is most of them — would be told a frame late by a probe
+        // that wrote it from inside the frame, and score a hole this instrument dug for it.
+        setTimeout(() => (element.scrollTop = top), 0);
+      } else {
+        start = now;
+      }
+
+      last = now;
+
+      if (now - start < duration) requestAnimationFrame(tick);
+      else resolve({ frames, blank });
     };
 
     requestAnimationFrame(tick);
@@ -326,6 +426,10 @@ export async function runBenchmark(driver: BenchDriver, options: BenchOptions): 
     }
   }
 
+  // Asked once, on a grid that is doing nothing else: blank space is a question about what the window
+  // covers rather than about what a frame cost, so it is never measured inside a timed one.
+  const coverage = measured.some((scenario) => scenario.id === 'scroll') ? await flick(driver) : undefined;
+
   // Left mounted rather than taken away: the grid that was just measured is the most convincing thing
   // on the page, and a reader who has waited for a run should be able to scroll it.
   await driver.reset();
@@ -343,9 +447,20 @@ export async function runBenchmark(driver: BenchDriver, options: BenchOptions): 
     scenarios: scenarios.map((scenario) =>
       unavailable?.[scenario.id]
         ? { scenario: scenario.id, unavailable: unavailable[scenario.id] }
-        : result(scenario, samples, scroll, blocking, frameBaseline),
+        : result(scenario, samples, scroll, blocking, frameBaseline, coverage),
     ),
   };
+}
+
+/** The blank-space pass on a freshly mounted grid, which is the state every scenario starts from. */
+async function flick(driver: BenchDriver): Promise<CoverageSamples> {
+  await driver.reset();
+  await idle(60);
+
+  const element = driver.scroller();
+  if (!element) throw new Error('The blank-space pass found nothing to scroll.');
+
+  return flickCoverage(element, driver.rowSelector);
 }
 
 function result(
@@ -354,6 +469,7 @@ function result(
   scroll: ScrollSamples,
   blocking: Map<ScenarioId, number[]>,
   frameBaseline: number,
+  coverage: CoverageSamples | undefined,
 ): ScenarioResult {
   const blockingMs = Math.round(median(blocking.get(scenario.id)!));
 
@@ -371,6 +487,7 @@ function result(
       workMs: round(median(work)),
       worstFrame: round(percentile(intervals, 99)),
       slowFrames: Math.round((slow / Math.max(intervals.length, 1)) * 100),
+      blankFrames: coverage ? Math.round((coverage.blank / Math.max(coverage.frames, 1)) * 100) : undefined,
       blockingMs,
     };
   }

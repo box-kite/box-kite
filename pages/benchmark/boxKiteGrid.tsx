@@ -42,6 +42,9 @@ const impl: GridImpl = {
   version,
   Grid: BoxKiteGrid,
   scroller: (container) => container.querySelector<HTMLElement>('[role="grid"]'),
+  // The filter row's cells carry the role too, and sit in the sticky header — which is why the probe
+  // only ever hit-tests the bottom half of the grid.
+  rowSelector: '[role="gridcell"]',
   sort: (container) => {
     const header = [...container.querySelectorAll<HTMLElement>('[role="columnheader"]')].find((cell) =>
       cell.textContent?.startsWith(SORT_HEADER),
