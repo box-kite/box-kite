@@ -11,6 +11,8 @@ _Unreleased. A PR that changes what a consumer sees adds its section here — se
 - **[A hundred thousand rows, and a page that measures them](#a-hundred-thousand-rows-and-a-page-that-measures-them)** — the grid benchmark is public, reruns in your own browser against AG Grid, MUI X and TanStack, and says where this grid wins and where it does not.
 - **[Free here, paid elsewhere](#free-here-paid-elsewhere)** — fourteen data grid features against seven tiers of AG Grid, MUI X and TanStack, with what each one costs and where it was checked.
 - **[A fling renders where you are going](#a-fling-renders-where-you-are-going)** — the DataGrid keeps its rendered rows ahead of the scroll instead of on both sides of it: 36 rows around an 18-row screen where it used to be 58, and a fling at 125 frames a second where it was 81.
+- **[`npx shadcn add @box-kite/data-grid`](#npx-shadcn-add-box-kitedata-grid)** — three finished sections the shadcn CLI installs into your own repository, from a registry on box-kite.dev.
+- **[The DataGrid exports its types](#the-datagrid-exports-its-types)** — `ColumnType`, `GridDefinition`, `CellModel` and the rest come off `components/dataGrid` now instead of a path inside it.
 
 <!-- One bullet per section below, linking to it: **[Heading](#heading)** — one line on why it matters. -->
 
@@ -180,6 +182,60 @@ throws above a hundred rows a page. The prices were read off the vendors' own pr
 and are linked from the page, since neither comparison is helped by a number that was true last year.
 
 [Free here, paid elsewhere](https://box-kite.dev/grid-comparison)
+
+## `npx shadcn add @box-kite/data-grid`
+
+There is a shadcn registry on the docs site now, and three blocks in it — an invoices data grid, a settings
+form and a dashboard shell. A block is not a component: it is a finished section that the CLI writes into
+your own repository, so the composition is yours to edit from the first commit while the components under
+it stay a package you upgrade.
+
+```shell
+npx shadcn@latest add https://box-kite.dev/r/data-grid.json
+```
+
+Register the namespace once in `components.json` and the address becomes a name — `npx shadcn@latest add
+@box-kite/settings-form`, and `npx shadcn@latest search @box-kite` lists what is there:
+
+```json
+{
+  "registries": {
+    "@box-kite": "https://box-kite.dev/r/{name}.json"
+  }
+}
+```
+
+**None of it needs Tailwind.** The CLI wants a `components.json` with a `tailwind` key in it and empty
+strings satisfy it, because these blocks import no stylesheet and write no CSS file — every style in them
+is a prop. Verified end to end against a fresh `create-next-app`: the files land, `lucide-react` installs
+with the dashboard shell, and `next build` prerenders the page with the CSS in the HTML.
+
+The blocks are ordinary sources in the library's own repository, type-checked by the same `tsc` run as the
+library and rendered live on [the registry page](https://box-kite.dev/registry) from those same files, which
+are inlined into the JSON at build time. So a block that stops compiling cannot be published, and what the
+CLI writes is what the page is running.
+
+[The blocks](https://box-kite.dev/registry)
+
+## The DataGrid exports its types
+
+Every other component exports its own types; `components/dataGrid` exported only the component. Typing a
+column list, a `ref` or a cell renderer outside the JSX therefore meant importing from
+`@box-kite/react/components/dataGrid/contracts/dataGridContract`, a path that is plainly private. The whole
+contract comes off the component's own module now:
+
+```tsx
+import DataGrid, { type CellModel, type ColumnType, type DataGridHandle, type GridDefinition } from '@box-kite/react/components/dataGrid';
+
+function StatusCell({ cell }: { cell: CellModel<Invoice> }) {
+  return <Badge>{cell.value as string}</Badge>;
+}
+
+const definition: GridDefinition<Invoice> = { rowKey: 'id', columns: [{ key: 'status', Cell: StatusCell }] };
+```
+
+Types only — nothing is added to the bundle, and the deep import still resolves, so nothing that works today
+stops working.
 
 ## Breaking changes
 

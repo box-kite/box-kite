@@ -3,6 +3,7 @@ import {
   Anchor,
   BellRing,
   Blend,
+  Blocks,
   BookOpen,
   Bot,
   Box as BoxIcon,
@@ -119,6 +120,9 @@ export default function Sidebar({ toggleTheme, onClose }: SidebarProps) {
           </MenuItem>
           <MenuItem to="/installation" icon={<Download />}>
             Installation
+          </MenuItem>
+          <MenuItem to="/registry" icon={<Blocks />}>
+            Blocks
           </MenuItem>
           <MenuItem to="/migrating" icon={<PackageIcon />}>
             Migrating

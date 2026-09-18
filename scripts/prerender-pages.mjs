@@ -44,6 +44,12 @@ const MIN_LLMS = 2000;
 /** The skill and the Cursor rule are the rules plus a page of navigation — half of that is a failure. */
 const MIN_SKILL = 8000;
 /**
+ * The registry catalog is three items with their descriptions; an item is a block's whole source inlined.
+ * A registry item with empty `content` is valid JSON that installs nothing, which is what these catch.
+ */
+const MIN_REGISTRY = 1200;
+const MIN_REGISTRY_ITEM = 2000;
+/**
  * React's marker for a Suspense boundary whose content did not survive the server: it either threw or
  * suspended, and the browser has to render it. The HTML then ships the frame with a hole in it — which
  * is what an unguarded `window` did to three pages (bug #85) with nothing on stderr to say so.
@@ -164,6 +170,19 @@ for (const [file, content, floor] of generated) {
   if (content.length < floor) failures.push(`${file}: ${content.length} bytes, expected at least ${floor}`);
 
   await writeFile(join(CLIENT_OUT, file), content);
+}
+
+// The shadcn registry (F4): the catalog and one file per block, each carrying its sources inlined. The
+// floor is what says the inlining happened — an item whose files came back empty is still valid JSON.
+for (const { path, content } of mirror.registry()) {
+  const floor = path.endsWith('registry.json') ? MIN_REGISTRY : MIN_REGISTRY_ITEM;
+
+  if (content.length < floor) failures.push(`${path}: ${content.length} bytes, expected at least ${floor}`);
+
+  const file = join(CLIENT_OUT, path.slice(1));
+
+  await mkdir(dirname(file), { recursive: true });
+  await writeFile(file, content);
 }
 
 const corpus = pages.reduce((total, page) => total + page.markdown.length, 0);

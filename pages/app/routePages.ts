@@ -48,6 +48,7 @@ const loaders: Record<SiteRoutePath, () => Promise<{ default: ComponentType }>> 
   '/datagrid': () => import('../pages/dataGridPage'),
   '/benchmark': () => import('../pages/benchmarkPage'),
   '/grid-comparison': () => import('../pages/gridComparisonPage'),
+  '/registry': () => import('../pages/registryPage'),
   '/flex': () => import('../pages/flexPage'),
   '/grid': () => import('../pages/gridPage'),
   '/style-grouping': () => import('../pages/textStylePage'),

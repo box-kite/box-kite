@@ -101,8 +101,16 @@
 
     /* Completeness */
     // "skipDefaultLibCheck": true,                      /* Skip type checking .d.ts files that are included with TypeScript. */
-    "skipLibCheck": true /* Skip type checking all .d.ts files. */
+    "skipLibCheck": true /* Skip type checking all .d.ts files. */,
+
+    /* The registry blocks are the files a consumer installs, so they import the package by name. This
+       maps those subpaths onto the sources, which is what type-checks them here; `pages.vite.config.ts`
+       carries the same alias for the build. The bare `@box-kite/react` is deliberately *not* here —
+       see `registry/box-kite.d.ts` for what a mapping for it costs the size budget. */
+    "paths": {
+      "@box-kite/react/components/*": ["./src/components/*"]
+    }
   },
-  "include": ["src", "pages", "dev"],
+  "include": ["src", "pages", "dev", "registry"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

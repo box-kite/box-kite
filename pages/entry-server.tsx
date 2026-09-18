@@ -30,6 +30,10 @@ export { PRERENDERED_STYLE_ID, releases, routes };
 export { elementMarkdown, markdownPath, pageMarkdown } from './site/pageMarkdown';
 export { buildLlmsFull, buildLlmsTxt } from './site/llms';
 export { routeFor } from './site/siteMeta';
+// The shadcn registry is served from this build too: the items are declared here and the block sources
+// come through a glob, neither of which a plain script can read.
+export { buildRegistryIndex, buildRegistryItem, CATALOG_PATH, itemPath, registryItems, REGISTRY_PATH } from './site/registry';
+export { missingSources, registrySources } from './site/registrySources';
 
 export async function renderRoute(path: string): Promise<{ html: string; styles: string }> {
   // React.lazy suspends on its first render and `renderToString` cannot wait for it, so the route's

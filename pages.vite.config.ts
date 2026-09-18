@@ -83,7 +83,10 @@ function markdownMirror(): Plugin {
       server.middlewares.use(async (request, response, next) => {
         const url = (request.url ?? '').split('?')[0];
 
-        const mirrored = url.endsWith('.md') || ['/llms.txt', '/llms-full.txt', '/box-kite.mdc'].includes(url);
+        // `/registry.json` and `/r/*.json` are the shadcn registry (F4), built from the block sources
+        // by the same mirror — so `npx shadcn add http://localhost:5173/r/data-grid.json` works in dev.
+        const isRegistry = url === '/registry.json' || (url.startsWith('/r/') && url.endsWith('.json'));
+        const mirrored = url.endsWith('.md') || isRegistry || ['/llms.txt', '/llms-full.txt', '/box-kite.mdc'].includes(url);
 
         if (!mirrored) return next();
 
@@ -100,8 +103,10 @@ function markdownMirror(): Plugin {
 
           if (content === null) return next();
 
-          // `.mdc` is markdown too, but it is a file to save rather than one to read in a browser.
-          const type = url.endsWith('.md') ? 'text/markdown' : 'text/plain';
+          // `.mdc` is markdown too, but it is a file to save rather than one to read in a browser. The
+          // registry is served as JSON here because the build's static `.json` files are — the dev
+          // server answering the same address with `text/plain` is a difference nobody wants to find.
+          const type = url.endsWith('.md') ? 'text/markdown' : isRegistry ? 'application/json' : 'text/plain';
 
           response.setHeader('Content-Type', `${type}; charset=utf-8`);
           response.end(content);
@@ -131,6 +136,16 @@ export default defineConfig(({ mode, isSsrBuild }) => {
     server: {
       port: 5173,
       strictPort: true,
+    },
+    // The registry blocks are the files a consumer installs, so they import the package by name. These
+    // two map that name onto the sources, which is how `/registry` renders the very code it publishes
+    // (the same pair is in `tsconfig.json`, which is what type-checks them). An array rather than an
+    // object, because the longer prefix has to be tried first.
+    resolve: {
+      alias: [
+        { find: /^@box-kite\/react\/components\//, replacement: `${join(import.meta.dirname, 'src/components')}/` },
+        { find: /^@box-kite\/react$/, replacement: join(import.meta.dirname, 'src/box.ts') },
+      ],
     },
     build: {
       emptyOutDir: true,
