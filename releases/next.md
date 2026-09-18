@@ -9,6 +9,7 @@ _Unreleased. A PR that changes what a consumer sees adds its section here — se
 - **[A block of cells, and Ctrl+C](#a-block-of-cells-and-ctrlc)** — drag or Shift+arrow across a DataGrid and copy it straight into a spreadsheet.
 - **[Ctrl+V, one judgement per cell](#ctrlv-one-judgement-per-cell)** — paste a block back in, judged by the same `def.onCellEdit` an editor is.
 - **[A hundred thousand rows, and a page that measures them](#a-hundred-thousand-rows-and-a-page-that-measures-them)** — the grid benchmark is public, reruns in your own browser against AG Grid, MUI X and TanStack, and says where this grid wins and where it does not.
+- **[Free here, paid elsewhere](#free-here-paid-elsewhere)** — fourteen data grid features against seven tiers of AG Grid, MUI X and TanStack, with what each one costs and where it was checked.
 - **[A fling renders where you are going](#a-fling-renders-where-you-are-going)** — the DataGrid keeps its rendered rows ahead of the scroll instead of on both sides of it: 36 rows around an 18-row screen where it used to be 58, and a fling at 125 frames a second where it was 81.
 
 <!-- One bullet per section below, linking to it: **[Heading](#heading)** — one line on why it matters. -->
@@ -152,6 +153,33 @@ the same pass reports every frame blank, which is what says it is looking at som
 cover instead of twelve, four frames in a hundred.
 
 [The benchmark](https://box-kite.dev/benchmark)
+
+## Free here, paid elsewhere
+
+There is a second page beside the benchmark now — [box-kite.dev/grid-comparison](https://box-kite.dev/grid-comparison) —
+and it answers the question the numbers do not: fourteen data grid features against seven tiers of AG Grid,
+MUI X, TanStack Table and this library, with what each tier costs and the day the price was read. Twelve of
+the fourteen ship here under the same MIT licence as the rest of the library. Row grouping, aggregation, a
+real `.xlsx`, a server-side row model, tree data, master/detail panels, range selection and paste are
+AG Grid Enterprise at $999 a developer, or MUI X Premium at $599 a developer a year.
+
+Every tick in this library's column links to a working demo on the data grid page, and a test fails the
+build if one of them ever points at a section that is not there. Two of the fourteen rows are crosses in
+that column — there is no pivoting here and no dragging a header to reorder its column, and both are ticks
+for the paid tiers — because a table with no cross in its own column is an advertisement rather than a
+comparison.
+
+The cells were read out of the packages rather than off a marketing page, and the page says so row by row.
+AG Grid publishes its split in its own types: `EnterpriseModuleName` in `ag-grid-community` names every
+module the free package does not implement, which is where `RowGroupingModule`, `ExcelExportModule`,
+`TreeDataModule`, `MasterDetailModule`, `CellSelectionModule` and `ServerSideRowModelModule` come from —
+and column pinning is deliberately _not_ in it, so that row is a tick for AG Grid Community. The free MUI X
+grid's whole feature set is the list of hooks its own `useDataGridComponent` calls, which is also where two
+things that are forced on rather than absent turn up: `disableColumnReorder: true`, and a pagination that
+throws above a hundred rows a page. The prices were read off the vendors' own pricing pages on 2026-09-18
+and are linked from the page, since neither comparison is helped by a number that was true last year.
+
+[Free here, paid elsewhere](https://box-kite.dev/grid-comparison)
 
 ## Breaking changes
 
