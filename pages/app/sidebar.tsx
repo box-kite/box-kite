@@ -31,6 +31,7 @@ import {
   Proportions,
   Rocket,
   Rows3,
+  Scale,
   Search,
   Server,
   Shapes,
@@ -293,6 +294,9 @@ export default function Sidebar({ toggleTheme, onClose }: SidebarProps) {
           </MenuItem>
           <MenuItem to="/benchmark" icon={<Gauge />}>
             Benchmark
+          </MenuItem>
+          <MenuItem to="/grid-comparison" icon={<Scale />}>
+            Comparison
           </MenuItem>
         </MenuSection>
 

@@ -249,6 +249,13 @@ export const siteRoutes = [
       'A hundred thousand rows by twenty columns, measured in your own browser: first render, scroll frames, filter, sort and grouped totals.',
   },
   {
+    path: '/grid-comparison',
+    name: 'Grid Comparison',
+    title: 'Free here, paid elsewhere — data grid features and what they cost',
+    description:
+      'Fourteen data grid features against seven tiers of AG Grid, MUI X, TanStack Table and Box Kite, with the price of each and the day it was checked.',
+  },
+  {
     path: '/flex',
     name: 'Flex',
     description: 'A shortcut component for display: flex, with alignment, direction and spacing props.',
