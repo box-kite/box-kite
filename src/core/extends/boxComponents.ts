@@ -3100,6 +3100,197 @@ const boxComponents = {
       },
     },
   },
+  // A dashboard is a CSS grid and nothing else: a widget's place is `grid-column`/`grid-row`, which is a
+  // class, so a layout of any size costs no measured pixel and no inline style until one is being dragged.
+  dashboard: {
+    styles: {
+      position: 'relative',
+      display: 'grid',
+      // Its own width decides how many columns there are, not the page's — so the same dashboard is
+      // arranged in a main column and stacked in a sidebar, with nothing listening for a resize.
+      container: true,
+      gridTemplateColumns: 1,
+      gap: 4,
+      // The height of one row, which every item's `h` is counted in. A variable rather than a prop
+      // because it is per instance and `grid-auto-rows` has none — and as a variable a consumer can
+      // still set it per breakpoint or per theme.
+      css: { gridAutoRows: 'var(--dashboard-row, 6rem)' },
+    },
+    variants: {
+      // While a widget is held: a drag must not select the text under the pointer, and on a touch screen
+      // it must not scroll the page out from under the widget instead of moving it.
+      dragging: { userSelect: 'none', css: { touchAction: 'none' } },
+    },
+    children: {
+      // Where the held widget will land, drawn in its snapped cell while the widget itself follows the
+      // pointer. It is placed by the same grid props every widget uses, so it costs one more class.
+      placeholder: {
+        styles: {
+          borderRadius: 2,
+          b: 2,
+          borderStyle: 'dashed',
+          borderColor: 'indigo-400',
+          bgColor: 'indigo-500/10',
+          pointerEvents: 'none',
+          theme: { dark: { borderColor: 'indigo-500' } },
+          forcedColors: { borderColor: 'Highlight' },
+        },
+      },
+    },
+  },
+  // The chrome round whatever a widget shows: a title bar, the four states a panel fed by a request can
+  // be in, and the two handles that only exist where there is room to arrange anything.
+  widget: {
+    styles: {
+      // The corner handle is placed against this, which is also why it is here rather than on the header.
+      position: 'relative',
+      display: 'flex',
+      d: 'column',
+      // A grid item's floor is its content, so a tall widget would push its own row open without this.
+      minHeight: 0,
+      overflow: 'hidden',
+      bgColor: 'white',
+      b: 1,
+      borderColor: 'gray-200',
+      borderRadius: 2,
+      shadow: 'xs',
+      theme: { dark: { bgColor: 'gray-900', borderColor: 'gray-800' } },
+      // A widget added to a dashboard arrives rather than appearing. Plain props only, and nothing here
+      // transitions per frame, so it costs the drag nothing.
+      startingStyle: { opacity: 0, scale: 0.98 },
+    },
+    variants: {
+      // The held one. `transition: none` is the whole reason this variant exists: every Box carries a
+      // 250ms `all`, which would otherwise interpolate the per-frame translate a drag writes and leave
+      // the widget a fifth of a second behind the pointer (#151).
+      dragging: { shadow: 'large', zIndex: 10, cursor: 'grabbing', transition: 'none' },
+      // The keyboard's equivalent: picked up, waiting for the arrows. A ring rather than a shadow,
+      // because it has to be visible in a forced-colors mode where every shadow is thrown away.
+      grabbed: { outline: 2, outlineColor: 'indigo-500', outlineOffset: 2 },
+    },
+    children: {
+      header: {
+        styles: {
+          display: 'flex',
+          ai: 'center',
+          gap: 2,
+          px: 4,
+          py: 3,
+          bb: 1,
+          borderColor: 'gray-100',
+          theme: { dark: { borderColor: 'gray-800' } },
+        },
+      },
+      // The title and its description, stacked, so the bar itself stays one row however many lines they are.
+      label: {
+        styles: { display: 'flex', d: 'column', flexGrow: 1, minWidth: 0 },
+      },
+      title: {
+        styles: {
+          // A long title truncates rather than pushing the actions off the end of the bar.
+          minWidth: 0,
+          overflow: 'hidden',
+          whiteSpace: 'nowrap',
+          textOverflow: 'ellipsis',
+          fontSize: 14,
+          lineHeight: 20,
+          fontWeight: 600,
+          color: 'gray-900',
+          m: 0,
+          theme: { dark: { color: 'gray-100' } },
+        },
+      },
+      description: {
+        styles: { fontSize: 12, lineHeight: 16, color: 'gray-500', theme: { dark: { color: 'gray-400' } } },
+      },
+      actions: { styles: { display: 'flex', ai: 'center', gap: 1 } },
+      // Both handles are this one node: a bare button, invisible until the dashboard is in edit mode and
+      // shown by a container query rather than by state, since the arrangement can only be edited where
+      // the grid is rendering the space the layout is written in. `corner` is the resize one — the same
+      // button, in the corner, with the one thing that cannot mirror on its own.
+      handle: {
+        styles: {
+          display: 'none',
+          ai: 'center',
+          jc: 'center',
+          width: 6,
+          height: 6,
+          p: 0,
+          b: 0,
+          borderRadius: 1,
+          bgColor: 'transparent',
+          color: 'gray-400',
+          cursor: 'grab',
+          hover: { bgColor: 'gray-100', color: 'gray-700' },
+          focusVisible: { outline: 2, outlineColor: 'indigo-500', outlineOffset: 1 },
+          theme: { dark: { color: 'gray-500', hover: { bgColor: 'gray-800', color: 'gray-200' } } },
+        },
+        variants: {
+          editable: { display: 'flex' },
+          grabbed: { cursor: 'grabbing', color: 'indigo-600', theme: { dark: { color: 'indigo-400' } } },
+          // A resize cursor names a physical diagonal, so it is the one part of this that a logical inset
+          // cannot mirror for itself.
+          corner: { position: 'absolute', bottom: 0, insetEnd: 0, cursor: 'nwse-resize', rtl: { cursor: 'nesw-resize' } },
+        },
+      },
+      body: {
+        styles: { flexGrow: 1, minHeight: 0, p: 4, overflow: 'auto', fontSize: 14, lineHeight: 20 },
+      },
+      // What stands in the body when there is nothing to draw: the empty state, and the error with its
+      // retry. One node for both, because they differ in their words rather than in their shape.
+      message: {
+        styles: {
+          display: 'flex',
+          d: 'column',
+          ai: 'center',
+          jc: 'center',
+          gap: 2,
+          height: 'fit',
+          textAlign: 'center',
+          fontSize: 13,
+          lineHeight: 18,
+          color: 'gray-500',
+          theme: { dark: { color: 'gray-400' } },
+        },
+        variants: {
+          error: { color: 'red-600', theme: { dark: { color: 'red-400' } } },
+        },
+      },
+      // The retry an error state offers. A link rather than a button to look at: the widget has already
+      // said something went wrong, and a second filled button would compete with the page's own.
+      retry: {
+        styles: {
+          p: 0,
+          b: 0,
+          bgColor: 'transparent',
+          color: 'indigo-600',
+          fontSize: 13,
+          fontWeight: 500,
+          cursor: 'pointer',
+          textDecoration: 'underline',
+          hover: { color: 'indigo-700' },
+          focusVisible: { outline: 2, outlineColor: 'indigo-500', outlineOffset: 2, borderRadius: 1 },
+          theme: { dark: { color: 'indigo-400', hover: { color: 'indigo-300' } } },
+        },
+      },
+      // The loading state: bars where the content will be. `pulse` is a registered preset, so it stops
+      // itself under `prefers-reduced-motion` with nothing declared here.
+      skeleton: {
+        styles: {
+          display: 'flex',
+          d: 'column',
+          gap: 2,
+          height: 'fit',
+          animation: 'pulse',
+        },
+        children: {
+          bar: {
+            styles: { height: 3, borderRadius: 1, bgColor: 'gray-200', theme: { dark: { bgColor: 'gray-800' } } },
+          },
+        },
+      },
+    },
+  },
   // The chart micro-primitives. Paint is a class and shape is an attribute, so what lives here is
   // everything about a drawing that is not its data — which is also everything worth restyling at once.
   sparkline: {

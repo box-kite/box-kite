@@ -18,6 +18,7 @@ import {
   Highlighter,
   Languages,
   Layers,
+  LayoutDashboard,
   LayoutGrid,
   ListChecks,
   ListCollapse,
@@ -292,6 +293,9 @@ export default function Sidebar({ toggleTheme, onClose }: SidebarProps) {
           </MenuItem>
           <MenuItem to="/dropdown" icon={<ChevronDown />}>
             Dropdown
+          </MenuItem>
+          <MenuItem to="/dashboard" icon={<LayoutDashboard />}>
+            Dashboard
           </MenuItem>
           <MenuItem to="/datagrid" icon={<Table />}>
             Data Grid

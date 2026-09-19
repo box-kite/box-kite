@@ -49,6 +49,7 @@ export const CLIENT_ONLY_COMPONENTS = [
   'accordion',
   'checkbox',
   'combobox',
+  'dashboard',
   'dataGrid',
   'dialog',
   'dropdown',

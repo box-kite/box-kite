@@ -244,6 +244,12 @@ export const siteRoutes = [
     description: 'The APG select-only combobox: choose one option or many, from the keyboard as well as the mouse.',
   },
   {
+    path: '/dashboard',
+    name: 'Dashboard',
+    description:
+      "A dashboard people rearrange and a model can write: the layout is JSON in cells, and a widget's place is a class rather than a measured pixel.",
+  },
+  {
     path: '/datagrid',
     name: 'Data Grid',
     description: 'A virtualized data grid with sorting, filtering, grouping, column resizing and full keyboard navigation.',

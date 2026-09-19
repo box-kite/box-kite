@@ -21,6 +21,7 @@ import * as baseSvg from '../dist/components/baseSvg.mjs';
 import * as button from '../dist/components/button.mjs';
 import * as chart from '../dist/components/chart.mjs';
 import * as checkbox from '../dist/components/checkbox.mjs';
+import * as dashboard from '../dist/components/dashboard.mjs';
 import * as dataGrid from '../dist/components/dataGrid.mjs';
 import * as dialog from '../dist/components/dialog.mjs';
 import * as dropdown from '../dist/components/dropdown.mjs';
@@ -59,6 +60,7 @@ console.log(
   button,
   chart,
   checkbox,
+  dashboard,
   dataGrid,
   dialog,
   dropdown,

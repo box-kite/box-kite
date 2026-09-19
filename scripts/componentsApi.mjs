@@ -226,6 +226,23 @@ const CONFIG = [
     styles: 'chartContainer',
     named: true,
   },
+  {
+    name: 'DashboardGrid',
+    route: '/dashboard',
+    file: 'src/components/dashboard.tsx',
+    props: 'DashboardGridProps',
+    doc: 'DashboardGridImpl',
+    styles: 'dashboard',
+  },
+  {
+    name: 'Widget',
+    route: '/dashboard',
+    file: 'src/components/dashboard.tsx',
+    props: 'WidgetProps',
+    doc: 'WidgetImpl',
+    styles: 'widget',
+    named: true,
+  },
 ];
 
 /** The config with what can be derived filled in, so an entry states only what is not obvious. */
