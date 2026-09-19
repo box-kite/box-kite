@@ -3,7 +3,7 @@ import { Gauge, MiniDonut, ProgressRing, Sparkline } from '../../src/components/
 import DashboardGrid, { Widget } from '../../src/components/dashboard';
 import DataGrid from '../../src/components/dataGrid';
 import Flex from '../../src/components/flex';
-import { createSpecRegistry } from '../../src/spec';
+import { SpecComponent, createSpecRegistry } from '../../src/spec';
 
 /**
  * The demo's half of the loop: what a model is allowed to build here, what it built, and the data the
@@ -18,11 +18,19 @@ export const DEMO_CATALOG = catalog({
   styleProps: ['d', 'gap', 'p', 'ai', 'jc', 'color', 'bgColor', 'fontSize', 'fontWeight', 'width', 'height', 'textAlign'],
 });
 
-/** The allow-list itself: a name it does not hold renders nothing at all, whatever the spec says. */
-export const DEMO_REGISTRY = createSpecRegistry({
-  catalog: DEMO_CATALOG,
-  components: { DashboardGrid, Widget, DataGrid, Sparkline, ProgressRing, Gauge, MiniDonut, Flex },
-});
+/**
+ * The allow-list itself: a name it does not hold renders nothing at all, whatever the spec says. An
+ * override points one name somewhere else, which is how the page shows a placeholder for the grid while
+ * the spec is still arriving — what a name renders is the app's decision, and this is where it is made.
+ */
+export function demoRegistry(overrides: Record<string, SpecComponent> = {}) {
+  return createSpecRegistry({
+    catalog: DEMO_CATALOG,
+    components: { DashboardGrid, Widget, DataGrid, Sparkline, ProgressRing, Gauge, MiniDonut, Flex, ...overrides },
+  });
+}
+
+export const DEMO_REGISTRY = demoRegistry();
 
 export interface GeneratedDemo {
   id: string;

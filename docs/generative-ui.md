@@ -251,7 +251,33 @@ at a time, so the renderer treats a half-written tree as the normal case rather 
   with a caught crash per frame behind it. It reports `missing-prop`, which at rest is a real fault
   and mid-stream is most nodes for a moment;
 - a node that threw on one frame is tried again on the next, because the spec object itself is what
-  resets the boundaries.
+  resets the boundaries;
+- **what a node has been shown with, it is not stripped of.** A stream is not monotone: a column's
+  `align` passes through `"e"` on its way to `"end"`, and a value that fails its own schema takes the
+  object it sits in with it — so a prop the component cannot do without can go missing for a frame.
+  `<SpecRenderer>` keeps the last value each node was given for such a prop, so a grid on screen is not
+  unmounted and rebuilt half a dozen times in the closing moments of a spec. It remembers for as long as
+  it is mounted; a host showing an unrelated second document gives it a `key`, the way it would to reset
+  any other state. `renderSpec()` on its own has no memory — it is one render, and there is no last time.
+
+**A heavy component is the app's to gate.** The registry is where a name is pointed at an
+implementation, so pointing it somewhere else while the spec is arriving is a one-line decision:
+
+```tsx
+const streaming = createSpecRegistry({
+  catalog: allowed,
+  components: {
+    ...components,
+    DataGrid: { component: GridPlaceholder, props: { ...allowed.components.DataGrid.props, required: undefined } },
+  },
+});
+
+<SpecRenderer spec={spec} registry={isLoading ? streaming : registry} data={data} />;
+```
+
+Dropping `required` is what makes the placeholder stand in from the frame the node first exists rather
+than from the frame its `def` is first whole. The docs demo does exactly this: a grid's columns arrive
+one at a time, and watching one rebuild itself is not what a reader came for.
 
 **Write the controlled prop, never the `default…` twin.** React reads an uncontrolled default once, on
 the first render, and ignores it afterwards — which a stream breaks on twice over: the frame in which

@@ -13,7 +13,7 @@ import PageHeader from '../components/pageHeader';
 import Reveal from '../components/reveal';
 import useTableOfContents from '../hooks/useTableOfContents';
 import { parsePartialJson } from '../utils/partialJson';
-import { DEMOS, DEMO_REGISTRY, REFUSED_SPEC } from './generativeUi';
+import { DEMOS, DEMO_CATALOG, DEMO_REGISTRY, REFUSED_SPEC, demoRegistry } from './generativeUi';
 
 export default function GenerativeUiPage() {
   useTableOfContents(sidebarLinks);
@@ -92,6 +92,14 @@ const schema = specSchema(registry, { bindings: true });`}
               frame, not a fault — while a prop that is still half a string fails its own schema and is dropped until it is whole. Every
               node has an error boundary of its own, so a component that throws on props a model invented costs that node and nothing around
               it.
+            </Box>
+            <Box mt={4}>
+              A stream is not <em>monotone</em>, though — a column's <Mono>align</Mono> passes through <Mono>"e"</Mono> on its way to{' '}
+              <Mono>"end"</Mono>, and a value that fails its own schema takes the object it sits in with it — so a prop a component cannot
+              do without can go missing for a frame. What a node has been shown with it is not stripped of: the renderer keeps the last
+              value each node was given for such a prop, and a grid on screen stays there. On top of that, a heavy component is the app's to
+              gate — the grid below is a placeholder until the spec has arrived, which is one line in the registry rather than anything the
+              spec knows about.
             </Box>
             <Box mt={4}>
               <Code
@@ -238,6 +246,36 @@ export async function POST(request: Request) {
 /** How fast the recording is replayed. About two and a half seconds for a dashboard, which is a real one's pace. */
 const CHARS_PER_MS = 1.6;
 
+/** What a grid looks like while its columns are still being written. Chrome, and none of the churn. */
+function GridPlaceholder() {
+  return (
+    <Flex d="column" gap={2} height="fit" p={1} props={{ 'aria-hidden': true }}>
+      {[0, 1, 2, 3, 4].map((row) => (
+        <Box
+          key={row}
+          height={row === 0 ? 5 : 4}
+          borderRadius={1}
+          animation="pulse"
+          animationDelay={row * 80}
+          theme={{ dark: { bgColor: 'slate-800' }, light: { bgColor: 'slate-200' } }}
+        />
+      ))}
+    </Flex>
+  );
+}
+
+/**
+ * The same allow-list with one name pointed somewhere else: while the spec is arriving, `DataGrid`
+ * renders a placeholder. A grid is the one component here whose props keep changing *shape* — a column
+ * at a time, each one passing through values its own schema refuses — and watching it rebuild itself is
+ * not what a reader came for. That decision belongs to the app, and the registry is where the app makes
+ * it. The placeholder takes the grid's schema with its `required` dropped, so it stands in from the
+ * frame the node first exists rather than from the frame `def` is first whole.
+ */
+const STREAMING_REGISTRY = demoRegistry({
+  DataGrid: { component: GridPlaceholder, props: { ...DEMO_CATALOG.components.DataGrid.props, required: undefined }, slots: [] },
+});
+
 /**
  * The demo: a prompt, a recorded generation replayed a character at a time, and `<SpecRenderer>` over
  * whatever has arrived. The spec text is the state — everything else is derived from it, the way it is
@@ -278,7 +316,15 @@ function GenerativeDemo() {
     setRun((count) => count + 1);
   };
 
-  const dashboard = <SpecRenderer spec={spec} registry={DEMO_REGISTRY} data={demo.data} onIssues={setIssues} onAction={() => undefined} />;
+  const dashboard = (
+    <SpecRenderer
+      spec={spec}
+      registry={streaming ? STREAMING_REGISTRY : DEMO_REGISTRY}
+      data={demo.data}
+      onIssues={setIssues}
+      onAction={() => undefined}
+    />
+  );
 
   return (
     <Flex d="column" gap={4}>

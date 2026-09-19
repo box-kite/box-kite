@@ -47,7 +47,17 @@ export interface SpecRenderOptions {
   resetKey?: unknown;
   /** A node that threw during a *commit*, which is after this function has returned. */
   onError?: (issue: SpecIssue) => void;
+  /**
+   * The last value each node was given for a prop it cannot render without. A stream is not monotone —
+   * a column's `align` passes through `"e"` on its way to `"end"`, which fails its own schema and takes
+   * the whole `def` with it — so without this a grid on screen is unmounted and rebuilt several times
+   * in the last moments of a spec. `<SpecRenderer>` keeps one; a one-shot render needs none.
+   */
+  memory?: SpecMemory;
 }
+
+/** Keyed by a node's path and component: a different component at that path remembers nothing. */
+export type SpecMemory = Map<string, Record<string, unknown>>;
 
 export interface SpecRenderResult {
   element: ReactNode;
@@ -65,6 +75,7 @@ interface Walk extends Required<Pick<SpecRenderOptions, 'registry' | 'fallback' 
   onAction?: SpecActionHandler;
   onError?: (issue: SpecIssue) => void;
   resetKey: unknown;
+  memory?: SpecMemory;
   issues: SpecIssue[];
   nodes: number;
   overflowed: boolean;
@@ -209,16 +220,32 @@ function renderOne(
 
   walk.issues.push(...resolved.issues);
 
-  // Rendering it anyway means the component reads `undefined` and throws, and only its own boundary
-  // catches that: the same blank space, with a caught crash per frame behind it (bug #186).
-  if (resolved.missing.length) {
-    const needs = resolved.missing.join(', ');
+  const remembered = walk.memory?.get(`${path}:${type}`);
 
-    return fail(
-      walk,
-      { code: 'missing-prop', path, component: type, prop: resolved.missing[0], message: `${type} cannot render without ${needs}.` },
-      key,
-    );
+  // Rendering it anyway means the component reads `undefined` and throws, and only its own boundary
+  // catches that: the same blank space, with a caught crash per frame behind it (bug #186). What the
+  // node was last given stands in where there is one, so a frame that arrives half-written does not
+  // take a grid off the screen and put it back (bug #188).
+  if (resolved.missing.length) {
+    const recovered = remembered && resolved.missing.every((prop) => prop in remembered);
+
+    if (!recovered) {
+      const needs = resolved.missing.join(', ');
+
+      return fail(
+        walk,
+        { code: 'missing-prop', path, component: type, prop: resolved.missing[0], message: `${type} cannot render without ${needs}.` },
+        key,
+      );
+    }
+
+    for (const prop of resolved.missing) props[prop] = remembered[prop];
+  }
+
+  if (walk.memory) {
+    const required = entry.props?.required ?? [];
+
+    if (required.length) walk.memory.set(`${path}:${type}`, Object.fromEntries(required.map((prop) => [prop, props[prop]])));
   }
 
   for (const [event, action] of Object.entries(resolved.actions)) {
@@ -265,6 +292,7 @@ export function renderSpec(spec: unknown, options: SpecRenderOptions): SpecRende
     maxNodes: options.maxNodes ?? MAX_NODES,
     maxDepth: options.maxDepth ?? MAX_DEPTH,
     resetKey: options.resetKey,
+    memory: options.memory,
     issues: [],
     nodes: 0,
     overflowed: false,

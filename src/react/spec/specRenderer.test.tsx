@@ -359,4 +359,66 @@ describe('renderSpec', () => {
       expect(codes).toEqual(['invalid-prop', 'missing-prop']);
     });
   });
+  /**
+   * A stream is not monotone (bug #188): a column's `align` passes through `"e"` on its way to `"end"`,
+   * which fails its own schema and takes the whole `def` with it — so a grid on screen was unmounted and
+   * rebuilt several times in the last moments of a spec. What the node was last given stands in.
+   */
+  describe('a frame that takes back what it gave', () => {
+    it('keeps rendering what the node was last given, and reports nothing about the gap', () => {
+      const onIssues = vi.fn<(issues: SpecIssue[]) => void>();
+      const { rerender } = render(<SpecRenderer registry={registry} onIssues={onIssues} spec={{ type: 'Meter', props: { value: 0.5 } }} />);
+      const first = screen.getByTestId('meter');
+
+      rerender(<SpecRenderer registry={registry} onIssues={onIssues} spec={{ type: 'Meter', props: { value: 'half' } }} />);
+
+      // The same element, not a new one: the subtree was never unmounted.
+      expect(screen.getByTestId('meter')).toBe(first);
+      expect(screen.getByTestId('meter')).toHaveAttribute('value', '0.50');
+      expect(onIssues.mock.calls.flat(2).map((issue) => (issue as SpecIssue).code)).not.toContain('missing-prop');
+    });
+
+    it('takes the next whole value as soon as there is one', () => {
+      const { rerender } = render(<SpecRenderer registry={registry} spec={{ type: 'Meter', props: { value: 0.5 } }} />);
+
+      rerender(<SpecRenderer registry={registry} spec={{ type: 'Meter', props: {} }} />);
+      rerender(<SpecRenderer registry={registry} spec={{ type: 'Meter', props: { value: 0.75 } }} />);
+
+      expect(screen.getByTestId('meter')).toHaveAttribute('value', '0.75');
+    });
+
+    it('hands a node back only what it was given itself', () => {
+      const meters = (value: unknown) => ({
+        type: 'Stack',
+        children: [
+          { type: 'Meter', props: { value: 0.5 } },
+          { type: 'Meter', props: value === undefined ? {} : { value } },
+        ],
+      });
+
+      const { rerender } = render(<SpecRenderer registry={registry} spec={meters(0.25)} />);
+
+      expect(screen.getAllByTestId('meter')).toHaveLength(2);
+
+      rerender(<SpecRenderer registry={registry} spec={meters(undefined)} />);
+
+      // Its neighbour's value is not a value it was ever given, so the second meter keeps its own.
+      expect(screen.getAllByTestId('meter').map((meter) => meter.getAttribute('value'))).toEqual(['0.50', '0.25']);
+    });
+
+    it('is a node that never rendered that has nothing to fall back to', () => {
+      const one = { type: 'Meter', props: {} };
+      const { rerender } = render(<SpecRenderer registry={registry} spec={one} />);
+
+      expect(screen.queryByTestId('meter')).toBeNull();
+
+      rerender(<SpecRenderer registry={registry} spec={{ type: 'Meter', props: { value: 0.5 } }} />);
+
+      expect(screen.getByTestId('meter')).toHaveAttribute('value', '0.50');
+    });
+
+    it('is the renderer’s, not the walk’s: a one-shot render holds the node back', () => {
+      expect(issuesOf({ type: 'Meter', props: {} })).toEqual([expect.objectContaining({ code: 'missing-prop' })]);
+    });
+  });
 });

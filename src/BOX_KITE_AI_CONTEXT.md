@@ -3106,6 +3106,11 @@ slots, events }` with its own JSON Schema, and one registered **without** a sche
   `defaultLayout`, `value` not `defaultValue`: React reads an uncontrolled default once, so the frame
   it first arrived whole in is the one that sticks, and a second spec rendered in the same place keeps
   the first one's state.
+- **What a node has been shown with, it is not stripped of.** A stream is not monotone — a column's
+  `align` passes through `"e"` on its way to `"end"`, and that takes the whole `def` with it — so
+  `<SpecRenderer>` keeps the last value each node was given for a prop it cannot render without. It
+  remembers while it is mounted; `key` it to forget. Gating a heavy component is the app's call:
+  point its name at a placeholder in the registry while the spec is arriving.
 
 `specSchema(source, { bindings, root })` is the other direction: one JSON Schema for a whole tree, for
 `streamObject`, a structured-output API or `z.fromJSONSchema`. **Import it from

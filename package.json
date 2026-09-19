@@ -155,7 +155,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "4.52 KB"
+      "limit": "4.63 KB"
     },
     {
       "name": "Core engine (@box-kite/core, no React)",
