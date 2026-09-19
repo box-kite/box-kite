@@ -216,7 +216,8 @@ the app registered.
 - **It cannot run away.** `maxNodes` (1,000) and `maxDepth` (32) end a tree that recurses or repeats
   over something enormous, and both are props.
 - **It cannot take the page down.** Every node renders inside an error boundary of its own, so a
-  component that throws on the props it was handed costs that node and nothing around it.
+  component that throws on the props it was handed costs that node and nothing around it — and a node
+  missing a prop its component cannot do without is held back before it is ever rendered.
 
 Everything refused is reported rather than swallowed: `onIssues` is called with the whole list after
 each render whose issues changed, and `renderSpec()` returns it. Each issue carries a `code`
@@ -245,8 +246,19 @@ at a time, so the renderer treats a half-written tree as the normal case rather 
   fault;
 - a prop whose value is still half a string fails its schema and is dropped, so `sky-5` never paints
   and `sky-500` appears when it is whole;
+- a node whose **required** prop has not arrived is held back — the component would read `undefined`
+  and throw, and only its own boundary would catch that, so a stream would paint the same blank space
+  with a caught crash per frame behind it. It reports `missing-prop`, which at rest is a real fault
+  and mid-stream is most nodes for a moment;
 - a node that threw on one frame is tried again on the next, because the spec object itself is what
   resets the boundaries.
+
+**Write the controlled prop, never the `default…` twin.** React reads an uncontrolled default once, on
+the first render, and ignores it afterwards — which a stream breaks on twice over: the frame in which
+`defaultLayout` first arrived whole is the one that sticks, and a second spec rendered in the same place
+keeps the first one's state, because the component instance is the same. A generated node writes
+`layout`, `value`, `open`; every frame re-applies it, and the last frame is what stays on screen. The
+catalog says which is which in each prop's description.
 
 ```tsx
 const { partialObjectStream } = streamObject({ model, schema: z.fromJSONSchema(specSchema(registry)), prompt });
@@ -266,6 +278,25 @@ import { specSchema } from '@box-kite/react/spec';
 
 const schema = specSchema(registry, { bindings: true });
 ```
+
+**On a server, import it from `@box-kite/react/catalog` instead**, where it is exported as well — the
+call that needs it is a route handler, and the entry that renders a spec is a client entry:
+
+```ts
+import { catalog, specSchema } from '@box-kite/react/catalog';
+
+const allowed = catalog({ include: ['DashboardGrid', 'Widget', 'Sparkline', 'DataGrid'] });
+
+export async function POST(request: Request) {
+  const result = streamObject({ model, schema: jsonSchema(specSchema(allowed, { bindings: true })), prompt });
+
+  return result.toTextStreamResponse();
+}
+```
+
+It takes a catalog as readily as a registry — a `catalog()` entry already has the `props`, `slots` and
+`events` a tree schema needs — so the server side of the loop needs no components and no React at all.
+`examples/next-app/app/generative` is the whole thing, route and page, in three files.
 
 `bindings` widens every prop to "this, or a reference to it" and adds `repeat`; it is off by default,
 because it nearly doubles the document and a static view needs none of it. `root` narrows what may
@@ -384,3 +415,11 @@ before you render it.
 
 The same shape serves a structured-output API (`components[name].props` is a strict JSON Schema) and any
 runtime that takes a component catalog: assistant-ui, CopilotKit, A2UI.
+
+## Seeing it run
+
+[box-kite.dev/generative-ui](https://www.box-kite.dev/generative-ui/) is the loop end to end: three
+prompts, a dashboard of grids and charts arriving a character at a time, the theme flipped under it, and
+a second demo showing what the renderer refuses and what it reports about each refusal. The site is
+static, so those generations are recordings — the catalog, the registry and the renderer on that page are
+the real ones, and the live `streamObject` route is `examples/next-app/app/generative` in the repository.

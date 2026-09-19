@@ -47,6 +47,11 @@ function Boom({ crash }: { crash?: boolean }) {
   return <span>fine</span>;
 }
 
+/** A chart-shaped component: it reads the prop it cannot do without, the way every one of ours does. */
+function Meter({ value }: { value?: number }) {
+  return <meter data-testid="meter" value={value!.toFixed(2)} />;
+}
+
 function Bare() {
   return <hr />;
 }
@@ -65,6 +70,7 @@ const registry = createSpecRegistry({
     Action: { component: Action, props: object({ label: { type: 'string' } }), slots: [], events: ['onPress'] },
     Panel: { component: Panel, props: object({}), slots: ['default', 'title'] },
     Boom: { component: Boom, props: object({ crash: { type: 'boolean' } }), slots: [] },
+    Meter: { component: Meter, props: object({ value: { type: 'number' } }, ['value']), slots: [] },
     Bare,
   },
 });
@@ -324,5 +330,33 @@ describe('renderSpec', () => {
 
     expect(onIssues).toHaveBeenCalledTimes(1);
     expect(onIssues.mock.calls[0][0]).toEqual([expect.objectContaining({ code: 'unknown-component', path: 'spec.children.0' })]);
+  });
+  /**
+   * Found by streaming a real one (bug #186): every chart and every grid reads a prop without checking
+   * it, so a frame before that prop arrives used to be a caught crash rather than a blank space.
+   */
+  describe('the prop a component cannot do without', () => {
+    it('holds the node back until it is there, rather than letting the component throw', () => {
+      const crash = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const { element, issues } = renderSpec({ type: 'Meter', props: {} }, { registry });
+
+      render(<>{element}</>);
+
+      expect(screen.queryByTestId('meter')).toBeNull();
+      expect(issues).toEqual([expect.objectContaining({ code: 'missing-prop', component: 'Meter', prop: 'value' })]);
+      expect(crash).not.toHaveBeenCalled();
+    });
+
+    it('renders it as soon as the prop arrives', () => {
+      render(<SpecRenderer registry={registry} spec={{ type: 'Meter', props: { value: 0.5 } }} />);
+
+      expect(screen.getByTestId('meter')).toHaveAttribute('value', '0.50');
+    });
+
+    it('reports the refusal as well as the hole it left', () => {
+      const codes = issuesOf({ type: 'Meter', props: { value: 'most of it' } }).map((issue) => issue.code);
+
+      expect(codes).toEqual(['invalid-prop', 'missing-prop']);
+    });
   });
 });

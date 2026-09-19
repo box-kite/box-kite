@@ -17,7 +17,10 @@ import { Circle, Path, Svg, SvgProps } from './svg';
  * The props every primitive shares: an `Svg`'s, minus the `viewBox` and `variant` they own and with
  * `children` narrowed to SVG content — a chart's children are a label in a ring, never a render prop.
  */
-type ChartProps = Omit<SvgProps, 'viewBox' | 'variant' | 'children'> & { children?: React.ReactNode };
+type ChartProps = Omit<SvgProps, 'viewBox' | 'variant' | 'children'> & {
+  /** What is drawn on top of the shape: the number inside a ring, a gradient in a `<Defs>`. SVG content, not a render prop. */
+  children?: React.ReactNode;
+};
 
 /** The box every primitive draws in — the components own it, so the numbers can be plain. */
 const VIEW_BOX = `0 0 ${ChartUtils.VIEW} ${ChartUtils.VIEW}`;

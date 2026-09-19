@@ -209,6 +209,18 @@ function renderOne(
 
   walk.issues.push(...resolved.issues);
 
+  // Rendering it anyway means the component reads `undefined` and throws, and only its own boundary
+  // catches that: the same blank space, with a caught crash per frame behind it (bug #186).
+  if (resolved.missing.length) {
+    const needs = resolved.missing.join(', ');
+
+    return fail(
+      walk,
+      { code: 'missing-prop', path, component: type, prop: resolved.missing[0], message: `${type} cannot render without ${needs}.` },
+      key,
+    );
+  }
+
   for (const [event, action] of Object.entries(resolved.actions)) {
     props[event] = (...args: unknown[]) =>
       walk.onAction?.(action.action, { payload: action.payload, args, prop: event, component: type, path });
