@@ -150,6 +150,14 @@
           "required": false,
           "default": "false",
           "description": "Whether toggling it closes the menu. Default `false`, so several boxes can be ticked in one visit."
+        },
+        { "name": "children", "type": "React.ReactNode", "required": false, "default": null, "description": "The item's content." },
+        {
+          "name": "disabled",
+          "type": "boolean",
+          "required": false,
+          "default": null,
+          "description": "Focusable, announced, and not activatable. `aria-disabled` rather than the `disabled` attribute, because APG asks that a disabled item stay reachable: a keyboard user has to be able to find out it is there at all."
         }
       ]
     },
@@ -205,6 +213,14 @@
           "required": false,
           "default": "false",
           "description": "Whether choosing it closes the menu. Default `false`, the way a checkbox item behaves."
+        },
+        { "name": "children", "type": "React.ReactNode", "required": false, "default": null, "description": "The item's content." },
+        {
+          "name": "disabled",
+          "type": "boolean",
+          "required": false,
+          "default": null,
+          "description": "Focusable, announced, and not activatable. `aria-disabled` rather than the `disabled` attribute, because APG asks that a disabled item stay reachable: a keyboard user has to be able to find out it is there at all."
         }
       ]
     },

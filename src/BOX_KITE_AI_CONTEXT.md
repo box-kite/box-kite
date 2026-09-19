@@ -3097,11 +3097,17 @@ slots, events }` with its own JSON Schema, and one registered **without** a sche
   in its place (nothing, by default), and `maxNodes` (1,000) and `maxDepth` (32) end a runaway tree.
 - **Everything refused is reported.** `onIssues` gets a `{ code, path, message, component, prop }` per
   render whose issues changed: `unknown-component`, `unknown-prop`, `invalid-prop`, `unknown-slot`,
-  `unknown-event`, `unresolved-data`, `invalid-child`, `invalid-repeat`, `too-deep`, `too-many-nodes`,
-  `render-error`.
+  `unknown-event`, `unresolved-data`, `missing-prop`, `invalid-child`, `invalid-repeat`, `too-deep`,
+  `too-many-nodes`, `render-error`.
+- **A node missing a prop it cannot do without is held back.** A required prop that has not arrived —
+  or was refused — would be `undefined` inside the component, so the node renders nothing and reports
+  `missing-prop` instead of throwing into its own boundary once a frame.
 
-`specSchema(registry, { bindings, root })` is the other direction: one JSON Schema for a whole tree,
-for `streamObject`, a structured-output API or `z.fromJSONSchema`. `renderSpec(spec, options)` is the
-same walk with no hook in it — it returns `{ element, issues }`, so a static spec renders on a server.
+`specSchema(source, { bindings, root })` is the other direction: one JSON Schema for a whole tree, for
+`streamObject`, a structured-output API or `z.fromJSONSchema`. **Import it from
+`@box-kite/react/catalog` in a route handler** — it is exported there too, and that entry renders
+nothing, where `/spec` carries a `use client` banner; it takes a `catalog()` as readily as a registry,
+so the server half of the loop needs no components. `renderSpec(spec, options)` is the same walk with
+no hook in it — it returns `{ element, issues }`, so a static spec renders on a server.
 
 Full reference: `docs/catalog.md`.

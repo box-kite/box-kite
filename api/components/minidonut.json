@@ -25,6 +25,41 @@
       "required": false,
       "default": "20",
       "description": "The width of the ring in view units, out of the 100 the box is wide."
+    },
+    {
+      "name": "preserveAspectRatio",
+      "type": "string",
+      "required": false,
+      "default": null,
+      "description": "How the drawing is fitted when the box it is given is a different shape."
+    },
+    {
+      "name": "width",
+      "type": "string | number",
+      "required": false,
+      "default": null,
+      "description": "The `width` attribute: a number in user units, or any CSS length — `\"100%\"`, `\"12rem\"`."
+    },
+    {
+      "name": "height",
+      "type": "string | number",
+      "required": false,
+      "default": null,
+      "description": "The `height` attribute: a number in user units, or any CSS length."
+    },
+    {
+      "name": "label",
+      "type": "string",
+      "required": false,
+      "default": null,
+      "description": "Names the drawing — `role=\"img\"` and this text. Without one the `<svg>` is `aria-hidden`."
+    },
+    {
+      "name": "children",
+      "type": "React.ReactNode",
+      "required": false,
+      "default": null,
+      "description": "What is drawn on top of the shape: the number inside a ring, a gradient in a `<Defs>`. SVG content, not a render prop."
     }
   ],
   "parts": [],

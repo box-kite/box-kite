@@ -8,8 +8,8 @@
  * Syntax only — no program, no type checker: JSDoc is in the AST, and a printed type node is what the
  * source says rather than what an expansion would say. So the pass costs milliseconds and needs no build.
  */
-import { readFileSync } from 'node:fs';
-import { basename, join } from 'node:path';
+import { existsSync, readFileSync } from 'node:fs';
+import { basename, dirname, join, sep } from 'node:path';
 import prettier from 'prettier';
 import ts from 'typescript';
 
@@ -271,8 +271,8 @@ function sourceOf(relativePath) {
   return file;
 }
 
-/** A top-level interface, type alias, function or `const` by name — whatever kind it is declared as. */
-function declarationOf(relativePath, name) {
+/** The same lookup, for a name that may not be there: a heritage walk asks about types it does not own. */
+function findDeclaration(relativePath, name) {
   const file = sourceOf(relativePath);
 
   for (const statement of file.statements) {
@@ -287,7 +287,16 @@ function declarationOf(relativePath, name) {
     }
   }
 
-  throw new Error(`${relativePath} declares no ${name}`);
+  return null;
+}
+
+/** A top-level interface, type alias, function or `const` by name — whatever kind it is declared as. */
+function declarationOf(relativePath, name) {
+  const declaration = findDeclaration(relativePath, name);
+
+  if (!declaration) throw new Error(`${relativePath} declares no ${name}`);
+
+  return declaration;
 }
 
 /** A JSDoc comment as written: TypeScript hands it over as text or as a node array with the links in it. */
@@ -366,27 +375,123 @@ function defaultsOf(relativePath, symbol) {
   return defaults;
 }
 
-/** The members an interface declares itself — so everything inherited from `BoxProps` stays on /box. */
+/** Types whose members are documented somewhere else: Box's 221 props, and React's own attribute bags. */
+const DOCUMENTED_ELSEWHERE = /^(?:Box[A-Z]|React\.|Ref|RefAttributes|ComponentProps|HTML|SVGProps|JSX\.)/;
+
+/** The names inside an `Omit<T, 'a' | 'b'>` — a string literal, or a union of them. */
+function literalNames(node) {
+  if (!node) return [];
+  if (ts.isLiteralTypeNode(node) && ts.isStringLiteral(node.literal)) return [node.literal.text];
+  if (ts.isUnionTypeNode(node)) return node.types.flatMap(literalNames);
+
+  return [];
+}
+
+/** The file a name is imported from, or `null` when it is declared here or comes from a package. */
+function importedFrom(relativePath, name) {
+  for (const statement of sourceOf(relativePath).statements) {
+    if (!ts.isImportDeclaration(statement) || !ts.isStringLiteral(statement.moduleSpecifier)) continue;
+
+    const bindings = statement.importClause?.namedBindings;
+
+    if (!bindings || !ts.isNamedImports(bindings)) continue;
+
+    const element = bindings.elements.find((entry) => entry.name.text === name);
+
+    if (!element) continue;
+
+    const specifier = statement.moduleSpecifier.text;
+
+    if (!specifier.startsWith('.')) return null;
+
+    const resolved = ['.tsx', '.ts', '/index.tsx', '/index.ts']
+      .map((extension) => join(dirname(relativePath), specifier + extension).replaceAll(sep, '/'))
+      .find((candidate) => existsSync(join(ROOT, candidate)));
+
+    return resolved ? { file: resolved, name: (element.propertyName ?? element.name).text } : null;
+  }
+
+  return null;
+}
+
+/** What a type node contributes: its own members, and those of whatever this repo declared behind it. */
+function typeMembers(relativePath, node, seen) {
+  if (ts.isTypeLiteralNode(node)) return [...node.members];
+  if (ts.isIntersectionTypeNode(node)) return node.types.flatMap((type) => typeMembers(relativePath, type, seen));
+  if (ts.isParenthesizedTypeNode(node)) return typeMembers(relativePath, node.type, seen);
+
+  const reference = ts.isTypeReferenceNode(node) || ts.isExpressionWithTypeArguments(node);
+
+  if (!reference) return [];
+
+  const name = (ts.isTypeReferenceNode(node) ? node.typeName : node.expression).getText();
+  const [argument, keys] = node.typeArguments ?? [];
+
+  // `Omit<T, 'a' | 'b'>` is T without those; the rest of the utility types only change optionality.
+  if (name === 'Omit' && argument) {
+    const dropped = new Set(literalNames(keys));
+
+    return typeMembers(relativePath, argument, seen).filter((member) => !dropped.has(member.name?.getText()));
+  }
+
+  if (['Required', 'Partial', 'Readonly', 'NonNullable'].includes(name) && argument) return typeMembers(relativePath, argument, seen);
+
+  return DOCUMENTED_ELSEWHERE.test(name) ? [] : membersOf(relativePath, name, seen);
+}
+
+/** Every member a named type carries, its heritage included. Cycles end the walk rather than hanging it. */
+function membersOf(relativePath, typeName, seen) {
+  const source = importedFrom(relativePath, typeName) ?? { file: relativePath, name: typeName };
+  const key = `${source.file}#${source.name}`;
+
+  if (seen.has(key)) return [];
+  seen.add(key);
+
+  const declaration = findDeclaration(source.file, source.name);
+
+  if (!declaration) return [];
+  if (ts.isTypeAliasDeclaration(declaration)) return typeMembers(source.file, declaration.type, seen);
+  if (!ts.isInterfaceDeclaration(declaration)) return [];
+
+  const inherited = (declaration.heritageClauses ?? [])
+    .flatMap((clause) => clause.types)
+    .flatMap((type) => typeMembers(source.file, type, seen));
+
+  // Its own first: the props a component added are the ones its page is about.
+  return [...declaration.members, ...inherited];
+}
+
+/**
+ * Every prop a component takes that is its own — the members it declares, plus the ones it inherits from
+ * another shape this repo wrote (`GaugeProps extends ProgressRingProps`, whose `value` is the whole point
+ * of a gauge). It stops at `BoxProps`, whose 221 belong to /box, and at React's own types.
+ */
 function ownProps(relativePath, typeName, defaults) {
-  const declaration = declarationOf(relativePath, typeName);
-  const members = ts.isInterfaceDeclaration(declaration) ? declaration.members : [];
+  const members = membersOf(relativePath, typeName, new Set());
+  const named = new Map();
 
-  return members
-    .filter((member) => ts.isPropertySignature(member) || ts.isMethodSignature(member))
-    .map((member) => {
-      const name = member.name.getText();
-      const tag = tagsOf(member, 'default');
+  for (const member of members) {
+    if (!ts.isPropertySignature(member) && !ts.isMethodSignature(member)) continue;
 
-      return {
-        name,
-        type: (ts.isPropertySignature(member) ? (member.type?.getText() ?? 'unknown') : member.getText().slice(name.length))
-          .replace(/\s+/g, ' ')
-          .trim(),
-        required: !member.questionToken,
-        default: tag[0] ?? defaults.get(name) ?? null,
-        description: descriptionOf(member),
-      };
+    const name = member.name.getText();
+
+    // A member the component redeclared narrows the inherited one, so the first of a name is the answer.
+    if (named.has(name)) continue;
+
+    const tag = tagsOf(member, 'default');
+
+    named.set(name, {
+      name,
+      type: (ts.isPropertySignature(member) ? (member.type?.getText() ?? 'unknown') : member.getText().slice(name.length))
+        .replace(/\s+/g, ' ')
+        .trim(),
+      required: !member.questionToken,
+      default: tag[0] ?? defaults.get(name) ?? null,
+      description: descriptionOf(member),
     });
+  }
+
+  return [...named.values()];
 }
 
 const styleNodes = new Map();

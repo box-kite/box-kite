@@ -57,6 +57,7 @@ export type SpecIssueCode =
   | 'unknown-component'
   | 'unknown-prop'
   | 'invalid-prop'
+  | 'missing-prop'
   | 'unknown-slot'
   | 'unknown-event'
   | 'unresolved-data'
