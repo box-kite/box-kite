@@ -40,6 +40,18 @@ export interface CatalogComponent {
   events: string[];
 }
 
+/**
+ * The props of one component that are a shape rather than a value, hand-written because the manifest maps
+ * types and half of each of these is React — a `Cell` renderer, a `ReactNode`. A mapping has to drop such
+ * a prop whole, and a dropped prop is a component a generated spec can place and not fill.
+ */
+export interface CatalogContract {
+  /** Prop name → what it accepts. Merged over the manifest's own, which by construction has neither. */
+  props: Record<string, CatalogSchema>;
+  /** Of those, the ones a spec has to set. Joined to the manifest's list rather than replacing it. */
+  required?: string[];
+}
+
 /** What a generated tree may use: the components, and the values their props are allowed to take. */
 export interface BoxCatalog {
   /** The catalog format's own version, bumped when the shape changes rather than when its contents do. */

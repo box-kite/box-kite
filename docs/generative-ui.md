@@ -106,8 +106,56 @@ human-in-the-loop decision belongs anyway.
 element takes none — `Img`, `Textbox`, `Textarea` — has no default slot at all, and that is what tells
 a generator (and `<SpecRenderer>`) that children have nowhere to go there.
 
-**Anything else a JSON spec cannot express is left out.** A prop whose type is a grid definition or a row
-renderer is absent rather than half-described: a partial schema would state a constraint that is not true.
+**Anything else a JSON spec cannot express is left out.** A prop whose type is a row renderer or a
+datasource is absent rather than half-described: a partial schema would state a constraint that is not
+true. The exception is the next section — a handful of props that are a _shape_, where the part a spec can
+write is worth describing on its own.
+
+## The shapes: a grid's columns, a dashboard's layout
+
+Extraction maps _types_, and a few props are a shape whose other half is React: a `ColumnType` carries a
+`Cell` renderer and an `onCellEdit`, a `WidgetProps.empty` is a `ReactNode`. A mapping has to drop such a
+prop whole — which left the catalog able to place a `<DashboardGrid>` and neither lay it out nor put
+anything in it, and a `<DataGrid>` with no `def` at all, though `def` is required. Those are the two things
+a dashboard _is_.
+
+So four components carry a hand-written contract for the part a spec can write, and it is in the catalog
+like any other prop:
+
+| Component        | Props                                | What a spec may write                                                                   |
+| ---------------- | ------------------------------------ | --------------------------------------------------------------------------------------- |
+| `DataGrid`       | `def` (**required**), `data`         | The columns and the grid-wide flags; the rows, as the host's own objects.               |
+| `DashboardGrid`  | `layout`, `defaultLayout`, `columns` | `DashboardUtils.SCHEMA` — the same artifact a drag reports back — and the column space. |
+| `Widget`         | `empty`                              | `true` for the default line, or the words to use instead.                               |
+| `ChartContainer` | `series`                             | The series names, or a name-to-colour record.                                           |
+
+```json
+{
+  "type": "DataGrid",
+  "props": {
+    "data": { "$data": "orders" },
+    "def": {
+      "rowKey": "id",
+      "title": "Orders",
+      "footer": true,
+      "columns": [
+        { "key": "customer", "header": "Customer" },
+        { "key": "total", "header": "Total", "align": "end", "aggregate": "sum" }
+      ]
+    }
+  }
+}
+```
+
+`data` is the one prop in the catalog that carries values rather than styling, so its schema says "objects"
+and stops — `{ $data: 'orders' }` is the usual answer, and the rows stay the host's. Everything else is
+judged: a column with no `key`, an `aggregate` that is not one of the five, a `Cell` renderer written as a
+string — each of them fails the schema, so the prop is dropped and the node renders without it.
+
+Two things are deliberately absent. A column's own `columns` (the header groups) would be a recursive
+schema, which is what a structured-output API is worst at and what the catalog has no `$defs` of its own to
+carry. And `dataSource`, `onCellEdit`, `rowDetail` and `treeData` are functions or components: they are the
+app's to pass, beside the spec rather than in it.
 
 ## Rendering what came back: `<SpecRenderer>`
 

@@ -15,6 +15,7 @@ _Unreleased. A PR that changes what a consumer sees adds its section here — se
 - **[What an AI may build, as JSON Schema](#what-an-ai-may-build-as-json-schema)** — `catalog()` describes every component and every value its props take, so a generated UI can be validated before it renders and cannot invent a colour.
 - **[What a model wrote, rendered safely](#what-a-model-wrote-rendered-safely)** — `<SpecRenderer>` renders a generated spec against the components your app allows: unknown names render nothing, refused props are dropped, and only an event can become a function.
 - **[A dashboard people rearrange, and a model can write](#a-dashboard-people-rearrange-and-a-model-can-write)** — a drag-and-resize widget grid whose layout is JSON in cells: every place is a class, the keyboard gets a grab, and a model can write the same file a drag reports.
+- **[A generated dashboard with something in it](#a-generated-dashboard-with-something-in-it)** — the catalog describes a grid's columns and a dashboard's layout now, so a spec can say where each widget goes and what is inside it.
 - **[The DataGrid exports its types](#the-datagrid-exports-its-types)** — `ColumnType`, `GridDefinition`, `CellModel` and the rest come off `components/dataGrid` now instead of a path inside it.
 
 <!-- One bullet per section below, linking to it: **[Heading](#heading)** — one line on why it matters. -->
@@ -425,6 +426,61 @@ other component's, so they cost **0.44 KB gzipped** on every entry that carries 
 dashboard.
 
 [The dashboard](https://box-kite.dev/dashboard)
+
+## A generated dashboard with something in it
+
+`catalog()` described the components a model may compose and, for four of them, not the props that carry
+what they are for. A `<DataGrid>` arrived with no `def` at all — though `def` is required — and a
+`<DashboardGrid>` with no `layout`, so a generated spec could place a dashboard and neither lay it out nor
+put a grid in it. Both are in the catalog now, and so are `Widget`'s `empty` and `ChartContainer`'s
+`series`.
+
+```json
+{
+  "type": "Widget",
+  "props": { "id": "orders" },
+  "slots": { "title": ["Orders"] },
+  "children": [
+    {
+      "type": "DataGrid",
+      "props": {
+        "data": { "$data": "orders" },
+        "def": {
+          "rowKey": "id",
+          "footer": true,
+          "columns": [
+            { "key": "customer", "header": "Customer" },
+            { "key": "total", "header": "Total", "align": "end", "aggregate": "sum" }
+          ]
+        }
+      }
+    }
+  ]
+}
+```
+
+These four are the props that are a _shape_ rather than a value, and the reason they were missing is that
+the other half of each shape is React: a column carries a `Cell` renderer and an `onCellEdit`, a widget's
+`empty` is a `ReactNode`. The generator maps types, so it had to drop such a prop whole rather than state a
+constraint that is not true. What a spec can write is now described by hand beside the interface it
+mirrors — every key typed against it, so a prop renamed in the component is a compile error rather than a
+constraint that silently stops matching.
+
+The part a spec cannot write is still absent: `dataSource`, `onCellEdit`, `rowDetail` and `treeData` are
+functions and components, passed beside the spec rather than in it, and a column's own nested `columns`
+would be a recursive schema. `data` is the one prop in the catalog that carries values rather than styling,
+so its schema says "objects" and stops — `{ "$data": "orders" }` is the usual answer, and the rows stay
+yours. Everything else is judged the way any other prop is: a column with no `key`, an `aggregate` that is
+not one of the five, or a `Cell` written as a string fails the schema, so the prop is dropped and the node
+renders without it.
+
+`DashboardUtils.SCHEMA` is unchanged and is what `DashboardGrid`'s `layout` now points at, so the artifact
+a drag reports back, the one a host stores and the one a model generates under are one description in one
+place. It moved into a module of its own to get there, which is the whole cost of this: **1.83 KB gzipped
+on the catalog entry** for the four contracts, 26 B on `@box-kite/core` for merging them, and 14 B on the
+dashboard for the module boundary. Nothing else moved.
+
+[The shapes a spec can write](https://box-kite.dev/ai-context)
 
 ## Breaking changes
 

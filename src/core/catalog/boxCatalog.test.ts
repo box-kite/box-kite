@@ -131,6 +131,29 @@ describe('BoxCatalogs.build', () => {
     });
   });
 
+  describe('contracts', () => {
+    const contracts = { Flex: { props: { layout: { type: 'object' } as CatalogSchema }, required: ['layout'] } };
+
+    it('carries a prop the manifest could not describe', () => {
+      const catalog = BoxCatalogs.build(source({ contracts }), { include: ['Flex'] });
+
+      expect(catalog.components.Flex.props.properties!.layout.type).toBe('object');
+      expect(catalog.components.Flex.props.required).toEqual(['layout']);
+    });
+
+    it('wins the name it shares with a style prop, since it is the narrower of the two', () => {
+      const shared = { Flex: { props: { gap: { type: 'object' } as CatalogSchema } } };
+
+      expect(BoxCatalogs.build(source({ contracts: shared }), { include: ['Flex'] }).components.Flex.props.properties!.gap.type).toBe(
+        'object',
+      );
+    });
+
+    it('leaves a component nothing was written for alone', () => {
+      expect(BoxCatalogs.build(source({ contracts }), { include: ['Grid'] }).components.Grid.props.properties!.layout).toBeUndefined();
+    });
+  });
+
   describe('the allow-list is the app’s', () => {
     it('includes and excludes by name', () => {
       expect(Object.keys(BoxCatalogs.build(source(), { include: ['Flex', 'H1'] }).components)).toEqual(['H1', 'Flex']);

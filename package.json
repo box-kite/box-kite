@@ -145,7 +145,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "45.4 KB"
+      "limit": "47.23 KB"
     },
     {
       "name": "Spec renderer (spec entry)",
@@ -161,7 +161,7 @@
       "name": "Core engine (@box-kite/core, no React)",
       "path": "dist-core/core.mjs",
       "gzip": true,
-      "limit": "30.41 KB"
+      "limit": "30.44 KB"
     },
     {
       "name": "Dialog",
@@ -261,7 +261,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "36.71 KB"
+      "limit": "36.73 KB"
     },
     {
       "name": "DataGrid",
@@ -291,7 +291,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "106.57 KB"
+      "limit": "106.61 KB"
     }
   ],
   "repository": {

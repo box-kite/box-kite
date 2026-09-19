@@ -3029,6 +3029,10 @@ allowed.tokens; // the colours, the @keyframes names and the style-tree nodes a 
   values as `examples`, never a constraint the library does not enforce.
 - **Function props are `events`** (named, for the host to bind) and a `ReactNode` prop is a **slot**
   (`children` is `default`). A prop a JSON spec cannot express is left out rather than half-described.
+- **The props that are a _shape_ are described by hand**, since the other half of each is React:
+  `DataGrid`'s `def` (required — the columns and the grid-wide flags) and `data`, `DashboardGrid`'s
+  `layout`/`defaultLayout`/`columns`, `Widget`'s `empty`, `ChartContainer`'s `series`. A column's nested
+  `columns`, and `dataSource`/`onCellEdit`/`rowDetail`/`treeData`, stay out — they are the app's to pass.
 - **The allow-list is the app's.** `catalog()` with no options is all 78 components and all 221 props —
   ~4.6 MB serialized. `include`, `exclude` and `styleProps` are how an app narrows it.
 
