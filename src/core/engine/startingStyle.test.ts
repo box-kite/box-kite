@@ -74,7 +74,7 @@ describe('startingStyle', () => {
     renderStyles(engine, { theme: { dark: { startingStyle: { bgColor: 'gray-900' } } } });
 
     expect(ruleList(engine)).toEqual([
-      '@starting-style{.dark .starting-theme-dark-bgColor-gray-900{background-color:var(--gray-900)!important}}',
+      '@scope (.dark) to ([data-theme]){@starting-style{:scope .starting-theme-dark-bgColor-gray-900{background-color:var(--gray-900)!important}}}',
     ]);
   });
 
@@ -142,13 +142,13 @@ describe('startingStyle', () => {
     it('wins over a more specific ordinary rule, which coming later cannot do', () => {
       const engine = makeEngine('starting-style-specificity');
 
-      // Source order settles a *tie* in specificity and nothing else. `.dark .x` is 0,2,0 against a
+      // Source order settles a *tie* in specificity and nothing else. A theme's `:scope .x` is 0,2,0 against a
       // starting rule's 0,1,0, so without importance the entrance silently never runs — measured in
       // Chrome, where the element sat at its finished opacity on the first frame.
       renderStyles(engine, { theme: { dark: { opacity: 1 } }, startingStyle: { opacity: 0 } });
 
       expect(ruleList(engine)).toEqual([
-        '.dark .theme-dark-opacity-1{opacity:1}',
+        '@scope (.dark) to ([data-theme]){:scope .theme-dark-opacity-1{opacity:1}}',
         '@starting-style{.starting-opacity-0{opacity:0!important}}',
       ]);
     });

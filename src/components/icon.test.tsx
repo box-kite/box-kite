@@ -178,7 +178,7 @@ describe('Icon', () => {
         </Icon>,
       );
 
-      expect(styles()).toContain('.dark .theme-dark-color-gray-300{color:var(--gray-300)}');
+      expect(styles()).toContain('@scope (.dark) to ([data-theme]){:scope .theme-dark-color-gray-300{color:var(--gray-300)}}');
     });
 
     it('forwards props to the element and a ref to it', () => {

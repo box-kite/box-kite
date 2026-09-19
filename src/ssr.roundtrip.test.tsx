@@ -106,7 +106,23 @@ describe('SSR round-trip', () => {
 
     expect(client.html).toBe(server.html);
     expect(splitRules(client.styles)).toEqual(splitRules(server.styles));
-    expect(client.styles).toContain('.dark .theme-dark-bgColor-gray-900{background-color:var(--gray-900)}');
+    expect(client.styles).toContain(
+      '@scope (.dark) to ([data-theme]){:scope .theme-dark-bgColor-gray-900{background-color:var(--gray-900)}}',
+    );
+  });
+
+  it('marks a local theme in the markup, so the boundary exists before hydration', () => {
+    // What ends an outer theme's `@scope` block is `data-theme` in the HTML: written from an effect it
+    // would arrive after the first paint, and the page would paint the outer theme's colours (bug #189).
+    const { server, client } = roundTrip(
+      <Box.Theme use="local" theme="light">
+        <Box bgColor="white">panel</Box>
+      </Box.Theme>,
+    );
+
+    expect(client.html).toBe(server.html);
+    expect(server.html).toContain('data-theme="light"');
+    expect(server.html).toContain('class="_b light"');
   });
 
   it('declares the same :root variables on both sides', () => {

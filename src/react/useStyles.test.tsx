@@ -564,7 +564,7 @@ describe('useStyles', () => {
       // Two parents in nesting order, and no `|` to tell them apart any more: each compiles to its own
       // selector, so the class name is just the two segments.
       expect(styleElement.innerText).toContain(
-        '.dark .parent:hover .theme-dark-hover-parent-bgColor-gray-100{background-color:var(--gray-100)}',
+        '@scope (.dark) to ([data-theme]){:scope .parent:hover .theme-dark-hover-parent-bgColor-gray-100{background-color:var(--gray-100)}}',
       );
       expect(element.classList).toContain('theme-dark-hover-parent-bgColor-gray-100');
     });
@@ -612,7 +612,7 @@ describe('useStyles', () => {
       // Base padding
       expect(styleElement.innerText).toContain('.p-1{padding:0.25rem}');
       // Dark theme padding override
-      expect(styleElement.innerText).toContain('.dark .theme-dark-p-2{padding:0.5rem}');
+      expect(styleElement.innerText).toContain('@scope (.dark) to ([data-theme]){:scope .theme-dark-p-2{padding:0.5rem}}');
 
       expect(element.classList).toContain('p-1');
       expect(element.classList).toContain('theme-dark-p-2');
@@ -631,9 +631,9 @@ describe('useStyles', () => {
       // Base padding
       expect(styleElement.innerText).toContain('.p-1{padding:0.25rem}');
       // Dark theme padding override
-      expect(styleElement.innerText).toContain('.dark .theme-dark-p-2{padding:0.5rem}');
+      expect(styleElement.innerText).toContain('@scope (.dark) to ([data-theme]){:scope .theme-dark-p-2{padding:0.5rem}}');
       // Dark theme hover padding override
-      expect(styleElement.innerText).toContain('.dark .hover-theme-dark-p-3:hover{padding:0.75rem}');
+      expect(styleElement.innerText).toContain('@scope (.dark) to ([data-theme]){:scope .hover-theme-dark-p-3:hover{padding:0.75rem}}');
 
       expect(element.classList).toContain('p-1');
       expect(element.classList).toContain('theme-dark-p-2');
@@ -669,12 +669,16 @@ describe('useStyles', () => {
       expect(styleElement.innerText).toContain('.bgColor-white{background-color:var(--white)}');
 
       // Dark theme base styles
-      expect(styleElement.innerText).toContain('.dark .theme-dark-p-2{padding:0.5rem}');
-      expect(styleElement.innerText).toContain('.dark .theme-dark-bgColor-gray-900{background-color:var(--gray-900)}');
+      expect(styleElement.innerText).toContain('@scope (.dark) to ([data-theme]){:scope .theme-dark-p-2{padding:0.5rem}}');
+      expect(styleElement.innerText).toContain(
+        '@scope (.dark) to ([data-theme]){:scope .theme-dark-bgColor-gray-900{background-color:var(--gray-900)}}',
+      );
 
       // Dark theme hover styles
-      expect(styleElement.innerText).toContain('.dark .hover-theme-dark-p-3:hover{padding:0.75rem}');
-      expect(styleElement.innerText).toContain('.dark .hover-theme-dark-bgColor-gray-800:hover{background-color:var(--gray-800)}');
+      expect(styleElement.innerText).toContain('@scope (.dark) to ([data-theme]){:scope .hover-theme-dark-p-3:hover{padding:0.75rem}}');
+      expect(styleElement.innerText).toContain(
+        '@scope (.dark) to ([data-theme]){:scope .hover-theme-dark-bgColor-gray-800:hover{background-color:var(--gray-800)}}',
+      );
 
       expect(element.classList).toContain('p-1');
       expect(element.classList).toContain('bgColor-white');
@@ -709,10 +713,12 @@ describe('useStyles', () => {
       expect(styleElement.innerText).toContain('.p-1{padding:0.25rem}');
 
       // Dark theme states
-      expect(styleElement.innerText).toContain('.dark .theme-dark-p-2{padding:0.5rem}');
-      expect(styleElement.innerText).toContain('.dark .hover-theme-dark-p-3:hover{padding:0.75rem}');
-      expect(styleElement.innerText).toContain('.dark .active-theme-dark-p-4:active{padding:1rem}');
-      expect(styleElement.innerText).toContain('.dark .focus-theme-dark-p-5:focus-within{padding:1.25rem}');
+      expect(styleElement.innerText).toContain('@scope (.dark) to ([data-theme]){:scope .theme-dark-p-2{padding:0.5rem}}');
+      expect(styleElement.innerText).toContain('@scope (.dark) to ([data-theme]){:scope .hover-theme-dark-p-3:hover{padding:0.75rem}}');
+      expect(styleElement.innerText).toContain('@scope (.dark) to ([data-theme]){:scope .active-theme-dark-p-4:active{padding:1rem}}');
+      expect(styleElement.innerText).toContain(
+        '@scope (.dark) to ([data-theme]){:scope .focus-theme-dark-p-5:focus-within{padding:1.25rem}}',
+      );
 
       expect(element.classList).toContain('p-1');
       expect(element.classList).toContain('theme-dark-p-2');

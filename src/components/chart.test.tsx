@@ -274,7 +274,7 @@ describe('ChartContainer', () => {
   it('redeclares the palette under the theme selector', () => {
     render(<ChartContainer />);
 
-    expect(styles()).toContain('.dark .theme-dark-vars-chart-1-sky-400');
+    expect(styles()).toContain('@scope (.dark) to ([data-theme]){:scope .theme-dark-vars-chart-1-sky-400');
     expect(styles()).toContain('--chart-1:var(--sky-400)');
   });
 

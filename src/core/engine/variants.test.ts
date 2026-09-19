@@ -89,7 +89,7 @@ describe('attribute and relational variants', () => {
 
     expect(ruleList(engine)).toEqual([
       '.card:hover .dataAttr-on-hover-card-opacity-1[data-on]{opacity:1}',
-      '.dark .dataAttr-state\\=open-theme-dark-color-red-500[data-state="open"]{color:var(--red-500)}',
+      '@scope (.dark) to ([data-theme]){:scope .dataAttr-state\\=open-theme-dark-color-red-500[data-state="open"]{color:var(--red-500)}}',
     ]);
   });
 

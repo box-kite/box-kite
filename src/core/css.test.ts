@@ -59,7 +59,7 @@ describe('css — the typed escape hatch', () => {
       '.md-css-objectPosition-top{object-position:top}',
     );
     expect(generatedRulesFor({ theme: { dark: { css: { mixBlendMode: 'screen' } } } }, 'css-theme')).toContain(
-      '.dark .theme-dark-css-mixBlendMode-screen{mix-blend-mode:screen}',
+      '@scope (.dark) to ([data-theme]){:scope .theme-dark-css-mixBlendMode-screen{mix-blend-mode:screen}}',
     );
     expect(generatedRulesFor({ dataAttr: { 'state=open': { css: { isolation: 'isolate' } } } }, 'css-variant')).toContain(
       '[data-state="open"]{isolation:isolate}',

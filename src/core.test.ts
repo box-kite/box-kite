@@ -50,7 +50,7 @@ describe('core entry', () => {
     expect(element.className).toBe('_b hover-p-4 md-p-8 theme-dark-color-white');
     expect(ruleListIn(engine.getStyles())).toEqual([
       '.hover-p-4:hover{padding:1rem}',
-      '.dark .theme-dark-color-white{color:var(--white)}',
+      '@scope (.dark) to ([data-theme]){:scope .theme-dark-color-white{color:var(--white)}}',
       '@media (min-width: 768px){.md-p-8{padding:2rem}}',
     ]);
   });

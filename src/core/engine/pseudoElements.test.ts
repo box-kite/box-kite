@@ -71,7 +71,9 @@ describe('a pseudo-element in a compound selector', () => {
 
     const rules = generatedRulesOf(engine);
 
-    expect(rules).toContain('.dark .checked-before-theme-dark-opacity-0\\.5:checked::before{opacity:0.5}');
+    expect(rules).toContain(
+      '@scope (.dark) to ([data-theme]){:scope .checked-before-theme-dark-opacity-0\\.5:checked::before{opacity:0.5}}',
+    );
     expect(rules).not.toContain('::before:checked');
   });
 
@@ -96,7 +98,9 @@ describe('a pseudo-element in a compound selector', () => {
 
     renderStyles(engine, { theme: { dark: { hoverGroup: { card: { after: { opacity: 0.5 } } } } } });
 
-    expect(generatedRulesOf(engine)).toContain('.dark .card:hover .after-theme-dark-hover-card-opacity-0\\.5::after{opacity:0.5}');
+    expect(generatedRulesOf(engine)).toContain(
+      '@scope (.dark) to ([data-theme]){:scope .card:hover .after-theme-dark-hover-card-opacity-0\\.5::after{opacity:0.5}}',
+    );
   });
 
   it('sits after a variant on the same element, in both nesting directions', () => {

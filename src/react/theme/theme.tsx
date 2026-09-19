@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useLayoutEffect, useRef, useState } from 'react';
+import React, { useCallback, useContext, useLayoutEffect, useState } from 'react';
 import Box from '../../box';
 import {
   applyThemeToElement,
@@ -7,7 +7,6 @@ import {
   documentRoot,
   getSystemTheme,
   readStoredTheme,
-  setThemeAttribute,
   watchSystemTheme,
   writeStoredTheme,
 } from '../../core';
@@ -44,7 +43,6 @@ function Theme(props: ThemeProps) {
   // Initialize with the default for SSR consistency - actual system theme is set in useLayoutEffect
   const [themeName, setThemeName] = useState(theme ?? defaultThemeName);
   const [isUserOverride, setIsUserOverride] = useState(theme !== undefined);
-  const localRef = useRef<HTMLDivElement>(null);
 
   const handleSetTheme = useCallback(
     (value: string | null) => {
@@ -103,17 +101,11 @@ function Theme(props: ThemeProps) {
     return applyThemeToElement(root, themeName);
   }, [themeName, use]);
 
-  // Set data-theme on the local wrapper element
-  useLayoutEffect(() => {
-    if (use !== 'local' || !localRef.current) return;
-    setThemeAttribute(localRef.current, themeName);
-  }, [themeName, use]);
-
   if (use === 'local') {
     return (
       <ThemeContext.Provider value={{ theme: themeName, setTheme: handleSetTheme }}>
         {globalStyleElements}
-        <Box ref={localRef} className={themeName}>
+        <Box className={themeName} props={{ 'data-theme': themeName }}>
           {children}
         </Box>
       </ThemeContext.Provider>

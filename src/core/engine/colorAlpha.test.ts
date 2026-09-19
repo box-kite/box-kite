@@ -46,7 +46,7 @@ describe('a colour with an opacity modifier', () => {
     renderStyles(engine, { md: { hover: { bgColor: 'black/60' } }, theme: { dark: { bgColor: 'white/10' } } });
 
     expect(ruleList(engine)).toEqual([
-      '.dark .theme-dark-bgColor-white\\/10{background-color:color-mix(in oklab, var(--white) 10%, transparent)}',
+      '@scope (.dark) to ([data-theme]){:scope .theme-dark-bgColor-white\\/10{background-color:color-mix(in oklab, var(--white) 10%, transparent)}}',
       '@media (min-width: 768px){.md-hover-bgColor-black\\/60:hover{background-color:color-mix(in oklab, var(--black) 60%, transparent)}}',
     ]);
   });
