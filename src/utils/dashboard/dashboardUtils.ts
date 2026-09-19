@@ -81,9 +81,13 @@ namespace DashboardUtils {
     return { ...item, w, h, x: clamp(whole(item.x, 0), 0, columns - w), y: Math.max(whole(item.y, 0), 0) };
   }
 
-  /** Reading order, and the order the items are stored in: down the rows, then along them. */
+  /**
+   * Reading order, and the order the items are stored in: down the rows, then along them. Two items sent
+   * to the same cell keep the order they arrived in — the sort is stable, and the id would be an alphabet
+   * deciding which of them is flung to the bottom (#183).
+   */
   function byReadingOrder(left: DashboardItem, right: DashboardItem): number {
-    return left.y - right.y || left.x - right.x || (left.id < right.id ? -1 : 1);
+    return left.y - right.y || left.x - right.x;
   }
 
   /**
@@ -91,13 +95,15 @@ namespace DashboardUtils {
    * and a widget cannot be parked in mid-air. That is what makes two dashboards of the same items compare
    * equal, and it is why a drop below a neighbour rises to meet it.
    *
-   * `priorityId` is the item a drag is holding: it settles first, so everything else moves around it.
+   * It is reading order and nothing else. A widget a drag is holding gets no priority here: settling it
+   * first floats it to the top of a board with nothing on it yet, which is every drag's opening frame
+   * (#183). Where a drop lands on an occupied cell it is `displace` that decides, before this runs.
    */
-  export function resolve(items: readonly DashboardItem[], columns: number, priorityId?: string): DashboardItem[] {
+  export function resolve(items: readonly DashboardItem[], columns: number): DashboardItem[] {
     const space = clamp(whole(columns, 12), MIN_COLUMNS, MAX_COLUMNS);
     const clamped = items.map((item) => clampItem(item, space));
-    // A fixed item is placed before anything that could be pushed into it, and the held one before the rest.
-    const rank = (item: DashboardItem) => (item.fixed ? 0 : item.id === priorityId ? 1 : 2);
+    // A fixed item is placed before anything that could be pushed into it.
+    const rank = (item: DashboardItem) => (item.fixed ? 0 : 1);
     const order = [...clamped].sort((left, right) => rank(left) - rank(right) || byReadingOrder(left, right));
     const placed: DashboardItem[] = [];
 
@@ -124,10 +130,10 @@ namespace DashboardUtils {
   }
 
   /** The same, as a layout. Every function here returns one of these: a change is always the whole artifact. */
-  export function normalize(layout: DashboardLayout, priorityId?: string): DashboardLayout {
+  export function normalize(layout: DashboardLayout): DashboardLayout {
     const columns = clamp(whole(layout.columns, 12), MIN_COLUMNS, MAX_COLUMNS);
 
-    return { version: VERSION, columns, items: resolve(layout.items, columns, priorityId) };
+    return { version: VERSION, columns, items: resolve(layout.items, columns) };
   }
 
   export function itemOf(layout: DashboardLayout, id: string): DashboardItem | undefined {
@@ -139,14 +145,36 @@ namespace DashboardUtils {
     return new Map(layout.items.map((item, index) => [item.id, index]));
   }
 
+  /**
+   * The half of a move that compaction cannot do: the widget takes the cell it was put on, and whatever
+   * was there is handed one of its own — the row above where that is clear, the row below otherwise.
+   * Compaction alone reads the layout in reading order and would simply undo the move (#183).
+   */
+  function displace(items: readonly DashboardItem[], moved: DashboardItem): DashboardItem[] {
+    const clear = (candidate: DashboardItem) =>
+      !overlaps(moved, candidate) &&
+      !items.some((other) => other.id !== candidate.id && other.id !== moved.id && overlaps(other, candidate));
+
+    return items.map((item) => {
+      if (item.id === moved.id) return moved;
+      // A fixed item is moved by nothing, so it is the widget dropped on it that compaction moves on.
+      if (item.fixed === true || !overlaps(item, moved)) return item;
+
+      const above = { ...item, y: Math.max(moved.y - item.h, 0) };
+
+      return clear(above) ? above : { ...item, y: moved.y + moved.h };
+    });
+  }
+
   /** A widget sent to a cell. The rest of the layout moves around it rather than refusing the move. */
   export function moveTo(layout: DashboardLayout, id: string, x: number, y: number): DashboardLayout {
     const target = itemOf(layout, id);
     if (!target || target.fixed) return layout;
 
-    const moved = layout.items.map((item) => (item.id === id ? { ...item, x, y: Math.max(y, 0) } : item));
+    // Clamped before anything is displaced, so what moves out of the way is what the widget will cover.
+    const moved = clampItem({ ...target, x, y }, clamp(whole(layout.columns, 12), MIN_COLUMNS, MAX_COLUMNS));
 
-    return normalize({ ...layout, items: moved }, id);
+    return normalize({ ...layout, items: displace(layout.items, moved) });
   }
 
   /** A widget given a size. Its own minimum and maximum are applied by `resolve`, so this only asks. */
@@ -156,7 +184,7 @@ namespace DashboardUtils {
 
     const resized = layout.items.map((item) => (item.id === id ? { ...item, w, h } : item));
 
-    return normalize({ ...layout, items: resized }, id);
+    return normalize({ ...layout, items: resized });
   }
 
   /** A widget added where there is room for it: under everything, which compaction then floats up. */

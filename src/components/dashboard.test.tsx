@@ -26,6 +26,24 @@ function measure(id: string, cell = { width: 100, height: 50 }) {
   return cell;
 }
 
+const stacked = layout([
+  { id: 'a', x: 0, y: 0, w: 12, h: 2 },
+  { id: 'b', x: 0, y: 2, w: 12, h: 2 },
+]);
+
+/** A drag of a handle in *pixels*, for the fractions of a cell a whole-cell drag cannot say. */
+function nudge(id: string, by: { x?: number; y?: number }) {
+  const item = stacked.items.find((entry) => entry.id === id)!;
+  const rect = { width: 100 * item.w, height: 50 * item.h, left: 0, top: 0, right: 100 * item.w, bottom: 50 * item.h };
+
+  vi.spyOn(widgetOf(id), 'getBoundingClientRect').mockReturnValue(rect as DOMRect);
+
+  const handle = handleOf(id);
+  fireEvent.pointerDown(handle, { button: 0, pointerId: 1, clientX: 0, clientY: 0 });
+  fireEvent.pointerMove(handle, { pointerId: 1, clientX: by.x ?? 0, clientY: by.y ?? 0 });
+  fireEvent.pointerUp(handle, { pointerId: 1 });
+}
+
 /** A drag of the named handle, in whole cells. */
 function drag(id: string, cells: { x?: number; y?: number }, kind: 'Move' | 'Resize' = 'Move') {
   const cell = measure(id);
@@ -161,6 +179,40 @@ describe('DashboardGrid', () => {
 
       const [next] = changed.mock.lastCall!;
       expect(next.items.map((item: { id: string; y: number }) => `${item.id}@${item.y}`)).toEqual(['b@0', 'a@2']);
+    });
+
+    it('leaves a widget where it is until the pointer has crossed a cell', () => {
+      const changed = vi.fn();
+
+      render(
+        <DashboardGrid defaultLayout={stacked} columns={12} editable onLayoutChange={changed}>
+          <Widget id="a" name="a" title="Revenue" />
+          <Widget id="b" name="b" title="Orders" />
+        </DashboardGrid>,
+      );
+
+      nudge('b', { x: 2, y: 2 });
+
+      // #183: the widget being held used to settle before everything else, which floated it to the
+      // first row on the opening frame of every drag — two pixels in, before a cell had been crossed.
+      expect(widgetOf('b').className).toContain('gridRowStart-3');
+      expect(changed).not.toHaveBeenCalled();
+    });
+
+    it('sends a widget past its neighbour rather than floating it back over it', () => {
+      const changed = vi.fn();
+
+      render(
+        <DashboardGrid defaultLayout={stacked} columns={12} editable onLayoutChange={changed}>
+          <Widget id="a" name="a" title="Revenue" />
+          <Widget id="b" name="b" title="Orders" />
+        </DashboardGrid>,
+      );
+
+      nudge('a', { y: 100 });
+
+      expect(widgetOf('a').className).toContain('gridRowStart-3');
+      expect(widgetOf('b').className).toContain('gridRowStart-1');
     });
 
     it('resizes from the corner, in cells', () => {

@@ -261,7 +261,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "36.64 KB"
+      "limit": "36.71 KB"
     },
     {
       "name": "DataGrid",
@@ -291,7 +291,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "106.47 KB"
+      "limit": "106.57 KB"
     }
   ],
   "repository": {

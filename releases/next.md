@@ -386,6 +386,11 @@ inline style at rest — and the same layout renders on a server. The one inline
 the translate that keeps a dragged widget under the pointer, which is a value per frame and would be a rule
 per frame that is never freed.
 
+**A drop takes the cell.** A widget put on top of its neighbour keeps the cell it was dropped on, and the
+neighbour is handed one of its own — the row above where there is room for it, the row below otherwise.
+Everything then floats up, so a widget cannot be parked in mid-air, a drop below its neighbours rises to
+meet them, and two dashboards holding the same widgets in the same places compare equal.
+
 **Narrower is a projection, not a second layout.** `columns` takes a count per container size —
 `{ xs: 1, md: 6, xxl: 12 }` by default — and each narrower arrangement is the same layout scaled down by
 arithmetic at render time, written as a container query. The browser picks between classes; nothing listens
@@ -415,7 +420,7 @@ clamped, and two items claiming one id become one. Where a dashboard is kept is 
 only the app knows whether it belongs to a person, a team or a URL; the docs page keeps its demo in
 `localStorage`, which is the whole of it.
 
-The entry is 5.89 KB gzipped on top of Box. The two style-tree nodes it adds are in the engine with every
+The entry is 5.99 KB gzipped on top of Box. The two style-tree nodes it adds are in the engine with every
 other component's, so they cost **0.44 KB gzipped** on every entry that carries one, dashboard or no
 dashboard.
 

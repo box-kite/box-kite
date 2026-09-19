@@ -2933,7 +2933,9 @@ import { Sparkline } from '@box-kite/react/components/chart';
 `x`/`y` are zero-based cells, `w`/`h` spans. `minW`/`minH`/`maxW`/`maxH` bound a resize, and `fixed`
 pins a widget: it is never moved or resized and has no handles at all. The layout is **compacted
 upward**, so a widget cannot be parked in mid-air and two dashboards of the same widgets in the same
-places compare equal.
+places compare equal. A widget dropped on a neighbour **takes the cell**, and the neighbour is handed one
+of its own — the row above where there is room for it, the row below otherwise. That is `moveTo`'s half
+of it; compaction is reading order and nothing else.
 
 ### DashboardGridProps
 

@@ -31,12 +31,6 @@ describe('DashboardUtils', () => {
       expect(shape(layout)).toBe('a@0,0 6x2 | b@3,2 6x2');
     });
 
-    it('settles the held item first, so everything else moves around it', () => {
-      const layout = DashboardUtils.resolve([item('a', 0, 0, 6, 2), item('b', 0, 0, 6, 2)], 12, 'b');
-
-      expect(layout.map((entry) => `${entry.id}@${entry.y}`).join(' ')).toBe('b@0 a@2');
-    });
-
     it('never moves a fixed item, and flows the rest around it', () => {
       const layout = DashboardUtils.normalize(layoutOf([item('pinned', 0, 3, 12, 2, { fixed: true }), item('a', 0, 1, 6, 2)]));
 
@@ -81,6 +75,43 @@ describe('DashboardUtils', () => {
       const layout = DashboardUtils.moveTo(layoutOf([item('a', 0, 0, 6, 2), item('b', 6, 0, 6, 2)]), 'b', 6, 8);
 
       expect(shape(layout)).toBe('a@0,0 6x2 | b@6,0 6x2');
+    });
+
+    it('leaves the layout alone when a drag has crossed no cell', () => {
+      const layout = DashboardUtils.normalize(layoutOf([item('a', 0, 0, 12, 2), item('b', 0, 2, 12, 2)]));
+
+      // #183: the widget being held used to settle first, which floated it to the first row on the
+      // opening frame of every drag — before the pointer had crossed anything at all.
+      expect(shape(DashboardUtils.moveTo(layout, 'b', 0, 2))).toBe('a@0,0 12x2 | b@0,2 12x2');
+    });
+
+    it('sends a widget past its neighbours rather than floating it back over them', () => {
+      const layout = DashboardUtils.normalize(layoutOf([item('a', 0, 0, 12, 2), item('b', 0, 2, 12, 2)]));
+
+      expect(shape(DashboardUtils.moveTo(layout, 'a', 0, 2))).toBe('b@0,0 12x2 | a@0,2 12x2');
+    });
+
+    it('hands the widget it lands on the row above, where there is room for it', () => {
+      const layout = DashboardUtils.normalize(layoutOf([item('a', 0, 0, 6, 2), item('b', 0, 2, 6, 2), item('c', 6, 0, 6, 4)]));
+
+      expect(shape(DashboardUtils.moveTo(layout, 'a', 0, 2))).toBe('b@0,0 6x2 | c@6,0 6x4 | a@0,2 6x2');
+    });
+
+    it('keeps a widget it displaced above the one that widget was already above', () => {
+      const layout = DashboardUtils.normalize(
+        layoutOf([item('a', 0, 0, 6, 2), item('b', 6, 0, 3, 2), item('c', 9, 0, 3, 2), item('wide', 0, 2, 12, 2)]),
+      );
+
+      // b moved one column left clips a, which has to go to the row under b — where wide already is.
+      // The two tie, and the one that was above stays above: an alphabet deciding it sent a to the
+      // bottom of the dashboard for a one-column nudge (#183).
+      expect(shape(DashboardUtils.moveTo(layout, 'b', 5, 0))).toBe('b@5,0 3x2 | c@9,0 3x2 | a@0,2 6x2 | wide@0,4 12x2');
+    });
+
+    it('never displaces a fixed widget, so the one dropped on it goes under it instead', () => {
+      const layout = DashboardUtils.normalize(layoutOf([item('pinned', 0, 0, 12, 2, { fixed: true }), item('a', 0, 2, 6, 2)]));
+
+      expect(shape(DashboardUtils.moveTo(layout, 'a', 0, 0))).toBe('pinned@0,0 12x2 | a@0,2 6x2');
     });
 
     it('refuses to move a fixed widget', () => {

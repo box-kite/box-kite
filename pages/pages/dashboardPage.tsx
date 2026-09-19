@@ -94,9 +94,10 @@ export default function DashboardPage() {
             </Box>
             <Box mt={4}>
               The layout is <strong>compacted upward</strong>: a widget cannot be parked in mid-air, so a drop below its neighbours rises to
-              meet them and two dashboards holding the same widgets in the same places compare equal. An item may carry its own{' '}
-              <Mono>minW</Mono>/<Mono>minH</Mono>/<Mono>maxW</Mono>/<Mono>maxH</Mono>, and <Mono>fixed</Mono> pins it: it is never moved,
-              never resized, and has no handles rather than handles that refuse.
+              meet them and two dashboards holding the same widgets in the same places compare equal. A widget dropped on a neighbour{' '}
+              <strong>takes the cell</strong>, and the neighbour is handed one of its own — the row above where there is room for it, the
+              row below otherwise. An item may carry its own <Mono>minW</Mono>/<Mono>minH</Mono>/<Mono>maxW</Mono>/<Mono>maxH</Mono>, and{' '}
+              <Mono>fixed</Mono> pins it: it is never moved, never resized, and has no handles rather than handles that refuse.
             </Box>
           </Section>
 
