@@ -15,9 +15,10 @@
  * No React below this file, and nothing is registered or rendered: the model is `@box-kite/core`'s.
  */
 import { BoxCatalog, BoxCatalogs, CatalogOptions, getDefaultEngine } from './core';
+import CatalogContracts from './utils/catalog/catalogContracts';
 import catalogManifest from './utils/catalog/catalogManifest';
 
-export type { BoxCatalog, CatalogComponent, CatalogOptions, CatalogSchema } from './core';
+export type { BoxCatalog, CatalogComponent, CatalogContract, CatalogOptions, CatalogSchema } from './core';
 
 /** The components a generated spec may name, and the values their props may take. */
 export function catalog(options?: CatalogOptions): BoxCatalog {
@@ -28,6 +29,7 @@ export function catalog(options?: CatalogOptions): BoxCatalog {
       ...engine.getCatalogSource(),
       componentStyles: engine.getComponentsStyles(),
       manifest: catalogManifest,
+      contracts: CatalogContracts.CONTRACTS,
     },
     options,
   );

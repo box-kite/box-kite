@@ -7,7 +7,7 @@
 import { BoxStyle } from '../coreTypes';
 import { Components } from '../extends/boxComponents';
 import * as CatalogSchemas from './catalogSchema';
-import { BoxCatalog, CatalogComponent, CatalogManifest, CatalogOptions, CatalogSchema } from './catalogTypes';
+import { BoxCatalog, CatalogComponent, CatalogContract, CatalogManifest, CatalogOptions, CatalogSchema } from './catalogTypes';
 
 /** The format's own version. Bumped when the shape changes, never when the library's props do. */
 const VERSION = 1;
@@ -44,6 +44,8 @@ export interface CatalogSource {
   animations: string[];
   componentStyles: Components;
   manifest: CatalogManifest;
+  /** The object props no extraction could describe, by component name. See `CatalogContract`. */
+  contracts?: Record<string, CatalogContract>;
 }
 
 /** The style props one call allows, in registry order so two catalogs of the same set read the same. */
@@ -59,7 +61,10 @@ const COLOR_REF = '#/$defs/color';
 
 function component(name: string, source: CatalogSource, styleProps: string[], schemas: Map<string, CatalogSchema>): CatalogComponent {
   const entry = source.manifest.components[name];
-  const properties: Record<string, CatalogSchema> = { ...entry.props };
+  const contract = source.contracts?.[name];
+  // A contract describes what the extraction had to drop, so it wins the name it shares with anything.
+  const properties: Record<string, CatalogSchema> = { ...entry.props, ...contract?.props };
+  const required = [...new Set([...entry.required, ...(contract?.required ?? [])])];
   let colors = false;
 
   // The component's own props are declared first and win a name collision: `Rect`'s `width` is an SVG
@@ -95,7 +100,7 @@ function component(name: string, source: CatalogSource, styleProps: string[], sc
       // makes handing it to `z.fromJSONSchema` or a structured-output API a single call.
       ...(colors ? { $defs: { color: CatalogSchemas.color(source.colors) } } : {}),
       properties,
-      ...(entry.required.length ? { required: entry.required } : {}),
+      ...(required.length ? { required } : {}),
       // Strict, so a structured-output API can take the schema as it stands and an invented prop is a
       // validation failure rather than a prop silently dropped at render.
       additionalProperties: false,

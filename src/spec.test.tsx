@@ -4,10 +4,13 @@ import * as z from 'zod';
 import { catalog } from './catalog';
 import Button from './components/button';
 import { Sparkline } from './components/chart';
+import DashboardGrid, { Widget } from './components/dashboard';
+import DataGrid from './components/dataGrid';
 import Flex from './components/flex';
 import { H2, Link, P } from './components/semantics';
 import SpecRenderer, { createSpecRegistry, renderSpec, specSchema } from './spec';
 import { renderToStaticMarkup } from './ssg';
+import type { SpecIssue } from './utils/spec/specTypes';
 
 /**
  * The whole loop, end to end: the catalog says what may be built, `specSchema()` turns that into the
@@ -137,6 +140,103 @@ describe('@box-kite/react/spec', () => {
       }
 
       expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Revenue');
+    });
+  });
+
+  /**
+   * The flagship shape: a dashboard, where the two things a dashboard *is* — where each widget sits and
+   * what is in it — are object props no extraction could describe. Without their contracts the catalog
+   * could place a `<DashboardGrid>` and neither lay it out nor put a grid in it.
+   */
+  describe('a generated dashboard', () => {
+    const allowed = catalog({ include: ['DashboardGrid', 'Widget', 'DataGrid', 'Sparkline'], styleProps: ['gap', 'height'] });
+    const dashboard = createSpecRegistry({ catalog: allowed, components: { DashboardGrid, Widget, DataGrid, Sparkline } });
+
+    const GENERATED = {
+      type: 'DashboardGrid',
+      props: {
+        label: 'Sales',
+        columns: 12,
+        defaultLayout: {
+          version: 1,
+          columns: 12,
+          items: [
+            { id: 'revenue', x: 0, y: 0, w: 6, h: 2 },
+            { id: 'orders', x: 6, y: 0, w: 6, h: 2 },
+          ],
+        },
+      },
+      children: [
+        {
+          type: 'Widget',
+          props: { id: 'revenue', name: 'Revenue' },
+          slots: { title: ['Revenue'] },
+          children: [{ type: 'Sparkline', props: { data: { $data: 'revenue' } } }],
+        },
+        {
+          type: 'Widget',
+          props: { id: 'orders', name: 'Orders' },
+          slots: { title: ['Orders'] },
+          children: [
+            {
+              type: 'DataGrid',
+              props: {
+                data: { $data: 'orders' },
+                def: {
+                  rowKey: 'id',
+                  columns: [
+                    { key: 'customer', header: 'Customer' },
+                    { key: 'total', header: 'Total', align: 'end', aggregate: 'sum' },
+                  ],
+                },
+              },
+            },
+          ],
+        },
+      ],
+    };
+
+    const data = {
+      revenue: [3, 5, 4, 9],
+      orders: [
+        { id: 1, customer: 'Ana', total: 42.5 },
+        { id: 2, customer: 'Bo', total: 17 },
+      ],
+    };
+
+    it('lays the widgets out and fills them, from JSON alone', () => {
+      const issues: SpecIssue[] = [];
+
+      render(<SpecRenderer registry={dashboard} spec={GENERATED} data={data} onIssues={(reported) => issues.push(...reported)} />);
+
+      expect(issues).toEqual([]);
+      expect(screen.getByRole('list', { name: 'Sales' })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'Revenue' })).toBeInTheDocument();
+      // The grid's own columns and one of the rows the host supplied, so `def` and `data` both arrived.
+      expect(screen.getByRole('columnheader', { name: /Customer/ })).toBeInTheDocument();
+      expect(screen.getByText('Ana')).toBeInTheDocument();
+    });
+
+    it('drops a layout a dashboard could not be, and renders the rest of the tree', () => {
+      const issues: SpecIssue[] = [];
+      const spec = { ...GENERATED, props: { ...GENERATED.props, defaultLayout: { version: 1, columns: 12, items: [{ id: 'revenue' }] } } };
+
+      render(<SpecRenderer registry={dashboard} spec={spec} data={data} onIssues={(reported) => issues.push(...reported)} />);
+
+      expect(issues.map((issue) => issue.code)).toEqual(['invalid-prop']);
+      expect(screen.getByRole('heading', { name: 'Revenue' })).toBeInTheDocument();
+    });
+
+    it('refuses a column the grid could not draw, before anything renders', () => {
+      const validator = z.fromJSONSchema(specSchema(dashboard, { bindings: true }) as never);
+
+      expect(validator.safeParse(GENERATED).success).toBe(true);
+      expect(validator.safeParse({ type: 'DataGrid', props: { def: { columns: [{ header: 'Total' }] } } }).success).toBe(false);
+      expect(validator.safeParse({ type: 'DataGrid', props: { def: { columns: [{ key: 'total', aggregate: 'median' }] } } }).success).toBe(
+        false,
+      );
+      // `def` is required, and a catalog that dropped the prop dropped that with it.
+      expect(validator.safeParse({ type: 'DataGrid', props: {} }).success).toBe(false);
     });
   });
 
