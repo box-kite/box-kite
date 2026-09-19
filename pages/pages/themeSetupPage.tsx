@@ -176,8 +176,49 @@ function Sample() {
   );
 }`}
           >
-            <Box.Theme theme="inner-light">
+            <Box.Theme theme="light">
               <Sample />
+            </Box.Theme>
+          </Code>
+
+          <Code
+            id="nesting"
+            label="A Theme Inside a Theme"
+            language="jsx"
+            code={`import Box from '@box-kite/react';
+
+// A theme reaches the subtree it owns and stops at the next element that declares one, so a panel
+// keeps its own theme inside a page that has another — the demo above is one, inside this page.
+// What marks a theme root is data-theme: <Box.Theme> renders it beside the class, and a theme class
+// you write by hand (the one on <html> in a prerendered shell) wants it beside it too.
+function Panel() {
+  return (
+    <Box.Theme use="local" theme="light">
+      <Box
+        p={4}
+        borderRadius={2}
+        theme={{ light: { bgColor: 'white', color: 'slate-900' }, dark: { bgColor: 'slate-950', color: 'white' } }}
+      >
+        Light in here, whatever the page around it is.
+      </Box>
+    </Box.Theme>
+  );
+}
+
+// Each theme is one scoped rule:
+//   @scope (.light) to ([data-theme]) { :scope .theme-light-bgColor-white { background-color: var(--white) } }
+// The limit is what settles it. Two themes are two ancestor classes of the same specificity, so
+// without one the rule written last would win however far away it was — and an outer rule carrying
+// one more pseudo-class would win even then. Chrome 118+, Safari 17.4+, Firefox 128+.`}
+          >
+            <Box.Theme use="local" theme="light">
+              <Box
+                p={4}
+                borderRadius={2}
+                theme={{ light: { bgColor: 'white', color: 'slate-900' }, dark: { bgColor: 'slate-950', color: 'white' } }}
+              >
+                Light in here, whatever the page around it is.
+              </Box>
             </Box.Theme>
           </Code>
         </Flex>
@@ -190,6 +231,7 @@ const sidebarLinks = [
   { id: 'define-styles', label: 'Define Your Own Styles' },
   { id: 'global-styles', label: 'App-wide Styles (globalStyles)' },
   { id: 'theme-switching', label: 'Theme Switching' },
+  { id: 'nesting', label: 'A Theme Inside a Theme' },
 ] as const;
 
 function Sample() {
@@ -201,15 +243,15 @@ function Sample() {
       borderRadius={2}
       b={1}
       theme={{
-        'inner-light': { color: 'indigo-950', bgColor: 'white' },
-        'inner-dark': { color: 'white', bgColor: 'indigo-950' },
+        light: { color: 'indigo-950', bgColor: 'white' },
+        dark: { color: 'white', bgColor: 'indigo-950' },
       }}
     >
       <Flex gap={3} ai="center">
-        <Button bgColor="transparent" onClick={() => setTheme('inner-light')}>
+        <Button bgColor="transparent" onClick={() => setTheme('light')}>
           <Sun size={18} color="#fbbf24" />
         </Button>
-        <Button bgColor="transparent" onClick={() => setTheme('inner-dark')}>
+        <Button bgColor="transparent" onClick={() => setTheme('dark')}>
           <Moon size={18} color="#6366f1" />
         </Button>
         <Box textTransform="capitalize" p={3}>

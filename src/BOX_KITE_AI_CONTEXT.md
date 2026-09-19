@@ -868,6 +868,7 @@ setTheme(null);     // reset to system auto-detection (clears localStorage)
 
 **Props**: `theme?` (string — explicit theme name), `use?` (`'global'`|`'local'`, default `'local'`), `storageKey?` (string — localStorage key for persistence), `globalStyles?` (BoxStyleProps — app-wide styles on `<html>`, only with `use="global"`).
 **DOM**: Sets `data-theme` attribute and theme class on wrapper (local) or `document.documentElement` (global). Cleaned up on unmount.
+**Nesting**: a theme reaches the subtree it owns and stops at the next element declaring one, so `<Box.Theme use="local" theme="light">` inside a dark page really is light. Each theme rule is `@scope (.light) to ([data-theme]) { :scope .className … }`, which is why `data-theme` marks a theme root — write it beside any theme class you set by hand (the `<html>` one in a prerendered shell). Needs Chrome 118+, Safari 17.4+, Firefox 128+.
 
 #### globalStyles — App-wide styles on `<html>`
 
