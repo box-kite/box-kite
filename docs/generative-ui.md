@@ -253,6 +253,13 @@ at a time, so the renderer treats a half-written tree as the normal case rather 
 - a node that threw on one frame is tried again on the next, because the spec object itself is what
   resets the boundaries.
 
+**Write the controlled prop, never the `default…` twin.** React reads an uncontrolled default once, on
+the first render, and ignores it afterwards — which a stream breaks on twice over: the frame in which
+`defaultLayout` first arrived whole is the one that sticks, and a second spec rendered in the same place
+keeps the first one's state, because the component instance is the same. A generated node writes
+`layout`, `value`, `open`; every frame re-applies it, and the last frame is what stays on screen. The
+catalog says which is which in each prop's description.
+
 ```tsx
 const { partialObjectStream } = streamObject({ model, schema: z.fromJSONSchema(specSchema(registry)), prompt });
 

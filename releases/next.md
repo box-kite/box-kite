@@ -514,6 +514,12 @@ component cannot do without has not arrived yet, reporting a new `missing-prop` 
 no `data` reads `undefined` and throws, which its own error boundary caught — the same blank space, with a
 caught crash per frame behind it. Rendering nothing is the same picture without the noise.
 
+One more rule a stream imposes, now in the catalog's own descriptions: a generated node writes the
+**controlled** prop and never the `default…` twin. React reads an uncontrolled default once, so the frame
+in which `defaultLayout` first arrived whole is the one that sticks — and a second spec rendered in the
+same place keeps the first one's state, since it is the same component instance. `layout`, `value`,
+`open`: every frame re-applies them, and the last frame is what stays on screen.
+
 [box-kite.dev/generative-ui](https://www.box-kite.dev/generative-ui/) is the loop end to end, and
 `examples/next-app/app/generative` is the live route, page and catalog in three files.
 

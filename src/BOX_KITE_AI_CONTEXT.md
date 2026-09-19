@@ -3102,6 +3102,10 @@ slots, events }` with its own JSON Schema, and one registered **without** a sche
 - **A node missing a prop it cannot do without is held back.** A required prop that has not arrived —
   or was refused — would be `undefined` inside the component, so the node renders nothing and reports
   `missing-prop` instead of throwing into its own boundary once a frame.
+- **A generated node writes the controlled prop, never the `default…` twin.** `layout` not
+  `defaultLayout`, `value` not `defaultValue`: React reads an uncontrolled default once, so the frame
+  it first arrived whole in is the one that sticks, and a second spec rendered in the same place keeps
+  the first one's state.
 
 `specSchema(source, { bindings, root })` is the other direction: one JSON Schema for a whole tree, for
 `streamObject`, a structured-output API or `z.fromJSONSchema`. **Import it from

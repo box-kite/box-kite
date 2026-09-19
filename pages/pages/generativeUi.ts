@@ -71,7 +71,7 @@ const SALES_SPEC = `{
     "label": "Sales",
     "columns": { "xs": 1, "md": 6, "xxl": 12 },
     "rowHeight": 22,
-    "defaultLayout": {
+    "layout": {
       "version": 1,
       "columns": 12,
       "items": [
@@ -167,7 +167,7 @@ const SUPPORT_SPEC = `{
     "label": "Support",
     "columns": { "xs": 1, "md": 6, "xxl": 12 },
     "rowHeight": 22,
-    "defaultLayout": {
+    "layout": {
       "version": 1,
       "columns": 12,
       "items": [
@@ -261,7 +261,7 @@ const TREND_SPEC = `{
     "label": "Revenue",
     "columns": 12,
     "rowHeight": 30,
-    "defaultLayout": {
+    "layout": {
       "version": 1,
       "columns": 12,
       "items": [{ "id": "revenue", "x": 0, "y": 0, "w": 12, "h": 3 }]
@@ -318,7 +318,7 @@ export const REFUSED_SPEC = {
     label: 'Sales',
     columns: 12,
     rowHeight: 22,
-    defaultLayout: {
+    layout: {
       version: 1,
       columns: 12,
       items: [

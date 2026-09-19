@@ -1,7 +1,8 @@
+import { render } from '@testing-library/react';
 import { createElement, Fragment } from 'react';
 import { describe, expect, it } from 'vitest';
 import * as z from 'zod';
-import { renderSpec, specSchema } from '../../src/spec';
+import SpecRenderer, { renderSpec, specSchema } from '../../src/spec';
 import { renderToStaticMarkup } from '../../src/ssg';
 import { parsePartialJson } from '../utils/partialJson';
 import { DEMOS, DEMO_REGISTRY, REFUSED_SPEC } from './generativeUi';
@@ -75,5 +76,39 @@ describe('the spec that asks for more than it may have', () => {
 
     expect(html).toContain('Revenue');
     expect(html).not.toContain('iframe');
+  });
+});
+
+/**
+ * Found in a browser, not here (the owner, on the built site): picking a second prompt kept the same
+ * `DashboardGrid` instance, and `defaultLayout` is an uncontrolled default — read once, at the first
+ * render — so the new dashboard's widgets were never placed. A spec arriving in pieces re-renders with
+ * every piece, so what it writes has to be the controlled prop.
+ */
+describe('a spec replacing one already on screen', () => {
+  const placements = (container: HTMLElement) => container.querySelectorAll('[class*="gridColumnStart"]').length;
+  const spec = (demo: (typeof DEMOS)[number], text = demo.spec) =>
+    createElement(SpecRenderer, { registry: DEMO_REGISTRY, spec: parsePartialJson(text), data: demo.data });
+
+  it('places the second dashboard’s widgets, through one renderer', () => {
+    const [sales, support] = DEMOS;
+    const items = JSON.parse(support.spec).props.layout.items.length;
+    const view = render(spec(sales));
+
+    view.rerender(spec(support, support.spec.slice(0, Math.floor(support.spec.length / 2))));
+    view.rerender(spec(support));
+
+    expect(placements(view.container)).toBe(items);
+  });
+
+  it('places them when the stream started from nothing, too', () => {
+    const [, support] = DEMOS;
+    const items = JSON.parse(support.spec).props.layout.items.length;
+    const view = render(spec(support, ''));
+
+    for (const fraction of [0.3, 0.6, 0.9, 1])
+      view.rerender(spec(support, support.spec.slice(0, Math.floor(support.spec.length * fraction))));
+
+    expect(placements(view.container)).toBe(items);
   });
 });
