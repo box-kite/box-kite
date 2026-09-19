@@ -45,6 +45,7 @@ const loaders: Record<SiteRoutePath, () => Promise<{ default: ComponentType }>> 
   '/toaster': () => import('../pages/toasterPage'),
   '/combobox': () => import('../pages/comboboxPage'),
   '/dropdown': () => import('../pages/dropdownPage'),
+  '/dashboard': () => import('../pages/dashboardPage'),
   '/datagrid': () => import('../pages/dataGridPage'),
   '/benchmark': () => import('../pages/benchmarkPage'),
   '/grid-comparison': () => import('../pages/gridComparisonPage'),

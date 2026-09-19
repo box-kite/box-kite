@@ -1342,6 +1342,39 @@ const catalogManifest: CatalogManifest = {
       required: [],
       styled: true,
     },
+    DashboardGrid: {
+      description: 'A dashboard the people using it can rearrange, and a model can write.',
+      import: "import DashboardGrid from '@box-kite/react/components/dashboard';",
+      slots: ['default'],
+      events: ['onLayoutChange', 'onLayoutCommit'],
+      props: {
+        rowHeight: { type: 'number', description: 'The height of one row, on the ÷4 spacing scale.' },
+        editable: { type: 'boolean', description: 'Whether widgets can be moved and resized.' },
+        label: { type: 'string', description: 'What the set of widgets is called.' },
+        labelledBy: { type: 'string', description: 'The same, naming an element that already says it.' },
+      },
+      required: [],
+      styled: true,
+    },
+    Widget: {
+      description:
+        'The chrome round whatever a widget shows: a title bar, the states a panel fed by a request can be in, and — inside a `DashboardGrid` — the handles that move and resize it.',
+      import: "import { Widget } from '@box-kite/react/components/dashboard';",
+      slots: ['default', 'title', 'description', 'actions', 'error'],
+      events: ['onRefresh'],
+      props: {
+        id: { type: 'string', description: 'Which layout item this widget is.' },
+        name: {
+          type: 'string',
+          description: "What the widget is called where a control has to say so — the handles' labels and the announcements.",
+        },
+        level: { type: 'number', enum: [2, 3, 4, 5, 6], description: 'The heading level the title renders at.' },
+        loading: { type: 'boolean', description: 'Bars where the content will be, and `aria-busy` while they are showing.' },
+        refreshLabel: { type: 'string', description: "The refresh button's accessible name." },
+      },
+      required: [],
+      styled: true,
+    },
   },
 };
 

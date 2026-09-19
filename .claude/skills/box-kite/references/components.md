@@ -21,6 +21,7 @@ Which component replaces which `<Box tag>`, and the three that carry a pattern o
 | a value dragged along a track        | `<Slider>`                             | `components/slider`                                              |
 | how far a task has got               | `<Progress>`                           | `components/progress`                                            |
 | a message sent from anywhere         | `<Toaster>` + `toast()`                | `components/toaster`                                             |
+| widgets arranged, dragged, resized   | `<DashboardGrid>` + `<Widget>`         | `components/dashboard`                                           |
 | a lucide/Tabler icon, styled         | `<Icon>`                               | `components/icon`                                                |
 | a sparkline, ring, gauge or donut    | `<Sparkline>`/`<ProgressRing>`/…       | `components/chart`                                               |
 | a themed Recharts (or any) chart     | `<ChartContainer>`                     | `components/chart`                                               |

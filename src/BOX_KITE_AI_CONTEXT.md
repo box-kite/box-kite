@@ -2898,6 +2898,112 @@ Also accepts: `data` (TRow[]), `value`/`defaultValue`, `label`/`labelProps`, `mu
 
 ---
 
+---
+
+## Dashboard (`components/dashboard`)
+
+A grid of widgets people rearrange, and a layout a model can write. Two components and one artifact:
+`<DashboardGrid>` places, `<Widget>` is the chrome, and the layout is plain JSON in cells.
+
+```tsx
+import DashboardGrid, { DashboardUtils, Widget } from '@box-kite/react/components/dashboard';
+import { Sparkline } from '@box-kite/react/components/chart';
+
+<DashboardGrid layout={layout} onLayoutChange={setLayout} onLayoutCommit={save} editable label="Sales">
+  <Widget id="revenue" title="Revenue" description="Last 12 weeks">
+    <Sparkline data={revenue} variant="area" width="100%" height="100%" />
+  </Widget>
+  <Widget id="orders" title="Orders" onRefresh={reload} loading={pending} />
+</DashboardGrid>;
+```
+
+### The layout
+
+```jsonc
+{
+  "version": 1,
+  "columns": 12,
+  "items": [
+    { "id": "revenue", "x": 0, "y": 0, "w": 6, "h": 2 },
+    { "id": "orders", "x": 6, "y": 0, "w": 6, "h": 2, "minW": 3, "fixed": false },
+  ],
+}
+```
+
+`x`/`y` are zero-based cells, `w`/`h` spans. `minW`/`minH`/`maxW`/`maxH` bound a resize, and `fixed`
+pins a widget: it is never moved or resized and has no handles at all. The layout is **compacted
+upward**, so a widget cannot be parked in mid-air and two dashboards of the same widgets in the same
+places compare equal. A widget dropped on a neighbour **takes the cell**, and the neighbour is handed one
+of its own — the row above where there is room for it, the row below otherwise. That is `moveTo`'s half
+of it; compaction is reading order and nothing else.
+
+### DashboardGridProps
+
+| Prop                       | Type                                               | What it does                                                                                |
+| -------------------------- | -------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `layout` / `defaultLayout` | `DashboardLayout`                                  | Controlled and uncontrolled. Normalized on the way in, so a generated one need not be tidy. |
+| `onLayoutChange`           | `ChangeHandler<DashboardLayout, DashboardReason>`  | Every cell a drag crosses, and every arrow key.                                             |
+| `onLayoutCommit`           | `ChangeHandler<DashboardLayout, DashboardReason>`  | Once when the interaction ends — the one to write to a server.                              |
+| `columns`                  | `number \| Partial<Record<DashboardSize, number>>` | One count, or one per container size. Default `{ xs: 1, md: 6, xxl: 12 }`.                  |
+| `rowHeight`                | `number`                                           | The height of one row, ÷4 scale. Default `24` (6rem).                                       |
+| `editable`                 | `boolean`                                          | The edit/view split: no handles and nothing in the tab order without it.                    |
+| `label` / `labelledBy`     | `string`                                           | Names the `role="list"` of widgets.                                                         |
+
+`DashboardReason` is `'move' | 'resize' | 'imperative'` — which _device_ did it is in `details.event`.
+
+### WidgetProps
+
+| Prop                          | Type                        | What it does                                                                             |
+| ----------------------------- | --------------------------- | ---------------------------------------------------------------------------------------- |
+| `id`                          | `string`                    | The layout item it fills. Without one it is a card with the same chrome.                 |
+| `title` / `description`       | `ReactNode`                 | The title bar. `title` is a real heading at `level` (default `3`).                       |
+| `name`                        | `string`                    | What the handles and the announcements call it. Defaults to a string `title`, then `id`. |
+| `actions`                     | `ReactNode`                 | The end of the title bar — a menu, a filter, a link out.                                 |
+| `loading` / `error` / `empty` | `boolean` / `ReactNode` / … | The three states that replace the content; anything else renders the children.           |
+| `onRefresh` / `refreshLabel`  | `() => void` / `string`     | A refresh button in the bar, and the retry an error state offers.                        |
+
+### Placement is a class; only a drag is an inline style
+
+A widget's cell is `gridColumnStart`/`gridColumnEnd`/`gridRowStart`/`gridRowEnd` — props, so a shared
+class — which is why a resting dashboard measures nothing and renders on a server. The one inline style
+in the component is the translate that keeps a dragged widget under the pointer.
+
+`columns` as a record projects the one layout into each declared space by arithmetic, written as a
+container query. **A grid cannot container-query itself** (the query resolves against an ancestor
+container), so every projection is drawn on the widest arrangement's tracks. And an arrangement can only
+be edited in the space it is written in: where a projection is showing, the handles are not rendered.
+
+### The keyboard, and what it says
+
+Both handles are real buttons. Enter or Space picks the widget up (`aria-pressed`), the arrows move or
+resize it a cell at a time following the **reading order**, Enter drops it and Escape puts it back — the
+whole layout with it. A grab that loses focus is cancelled rather than dropped. Every step is announced
+in a polite live region that exists before there is anything to say.
+
+### The model (`DashboardUtils`)
+
+Framework-free, exported from the same module:
+
+```ts
+DashboardUtils.SCHEMA; // the layout as JSON Schema — the subset catalog() emits
+DashboardUtils.parse(value); // { layout, issues } from a database, a file or a model
+DashboardUtils.add(layout, { id: 'latency', w: 3, h: 2 }); // placed under everything, then floated up
+DashboardUtils.remove(layout, 'latency');
+DashboardUtils.moveTo(layout, 'revenue', 3, 0); // what a drag does
+DashboardUtils.resizeTo(layout, 'revenue', 6, 3);
+DashboardUtils.project(layout, 6); // the same layout in a narrower space
+```
+
+`parse` clamps what is out of range (a generated `w: 0`, a column count of 400), drops what it cannot
+read and reports it rather than throwing. Where a dashboard is **kept** is the app's decision.
+
+### Style tree
+
+`dashboard` (+ `placeholder`) and `widget` (+ `header`, `label`, `title`, `description`, `actions`,
+`handle`, `body`, `message`, `retry`, `skeleton`). Both handles are the one `handle` node, whose
+`corner` variant is the resize one; the row height is a variable (`vars={{ 'dashboard-row': '8rem' }}`),
+so it can be set per breakpoint or per theme.
+
 ## The catalog (`@box-kite/react/catalog`)
 
 What a **generated** UI is allowed to build, as JSON Schema — the runtime counterpart to everything

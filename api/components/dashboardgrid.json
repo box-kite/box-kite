@@ -1,0 +1,99 @@
+{
+  "name": "DashboardGrid",
+  "route": "/dashboard",
+  "import": "import DashboardGrid from '@box-kite/react/components/dashboard';",
+  "description": "A dashboard the people using it can rearrange, and a model can write.",
+  "pattern": null,
+  "props": [
+    {
+      "name": "children",
+      "type": "ReactNode",
+      "required": false,
+      "default": null,
+      "description": "The widgets. Each `<Widget id>` is placed by the layout item of that id; one with no item is left to flow."
+    },
+    {
+      "name": "layout",
+      "type": "DashboardLayout",
+      "required": false,
+      "default": null,
+      "description": "Controlled layout. Leave it out and the grid owns it."
+    },
+    {
+      "name": "defaultLayout",
+      "type": "DashboardLayout",
+      "required": false,
+      "default": null,
+      "description": "What it starts as. The layout is normalized on the way in, so a generated one need not be tidy."
+    },
+    {
+      "name": "onLayoutChange",
+      "type": "ChangeHandler<DashboardLayout, DashboardReason>",
+      "required": false,
+      "default": null,
+      "description": "Fires on every cell a drag crosses and every arrow key, with the whole normalized layout."
+    },
+    {
+      "name": "onLayoutCommit",
+      "type": "ChangeHandler<DashboardLayout, DashboardReason>",
+      "required": false,
+      "default": null,
+      "description": "Fires once when the interaction ends — the place for the write a per-cell callback is too noisy for."
+    },
+    {
+      "name": "columns",
+      "type": "DashboardColumns",
+      "required": false,
+      "default": "{ xs: 1, md: 6, xxl: 12 }",
+      "description": "How many columns, at one width or at several: `12`, or `{ xs: 1, md: 6, xxl: 12 }` — the default — which is one column until the dashboard is 28rem wide, six from there and twelve from 42rem. Each is a projection of the one layout, computed rather than measured, so the browser picks between classes; the smallest count is also what a container narrower than every size named here gets."
+    },
+    {
+      "name": "rowHeight",
+      "type": "number",
+      "required": false,
+      "default": "24",
+      "description": "The height of one row, on the ÷4 spacing scale. Default `24` — 6rem."
+    },
+    {
+      "name": "editable",
+      "type": "boolean",
+      "required": false,
+      "default": "false",
+      "description": "Whether widgets can be moved and resized. The handles exist only in edit mode, and only where the layout's own columns are being rendered."
+    },
+    {
+      "name": "label",
+      "type": "string",
+      "required": false,
+      "default": null,
+      "description": "What the set of widgets is called. A list needs a name where a page holds more than one."
+    },
+    {
+      "name": "labelledBy",
+      "type": "string",
+      "required": false,
+      "default": null,
+      "description": "The same, naming an element that already says it."
+    }
+  ],
+  "parts": [],
+  "keyboard": [
+    { "mode": null, "keys": "Enter, Space", "action": "Picks a widget up from either handle, and drops it again." },
+    {
+      "mode": null,
+      "keys": "Arrows",
+      "action": "One cell, along the reading axis: in a right-to-left page ArrowLeft moves a widget to the *right*. On the resize handle they add and remove a column or a row."
+    },
+    { "mode": null, "keys": "Escape", "action": "Puts the widget back where it was picked up from, and the layout with it." }
+  ],
+  "a11y": [
+    "The grid is a `role=\"list\"` named by `label`, and each placed widget a `role=\"listitem\"` — so a reader is told how many widgets there are and which one this is, which a set of `region` landmarks would drown out.",
+    "Moving and resizing are a **grab**: Enter or Space on a handle picks the widget up, the arrows move it, Enter drops it and Escape puts it back. Every step is announced in a polite live region that is there before there is anything to say.",
+    "The handles are real buttons with `aria-pressed` for the grabbed state and an `aria-describedby` naming the instructions, rather than an HTML5 drag, which no screen reader drives."
+  ],
+  "axe": { "fixtures": ["DashboardGrid (editable)"], "knownViolations": [] },
+  "styleTree": [
+    { "path": "dashboard", "depth": 0, "extends": null, "variants": ["dragging"] },
+    { "path": "dashboard.placeholder", "depth": 1, "extends": null, "variants": [] }
+  ]
+}

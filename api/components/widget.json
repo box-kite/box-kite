@@ -1,0 +1,103 @@
+{
+  "name": "Widget",
+  "route": "/dashboard",
+  "import": "import { Widget } from '@box-kite/react/components/dashboard';",
+  "description": "The chrome round whatever a widget shows: a title bar, the states a panel fed by a request can be in, and — inside a `DashboardGrid` — the handles that move and resize it.",
+  "pattern": null,
+  "props": [
+    {
+      "name": "id",
+      "type": "string",
+      "required": false,
+      "default": null,
+      "description": "Which layout item this widget is. Left out, it is chrome with no place — a card."
+    },
+    { "name": "children", "type": "ReactNode", "required": false, "default": null, "description": "What it shows." },
+    { "name": "title", "type": "ReactNode", "required": false, "default": null, "description": "The title bar's heading." },
+    {
+      "name": "name",
+      "type": "string",
+      "required": false,
+      "default": null,
+      "description": "What the widget is called where a control has to say so — the handles' labels and the announcements. Defaults to a string `title`, then to `id`."
+    },
+    {
+      "name": "description",
+      "type": "ReactNode",
+      "required": false,
+      "default": null,
+      "description": "A line under the title, for the question the widget answers rather than the noun it is named after."
+    },
+    {
+      "name": "actions",
+      "type": "ReactNode",
+      "required": false,
+      "default": null,
+      "description": "The end of the title bar: a menu, a filter, a link out."
+    },
+    {
+      "name": "level",
+      "type": "2 | 3 | 4 | 5 | 6",
+      "required": false,
+      "default": "3",
+      "description": "The heading level the title renders at. Default `3`, since a dashboard is a section of a page."
+    },
+    {
+      "name": "loading",
+      "type": "boolean",
+      "required": false,
+      "default": "false",
+      "description": "Bars where the content will be, and `aria-busy` while they are showing."
+    },
+    {
+      "name": "error",
+      "type": "ReactNode",
+      "required": false,
+      "default": null,
+      "description": "What went wrong, shown in place of the content. With `onRefresh` it comes with a retry."
+    },
+    {
+      "name": "empty",
+      "type": "boolean | ReactNode",
+      "required": false,
+      "default": null,
+      "description": "There is nothing to show: `true` for the default line, or the words to use instead."
+    },
+    {
+      "name": "onRefresh",
+      "type": "() => void",
+      "required": false,
+      "default": null,
+      "description": "Fetch it again. A button in the title bar, and the retry an error state offers."
+    },
+    {
+      "name": "refreshLabel",
+      "type": "string",
+      "required": false,
+      "default": null,
+      "description": "The refresh button's accessible name. Default `Refresh <name>`."
+    }
+  ],
+  "parts": [],
+  "keyboard": [],
+  "a11y": [
+    "The title is a real heading at `level` (default `3`), so a dashboard has an outline rather than a page of anonymous boxes, and the widget is named by it.",
+    "`aria-busy` while it is loading, so a reader is told the panel is not finished rather than reading the skeleton out as content.",
+    "An error is a `role=\"status\"`: it arrives after the page settled, and interrupting is for something the person did rather than something that failed on their behalf."
+  ],
+  "axe": { "fixtures": ["Widget (error and empty)"], "knownViolations": [] },
+  "styleTree": [
+    { "path": "widget", "depth": 0, "extends": null, "variants": ["dragging", "grabbed"] },
+    { "path": "widget.header", "depth": 1, "extends": null, "variants": [] },
+    { "path": "widget.label", "depth": 1, "extends": null, "variants": [] },
+    { "path": "widget.title", "depth": 1, "extends": null, "variants": [] },
+    { "path": "widget.description", "depth": 1, "extends": null, "variants": [] },
+    { "path": "widget.actions", "depth": 1, "extends": null, "variants": [] },
+    { "path": "widget.handle", "depth": 1, "extends": null, "variants": ["editable", "grabbed", "corner"] },
+    { "path": "widget.body", "depth": 1, "extends": null, "variants": [] },
+    { "path": "widget.message", "depth": 1, "extends": null, "variants": ["error"] },
+    { "path": "widget.retry", "depth": 1, "extends": null, "variants": [] },
+    { "path": "widget.skeleton", "depth": 1, "extends": null, "variants": [] },
+    { "path": "widget.skeleton.bar", "depth": 2, "extends": null, "variants": [] }
+  ]
+}

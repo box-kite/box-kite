@@ -14,6 +14,7 @@ _Unreleased. A PR that changes what a consumer sees adds its section here — se
 - **[`npx shadcn add @box-kite/data-grid`](#npx-shadcn-add-box-kitedata-grid)** — three finished sections the shadcn CLI installs into your own repository, from a registry on box-kite.dev.
 - **[What an AI may build, as JSON Schema](#what-an-ai-may-build-as-json-schema)** — `catalog()` describes every component and every value its props take, so a generated UI can be validated before it renders and cannot invent a colour.
 - **[What a model wrote, rendered safely](#what-a-model-wrote-rendered-safely)** — `<SpecRenderer>` renders a generated spec against the components your app allows: unknown names render nothing, refused props are dropped, and only an event can become a function.
+- **[A dashboard people rearrange, and a model can write](#a-dashboard-people-rearrange-and-a-model-can-write)** — a drag-and-resize widget grid whose layout is JSON in cells: every place is a class, the keyboard gets a grab, and a model can write the same file a drag reports.
 - **[The DataGrid exports its types](#the-datagrid-exports-its-types)** — `ColumnType`, `GridDefinition`, `CellModel` and the rest come off `components/dataGrid` now instead of a path inside it.
 
 <!-- One bullet per section below, linking to it: **[Heading](#heading)** — one line on why it matters. -->
@@ -357,6 +358,73 @@ it imports Box. `renderSpec(spec, options)` is the same walk with no hook in it,
 `{ element, issues }`, so a static spec renders on a server.
 
 [Generative UI](https://box-kite.dev/ai-context)
+
+## A dashboard people rearrange, and a model can write
+
+There is a new component entry, `@box-kite/react/components/dashboard`, and it is two things:
+`<DashboardGrid>`, a grid of widgets that can be dragged and resized, and `<Widget>`, the chrome around
+whatever one of them shows. What passes between them is a **layout** — plain JSON in cells, with a version
+in front of it — and that one artifact is what a model emits, what a drag reports back and what your app
+stores.
+
+```tsx
+import DashboardGrid, { Widget } from '@box-kite/react/components/dashboard';
+
+<DashboardGrid layout={layout} onLayoutChange={setLayout} onLayoutCommit={save} editable>
+  <Widget id="revenue" title="Revenue" description="Last 12 weeks">
+    <Sparkline data={revenue} variant="area" width="100%" height="100%" />
+  </Widget>
+  <Widget id="orders" title="Orders" onRefresh={reload} loading={pending}>
+    <Sparkline data={orders} width="100%" height="100%" />
+  </Widget>
+</DashboardGrid>;
+```
+
+**Nothing is measured to lay it out.** A widget's cell is `grid-column` and `grid-row`, which are props, so
+they are shared classes: a dashboard of any size costs no transform per item, no `ResizeObserver` and no
+inline style at rest — and the same layout renders on a server. The one inline style in the component is
+the translate that keeps a dragged widget under the pointer, which is a value per frame and would be a rule
+per frame that is never freed.
+
+**A drop takes the cell.** A widget put on top of its neighbour keeps the cell it was dropped on, and the
+neighbour is handed one of its own — the row above where there is room for it, the row below otherwise.
+Everything then floats up, so a widget cannot be parked in mid-air, a drop below its neighbours rises to
+meet them, and two dashboards holding the same widgets in the same places compare equal.
+
+**Narrower is a projection, not a second layout.** `columns` takes a count per container size —
+`{ xs: 1, md: 6, xxl: 12 }` by default — and each narrower arrangement is the same layout scaled down by
+arithmetic at render time, written as a container query. The browser picks between classes; nothing listens
+for a resize. Two things fell out of building it, both measured in Chrome 153. A grid **cannot
+container-query itself** — the query resolves against an ancestor container, so a track count per size
+silently does nothing — which is why every projection is drawn on the widest arrangement's tracks. And an
+arrangement can only be edited in the space it is written in: where the grid is showing a projection the
+handles are not rendered at all, because an edit made in six columns is not a layout in twelve.
+
+**Dragging is not a keyboard gesture, so the keyboard gets a grab.** Both handles are real buttons: Enter or
+Space picks the widget up, the arrows move it a cell at a time — following the reading order, so ArrowLeft
+moves it right in a right-to-left page — Enter drops it and Escape puts it back, the layout with it. Every
+step is announced in a live region that exists before there is anything to say, and a grab that loses focus
+is cancelled rather than dropped somewhere nobody looked at. The grid is a `role="list"` of widgets, each
+one titled by a real heading at `level`.
+
+**A widget is chrome and four states.** `loading` draws bars where the content will be and reports
+`aria-busy`, `error` replaces the content with the message and — with an `onRefresh` — a retry, `empty`
+says so in words rather than leaving a panel that looks broken, and anything else renders the children.
+Outside a `DashboardGrid` a `Widget` is simply a card with the same chrome.
+
+**The layout is the artifact, so it is also the prompt.** `DashboardUtils.SCHEMA` is the layout as JSON
+Schema — inside the subset `catalog()` emits and `<SpecRenderer>` validates — and `DashboardUtils.parse`
+reads one back from wherever it was kept, dropping what it cannot use and reporting it rather than throwing.
+The schema says the shape and `parse` says the sense: a generated `w: 0` or a column count of 400 is
+clamped, and two items claiming one id become one. Where a dashboard is kept is the app's decision, since
+only the app knows whether it belongs to a person, a team or a URL; the docs page keeps its demo in
+`localStorage`, which is the whole of it.
+
+The entry is 5.99 KB gzipped on top of Box. The two style-tree nodes it adds are in the engine with every
+other component's, so they cost **0.44 KB gzipped** on every entry that carries one, dashboard or no
+dashboard.
+
+[The dashboard](https://box-kite.dev/dashboard)
 
 ## Breaking changes
 

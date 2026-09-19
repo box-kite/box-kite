@@ -6,6 +6,7 @@ import Button from '../../src/components/button';
 import { ChartContainer, Gauge, MiniDonut, ProgressRing, Sparkline } from '../../src/components/chart';
 import Checkbox from '../../src/components/checkbox';
 import Combobox from '../../src/components/combobox';
+import DashboardGrid, { Widget } from '../../src/components/dashboard';
 import DataGrid from '../../src/components/dataGrid';
 import Dialog, { AlertDialog } from '../../src/components/dialog';
 import Dropdown from '../../src/components/dropdown';
@@ -637,6 +638,42 @@ export const fixtures: A11yFixture[] = [
           ],
         }}
       />
+    ),
+  },
+  {
+    // Edit mode, which is the only state with the handles in it: two buttons per widget, named after the
+    // widget rather than after themselves, inside a list whose other children are deliberately not items.
+    name: 'DashboardGrid (editable)',
+    render: () => (
+      <DashboardGrid
+        label="Sales"
+        columns={12}
+        editable
+        defaultLayout={{
+          version: 1,
+          columns: 12,
+          items: [
+            { id: 'revenue', x: 0, y: 0, w: 6, h: 2 },
+            { id: 'orders', x: 6, y: 0, w: 6, h: 2, fixed: true },
+          ],
+        }}
+      >
+        <Widget id="revenue" title="Revenue" description="Last 30 days" onRefresh={() => {}}>
+          Sixty thousand lei
+        </Widget>
+        <Widget id="orders" title="Orders" loading />
+      </DashboardGrid>
+    ),
+  },
+  {
+    // The two states that replace the content: an error is a `role="status"` with a control in it, and
+    // an empty widget is words rather than a panel that looks broken.
+    name: 'Widget (error and empty)',
+    render: () => (
+      <>
+        <Widget title="Revenue" error="The report timed out." onRefresh={() => {}} />
+        <Widget title="Orders" empty />
+      </>
     ),
   },
   {
