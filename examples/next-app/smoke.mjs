@@ -13,6 +13,12 @@ const port = Number(process.env.PORT ?? 3010);
 const url = `http://127.0.0.1:${port}/`;
 const componentsUrl = `${url}components`;
 const iconsUrl = `${url}icons`;
+const generativeUrl = `${url}generative`;
+const generateApi = `${url}api/generative`;
+
+// A key here would make the route call the model for real, which a smoke test has no business doing:
+// what it checks is the wiring, and the wiring is what answers when there is nothing to call.
+const hasKey = Boolean(process.env.ANTHROPIC_API_KEY);
 
 const results = [];
 
@@ -106,12 +112,25 @@ server.stderr.on('data', (chunk) => (serverLog += chunk));
 let html = '';
 let componentsHtml = '';
 let iconsHtml = '';
+let generativeHtml = '';
+let generateAnswer = { status: 0, body: '' };
 
 try {
   await waitForServer(server);
   html = await (await fetch(url)).text();
   componentsHtml = await (await fetch(componentsUrl)).text();
   iconsHtml = await (await fetch(iconsUrl)).text();
+  generativeHtml = await (await fetch(generativeUrl)).text();
+
+  if (!hasKey) {
+    const answer = await fetch(generateApi, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ prompt: 'Show me how sales are going.' }),
+    });
+
+    generateAnswer = { status: answer.status, body: await answer.text() };
+  }
 } catch (error) {
   stop(server);
   console.error(`\n✖ ${error.message}\n`);
@@ -254,6 +273,28 @@ check(
   'a runtime icon source sends no icon from the server',
   svgCount === 1 && iconsCss.includes('--emerald-600'),
   `${svgCount} <svg> in the response, though the runtime icon's own rule was generated`,
+);
+
+// 15. The fourth page: the generative-UI loop. It is a client page — what it proves here is that the
+//     catalog, the registry and `<SpecRenderer>` survive a real Next build, with their CSS in the HTML
+//     like any other island's.
+const generativeCss = styleText(generativeHtml);
+const generativeClasses = generatedClasses(generativeHtml);
+
+check(
+  'the generative-UI page renders, with its CSS in the response',
+  generativeHtml.includes('Ask for a dashboard') &&
+    generativeClasses.length > 0 &&
+    generativeClasses.every((name) => hasRuleFor(generativeCss, name)),
+  `${generativeClasses.length} generated classes, all covered`,
+);
+
+// 16. And the route behind it is wired: with no API key it answers rather than crashing, which is what
+//     keeps this example buildable and testable by anyone who has not got one.
+check(
+  'the model route answers without an API key',
+  hasKey || (generateAnswer.status === 503 && generateAnswer.body.includes('ANTHROPIC_API_KEY')),
+  hasKey ? 'skipped: a key is set, and a smoke test must not spend it' : `${generateAnswer.status}, saying which variable is missing`,
 );
 
 const failed = results.filter((result) => !result.ok);

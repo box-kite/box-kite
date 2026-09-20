@@ -47,6 +47,11 @@ function Boom({ crash }: { crash?: boolean }) {
   return <span>fine</span>;
 }
 
+/** A chart-shaped component: it reads the prop it cannot do without, the way every one of ours does. */
+function Meter({ value }: { value?: number }) {
+  return <meter data-testid="meter" value={value!.toFixed(2)} />;
+}
+
 function Bare() {
   return <hr />;
 }
@@ -65,6 +70,7 @@ const registry = createSpecRegistry({
     Action: { component: Action, props: object({ label: { type: 'string' } }), slots: [], events: ['onPress'] },
     Panel: { component: Panel, props: object({}), slots: ['default', 'title'] },
     Boom: { component: Boom, props: object({ crash: { type: 'boolean' } }), slots: [] },
+    Meter: { component: Meter, props: object({ value: { type: 'number' } }, ['value']), slots: [] },
     Bare,
   },
 });
@@ -324,5 +330,95 @@ describe('renderSpec', () => {
 
     expect(onIssues).toHaveBeenCalledTimes(1);
     expect(onIssues.mock.calls[0][0]).toEqual([expect.objectContaining({ code: 'unknown-component', path: 'spec.children.0' })]);
+  });
+  /**
+   * Found by streaming a real one (bug #186): every chart and every grid reads a prop without checking
+   * it, so a frame before that prop arrives used to be a caught crash rather than a blank space.
+   */
+  describe('the prop a component cannot do without', () => {
+    it('holds the node back until it is there, rather than letting the component throw', () => {
+      const crash = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const { element, issues } = renderSpec({ type: 'Meter', props: {} }, { registry });
+
+      render(<>{element}</>);
+
+      expect(screen.queryByTestId('meter')).toBeNull();
+      expect(issues).toEqual([expect.objectContaining({ code: 'missing-prop', component: 'Meter', prop: 'value' })]);
+      expect(crash).not.toHaveBeenCalled();
+    });
+
+    it('renders it as soon as the prop arrives', () => {
+      render(<SpecRenderer registry={registry} spec={{ type: 'Meter', props: { value: 0.5 } }} />);
+
+      expect(screen.getByTestId('meter')).toHaveAttribute('value', '0.50');
+    });
+
+    it('reports the refusal as well as the hole it left', () => {
+      const codes = issuesOf({ type: 'Meter', props: { value: 'most of it' } }).map((issue) => issue.code);
+
+      expect(codes).toEqual(['invalid-prop', 'missing-prop']);
+    });
+  });
+  /**
+   * A stream is not monotone (bug #188): a column's `align` passes through `"e"` on its way to `"end"`,
+   * which fails its own schema and takes the whole `def` with it — so a grid on screen was unmounted and
+   * rebuilt several times in the last moments of a spec. What the node was last given stands in.
+   */
+  describe('a frame that takes back what it gave', () => {
+    it('keeps rendering what the node was last given, and reports nothing about the gap', () => {
+      const onIssues = vi.fn<(issues: SpecIssue[]) => void>();
+      const { rerender } = render(<SpecRenderer registry={registry} onIssues={onIssues} spec={{ type: 'Meter', props: { value: 0.5 } }} />);
+      const first = screen.getByTestId('meter');
+
+      rerender(<SpecRenderer registry={registry} onIssues={onIssues} spec={{ type: 'Meter', props: { value: 'half' } }} />);
+
+      // The same element, not a new one: the subtree was never unmounted.
+      expect(screen.getByTestId('meter')).toBe(first);
+      expect(screen.getByTestId('meter')).toHaveAttribute('value', '0.50');
+      expect(onIssues.mock.calls.flat(2).map((issue) => (issue as SpecIssue).code)).not.toContain('missing-prop');
+    });
+
+    it('takes the next whole value as soon as there is one', () => {
+      const { rerender } = render(<SpecRenderer registry={registry} spec={{ type: 'Meter', props: { value: 0.5 } }} />);
+
+      rerender(<SpecRenderer registry={registry} spec={{ type: 'Meter', props: {} }} />);
+      rerender(<SpecRenderer registry={registry} spec={{ type: 'Meter', props: { value: 0.75 } }} />);
+
+      expect(screen.getByTestId('meter')).toHaveAttribute('value', '0.75');
+    });
+
+    it('hands a node back only what it was given itself', () => {
+      const meters = (value: unknown) => ({
+        type: 'Stack',
+        children: [
+          { type: 'Meter', props: { value: 0.5 } },
+          { type: 'Meter', props: value === undefined ? {} : { value } },
+        ],
+      });
+
+      const { rerender } = render(<SpecRenderer registry={registry} spec={meters(0.25)} />);
+
+      expect(screen.getAllByTestId('meter')).toHaveLength(2);
+
+      rerender(<SpecRenderer registry={registry} spec={meters(undefined)} />);
+
+      // Its neighbour's value is not a value it was ever given, so the second meter keeps its own.
+      expect(screen.getAllByTestId('meter').map((meter) => meter.getAttribute('value'))).toEqual(['0.50', '0.25']);
+    });
+
+    it('is a node that never rendered that has nothing to fall back to', () => {
+      const one = { type: 'Meter', props: {} };
+      const { rerender } = render(<SpecRenderer registry={registry} spec={one} />);
+
+      expect(screen.queryByTestId('meter')).toBeNull();
+
+      rerender(<SpecRenderer registry={registry} spec={{ type: 'Meter', props: { value: 0.5 } }} />);
+
+      expect(screen.getByTestId('meter')).toHaveAttribute('value', '0.50');
+    });
+
+    it('is the renderer’s, not the walk’s: a one-shot render holds the node back', () => {
+      expect(issuesOf({ type: 'Meter', props: {} })).toEqual([expect.objectContaining({ code: 'missing-prop' })]);
+    });
   });
 });

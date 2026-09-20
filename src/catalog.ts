@@ -12,7 +12,12 @@
  * prop or a colour added by `Box.extend()` is in the catalog with no build step and no regeneration — call
  * it *after* the `extend()` that should be in it.
  *
- * No React below this file, and nothing is registered or rendered: the model is `@box-kite/core`'s.
+ * No React below this file, and nothing is registered or rendered: the model is `@box-kite/core`’s.
+ *
+ * `specSchema()` is here as well as on `@box-kite/react/spec`, because the call that needs it is a *server*
+ * call: the spec entry renders, so it carries a `use client` banner, and a route handler asking a model for
+ * a tree cannot import one. This entry describes what may be built and never renders it, which is the same
+ * side of the boundary `streamObject` runs on.
  */
 import { BoxCatalog, BoxCatalogs, CatalogOptions, getDefaultEngine } from './core';
 import CatalogContracts from './utils/catalog/catalogContracts';
@@ -36,3 +41,7 @@ export function catalog(options?: CatalogOptions): BoxCatalog {
 }
 
 export default catalog;
+
+/** The JSON Schema a model generates a whole *tree* under, from a catalog: the constraint `<SpecRenderer>` enforces. */
+export { default as specSchema } from './utils/spec/specSchema';
+export type { SpecSchemaComponent, SpecSchemaOptions, SpecSchemaSource } from './utils/spec/specSchema';

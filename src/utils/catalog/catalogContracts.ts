@@ -112,8 +112,18 @@ namespace CatalogContracts {
     },
     DashboardGrid: {
       props: {
-        layout: LAYOUT_SCHEMA,
-        defaultLayout: { ...LAYOUT_SCHEMA, description: 'The layout it starts with, when the host is not holding one.' },
+        // A spec re-renders with every piece of itself, so a generated dashboard has to write the
+        // controlled prop: an uncontrolled default is read once, and the frame it first arrived whole
+        // in is the one that sticks (bug #187).
+        layout: {
+          ...LAYOUT_SCHEMA,
+          description: 'Where each widget goes. A generated dashboard sets this one — it is read on every render.',
+        },
+        defaultLayout: {
+          ...LAYOUT_SCHEMA,
+          description:
+            'The layout it starts with, for a dashboard the user then rearranges. Read once, at the first render, so a spec that arrives in pieces should set `layout` instead.',
+        },
         columns: {
           anyOf: [
             { type: 'integer' },
