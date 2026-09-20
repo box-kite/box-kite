@@ -1,0 +1,33 @@
+{
+  "$schema": "https://context7.com/schema/context7.json",
+  "projectTitle": "Box Kite",
+  "description": "A React runtime CSS-in-JS library: one Box component with 221 typed CSS props that writes its own CSS, plus accessible components built on the platform.",
+  "excludeFolders": [
+    "node_modules",
+    "dist",
+    "dist-core",
+    "dist-mcp",
+    "dist-pages",
+    "dist-pages-ssr",
+    "api",
+    "bench",
+    "bridge",
+    "core",
+    "dev",
+    "examples",
+    "mcp",
+    "pages",
+    "registry",
+    "scripts",
+    "src"
+  ],
+  "excludeFiles": ["CHANGELOG.md", "SECURITY.md", "SUPPORT.md", "boxmodell.png"],
+  "rules": [
+    "Never use a `style` attribute: every visual value is a prop, and the one-off with no prop is `css={{ … }}`, which still compiles to a shared class.",
+    "The dividers are per prop: spacing is ÷4 (`p={4}` is 1rem), `fontSize` is ÷16 (`fontSize={14}` is 14px), `borderRadius` is ÷4, and border width and `lineHeight` are direct px.",
+    "The element comes from the component, not from `tag`: `<Flex>`, `<Button>`, `<H1>`, `<Ul>`, `<Path>`. `<Box tag=\"…\">` is the fallback.",
+    "HTML attributes go in `props`: `<Link props={{ href: '/about' }}>`. An `href` written at the top level typechecks and is then dropped.",
+    "A value the library does not accept writes no rule and no class name, silently. `npx @box-kite/mcp`'s `check_styles` tool is what settles whether one works."
+  ],
+  "previousVersions": []
+}

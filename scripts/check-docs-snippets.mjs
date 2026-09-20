@@ -21,7 +21,7 @@ const SNIPPET_TAGS = {
 };
 
 /** Snippets in these languages are not TypeScript, so there is nothing here to compile. */
-const NOT_TYPESCRIPT = new Set(['shell', 'css']);
+const NOT_TYPESCRIPT = new Set(['shell', 'css', 'json']);
 
 /** The published entry points, resolved to the sources they are built from. */
 const PACKAGE_PATHS = {

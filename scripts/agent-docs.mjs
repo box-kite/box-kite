@@ -20,6 +20,9 @@ const ANCHOR_FILE = 'docs/anchor-positioning.md';
 
 const CATALOG_FILE = 'docs/generative-ui.md';
 
+// The MCP server's own README: what the tarball says about it and what npm shows are one file.
+const MCP_FILE = 'mcp/README.md';
+
 /** What `docs/index.md` says each file is, in the order it lists them. */
 const DOCS = [
   ['props.md', 'every prop, the CSS it writes and one measured example'],
@@ -27,6 +30,7 @@ const DOCS = [
   ['a11y.md', `the behaviour hooks (\`${PACKAGE_NAME}/a11y\`) for a pattern this library does not ship`],
   ['anchor.md', `where a floating layer goes (\`${PACKAGE_NAME}/anchor\`), in CSS and in the measured fallback`],
   ['catalog.md', `what a generated UI may build (\`${PACKAGE_NAME}/catalog\`) and how it renders (\`${PACKAGE_NAME}/spec\`)`],
+  ['mcp.md', 'the MCP server (`npx @box-kite/mcp`), whose `check_styles` tool is the only way to be sure a value works'],
 ];
 
 const read = (file) => readFileSync(join(root, file), 'utf8');
@@ -228,6 +232,7 @@ export function writeAgentDocs() {
     ['docs/a11y.md', read(A11Y_FILE)],
     ['docs/anchor.md', read(ANCHOR_FILE)],
     ['docs/catalog.md', read(CATALOG_FILE)],
+    ['docs/mcp.md', read(MCP_FILE)],
   ];
 
   mkdirSync(join(root, 'dist/docs'), { recursive: true });

@@ -11,7 +11,7 @@ import reactToJsx from '../utils/reactToJsx';
 import IconSwap from './iconSwap';
 
 interface Props extends BoxProps {
-  language?: 'javascript' | 'shell' | 'jsx' | 'css' | 'auto';
+  language?: 'javascript' | 'shell' | 'jsx' | 'css' | 'json' | 'auto';
   label?: string;
   /** Optional explicit code string. If not provided, children will be converted to JSX string. */
   code?: string;
