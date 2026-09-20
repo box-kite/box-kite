@@ -29,7 +29,8 @@ symlinked and resolve its own copy of React from the repository root.
 | `app/themeToggle.tsx`     | `createThemeController()` from `@box-kite/core` — theme switching with no provider               |
 | `app/components/page.tsx` | Server Component. The pre-built components imported straight into it, hook-free and stateful     |
 | `app/generative/`         | The generative-UI loop: a prompt, `streamObject` behind `/api/generative`, `<SpecRenderer>`      |
-| `smoke.mjs`               | The CI check: 17 assertions against the served HTML                                              |
+| `app/agent/`              | The tool loop: `useChat`, two tools, and the cards from `components/agent` drawing every part    |
+| `smoke.mjs`               | The CI check: 19 assertions against the served HTML                                              |
 
 ## The generative-UI loop
 
@@ -44,6 +45,23 @@ page, which replays a recording because it is served as static files. Here the m
 
 Set `ANTHROPIC_API_KEY` to use it. Without one the route answers `503` and the page says so, which is what
 CI checks — the example has to build and smoke-test for anyone who has not got a key.
+
+## The tool loop
+
+`/agent` is the other half of the AI story: what an agent's turn looks like when every part of it is a
+component rather than a chat framework.
+
+- `app/api/agent/route.ts` — `streamText` with two tools. `refundOrder` carries `needsApproval`, so a
+  refund over the threshold stops the loop instead of executing;
+- `app/agent/page.tsx` — `useChat`, and one `STATUS` lookup. AI SDK reports **six** tool states: four of
+  them are a `<ToolCallCard>` status, and the other two — `approval-requested` and `approval-responded` —
+  are an `<ApprovalCard>`, because a decision is not a stage a call passes through but a question
+  somebody has to answer. Text parts are a `<StreamingText>`, reasoning parts a `<Reasoning>`, and the
+  wait before the first token a `<Skeleton>`;
+- answering the card calls `addToolApprovalResponse`, and `sendAutomaticallyWhen` is what resumes the
+  loop from where the tool stopped it.
+
+Same key story as above: without `ANTHROPIC_API_KEY` the route answers `503` and the page says so.
 
 ## What the smoke test proves
 
@@ -62,7 +80,8 @@ server build:
 - `Checkbox` — which needs a client runtime — can be imported by a Server Component without failing
   the build;
 - the generative-UI page survives a real Next build, CSS included, and its model route answers with no
-  API key rather than crashing.
+  API key rather than crashing;
+- so does the agent page, whose cards are a client island of their own.
 
 Two details worth knowing when reading the HTML: React merges every style element of one precedence
 group into a single `<style>` tag and lists what it merged in `data-href`, and styles that arrive

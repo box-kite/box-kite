@@ -254,7 +254,7 @@ export const siteRoutes = [
     path: '/agent',
     name: 'Agent',
     description:
-      "An agent's turn in three components: the tool call it made, the reasoning behind it, and the approval in front of the next step.",
+      "An agent's turn in components: the tool call, the reasoning, the approval — and the text, the markdown and the skeleton it answers with.",
   },
   {
     path: '/dashboard',

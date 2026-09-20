@@ -270,6 +270,23 @@ const CONFIG = [
     styles: 'reasoning',
     named: true,
   },
+  {
+    name: 'StreamingText',
+    route: '/agent',
+    file: 'src/components/agent.tsx',
+    props: 'StreamingTextProps',
+    doc: 'StreamingTextImpl',
+    styles: 'streamingText',
+    named: true,
+  },
+  {
+    name: 'Skeleton',
+    route: '/agent',
+    file: 'src/components/skeleton.tsx',
+    props: 'SkeletonProps',
+    doc: 'Skeleton',
+    styles: 'skeleton',
+  },
 ];
 
 /** The config with what can be derived filled in, so an entry states only what is not obvious. */

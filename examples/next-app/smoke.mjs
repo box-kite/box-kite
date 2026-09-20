@@ -15,6 +15,8 @@ const componentsUrl = `${url}components`;
 const iconsUrl = `${url}icons`;
 const generativeUrl = `${url}generative`;
 const generateApi = `${url}api/generative`;
+const agentUrl = `${url}agent`;
+const agentApi = `${url}api/agent`;
 
 // A key here would make the route call the model for real, which a smoke test has no business doing:
 // what it checks is the wiring, and the wiring is what answers when there is nothing to call.
@@ -113,7 +115,9 @@ let html = '';
 let componentsHtml = '';
 let iconsHtml = '';
 let generativeHtml = '';
+let agentHtml = '';
 let generateAnswer = { status: 0, body: '' };
+let agentAnswer = { status: 0, body: '' };
 
 try {
   await waitForServer(server);
@@ -121,6 +125,7 @@ try {
   componentsHtml = await (await fetch(componentsUrl)).text();
   iconsHtml = await (await fetch(iconsUrl)).text();
   generativeHtml = await (await fetch(generativeUrl)).text();
+  agentHtml = await (await fetch(agentUrl)).text();
 
   if (!hasKey) {
     const answer = await fetch(generateApi, {
@@ -130,6 +135,14 @@ try {
     });
 
     generateAnswer = { status: answer.status, body: await answer.text() };
+
+    const turn = await fetch(agentApi, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ messages: [{ id: 'u1', role: 'user', parts: [{ type: 'text', text: 'Refund order 4182.' }] }] }),
+    });
+
+    agentAnswer = { status: turn.status, body: await turn.text() };
   }
 } catch (error) {
   stop(server);
@@ -296,6 +309,23 @@ check(
   'the model route answers without an API key',
   hasKey || (generateAnswer.status === 503 && generateAnswer.body.includes('ANTHROPIC_API_KEY')),
   hasKey ? 'skipped: a key is set, and a smoke test must not spend it' : `${generateAnswer.status}, saying which variable is missing`,
+);
+
+// 17. The fifth page: the tool loop, drawn out of `components/agent`. Same proof as the generative one —
+//     the cards survive a real Next build with their CSS in the HTML — plus the route behind them.
+const agentCss = styleText(agentHtml);
+const agentClasses = generatedClasses(agentHtml);
+
+check(
+  'the agent page renders, with its CSS in the response',
+  agentHtml.includes('A tool loop, in components') && agentClasses.length > 0 && agentClasses.every((name) => hasRuleFor(agentCss, name)),
+  `${agentClasses.length} generated classes, all covered`,
+);
+
+check(
+  'the agent route answers without an API key',
+  hasKey || (agentAnswer.status === 503 && agentAnswer.body.includes('ANTHROPIC_API_KEY')),
+  hasKey ? 'skipped: a key is set, and a smoke test must not spend it' : `${agentAnswer.status}, saying which variable is missing`,
 );
 
 const failed = results.filter((result) => !result.ok);

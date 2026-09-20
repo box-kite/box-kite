@@ -1,4 +1,4 @@
-import { FunctionComponent, ReactNode } from 'react';
+import { FunctionComponent, ReactNode, useState } from 'react';
 import Box, { BoxProps } from '../box';
 import { useEventCallback } from '../react/a11y/callbacks';
 import useControllableState, { ChangeHandler } from '../react/a11y/useControllableState';
@@ -467,3 +467,72 @@ function ReasoningImpl<TKey extends keyof ComponentsAndVariants = 'reasoning'>(p
 
 export const Reasoning = ReasoningImpl;
 (Reasoning as FunctionComponent).displayName = 'Reasoning';
+
+export interface StreamingTextProps<TKey extends keyof ComponentsAndVariants = 'streamingText'> extends BoxProps<'div', TKey> {
+  /** The message so far. Append to it — anything else is a different message and settles without fading. */
+  text: string;
+  /** Whether more is still coming. The caret shows while it is true, and the element reports `aria-busy`. */
+  streaming?: boolean;
+  /**
+   * How many of the runs that arrived most recently stay faded in at once; the rest settle. Default
+   * `AgentUtils.STREAM_WINDOW` (8), and `0` turns the entrance off altogether. A run is settled once this
+   * many newer ones have arrived rather than after a time, so a stream fast enough to fill the window
+   * inside one `--transitionTime` cuts the tail of the fade short — raise it if that shows.
+   */
+  window?: number;
+  /** Whether to draw the caret while streaming. Default `true`. */
+  caret?: boolean;
+}
+
+/**
+ * What the agent is saying, as it arrives.
+ *
+ * ```tsx
+ * <StreamingText text={message} streaming={status === 'streaming'} />
+ * ```
+ *
+ * **Only what arrived fades in.** The text is one settled string plus the last few runs to arrive, so a
+ * message that is already whole — a prerendered page, a transcript being read back — paints at once with
+ * no animation, and one that is still arriving costs the same at the ten-thousandth token as at the
+ * first. The judgement is `AgentUtils.advanceStream`, which needs no React.
+ *
+ * **The entrance is `@starting-style`, not a keyframe**, so it rides `--transitionTime` and disappears
+ * under `prefers-reduced-motion` with nothing declared for it. The caret is the `pulse` preset, which
+ * stops itself for the same reason.
+ *
+ * It takes `text` rather than children, because knowing what is new means comparing the message with the
+ * message a moment ago, and a React tree is not a string.
+ *
+ * @a11y `aria-busy` while `streaming`. The element is **not** a live region: a region announcing every
+ * token would read the message out a word at a time and again when it finished. What announces an
+ * agent's turn is the transcript it lands in.
+ */
+function StreamingTextImpl<TKey extends keyof ComponentsAndVariants = 'streamingText'>(props: StreamingTextProps<TKey>) {
+  const { text, streaming = false, window: fadeWindow = AgentUtils.STREAM_WINDOW, caret = true, props: tagProps, ...restProps } = props;
+
+  const [state, setState] = useState(() => AgentUtils.initialStream(text));
+  const next = AgentUtils.advanceStream(state, text, fadeWindow);
+
+  // Adjusting state during render — React's own pattern for state derived from a prop, and safe here
+  // because advancing is keyed on the text rather than on a counter: the extra pass is a no-op.
+  if (next !== state) setState(next);
+
+  return (
+    <Box
+      component={'streamingText' as TKey}
+      {...(restProps as BoxProps<'div', TKey>)}
+      props={{ 'aria-busy': streaming || undefined, ...tagProps }}
+    >
+      {next.settled}
+      {next.segments.map((segment) => (
+        <Box key={segment.key} tag="span" component="streamingText.segment">
+          {segment.text}
+        </Box>
+      ))}
+      {streaming && caret && <Box tag="span" component="streamingText.caret" props={{ 'aria-hidden': true }} />}
+    </Box>
+  );
+}
+
+export const StreamingText = StreamingTextImpl;
+(StreamingText as FunctionComponent).displayName = 'StreamingText';

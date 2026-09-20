@@ -106,7 +106,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "32.02 KB"
+      "limit": "32.63 KB"
     },
     {
       "name": "Box in a Server Component (react-server entry)",
@@ -116,7 +116,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "30.56 KB"
+      "limit": "31.17 KB"
     },
     {
       "name": "Behavior primitives (a11y entry)",
@@ -146,7 +146,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "49.83 KB"
+      "limit": "50.67 KB"
     },
     {
       "name": "Spec renderer (spec entry)",
@@ -162,7 +162,7 @@
       "name": "Core engine (@box-kite/core, no React)",
       "path": "dist-core/core.mjs",
       "gzip": true,
-      "limit": "31.32 KB"
+      "limit": "31.96 KB"
     },
     {
       "name": "Dialog",
@@ -172,7 +172,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "34.14 KB"
+      "limit": "34.76 KB"
     },
     {
       "name": "Popover",
@@ -182,7 +182,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "35.62 KB"
+      "limit": "36.24 KB"
     },
     {
       "name": "Menu",
@@ -192,7 +192,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "37.89 KB"
+      "limit": "38.5 KB"
     },
     {
       "name": "Accordion",
@@ -202,7 +202,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "33.35 KB"
+      "limit": "33.96 KB"
     },
     {
       "name": "Agent",
@@ -212,7 +212,27 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "33.72 KB"
+      "limit": "34.69 KB"
+    },
+    {
+      "name": "Markdown",
+      "path": "dist/components/markdown.mjs",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "gzip": true,
+      "limit": "33.24 KB"
+    },
+    {
+      "name": "Skeleton",
+      "path": "dist/components/skeleton.mjs",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "gzip": true,
+      "limit": "32.55 KB"
     },
     {
       "name": "Tabs",
@@ -222,7 +242,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "34.58 KB"
+      "limit": "35.2 KB"
     },
     {
       "name": "Slider",
@@ -232,7 +252,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "33.73 KB"
+      "limit": "34.34 KB"
     },
     {
       "name": "Progress",
@@ -242,7 +262,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "31.88 KB"
+      "limit": "32.51 KB"
     },
     {
       "name": "Toaster",
@@ -252,7 +272,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "35.35 KB"
+      "limit": "36.0 KB"
     },
     {
       "name": "Combobox",
@@ -262,7 +282,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "41.1 KB"
+      "limit": "41.73 KB"
     },
     {
       "name": "Dashboard",
@@ -272,7 +292,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "37.58 KB"
+      "limit": "38.2 KB"
     },
     {
       "name": "DataGrid",
@@ -282,7 +302,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "79.05 KB"
+      "limit": "79.67 KB"
     },
     {
       "name": "DataGrid export, the chunk fetched on the first press",
@@ -302,7 +322,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "109.28 KB"
+      "limit": "111.25 KB"
     }
   ],
   "repository": {

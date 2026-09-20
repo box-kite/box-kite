@@ -41,8 +41,8 @@ const presetKeyframes: Keyframes = {
 /** A bar crossing its track and starting over: what a component draws when it has no figure to draw. */
 const sweep: KeyframeStops = { from: { translateX: '-1/1' }, to: { translateX: '250%' } };
 
-/** Two names for it, so neither component's CSS depends on the other's still being called that. */
-const componentKeyframes: Keyframes = { 'rb-datagrid-loader': sweep, 'rb-progress-sweep': sweep };
+/** One name each, so no component's CSS depends on another's still being called what it is called. */
+const componentKeyframes: Keyframes = { 'rb-datagrid-loader': sweep, 'rb-progress-sweep': sweep, 'rb-skeleton-sweep': sweep };
 
 const cssIdentifier = /^-?[_a-zA-Z][-_a-zA-Z0-9]*$/;
 
