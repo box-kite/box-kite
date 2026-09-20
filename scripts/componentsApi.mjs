@@ -243,6 +243,33 @@ const CONFIG = [
     styles: 'widget',
     named: true,
   },
+  {
+    name: 'ToolCallCard',
+    route: '/agent',
+    file: 'src/components/agent.tsx',
+    props: 'ToolCallCardProps',
+    doc: 'ToolCallCardImpl',
+    styles: 'toolCall',
+    named: true,
+  },
+  {
+    name: 'ApprovalCard',
+    route: '/agent',
+    file: 'src/components/agent.tsx',
+    props: 'ApprovalCardProps',
+    doc: 'ApprovalCardImpl',
+    styles: 'approval',
+    named: true,
+  },
+  {
+    name: 'Reasoning',
+    route: '/agent',
+    file: 'src/components/agent.tsx',
+    props: 'ReasoningProps',
+    doc: 'ReasoningImpl',
+    styles: 'reasoning',
+    named: true,
+  },
 ];
 
 /** The config with what can be derived filled in, so an entry states only what is not obvious. */

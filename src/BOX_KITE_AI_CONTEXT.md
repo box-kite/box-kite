@@ -3005,6 +3005,96 @@ read and reports it rather than throwing. Where a dashboard is **kept** is the a
 `corner` variant is the resize one; the row height is a variable (`vars={{ 'dashboard-row': '8rem' }}`),
 so it can be set per breakpoint or per theme.
 
+## Agent chrome (`components/agent`)
+
+The three parts of an agent's turn that are not prose: what it ran, what it was thinking, and what it
+wants permission to do. One entry, three components, and a framework-free model behind them.
+
+```tsx
+import { AgentUtils, ApprovalCard, Reasoning, ToolCallCard } from '@box-kite/react/components/agent';
+
+<Reasoning duration={1400}>{reasoningText}</Reasoning>
+<ToolCallCard name="searchOrders" status="success" input={{ orderId: 4182 }} output={{ total: 6400 }} />
+<ApprovalCard
+  title="Refund order 4182"
+  description="6,400 MDL back to the customer. This cannot be undone."
+  input={{ orderId: 4182, amount: 6400 }}
+  onDecisionChange={(decision) => respond(decision === 'approved')}
+/>;
+```
+
+### ToolCallCard
+
+| Prop                                    | Type                                                | What it does                                                                        |
+| --------------------------------------- | --------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `name`                                  | `ReactNode`                                         | The tool, as the model called it. Required, and what the header reads.              |
+| `description`                           | `ReactNode`                                         | A line under the name, in the app's own words.                                      |
+| `status`                                | `'pending' \| 'running' \| 'success' \| 'error'`    | Default `pending`. Every state carries its own **word** beside the dot.             |
+| `input` / `output` / `error`            | `unknown`                                           | Shown under `inputLabel`/`outputLabel`/`errorLabel`, formatted rather than trusted. |
+| `open` / `defaultOpen` / `onOpenChange` | `boolean` / … / `ChangeHandler<boolean, 'trigger'>` | The body's state. Closed by default.                                                |
+| `collapsible`                           | `boolean`                                           | Default `true`. `false` leaves the header a plain row.                              |
+| `valueLimit`                            | `number`                                            | Characters before a value is cut. Default 20,000.                                   |
+
+The four statuses map one for one onto what every runtime reports under its own spelling — AI SDK's
+`input-streaming` / `input-available` / `output-available` / `output-error` — so wiring a message part
+to a card is a lookup rather than a state machine. `aria-busy` while running.
+
+**A card with nothing to disclose renders no control at all**: the header is a row of text rather than a
+button, because a control that opens nothing is a tab stop nobody wants to land on.
+
+### ApprovalCard
+
+| Prop                                                | Type                                                                               | What it does                                                              |
+| --------------------------------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| `title`                                             | `ReactNode`                                                                        | Required. Names the `role="group"`.                                       |
+| `description`                                       | `ReactNode`                                                                        | The consequence, and whether it can be undone.                            |
+| `input` / `inputLabel`                              | `unknown` / `ReactNode`                                                            | The call being gated, shown as a tool card shows its input.               |
+| `decision` / `defaultDecision` / `onDecisionChange` | `'approved' \| 'rejected' \| null` / … / `ChangeHandler<…, 'approve' \| 'reject'>` | The one channel.                                                          |
+| `busy`                                              | `boolean`                                                                          | The answer is on its way: both buttons disabled, `aria-busy` on the card. |
+| `approveLabel` / `rejectLabel`                      | `ReactNode`                                                                        | Default `Approve` / `Reject`.                                             |
+| `autoFocus`                                         | `boolean`                                                                          | Default `false`. Lands on **Reject** — the least destructive action.      |
+
+`onDecisionChange(decision, { reason })` maps straight onto AI SDK 6's `needsApproval`, CopilotKit's
+`renderAndWaitForResponse` and AG-UI's `INTERRUPT`. Once there is a decision the buttons are gone, and
+the answer lands in a `role="status"` **that was in the DOM before there was anything in it** — a live
+region inserted together with its text is not reliably announced.
+
+### Reasoning
+
+| Prop                                    | Type        | What it does                                                                      |
+| --------------------------------------- | ----------- | --------------------------------------------------------------------------------- |
+| `label`                                 | `ReactNode` | Default `Reasoning`, or `Thinking…` while `streaming`.                            |
+| `streaming`                             | `boolean`   | Still arriving: the header says so, shimmers, and reports `aria-busy`.            |
+| `duration`                              | `number`    | Milliseconds. The header reads "Thought for 4.2s" once it is over.                |
+| `open` / `defaultOpen` / `onOpenChange` | …           | Closed by default. Auto-opening while streaming is the app's: `open={streaming}`. |
+
+It opens in the same one-row grid an `Accordion` panel does — a track running `1fr` to `0fr`, so nothing
+is measured and the rules are shared with every other disclosure on the page.
+
+### The model (`AgentUtils`)
+
+Framework-free, exported from the same module — a tool's arguments are JSON a **model** invented, and
+`JSON.stringify` answers a circular structure, a `BigInt` and a four-megabyte result with a throw, a
+throw and a frozen frame:
+
+```ts
+AgentUtils.formatValue(part.output, 4000); // { text, truncated } — capped, never throws
+AgentUtils.hasValue(part.input); // `0` and `''` are values; `null` and `undefined` are not
+AgentUtils.formatCount(3980); // '3,980' — grouped here rather than by locale, so a prerender matches
+AgentUtils.formatDuration(4200); // '4.2s'
+AgentUtils.statusLabel('success'); // 'Done'
+AgentUtils.decisionLabel('approved'); // 'Approved'
+```
+
+### Style tree
+
+`toolCall` (+ `header`, `summary`, `name`, `description`, `status` with `status.dot`, `arrow`, `track`,
+`clip`, `body`, `section`, `label`, `value`, `truncated`), `approval` (+ `title`, `description`,
+`section`, `label`, `value`, `truncated`, `footer`, `actions`, `button`, `decision`) and `reasoning`
+(+ `trigger`, `arrow`, `duration`, `track`, `clip`, `body`). The status is a variant on
+`toolCall.status`, the decision one on `approval` itself, and `toolCall.header`'s `interactive` variant
+is what makes it look pressable — so a card with nothing to open does not.
+
 ## The catalog (`@box-kite/react/catalog`)
 
 What a **generated** UI is allowed to build, as JSON Schema — the runtime counterpart to everything

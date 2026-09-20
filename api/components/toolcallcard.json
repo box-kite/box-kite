@@ -1,0 +1,130 @@
+{
+  "name": "ToolCallCard",
+  "route": "/agent",
+  "import": "import { ToolCallCard } from '@box-kite/react/components/agent';",
+  "description": "One call an agent made: what it ran, where it got to, and — when the header is opened — what went in and what came back.",
+  "pattern": null,
+  "props": [
+    {
+      "name": "name",
+      "type": "ReactNode",
+      "required": true,
+      "default": null,
+      "description": "The tool's name, as the model called it. It is what the header reads."
+    },
+    {
+      "name": "description",
+      "type": "ReactNode",
+      "required": false,
+      "default": null,
+      "description": "A line under the name: what this call is for, in the app's own words."
+    },
+    {
+      "name": "status",
+      "type": "ToolCallStatus",
+      "required": false,
+      "default": "'pending'",
+      "description": "Where the call is. Default `pending`."
+    },
+    {
+      "name": "input",
+      "type": "unknown",
+      "required": false,
+      "default": null,
+      "description": "The arguments. A string is shown as it stands, anything else as the JSON a reader can check."
+    },
+    { "name": "output", "type": "unknown", "required": false, "default": null, "description": "What came back, shown the same way." },
+    {
+      "name": "error",
+      "type": "unknown",
+      "required": false,
+      "default": null,
+      "description": "What went wrong, shown in place of the output."
+    },
+    { "name": "open", "type": "boolean", "required": false, "default": null, "description": "Controlled: whether the body is open." },
+    {
+      "name": "defaultOpen",
+      "type": "boolean",
+      "required": false,
+      "default": "false",
+      "description": "Whether it starts open. Default `false` — a transcript of tool calls is a list, not a wall of JSON."
+    },
+    {
+      "name": "onOpenChange",
+      "type": "ChangeHandler<boolean, DisclosureReason>",
+      "required": false,
+      "default": null,
+      "description": "Fires when the header is pressed, with the body's new state."
+    },
+    {
+      "name": "collapsible",
+      "type": "boolean",
+      "required": false,
+      "default": "true",
+      "description": "Whether the body can be opened at all. Default `true`; `false` leaves the header a plain row."
+    },
+    {
+      "name": "inputLabel",
+      "type": "ReactNode",
+      "required": false,
+      "default": "'Input'",
+      "description": "The word above the arguments. Default `Input`."
+    },
+    {
+      "name": "outputLabel",
+      "type": "ReactNode",
+      "required": false,
+      "default": "'Output'",
+      "description": "The word above what came back. Default `Output`."
+    },
+    {
+      "name": "errorLabel",
+      "type": "ReactNode",
+      "required": false,
+      "default": "'Error'",
+      "description": "The word above what went wrong. Default `Error`."
+    },
+    {
+      "name": "valueLimit",
+      "type": "number",
+      "required": false,
+      "default": null,
+      "description": "How much of a value is shown before it is cut. Default `AgentUtils.VALUE_LIMIT` (20,000 characters)."
+    },
+    {
+      "name": "children",
+      "type": "ReactNode",
+      "required": false,
+      "default": null,
+      "description": "Anything else that belongs in the body, under the values."
+    }
+  ],
+  "parts": [],
+  "keyboard": [
+    { "mode": null, "keys": "Tab", "action": "Focuses the header, and again leaves it. Nothing inside a closed body is reachable." },
+    { "mode": null, "keys": "Enter, Space", "action": "Opens the body, or closes it." }
+  ],
+  "a11y": [
+    "The header is a real `<button>` carrying `aria-expanded` and `aria-controls` when there is a body to open, and a plain row when there is not — a control that discloses nothing is a control nobody wants to land on.",
+    "`aria-busy` while the call is running, so a reader is told the card is not finished rather than reading a half-written result as the answer.",
+    "The card announces nothing itself. The transcript it is rendered into is what does that, and a live region inserted together with its content is not reliably announced."
+  ],
+  "axe": { "fixtures": ["ToolCallCard (every status)"], "knownViolations": [] },
+  "styleTree": [
+    { "path": "toolCall", "depth": 0, "extends": null, "variants": [] },
+    { "path": "toolCall.header", "depth": 1, "extends": null, "variants": ["interactive"] },
+    { "path": "toolCall.summary", "depth": 1, "extends": null, "variants": [] },
+    { "path": "toolCall.name", "depth": 1, "extends": null, "variants": [] },
+    { "path": "toolCall.description", "depth": 1, "extends": null, "variants": [] },
+    { "path": "toolCall.status", "depth": 1, "extends": null, "variants": ["pending", "running", "success", "error"] },
+    { "path": "toolCall.status.dot", "depth": 2, "extends": null, "variants": ["running"] },
+    { "path": "toolCall.arrow", "depth": 1, "extends": null, "variants": ["open"] },
+    { "path": "toolCall.track", "depth": 1, "extends": null, "variants": ["closed"] },
+    { "path": "toolCall.clip", "depth": 1, "extends": null, "variants": [] },
+    { "path": "toolCall.body", "depth": 1, "extends": null, "variants": [] },
+    { "path": "toolCall.section", "depth": 1, "extends": null, "variants": [] },
+    { "path": "toolCall.label", "depth": 1, "extends": null, "variants": [] },
+    { "path": "toolCall.value", "depth": 1, "extends": null, "variants": [] },
+    { "path": "toolCall.truncated", "depth": 1, "extends": null, "variants": [] }
+  ]
+}

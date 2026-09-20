@@ -1,0 +1,121 @@
+{
+  "name": "ApprovalCard",
+  "route": "/agent",
+  "import": "import { ApprovalCard } from '@box-kite/react/components/agent';",
+  "description": "The gate in front of something an agent wants to do: what it is, and the two answers.",
+  "pattern": null,
+  "props": [
+    {
+      "name": "title",
+      "type": "ReactNode",
+      "required": true,
+      "default": null,
+      "description": "What is about to happen, in one line. It names the card."
+    },
+    {
+      "name": "description",
+      "type": "ReactNode",
+      "required": false,
+      "default": null,
+      "description": "The consequence, where a title cannot carry it: what this will change, and whether it can be undone."
+    },
+    {
+      "name": "input",
+      "type": "unknown",
+      "required": false,
+      "default": null,
+      "description": "The call itself, shown the way a `ToolCallCard` shows its input."
+    },
+    {
+      "name": "inputLabel",
+      "type": "ReactNode",
+      "required": false,
+      "default": "'Request'",
+      "description": "The word above it. Default `Request`."
+    },
+    {
+      "name": "decision",
+      "type": "ApprovalDecision | null",
+      "required": false,
+      "default": null,
+      "description": "Controlled: what has been decided. `null` is \"not yet\", and is what shows the two buttons."
+    },
+    {
+      "name": "defaultDecision",
+      "type": "ApprovalDecision | null",
+      "required": false,
+      "default": "null",
+      "description": "What it starts as. Default `null`."
+    },
+    {
+      "name": "onDecisionChange",
+      "type": "ChangeHandler<ApprovalDecision | null, ApprovalReason>",
+      "required": false,
+      "default": null,
+      "description": "Fires when a button is pressed, with the decision and which button made it."
+    },
+    {
+      "name": "busy",
+      "type": "boolean",
+      "required": false,
+      "default": "false",
+      "description": "The decision is on its way to a server: both buttons are disabled and the card reports `aria-busy`."
+    },
+    {
+      "name": "approveLabel",
+      "type": "ReactNode",
+      "required": false,
+      "default": "'Approve'",
+      "description": "What the approving button says. Default `Approve`."
+    },
+    {
+      "name": "rejectLabel",
+      "type": "ReactNode",
+      "required": false,
+      "default": "'Reject'",
+      "description": "What the refusing button says. Default `Reject`."
+    },
+    {
+      "name": "autoFocus",
+      "type": "boolean",
+      "required": false,
+      "default": "false",
+      "description": "Whether to put focus on the card when it mounts. Default `false` — an agent's turn arrives while the reader is somewhere else, and taking focus from them is how a decision gets pressed by accident. It lands on the *reject* button, which is APG's rule for a decision: the least destructive action."
+    },
+    {
+      "name": "valueLimit",
+      "type": "number",
+      "required": false,
+      "default": null,
+      "description": "How much of the input is shown before it is cut. Default `AgentUtils.VALUE_LIMIT`."
+    },
+    {
+      "name": "children",
+      "type": "ReactNode",
+      "required": false,
+      "default": null,
+      "description": "Anything else that belongs above the buttons."
+    }
+  ],
+  "parts": [],
+  "keyboard": [{ "mode": null, "keys": "Tab", "action": "Reaches the two buttons in order; Enter or Space presses one." }],
+  "a11y": [
+    "`role=\"group\"` named by the title, so the two buttons are read as belonging to one decision rather than as loose controls in a transcript.",
+    "Focus is not taken on mount unless `autoFocus` is set, and then it lands on the least destructive button. A card that grabs the keyboard is one that gets answered by accident.",
+    "`aria-busy` while `busy`, which is also when both buttons are disabled."
+  ],
+  "axe": { "fixtures": ["ApprovalCard (undecided and answered)"], "knownViolations": [] },
+  "styleTree": [
+    { "path": "approval", "depth": 0, "extends": null, "variants": ["approved", "rejected"] },
+    { "path": "approval.title", "depth": 1, "extends": null, "variants": [] },
+    { "path": "approval.description", "depth": 1, "extends": null, "variants": [] },
+    { "path": "approval.section", "depth": 1, "extends": null, "variants": [] },
+    { "path": "approval.label", "depth": 1, "extends": null, "variants": [] },
+    { "path": "approval.value", "depth": 1, "extends": null, "variants": [] },
+    { "path": "approval.truncated", "depth": 1, "extends": null, "variants": [] },
+    { "path": "approval.footer", "depth": 1, "extends": null, "variants": [] },
+    { "path": "approval.actions", "depth": 1, "extends": null, "variants": [] },
+    { "path": "approval.button", "depth": 1, "extends": null, "variants": ["approve", "reject"] },
+    { "path": "approval.decision", "depth": 1, "extends": null, "variants": ["approved", "rejected"] }
+  ]
+}

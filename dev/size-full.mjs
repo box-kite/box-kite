@@ -16,6 +16,7 @@ import * as anchor from '../dist/anchor.mjs';
 import * as core from '@box-kite/core';
 import * as ssg from '../dist/ssg.mjs';
 import * as accordion from '../dist/components/accordion.mjs';
+import * as agent from '../dist/components/agent.mjs';
 import * as combobox from '../dist/components/combobox.mjs';
 import * as baseSvg from '../dist/components/baseSvg.mjs';
 import * as button from '../dist/components/button.mjs';
@@ -55,6 +56,7 @@ console.log(
   core,
   ssg,
   accordion,
+  agent,
   combobox,
   baseSvg,
   button,

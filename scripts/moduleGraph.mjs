@@ -47,6 +47,7 @@ export const SERVER_SAFE_COMPONENTS = [
  */
 export const CLIENT_ONLY_COMPONENTS = [
   'accordion',
+  'agent',
   'checkbox',
   'combobox',
   'dashboard',

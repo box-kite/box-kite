@@ -251,6 +251,12 @@ export const siteRoutes = [
     description: 'The APG select-only combobox: choose one option or many, from the keyboard as well as the mouse.',
   },
   {
+    path: '/agent',
+    name: 'Agent',
+    description:
+      "An agent's turn in three components: the tool call it made, the reasoning behind it, and the approval in front of the next step.",
+  },
+  {
     path: '/dashboard',
     name: 'Dashboard',
     description:

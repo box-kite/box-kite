@@ -1,0 +1,65 @@
+{
+  "name": "Reasoning",
+  "route": "/agent",
+  "import": "import { Reasoning } from '@box-kite/react/components/agent';",
+  "description": "What the model was thinking, folded away.",
+  "pattern": null,
+  "props": [
+    {
+      "name": "label",
+      "type": "ReactNode",
+      "required": false,
+      "default": null,
+      "description": "The header's words. Default `Reasoning`, or `Thinking…` while `streaming`."
+    },
+    { "name": "children", "type": "ReactNode", "required": false, "default": null, "description": "The thought itself." },
+    { "name": "open", "type": "boolean", "required": false, "default": null, "description": "Controlled: whether it is open." },
+    {
+      "name": "defaultOpen",
+      "type": "boolean",
+      "required": false,
+      "default": "false",
+      "description": "Whether it starts open. Default `false` — a chain of thought is an aside, not the answer."
+    },
+    {
+      "name": "onOpenChange",
+      "type": "ChangeHandler<boolean, DisclosureReason>",
+      "required": false,
+      "default": null,
+      "description": "Fires when the header is pressed."
+    },
+    {
+      "name": "streaming",
+      "type": "boolean",
+      "required": false,
+      "default": "false",
+      "description": "Still arriving: the header says so and shimmers. Opening it is the app's — pass `open={streaming}`."
+    },
+    {
+      "name": "duration",
+      "type": "number",
+      "required": false,
+      "default": null,
+      "description": "How long the thought took, in milliseconds. Rendered beside the label as \"Thought for 4s\"."
+    }
+  ],
+  "parts": [],
+  "keyboard": [
+    { "mode": null, "keys": "Tab", "action": "Focuses the header, and again leaves it." },
+    { "mode": null, "keys": "Enter, Space", "action": "Opens the thought, or closes it." }
+  ],
+  "a11y": [
+    "The header is a `<button>` with `aria-expanded` and `aria-controls`; the thought itself has no role, because a region wants a name and a disclosure's trigger is not a heading.",
+    "`aria-busy` while it is streaming."
+  ],
+  "axe": { "fixtures": ["Reasoning"], "knownViolations": [] },
+  "styleTree": [
+    { "path": "reasoning", "depth": 0, "extends": null, "variants": [] },
+    { "path": "reasoning.trigger", "depth": 1, "extends": null, "variants": ["streaming"] },
+    { "path": "reasoning.arrow", "depth": 1, "extends": null, "variants": ["open"] },
+    { "path": "reasoning.duration", "depth": 1, "extends": null, "variants": [] },
+    { "path": "reasoning.track", "depth": 1, "extends": null, "variants": ["closed"] },
+    { "path": "reasoning.clip", "depth": 1, "extends": null, "variants": [] },
+    { "path": "reasoning.body", "depth": 1, "extends": null, "variants": [] }
+  ]
+}

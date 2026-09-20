@@ -298,6 +298,9 @@ export default function Sidebar({ toggleTheme, onClose }: SidebarProps) {
           <MenuItem to="/dropdown" icon={<ChevronDown />}>
             Dropdown
           </MenuItem>
+          <MenuItem to="/agent" icon={<Bot />}>
+            Agent
+          </MenuItem>
           <MenuItem to="/dashboard" icon={<LayoutDashboard />}>
             Dashboard
           </MenuItem>
