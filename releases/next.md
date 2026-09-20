@@ -18,6 +18,7 @@ _Unreleased. A PR that changes what a consumer sees adds its section here — se
 - **[A generated dashboard with something in it](#a-generated-dashboard-with-something-in-it)** — the catalog describes a grid's columns and a dashboard's layout now, so a spec can say where each widget goes and what is inside it.
 - **[A theme inside a theme](#a-theme-inside-a-theme)** — a local `<Box.Theme>` finally wins inside a themed page: a theme reaches the subtree it owns and stops at the next element that declares one.
 - **[The DataGrid exports its types](#the-datagrid-exports-its-types)** — `ColumnType`, `GridDefinition`, `CellModel` and the rest come off `components/dataGrid` now instead of a path inside it.
+- **[The whole loop, and the route that runs it](#the-whole-loop-and-the-route-that-runs-it)** — `specSchema()` is on the catalog entry too, so a server route can build the constraint a model generates under; and a node missing a prop it cannot do without is held back rather than left to throw.
 
 <!-- One bullet per section below, linking to it: **[Heading](#heading)** — one line on why it matters. -->
 
@@ -513,6 +514,45 @@ one a prerendered shell puts on `<html>` — wants the attribute beside it.
 ```
 
 [Theme setup](https://box-kite.dev/theme-setup#nesting)
+## The whole loop, and the route that runs it
+
+`specSchema()` is exported from `@box-kite/react/catalog` as well as from `/spec`, which is what makes
+the server half of a generated UI writable at all: the model call is a route handler, and the entry that
+_renders_ a spec is a client entry. The catalog entry renders nothing, so a route can import it — and
+`specSchema()` takes a `catalog()` as readily as a registry, so the server side needs no components.
+
+```ts
+import { anthropic } from '@ai-sdk/anthropic';
+import { catalog, specSchema } from '@box-kite/react/catalog';
+import { jsonSchema, streamObject } from 'ai';
+
+const allowed = catalog({ include: ['DashboardGrid', 'Widget', 'Sparkline', 'DataGrid'] });
+
+export async function POST(request: Request) {
+  const { prompt } = await request.json();
+  const result = streamObject({
+    model: anthropic('claude-sonnet-5'),
+    schema: jsonSchema(specSchema(allowed, { bindings: true })),
+    prompt,
+  });
+
+  return result.toTextStreamResponse();
+}
+```
+
+The client half is `<SpecRenderer>` over whatever has arrived. It holds a node back now when a prop its
+component cannot do without has not arrived yet, reporting a new `missing-prop` issue: a `Sparkline` with
+no `data` reads `undefined` and throws, which its own error boundary caught — the same blank space, with a
+caught crash per frame behind it. Rendering nothing is the same picture without the noise.
+
+One more rule a stream imposes, now in the catalog's own descriptions: a generated node writes the
+**controlled** prop and never the `default…` twin. React reads an uncontrolled default once, so the frame
+in which `defaultLayout` first arrived whole is the one that sticks — and a second spec rendered in the
+same place keeps the first one's state, since it is the same component instance. `layout`, `value`,
+`open`: every frame re-applies them, and the last frame is what stays on screen.
+
+[box-kite.dev/generative-ui](https://www.box-kite.dev/generative-ui/) is the loop end to end, and
+`examples/next-app/app/generative` is the live route, page and catalog in three files.
 
 ## Breaking changes
 
@@ -526,6 +566,9 @@ one a prerendered shell puts on `<html>` — wants the attribute beside it.
 
 <!-- One bullet per fix: **What was wrong.** What it does now. -->
 
+- **A component documented none of the props it inherited from another component.** `Gauge` is a `ProgressRing` with a shorter sweep, so its `value` — the whole point of a gauge — was missing from its API page, from the catalog and from the manifest, and a generated `<Gauge>` could not be given one; the four chart primitives were missing the `label` that keeps them out of `aria-hidden`, and `Menu.CheckboxItem`/`Menu.RadioItem` were missing `disabled`. The extraction follows a props interface into whatever this repository declared behind it now, and stops where Box's own props begin. (#185)
+- **A grid was unmounted and rebuilt half a dozen times in the closing moments of a stream.** A stream is not monotone: a column's `align` passes through `"e"` on its way to `"end"`, which fails its own schema and takes the whole `def` with it, so the prop the grid cannot render without went missing every few frames. `<SpecRenderer>` keeps the last value each node was given for such a prop — what a node has been shown with, it is not stripped of — and a heavy component can be gated by the app on top of that: point its name at a placeholder in the registry while the spec is arriving. (#188)
+- **A generated component was handed `undefined` for a prop it cannot do without.** A `Sparkline` whose `data` had not arrived yet — or was refused — threw, and only the node's own error boundary caught it. The renderer holds such a node back and reports `missing-prop` instead, so a streamed spec paints the same thing with nothing thrown behind it. (#186)
 - **The catalog said a layout component could hold nothing.** `Flex`, `Grid`, `Button`, `Icon`, `Overlay` and eleven others reported no `default` slot, because they declare no `children` prop of their own — they take Box’s props whole — while `Img` reported one it cannot have. A generated tree read off that catalog could not nest anything in a `Flex`. Every component that can hold children says so now, and one whose element takes none (`Img`, `Textbox`, `Textarea`) says that instead. (#180)
 - **A DataGrid rendered fifty-eight rows around an eighteen-row viewport.** Twenty rows each side became twelve ahead of the scroll and four behind it, so the same cover costs thirty-six rows: a fling over a hundred thousand rows went from 12.3 ms a frame to 8.0, and first render, filter and sort came down with it. (#178)
 - **A DataGrid re-rendered every cell on screen on every scroll event.** A scroll that does not change which rows are shown now costs nothing but the transform, and one that brings a row in renders that row rather than the window it landed in — the median frame of a fast fling over a hundred thousand rows halved, 24 ms to 12 ms.

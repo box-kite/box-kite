@@ -893,6 +893,7 @@ const catalogManifest: CatalogManifest = {
         checked: { type: 'boolean', description: 'Controlled checked state.' },
         defaultChecked: { type: 'boolean', description: 'Whether it starts checked, when the item owns its own state.' },
         closeOnSelect: { type: 'boolean', description: 'Whether toggling it closes the menu.' },
+        disabled: { type: 'boolean', description: 'Focusable, announced, and not activatable.' },
       },
       required: [],
       styled: true,
@@ -917,6 +918,7 @@ const catalogManifest: CatalogManifest = {
       props: {
         value: { type: 'string', description: "What this item stands for, compared against the group's `value`." },
         closeOnSelect: { type: 'boolean', description: 'Whether choosing it closes the menu.' },
+        disabled: { type: 'boolean', description: 'Focusable, announced, and not activatable.' },
       },
       required: ['value'],
       styled: true,
@@ -1290,6 +1292,16 @@ const catalogManifest: CatalogManifest = {
         },
         min: { type: 'number', description: 'Fix the ends of the value axis.' },
         max: { type: 'number', description: 'The top of the value axis — see `min`, which it is written beside.' },
+        preserveAspectRatio: { type: 'string', description: 'How the drawing is fitted when the box it is given is a different shape.' },
+        width: {
+          anyOf: [{ type: 'string' }, { type: 'number' }],
+          description: 'The `width` attribute: a number in user units, or any CSS length — `"100%"`, `"12rem"`.',
+        },
+        height: {
+          anyOf: [{ type: 'string' }, { type: 'number' }],
+          description: 'The `height` attribute: a number in user units, or any CSS length.',
+        },
+        label: { type: 'string', description: 'Names the drawing — `role="img"` and this text.' },
       },
       required: ['data'],
       styled: true,
@@ -1302,6 +1314,16 @@ const catalogManifest: CatalogManifest = {
       props: {
         value: { type: 'number', description: 'How full the arc is, from 0 to 1.' },
         thickness: { type: 'number', description: 'The width of the ring in view units, out of the 100 the box is wide.' },
+        preserveAspectRatio: { type: 'string', description: 'How the drawing is fitted when the box it is given is a different shape.' },
+        width: {
+          anyOf: [{ type: 'string' }, { type: 'number' }],
+          description: 'The `width` attribute: a number in user units, or any CSS length — `"100%"`, `"12rem"`.',
+        },
+        height: {
+          anyOf: [{ type: 'string' }, { type: 'number' }],
+          description: 'The `height` attribute: a number in user units, or any CSS length.',
+        },
+        label: { type: 'string', description: 'Names the drawing — `role="img"` and this text.' },
       },
       required: ['value'],
       styled: true,
@@ -1315,8 +1337,20 @@ const catalogManifest: CatalogManifest = {
       props: {
         sweep: { type: 'number', description: 'How far round the dial goes, in degrees.' },
         start: { type: 'number', description: "Where it starts, in degrees clockwise from twelve o'clock." },
+        value: { type: 'number', description: 'How full the arc is, from 0 to 1.' },
+        thickness: { type: 'number', description: 'The width of the ring in view units, out of the 100 the box is wide.' },
+        preserveAspectRatio: { type: 'string', description: 'How the drawing is fitted when the box it is given is a different shape.' },
+        width: {
+          anyOf: [{ type: 'string' }, { type: 'number' }],
+          description: 'The `width` attribute: a number in user units, or any CSS length — `"100%"`, `"12rem"`.',
+        },
+        height: {
+          anyOf: [{ type: 'string' }, { type: 'number' }],
+          description: 'The `height` attribute: a number in user units, or any CSS length.',
+        },
+        label: { type: 'string', description: 'Names the drawing — `role="img"` and this text.' },
       },
-      required: [],
+      required: ['value'],
       styled: true,
     },
     MiniDonut: {
@@ -1328,6 +1362,16 @@ const catalogManifest: CatalogManifest = {
       props: {
         data: { type: 'array', items: { type: 'number' }, description: 'One value per segment.' },
         thickness: { type: 'number', description: 'The width of the ring in view units, out of the 100 the box is wide.' },
+        preserveAspectRatio: { type: 'string', description: 'How the drawing is fitted when the box it is given is a different shape.' },
+        width: {
+          anyOf: [{ type: 'string' }, { type: 'number' }],
+          description: 'The `width` attribute: a number in user units, or any CSS length — `"100%"`, `"12rem"`.',
+        },
+        height: {
+          anyOf: [{ type: 'string' }, { type: 'number' }],
+          description: 'The `height` attribute: a number in user units, or any CSS length.',
+        },
+        label: { type: 'string', description: 'Names the drawing — `role="img"` and this text.' },
       },
       required: ['data'],
       styled: true,

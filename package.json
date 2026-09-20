@@ -145,7 +145,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "47.33 KB"
+      "limit": "48.55 KB"
     },
     {
       "name": "Spec renderer (spec entry)",
@@ -155,7 +155,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "4.44 KB"
+      "limit": "4.63 KB"
     },
     {
       "name": "Core engine (@box-kite/core, no React)",

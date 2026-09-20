@@ -71,6 +71,13 @@ export const siteRoutes = [
       "Box renders on the server with no 'use client', no provider and no stylesheet to import. Its CSS is part of the HTML React streams.",
   },
   {
+    path: '/generative-ui',
+    name: 'Generative UI',
+    title: 'Generative UI — a model composes it, your app owns it',
+    description:
+      'A model composes the UI and the app still owns it: the catalog says what may be built, the renderer refuses the rest, and a colour stays a token.',
+  },
+  {
     path: '/box',
     name: 'Box',
     description: 'The foundational component: 221 CSS properties as type-safe props, with the numeric formatters explained.',

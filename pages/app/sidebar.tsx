@@ -48,6 +48,7 @@ import {
   TextCursor,
   ToggleLeft,
   Type,
+  WandSparkles,
   X,
 } from 'lucide-react';
 import { useState } from 'react';
@@ -136,6 +137,9 @@ export default function Sidebar({ toggleTheme, onClose }: SidebarProps) {
           </MenuItem>
           <MenuItem to="/server-components" icon={<Server />}>
             Server Components
+          </MenuItem>
+          <MenuItem to="/generative-ui" icon={<WandSparkles />}>
+            Generative UI
           </MenuItem>
         </MenuSection>
 

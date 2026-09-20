@@ -26,9 +26,24 @@ symlinked and resolve its own copy of React from the repository root.
 | `app/streamedSection.tsx` | An `async` Server Component behind `<Suspense>` — its markup and its CSS arrive in a later chunk |
 | `app/elementMode.ts`      | The one line a client bundle needs: `Box.configure({ sink: 'element' })`                         |
 | `app/counter.tsx`         | A client island using `Flex`/`Button`, server-rendered with its CSS in the HTML                  |
-| `app/themeToggle.tsx`     | `createThemeController()` from `@box-kite/core` — theme switching with no provider         |
+| `app/themeToggle.tsx`     | `createThemeController()` from `@box-kite/core` — theme switching with no provider               |
 | `app/components/page.tsx` | Server Component. The pre-built components imported straight into it, hook-free and stateful     |
-| `smoke.mjs`               | The CI check: 13 assertions against the served HTML                                              |
+| `app/generative/`         | The generative-UI loop: a prompt, `streamObject` behind `/api/generative`, `<SpecRenderer>`      |
+| `smoke.mjs`               | The CI check: 17 assertions against the served HTML                                              |
+
+## The generative-UI loop
+
+`/generative` is the live half of the docs site's [Generative UI](https://www.box-kite.dev/generative-ui/)
+page, which replays a recording because it is served as static files. Here the model is really called:
+
+- `app/generative/allowed.ts` — one `catalog()` for both sides of the call, and the app's data beside it;
+- `app/api/generative/route.ts` — `streamObject` under `specSchema(ALLOWED, { bindings: true })`. The
+  schema comes from `@box-kite/react/catalog`, **not** from `/spec`: the entry that renders a spec is a
+  client entry, and a route handler is a server call;
+- `app/generative/page.tsx` — `useObject` for the partial JSON, `<SpecRenderer>` over whatever has arrived.
+
+Set `ANTHROPIC_API_KEY` to use it. Without one the route answers `503` and the page says so, which is what
+CI checks — the example has to build and smoke-test for anyone who has not got a key.
 
 ## What the smoke test proves
 
@@ -45,7 +60,9 @@ server build:
 - `Flex`, `Button`, `Textbox` and the semantic tags render **on the server**, CSS included, when a
   Server Component imports them;
 - `Checkbox` — which needs a client runtime — can be imported by a Server Component without failing
-  the build.
+  the build;
+- the generative-UI page survives a real Next build, CSS included, and its model route answers with no
+  API key rather than crashing.
 
 Two details worth knowing when reading the HTML: React merges every style element of one precedence
 group into a single `<style>` tag and lists what it merged in `data-href`, and styles that arrive

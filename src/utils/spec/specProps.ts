@@ -15,6 +15,8 @@ namespace SpecProps {
     /** The events the node bound, for the renderer to turn into functions. */
     actions: Record<string, SpecAction>;
     issues: SpecIssue[];
+    /** Required props that did not arrive, or were refused. A node with any of these cannot render. */
+    missing: string[];
   }
 
   /** A value in a message, short enough to read: the whole of a rejected data array helps nobody. */
@@ -98,7 +100,11 @@ namespace SpecProps {
       }
     }
 
-    return { props, actions, issues };
+    // A required prop that has not arrived yet — or was refused — is what makes a component read
+    // `undefined` and throw. The renderer holds the node back instead; mid-stream that is most of them.
+    const missing = (schema?.required ?? []).filter((name) => !(name in props));
+
+    return { props, actions, issues, missing };
   }
 }
 

@@ -3,12 +3,12 @@
  * boundaries reset with each one, and the issues of the last render reach the host from an effect
  * rather than from the middle of a render.
  */
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { SpecIssue } from '../../utils/spec/specTypes';
 import { useIsomorphicLayoutEffect } from '../effects';
-import { SpecRenderOptions, renderSpec } from './renderSpec';
+import { SpecMemory, SpecRenderOptions, renderSpec } from './renderSpec';
 
-export interface SpecRendererProps extends Omit<SpecRenderOptions, 'onError' | 'resetKey'> {
+export interface SpecRendererProps extends Omit<SpecRenderOptions, 'onError' | 'resetKey' | 'memory'> {
   /** Whatever arrived. Every field of it is checked, so a partial object from a stream is welcome. */
   spec: unknown;
   /** Called after each render whose issues changed, and again when a node throws during a commit. */
@@ -34,7 +34,12 @@ export default function SpecRenderer({ spec, onIssues, ...options }: SpecRendere
   // The spec itself is the reset key: a stream delivers a new object per chunk, so a node that threw on
   // half a prop is tried again on the next one, and a spec standing still keeps its fallback. `onError`
   // is the handler of this render, called from a commit, so it needs no ref to stay current.
-  const { element, issues } = renderSpec(spec, { ...options, resetKey: spec, onError: (issue) => onIssues?.([issue]) });
+  // What each node was last given for a prop it cannot render without, so a half-written frame leaves
+  // what is on screen alone rather than unmounting it and putting it back (bug #188). It lasts as long
+  // as this renderer does: a host showing an unrelated second document gives it a `key`, the way it
+  // would to reset any other state.
+  const [memory] = useState<SpecMemory>(() => new Map());
+  const { element, issues } = renderSpec(spec, { ...options, memory, resetKey: spec, onError: (issue) => onIssues?.([issue]) });
   const reportRef = useLatest(onIssues);
   const issuesRef = useLatest(issues);
   const digest = issues.map((issue) => `${issue.code} ${issue.path} ${issue.message}`).join('\n');

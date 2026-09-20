@@ -59,6 +59,7 @@ const PROVIDED = {
   Collapsible: "import { Collapsible } from '@box-kite/react/components/accordion';",
   Progress: "import Progress from '@box-kite/react/components/progress';",
   Slider: "import Slider from '@box-kite/react/components/slider';",
+  SpecRenderer: "import SpecRenderer from '@box-kite/react/spec';",
   DashboardGrid: "import DashboardGrid from '@box-kite/react/components/dashboard';",
   DataGrid: "import DataGrid from '@box-kite/react/components/dataGrid';",
   Widget: "import { Widget } from '@box-kite/react/components/dashboard';",
