@@ -1,6 +1,7 @@
 import { act, fireEvent, screen } from '@testing-library/react';
 import { Sun } from 'lucide-react';
 import Accordion, { Collapsible } from '../../src/components/accordion';
+import { ApprovalCard, Reasoning, ToolCallCard } from '../../src/components/agent';
 import BaseSvg from '../../src/components/baseSvg';
 import Button from '../../src/components/button';
 import { ChartContainer, Gauge, MiniDonut, ProgressRing, Sparkline } from '../../src/components/chart';
@@ -663,6 +664,39 @@ export const fixtures: A11yFixture[] = [
         </Widget>
         <Widget id="orders" title="Orders" loading />
       </DashboardGrid>
+    ),
+  },
+  {
+    // An agent's turn: the call it made, the thought behind it, and the gate in front of the next one.
+    // All four tool-call statuses, because each one is a different chip and only the words are read.
+    name: 'ToolCallCard (every status)',
+    render: () => (
+      <>
+        <ToolCallCard name="listOrders" status="pending" />
+        <ToolCallCard name="searchOrders" status="running" input={{ query: 'refunds' }} />
+        <ToolCallCard name="refundOrder" status="success" defaultOpen input={{ orderId: 4182 }} output={{ refunded: true }} />
+        <ToolCallCard name="emailCustomer" status="error" defaultOpen error="The mailbox bounced." />
+      </>
+    ),
+  },
+  {
+    // The decision, before and after: a group named by its title, and the live region that was there
+    // before it had anything to say.
+    name: 'ApprovalCard (undecided and answered)',
+    render: () => (
+      <>
+        <ApprovalCard title="Refund order 4182" description="6,400 MDL back to the customer." input={{ orderId: 4182 }} />
+        <ApprovalCard title="Delete the saved view" defaultDecision="rejected" />
+      </>
+    ),
+  },
+  {
+    name: 'Reasoning',
+    render: () => (
+      <>
+        <Reasoning streaming>Checking the refund window…</Reasoning>
+        <Reasoning duration={4200}>The refund window closed on the 4th, so the order is outside it.</Reasoning>
+      </>
     ),
   },
   {

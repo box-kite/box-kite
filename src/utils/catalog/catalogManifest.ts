@@ -1419,6 +1419,54 @@ const catalogManifest: CatalogManifest = {
       required: [],
       styled: true,
     },
+    ToolCallCard: {
+      description:
+        'One call an agent made: what it ran, where it got to, and — when the header is opened — what went in and what came back.',
+      import: "import { ToolCallCard } from '@box-kite/react/components/agent';",
+      slots: ['name', 'description', 'inputLabel', 'outputLabel', 'errorLabel', 'default'],
+      events: ['onOpenChange'],
+      props: {
+        status: { type: 'string', enum: ['pending', 'running', 'success', 'error'], description: 'Where the call is.' },
+        open: { type: 'boolean', description: 'Controlled: whether the body is open.' },
+        defaultOpen: { type: 'boolean', description: 'Whether it starts open.' },
+        collapsible: { type: 'boolean', description: 'Whether the body can be opened at all.' },
+        valueLimit: { type: 'number', description: 'How much of a value is shown before it is cut.' },
+      },
+      required: [],
+      styled: true,
+    },
+    ApprovalCard: {
+      description: 'The gate in front of something an agent wants to do: what it is, and the two answers.',
+      import: "import { ApprovalCard } from '@box-kite/react/components/agent';",
+      slots: ['title', 'description', 'inputLabel', 'approveLabel', 'rejectLabel', 'default'],
+      events: ['onDecisionChange'],
+      props: {
+        decision: { type: 'string', enum: ['approved', 'rejected'], description: 'Controlled: what has been decided.' },
+        defaultDecision: { type: 'string', enum: ['approved', 'rejected'], description: 'What it starts as.' },
+        busy: {
+          type: 'boolean',
+          description: 'The decision is on its way to a server: both buttons are disabled and the card reports `aria-busy`.',
+        },
+        autoFocus: { type: 'boolean', description: 'Whether to put focus on the card when it mounts.' },
+        valueLimit: { type: 'number', description: 'How much of the input is shown before it is cut.' },
+      },
+      required: [],
+      styled: true,
+    },
+    Reasoning: {
+      description: 'What the model was thinking, folded away.',
+      import: "import { Reasoning } from '@box-kite/react/components/agent';",
+      slots: ['label', 'default'],
+      events: ['onOpenChange'],
+      props: {
+        open: { type: 'boolean', description: 'Controlled: whether it is open.' },
+        defaultOpen: { type: 'boolean', description: 'Whether it starts open.' },
+        streaming: { type: 'boolean', description: 'Still arriving: the header says so and shimmers.' },
+        duration: { type: 'number', description: 'How long the thought took, in milliseconds.' },
+      },
+      required: [],
+      styled: true,
+    },
   },
 };
 

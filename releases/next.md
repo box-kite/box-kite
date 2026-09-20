@@ -20,6 +20,7 @@ _Unreleased. A PR that changes what a consumer sees adds its section here — se
 - **[The DataGrid exports its types](#the-datagrid-exports-its-types)** — `ColumnType`, `GridDefinition`, `CellModel` and the rest come off `components/dataGrid` now instead of a path inside it.
 - **[The whole loop, and the route that runs it](#the-whole-loop-and-the-route-that-runs-it)** — `specSchema()` is on the catalog entry too, so a server route can build the constraint a model generates under; and a node missing a prop it cannot do without is held back rather than left to throw.
 - **[`npx @box-kite/mcp`: the answer a documentation file cannot give](#npx-box-kitemcp-the-answer-a-documentation-file-cannot-give)** — an MCP server whose `check_styles` tool hands your props to the real engine, because a value this library does not accept writes no CSS at all and says nothing about it.
+- **[An agent's turn, in three components](#an-agents-turn-in-three-components)** — a tool call, an approval and a chain of thought, typed and themed and 1.7 KB on top of Box: the inventory an AI feature needs at the layer this library is good at.
 
 <!-- One bullet per section below, linking to it: **[Heading](#heading)** — one line on why it matters. -->
 
@@ -607,6 +608,54 @@ No key, no network and no state: the prop reference, the component reference, th
 engine are all built into the package at the version you install, so `check_styles` and `get_props`
 cannot disagree with each other or with the library you are writing against. `context7.json` ships in
 the repository too, for the aggregator half of the same job.
+
+## An agent's turn, in three components
+
+`@box-kite/react/components/agent` is the chrome around what an agent does rather than what it says:
+`<ToolCallCard>` for a call it made, `<ApprovalCard>` for one it wants permission to make, and
+`<Reasoning>` for the thought behind both. Typed, themed, keyboard-complete, and 1.7 KB gzipped on top
+of Box for all three.
+
+```jsx
+import { ApprovalCard, Reasoning, ToolCallCard } from '@box-kite/react/components/agent';
+
+<Reasoning duration={1400}>{reasoningText}</Reasoning>
+
+<ToolCallCard name="searchOrders" status="success" input={{ orderId: 4182 }} output={{ total: 6400 }} />
+
+<ApprovalCard
+  title="Refund order 4182"
+  description="6,400 MDL back to the customer. This cannot be undone."
+  input={{ orderId: 4182, amount: 6400 }}
+  onDecisionChange={(decision) => respond(decision === 'approved')}
+/>;
+```
+
+**The status is a word, not a colour.** `pending`, `running`, `success` and `error` each carry their own
+label beside the dot, because a forced-colors mode throws a tint away and a screen reader never had one.
+The four are what every runtime already reports under its own spelling, so AI SDK's `input-streaming` /
+`input-available` / `output-available` / `output-error` is a lookup rather than a state machine.
+
+**A value is whatever the model produced, so it is formatted rather than trusted.** A tool's arguments
+can be circular, hold a `BigInt`, or be four megabytes long — `JSON.stringify` answers those three with a
+throw, a throw and a frozen frame. `AgentUtils.formatValue` is the judgement, framework-free and exported
+from the same entry: the text is capped at `valueLimit` (20,000 characters) with a line saying how much
+was left, and a value that cannot be serialised is described instead of taking the transcript with it.
+
+**`onDecisionChange(decision, { reason })` is the approval card's whole API**, which is what maps it onto
+AI SDK 6's `needsApproval`, CopilotKit's `renderAndWaitForResponse` and AG-UI's `INTERRUPT`. Two things
+it deliberately does not do: it does not take focus unless `autoFocus` says so — a turn arrives while the
+reader is somewhere else, and a card that grabs the keyboard is one that gets answered by accident, which
+is also why `autoFocus` lands on _Reject_ — and it does not announce its own arrival, because the
+transcript it is rendered into is what does that. What it owns is the _answer_, in a `role="status"` that
+is in the DOM before there is anything in it, since a live region inserted together with its text is not
+reliably read out.
+
+Everything else follows the library's own rules. A `ToolCallCard` with nothing to disclose renders no
+control at all, because a header that opens nothing is a tab stop nobody wants to land on. `Reasoning` is
+closed by default and opens in the same one-row grid an `Accordion` panel does, so nothing is measured.
+All three are in `catalog()`, so a generated UI can build a tool-loop transcript, and the trees are
+`toolCall`, `approval` and `reasoning` for `Box.components()`.
 
 ## Breaking changes
 

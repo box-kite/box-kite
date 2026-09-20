@@ -11,6 +11,12 @@ export interface BoxComponent {
 
 export type Components = Record<string, BoxComponent>;
 
+/**
+ * What a tool call's JSON is shown in. There is no `fontFamily` prop — a typeface is a decision about a
+ * whole page rather than about one element — so it goes through `css`, which is still a shared class.
+ */
+const FONT_MONO = 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace';
+
 const boxComponents = {
   h1: {
     styles: { fontSize: 14 * 2.5 },
@@ -3287,6 +3293,345 @@ const boxComponents = {
           bar: {
             styles: { height: 3, borderRadius: 1, bgColor: 'gray-200', theme: { dark: { bgColor: 'gray-800' } } },
           },
+        },
+      },
+    },
+  },
+  // One call an agent made. A card whose header is a button only when there is something under it, and
+  // whose body opens in the same one-row grid `Accordion` uses — equal values share a class, so the
+  // fourth copy of that mechanism in this file costs nothing.
+  toolCall: {
+    styles: {
+      display: 'flex',
+      d: 'column',
+      // A rounded card whose header tints on hover: without this the tint squares off the top corners.
+      overflow: 'hidden',
+      bgColor: 'white',
+      b: 1,
+      borderColor: 'gray-200',
+      borderRadius: 2,
+      fontSize: 13,
+      lineHeight: 18,
+      theme: { dark: { bgColor: 'gray-900', borderColor: 'gray-800' } },
+    },
+    children: {
+      header: {
+        styles: {
+          display: 'flex',
+          ai: 'center',
+          gap: 2,
+          // The whole row, so the target is the header rather than the words in it.
+          width: 'fit',
+          px: 3,
+          py: 2,
+          m: 0,
+          b: 0,
+          textAlign: 'start',
+          bgColor: 'transparent',
+          color: 'gray-900',
+          theme: { dark: { color: 'gray-100' } },
+        },
+        variants: {
+          // Only when there is a body to open: a card with nothing under it renders a row, not a control,
+          // so nothing here may make a plain row look pressable.
+          interactive: {
+            cursor: 'pointer',
+            transition: 'colors',
+            hover: { bgColor: 'gray-50' },
+            focusVisible: { outline: 2, outlineColor: 'indigo-500', outlineOffset: -2 },
+            theme: { dark: { hover: { bgColor: 'gray-800' } } },
+          },
+        },
+      },
+      // The name and its line of prose, stacked, so the header stays one row however long either is.
+      summary: {
+        styles: { display: 'flex', d: 'column', gap: 0.5, flexGrow: 1, minWidth: 0 },
+      },
+      name: {
+        styles: { overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', fontWeight: 600, css: { fontFamily: FONT_MONO } },
+      },
+      description: {
+        styles: { fontSize: 12, lineHeight: 16, color: 'gray-500', theme: { dark: { color: 'gray-400' } } },
+      },
+      // The state, in a word. A transparent border in every mode so a forced-colors one can draw the chip
+      // without the row changing height when it does.
+      status: {
+        styles: {
+          display: 'flex',
+          ai: 'center',
+          gap: 1.5,
+          flexShrink: 0,
+          px: 2,
+          py: 0.5,
+          b: 1,
+          borderColor: 'transparent',
+          borderRadius: 2,
+          fontSize: 11,
+          lineHeight: 16,
+          fontWeight: 500,
+          bgColor: 'gray-100',
+          color: 'gray-700',
+          forcedColors: { borderColor: 'CanvasText' },
+          theme: { dark: { bgColor: 'gray-800', color: 'gray-300' } },
+        },
+        variants: {
+          pending: {},
+          running: { bgColor: 'indigo-50', color: 'indigo-700', theme: { dark: { bgColor: 'indigo-950', color: 'indigo-300' } } },
+          success: { bgColor: 'emerald-50', color: 'emerald-700', theme: { dark: { bgColor: 'emerald-950', color: 'emerald-300' } } },
+          error: { bgColor: 'red-50', color: 'red-700', theme: { dark: { bgColor: 'red-950', color: 'red-300' } } },
+        },
+        children: {
+          dot: {
+            styles: { width: 1.5, height: 1.5, borderRadius: 4, bgColor: 'currentColor', flexShrink: 0 },
+            variants: {
+              // A registered preset, so it stops itself under `prefers-reduced-motion` with nothing here.
+              running: { animation: 'pulse' },
+            },
+          },
+        },
+      },
+      arrow: {
+        styles: { width: 1.5, height: 1.5, bt: 1.5, br: 1.5, borderColor: 'currentColor', rotate: 135, opacity: 0.6, flexShrink: 0 },
+        variants: {
+          open: { rotate: -45 },
+        },
+      },
+      track: {
+        styles: { display: 'grid', css: { gridTemplateRows: '1fr' } },
+        variants: {
+          closed: { css: { gridTemplateRows: '0fr' }, visibility: 'hidden' },
+        },
+      },
+      clip: {
+        styles: { minHeight: 0, overflow: 'hidden' },
+      },
+      body: {
+        styles: { display: 'flex', d: 'column', gap: 3, px: 3, pb: 3 },
+      },
+      section: {
+        styles: { display: 'flex', d: 'column', gap: 1 },
+      },
+      label: {
+        styles: {
+          fontSize: 11,
+          lineHeight: 16,
+          fontWeight: 600,
+          textTransform: 'uppercase',
+          letterSpacing: 0.5,
+          color: 'gray-500',
+          theme: { dark: { color: 'gray-400' } },
+        },
+      },
+      // What the model actually sent, as it stands. Capped in height rather than in the card: a long
+      // result scrolls where it is instead of making the transcript around it unreadable.
+      value: {
+        styles: {
+          m: 0,
+          p: 2,
+          borderRadius: 1,
+          bgColor: 'gray-50',
+          color: 'gray-800',
+          fontSize: 12,
+          lineHeight: 18,
+          maxHeight: 64,
+          overflow: 'auto',
+          whiteSpace: 'pre-wrap',
+          css: { fontFamily: FONT_MONO, wordBreak: 'break-word' },
+          theme: { dark: { bgColor: 'gray-950', color: 'gray-200' } },
+        },
+      },
+      truncated: {
+        styles: { fontSize: 11, lineHeight: 16, color: 'gray-500', theme: { dark: { color: 'gray-400' } } },
+      },
+    },
+  },
+  // The gate in front of something the agent wants to do: the same surface a tool call is, with the one
+  // thing that says it is waiting for an answer.
+  approval: {
+    styles: {
+      position: 'relative',
+      display: 'flex',
+      d: 'column',
+      gap: 3,
+      p: 4,
+      // Room for the bar, which is drawn rather than bordered — `borderColor` takes all four sides, so
+      // an accent on one edge is the toaster's trick: an absolutely positioned `before`.
+      ps: 5,
+      b: 1,
+      borderRadius: 2,
+      overflow: 'hidden',
+      bgColor: 'white',
+      borderColor: 'gray-200',
+      fontSize: 13,
+      lineHeight: 18,
+      before: { position: 'absolute', insetStart: 0, insetY: 0, width: 1, bgColor: 'amber-500' },
+      theme: { dark: { bgColor: 'gray-900', borderColor: 'gray-800' } },
+    },
+    variants: {
+      // Amber until it is answered, and then the colour of the answer — beside the word, never instead
+      // of it, since a forced-colors mode keeps one and throws the other away.
+      approved: { before: { bgColor: 'emerald-500' } },
+      rejected: { before: { bgColor: 'gray-400' } },
+    },
+    children: {
+      title: {
+        styles: { fontSize: 14, lineHeight: 20, fontWeight: 600, color: 'gray-900', theme: { dark: { color: 'gray-100' } } },
+      },
+      description: {
+        styles: { color: 'gray-600', theme: { dark: { color: 'gray-400' } } },
+      },
+      section: {
+        styles: { display: 'flex', d: 'column', gap: 1 },
+      },
+      label: {
+        styles: {
+          fontSize: 11,
+          lineHeight: 16,
+          fontWeight: 600,
+          textTransform: 'uppercase',
+          letterSpacing: 0.5,
+          color: 'gray-500',
+          theme: { dark: { color: 'gray-400' } },
+        },
+      },
+      value: {
+        styles: {
+          m: 0,
+          p: 2,
+          borderRadius: 1,
+          bgColor: 'gray-50',
+          color: 'gray-800',
+          fontSize: 12,
+          lineHeight: 18,
+          maxHeight: 64,
+          overflow: 'auto',
+          whiteSpace: 'pre-wrap',
+          css: { fontFamily: FONT_MONO, wordBreak: 'break-word' },
+          theme: { dark: { bgColor: 'gray-950', color: 'gray-200' } },
+        },
+      },
+      truncated: {
+        styles: { fontSize: 11, lineHeight: 16, color: 'gray-500', theme: { dark: { color: 'gray-400' } } },
+      },
+      // No gap: the decision's live region is always rendered and is empty until there is a decision, so
+      // a gap here would be a gap around nothing for as long as the card is unanswered.
+      footer: {
+        styles: { display: 'flex', ai: 'center', jc: 'flex-end' },
+      },
+      actions: {
+        styles: { display: 'flex', ai: 'center', gap: 2 },
+      },
+      button: {
+        styles: {
+          px: 3,
+          py: 2,
+          b: 1,
+          borderRadius: 1,
+          fontSize: 13,
+          lineHeight: 18,
+          fontWeight: 500,
+          cursor: 'pointer',
+          transition: 'colors',
+          focusVisible: { outline: 2, outlineColor: 'indigo-500', outlineOffset: 2 },
+          disabled: { opacity: 0.6, cursor: 'default' },
+        },
+        variants: {
+          approve: {
+            bgColor: 'indigo-600',
+            borderColor: 'indigo-600',
+            color: 'white',
+            hover: { bgColor: 'indigo-700', borderColor: 'indigo-700' },
+            disabled: { hover: { bgColor: 'indigo-600', borderColor: 'indigo-600' } },
+          },
+          reject: {
+            bgColor: 'transparent',
+            borderColor: 'gray-300',
+            color: 'gray-700',
+            hover: { bgColor: 'gray-100' },
+            disabled: { hover: { bgColor: 'transparent' } },
+            theme: { dark: { borderColor: 'gray-700', color: 'gray-200', hover: { bgColor: 'gray-800' } } },
+          },
+        },
+      },
+      decision: {
+        styles: { fontWeight: 600 },
+        variants: {
+          approved: { color: 'emerald-700', theme: { dark: { color: 'emerald-300' } } },
+          rejected: { color: 'gray-600', theme: { dark: { color: 'gray-400' } } },
+        },
+      },
+    },
+  },
+  // What the model was thinking: a disclosure with no card round it, because a chain of thought is an
+  // aside in a transcript rather than a section of one.
+  reasoning: {
+    styles: { display: 'flex', d: 'column', gap: 1 },
+    children: {
+      trigger: {
+        styles: {
+          display: 'flex',
+          ai: 'center',
+          gap: 2,
+          p: 0,
+          b: 0,
+          textAlign: 'start',
+          bgColor: 'transparent',
+          cursor: 'pointer',
+          transition: 'colors',
+          fontSize: 13,
+          lineHeight: 18,
+          fontWeight: 500,
+          color: 'gray-500',
+          hover: { color: 'gray-700' },
+          focusVisible: { outline: 2, outlineColor: 'indigo-500', outlineOffset: 2, borderRadius: 1 },
+          theme: { dark: { color: 'gray-400', hover: { color: 'gray-200' } } },
+        },
+        variants: {
+          streaming: { animation: 'pulse' },
+        },
+      },
+      // Before the label rather than after it, so closed it points along the reading order — one
+      // `:dir(rtl)` rule, the way the submenu chevron does it — and open it points down in both.
+      arrow: {
+        styles: {
+          width: 1.5,
+          height: 1.5,
+          bt: 1.5,
+          br: 1.5,
+          borderColor: 'currentColor',
+          rotate: 45,
+          opacity: 0.6,
+          flexShrink: 0,
+          rtl: { rotate: -135 },
+        },
+        variants: {
+          open: { rotate: 135, rtl: { rotate: 135 } },
+        },
+      },
+      duration: {
+        styles: { fontSize: 11, lineHeight: 16, fontWeight: 400, opacity: 0.8 },
+      },
+      track: {
+        styles: { display: 'grid', css: { gridTemplateRows: '1fr' } },
+        variants: {
+          closed: { css: { gridTemplateRows: '0fr' }, visibility: 'hidden' },
+        },
+      },
+      clip: {
+        styles: { minHeight: 0, overflow: 'hidden' },
+      },
+      // A rule down the inline start, so a right-to-left transcript draws it on the right with nothing
+      // declared twice.
+      body: {
+        styles: {
+          ps: 3,
+          bs: 2,
+          borderColor: 'gray-200',
+          fontSize: 13,
+          lineHeight: 20,
+          color: 'gray-600',
+          whiteSpace: 'pre-wrap',
+          theme: { dark: { borderColor: 'gray-800', color: 'gray-400' } },
         },
       },
     },
