@@ -78,6 +78,13 @@ export const siteRoutes = [
       'A model composes the UI and the app still owns it: the catalog says what may be built, the renderer refuses the rest, and a colour stays a token.',
   },
   {
+    path: '/interop',
+    name: 'Interop',
+    title: 'Ecosystem interop — AI SDK, assistant-ui, CopilotKit, A2UI',
+    description:
+      'Four agentic runtimes describe a tool call and a tree of components in words of their own. The mapping, verified against each package.',
+  },
+  {
     path: '/box',
     name: 'Box',
     description: 'The foundational component: 221 CSS properties as type-safe props, with the numeric formatters explained.',

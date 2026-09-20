@@ -8,6 +8,7 @@
  * and the thing the renderer lets through cannot drift apart.
  */
 import type { CatalogSchema } from '../../core';
+import SpecDefs from './specDefs';
 import { DEFAULT_SLOT } from './specTypes';
 
 /** A component, as much of it as a tree schema needs. A `catalog()` entry is one of these already. */
@@ -37,58 +38,6 @@ const CHILDREN = '#/$defs/children';
 const REFERENCE = '#/$defs/reference';
 const ACTION = '#/$defs/action';
 
-/** A `$ref` inside a component's own schema, repointed where hoisting had to rename what it names. */
-function rewrite(schema: CatalogSchema, renames: Record<string, string>): CatalogSchema {
-  const next: CatalogSchema = { ...schema };
-
-  if (next.$ref?.startsWith('#/$defs/')) {
-    const renamed = renames[next.$ref.slice('#/$defs/'.length)];
-
-    if (renamed) next.$ref = `#/$defs/${renamed}`;
-  }
-
-  if (next.anyOf) next.anyOf = next.anyOf.map((option) => rewrite(option, renames));
-  if (next.items) next.items = rewrite(next.items, renames);
-  if (next.properties) {
-    next.properties = Object.fromEntries(Object.entries(next.properties).map(([name, property]) => [name, rewrite(property, renames)]));
-  }
-
-  return next;
-}
-
-/**
- * A component's props, with its local `$defs` lifted to the document. The colour grammar is the same
- * object for every component, so the twenty-six colour props across a whole catalog share one
- * definition — and a host's custom schema that happens to name `color` something else is renamed
- * rather than silently taking the palette's meaning.
- */
-function hoist(props: CatalogSchema, defs: Record<string, CatalogSchema>): CatalogSchema {
-  const { $defs, ...rest } = props;
-
-  if (!$defs) return rest;
-
-  const renames: Record<string, string> = {};
-
-  for (const [name, definition] of Object.entries($defs)) {
-    const existing = defs[name];
-
-    if (!existing) {
-      defs[name] = definition;
-      continue;
-    }
-
-    if (JSON.stringify(existing) === JSON.stringify(definition)) continue;
-
-    let taken = 2;
-    while (defs[`${name}${taken}`] && JSON.stringify(defs[`${name}${taken}`]) !== JSON.stringify(definition)) taken += 1;
-
-    defs[`${name}${taken}`] = definition;
-    renames[name] = `${name}${taken}`;
-  }
-
-  return Object.keys(renames).length ? rewrite(rest, renames) : rest;
-}
-
 /** Every prop widened to "this, or a reference to it", which is what a data-bound spec needs. */
 function bindable(props: CatalogSchema): CatalogSchema {
   if (!props.properties) return props;
@@ -106,7 +55,7 @@ function node(name: string, component: SpecSchemaComponent, defs: Record<string,
   const slots = component.slots ?? [DEFAULT_SLOT];
   const named = slots.filter((slot) => slot !== DEFAULT_SLOT);
   const events = component.events ?? [];
-  const props = component.props && Object.keys(component.props.properties ?? {}).length ? hoist(component.props, defs) : null;
+  const props = component.props && Object.keys(component.props.properties ?? {}).length ? SpecDefs.hoist(component.props, defs) : null;
   const properties: Record<string, CatalogSchema> = { type: { type: 'string', enum: [name] } };
 
   if (props) properties.props = bindings ? bindable(props) : props;

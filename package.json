@@ -39,6 +39,11 @@
       "import": "./catalog.mjs",
       "require": "./catalog.cjs"
     },
+    "./interop": {
+      "types": "./interop.d.ts",
+      "import": "./interop.mjs",
+      "require": "./interop.cjs"
+    },
     "./spec": {
       "types": "./spec.d.ts",
       "import": "./spec.mjs",
@@ -146,7 +151,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "50.67 KB"
+      "limit": "50.72 KB"
     },
     {
       "name": "Spec renderer (spec entry)",
@@ -156,7 +161,17 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "4.63 KB"
+      "limit": "4.7 KB"
+    },
+    {
+      "name": "Ecosystem interop (interop entry)",
+      "path": "dist/interop.mjs",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "gzip": true,
+      "limit": "4 KB"
     },
     {
       "name": "Core engine (@box-kite/core, no React)",
@@ -361,6 +376,8 @@
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.5",
+    "@assistant-ui/core": "^0.3.20",
+    "@copilotkit/a2ui-renderer": "^1.73.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@eslint/js": "^10.0.1",

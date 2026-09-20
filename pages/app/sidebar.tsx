@@ -49,6 +49,7 @@ import {
   ToggleLeft,
   Type,
   WandSparkles,
+  Workflow,
   X,
 } from 'lucide-react';
 import { useState } from 'react';
@@ -140,6 +141,9 @@ export default function Sidebar({ toggleTheme, onClose }: SidebarProps) {
           </MenuItem>
           <MenuItem to="/generative-ui" icon={<WandSparkles />}>
             Generative UI
+          </MenuItem>
+          <MenuItem to="/interop" icon={<Workflow />}>
+            Interop
           </MenuItem>
         </MenuSection>
 
