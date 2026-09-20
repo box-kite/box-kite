@@ -2,6 +2,7 @@ node_modules
 dist
 dist-bridge
 dist-core
+dist-mcp
 dist-pages
 dist-pages-ssr
 **/.DS_Store

@@ -25,6 +25,7 @@ Read `.claude/rules/box-kite-rules.md` — the shortest complete answer — befo
 | `npm run dev:vanilla`                      | Start the framework-free example (`examples/vanilla`) — the core engine with no React                             |
 | `npm run build`                            | Build library (ESM + CJS output to dist/)                                                                         |
 | `npm run build:dev`                        | Build library without minification                                                                                |
+| `npm run build:mcp`                        | Build `@box-kite/mcp` into `dist-mcp/`, then speak the protocol to it to prove it answers                         |
 | `npm run compile`                          | TypeScript type check (no emit)                                                                                   |
 | `npm test`                                 | Run all tests (Vitest)                                                                                            |
 | `npm run test:coverage`                    | Run all tests and enforce the coverage budget on `src/core/`                                                      |
@@ -226,6 +227,7 @@ An agent in a consumer repo never sees this file, so the tarball carries its own
 | `docs/a11y.md`                                                                           | `docs/a11y-primitives.md`                                                  |
 | `docs/anchor.md`                                                                         | `docs/anchor-positioning.md`                                               |
 | `docs/catalog.md`                                                                        | `docs/generative-ui.md`                                                    |
+| `docs/mcp.md`                                                                            | `mcp/README.md` — what npm shows for `@box-kite/mcp` is the same file      |
 | `BOX_KITE_AI_CONTEXT.md`, `.claude/skills/box-kite/`, `.claude/rules/`, `.cursor/rules/` | copied by `postbuild.mjs` — the whole skill directory, references included |
 
 The rule when editing them: change the source, never the output. `npm run build` fails if a generated file comes out empty, if a component no longer loads, or if `api/props.json` disagrees with itself about the prop count.
@@ -239,3 +241,5 @@ Three more are generated but **committed**, because an install command reads the
 | `.claude-plugin/marketplace.json`  | `/plugin marketplace add box-kite/box-kite`     | `package.json`, and it names the skill above                                   |
 
 The four files under `.claude/skills/box-kite/references/` are the exception: they are prose, so they are sources, and `SKILL.md` is a table of contents over them. The docs site serves the first two at `/skill.md` and `/box-kite.mdc`, generated the same way rather than read off disk.
+
+`mcp/` is the one agent artifact that **runs** rather than being read: `@box-kite/mcp`, six tools over stdio, built by `vite.mcp.config.ts` into `dist-mcp/`. It inlines `api/props.json`, `api/components/*.json`, the catalog manifest, the rules file and the **engine itself**, which is what lets `check_styles` hand a caller's prop bag to `createStyleEngine()` and report the CSS each prop wrote — the answer no file can give, because a value this library does not accept writes nothing and says nothing. For the same reason `get_props` measures a numeric prop's scale at 1/2/4/8 instead of stating a divider. `scripts/postbuild-mcp.mjs` speaks JSON-RPC to the built binary, since a glob that matched nothing builds perfectly cleanly. `context7.json` at the root is the aggregator half.

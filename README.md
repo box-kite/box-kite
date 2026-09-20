@@ -749,3 +749,29 @@ mkdir -p .cursor/rules && cp node_modules/@box-kite/react/.cursor/rules/box-kite
 Both are generated from the same rules file as `AGENTS.md`, and both are served by the docs site
 ([skill.md](https://www.box-kite.dev/skill.md), [box-kite.mdc](https://www.box-kite.dev/box-kite.mdc))
 for an agent that can fetch a URL but not run a command.
+
+### The MCP server
+
+A file is read once, at the start; an MCP server is asked mid-task, which is when the question comes
+up. `@box-kite/mcp` is six tools at capability level — `search_docs`, `get_props`, `get_component`,
+`check_styles`, `get_rules`, `get_blocks` — with no key, no network and no state, because the
+references and the engine are built into it.
+
+```shell
+claude mcp add box-kite -- npx -y @box-kite/mcp     # or the stdio config your editor takes
+```
+
+`check_styles` is the one a file cannot replace. Every prop here accepts a closed set of values, and
+a value it does not accept writes **no rule and no class name** — silently, by design, so that a typo
+never emits a broken declaration. It is the right behaviour and it is invisible, so the tool hands
+your props to the real engine and reports what each one wrote:
+
+```shell
+✅ p         → .p-4{padding:1rem}
+❌ bgColor     does not accept "blue-550" — no rule and no class name were written.
+✅ fontSize  → .fontSize-14{font-size:0.875rem}
+⚠️ href        an HTML attribute, not a style prop. It goes in props={{ "href": … }}.
+```
+
+For the same reason `get_props` measures a numeric prop's scale rather than describing its divider:
+it runs 1, 2, 4 and 8 through the engine and shows what came out. See [mcp/README.md](mcp/README.md).

@@ -19,6 +19,7 @@ _Unreleased. A PR that changes what a consumer sees adds its section here — se
 - **[A theme inside a theme](#a-theme-inside-a-theme)** — a local `<Box.Theme>` finally wins inside a themed page: a theme reaches the subtree it owns and stops at the next element that declares one.
 - **[The DataGrid exports its types](#the-datagrid-exports-its-types)** — `ColumnType`, `GridDefinition`, `CellModel` and the rest come off `components/dataGrid` now instead of a path inside it.
 - **[The whole loop, and the route that runs it](#the-whole-loop-and-the-route-that-runs-it)** — `specSchema()` is on the catalog entry too, so a server route can build the constraint a model generates under; and a node missing a prop it cannot do without is held back rather than left to throw.
+- **[`npx @box-kite/mcp`: the answer a documentation file cannot give](#npx-box-kitemcp-the-answer-a-documentation-file-cannot-give)** — an MCP server whose `check_styles` tool hands your props to the real engine, because a value this library does not accept writes no CSS at all and says nothing about it.
 
 <!-- One bullet per section below, linking to it: **[Heading](#heading)** — one line on why it matters. -->
 
@@ -495,7 +496,9 @@ Every theme rule is scoped to the subtree its theme owns now, and ends at the ne
 
 ```css
 @scope (.light) to ([data-theme]) {
-  :scope .theme-light-bgColor-white { background-color: var(--white); }
+  :scope .theme-light-bgColor-white {
+    background-color: var(--white);
+  }
 }
 ```
 
@@ -514,6 +517,7 @@ one a prerendered shell puts on `<html>` — wants the attribute beside it.
 ```
 
 [Theme setup](https://box-kite.dev/theme-setup#nesting)
+
 ## The whole loop, and the route that runs it
 
 `specSchema()` is exported from `@box-kite/react/catalog` as well as from `/spec`, which is what makes
@@ -553,6 +557,56 @@ same place keeps the first one's state, since it is the same component instance.
 
 [box-kite.dev/generative-ui](https://www.box-kite.dev/generative-ui/) is the loop end to end, and
 `examples/next-app/app/generative` is the live route, page and catalog in three files.
+
+## `npx @box-kite/mcp`: the answer a documentation file cannot give
+
+A file is read once, at the start of a session. An MCP server is asked mid-task, which is when the
+question actually comes up — and it can answer one thing no file can.
+
+Every prop here accepts a closed set of values, and **a value it does not accept writes no rule and no
+class name.** Silently, by design: a typo must never emit a broken declaration into a stylesheet
+everything else shares. That is the right behaviour and it is invisible, so no amount of prose settles
+whether `bgColor="blue-550"` works. `check_styles` hands your props to the real engine and reports what
+each one wrote:
+
+```shell
+check_styles { "props": { "p": 4, "bgColor": "blue-550", "fontSize": 14, "href": "/about" } }
+
+✅ p         → .p-4{padding:1rem}
+❌ bgColor     does not accept "blue-550" — no rule and no class name were written.
+✅ fontSize  → .fontSize-14{font-size:0.875rem}
+⚠️ href        an HTML attribute, not a style prop. It goes in props={{ "href": … }}.
+```
+
+For the same reason `get_props` **measures** a numeric prop's scale instead of describing its divider —
+it runs 1, 2, 4 and 8 through the engine and prints what came out — and an unknown prop is answered with
+the props that write the CSS property its name spells, so `padding` comes back as `p` and
+`backgroundColor` as `bgColor`.
+
+```shell
+claude mcp add box-kite -- npx -y @box-kite/mcp
+```
+
+Any client that speaks stdio takes the same command:
+
+```json
+{
+  "mcpServers": {
+    "box-kite": { "command": "npx", "args": ["-y", "@box-kite/mcp"] }
+  }
+}
+```
+
+Six tools, at capability level rather than one per document. `search_docs` ranks the props, the
+components, the nesting keys and the rules together, so "fade in when it mounts" answers `startingStyle`
+and "style every other row" answers `nth` without either name being known; `get_component` carries a
+component's props, its sub-parts, its keyboard map and the ARIA it writes; `get_rules` and `get_blocks`
+are the rules themselves and the sections the `shadcn` CLI installs.
+
+No key, no network and no state: the prop reference, the component reference, the rules and the styling
+engine are all built into the package at the version you install, so `check_styles` and `get_props`
+cannot disagree with each other or with the library you are writing against. `context7.json` ships in
+the repository too, for the aggregator half of the same job.
 
 ## Breaking changes
 

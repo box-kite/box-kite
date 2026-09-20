@@ -177,6 +177,7 @@ export default function AiContextPage() {
   docs/components.md       every component, its import, and whether it renders on a server
   docs/a11y.md             the behaviour hooks, for a pattern this library does not ship
   docs/catalog.md          what a generated UI may build, and how it renders
+  docs/mcp.md              the MCP server, and the one tool that settles whether a value works
   BOX_KITE_AI_CONTEXT.md   the long-form reference
   .claude/skills/box-kite/ the same rules as a skill, with four references beside it
   .cursor/rules/           and as a Cursor rule, to copy into .cursor/rules/`}
@@ -216,6 +217,50 @@ cp node_modules/@box-kite/react/.cursor/rules/box-kite.mdc .cursor/rules/
 curl -O ${SITE_URL}/box-kite.mdc   # or without the package installed`}
             />
           </Flex>
+        </Box>
+      </Reveal>
+
+      {/* The MCP server: the one answer a file cannot give */}
+      <Reveal delay={0.37}>
+        <Box mb={12}>
+          <Box tag="h3" fontSize={20} fontWeight={600} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }} mb={3}>
+            Or connect it as an MCP server
+          </Box>
+          <Box fontSize={14} lineHeight={22} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }} mb={5}>
+            A file is read once, at the start. An MCP server is asked mid-task, which is when the question actually comes up — and it can
+            answer one thing no file can. This library accepts a closed set of values per prop, and a value it does not accept writes{' '}
+            <strong>no rule and no class name</strong>, silently, because a typo must never emit a broken declaration. That is the right
+            behaviour and it is invisible, so <Mono>check_styles</Mono> hands your props to the real engine and shows you what each one
+            wrote. No key and no network: the references and the engine are built into the package.
+          </Box>
+          <Flex d="column" gap={4}>
+            <Code language="shell" label="Claude Code" code="claude mcp add box-kite -- npx -y @box-kite/mcp" />
+            <Code
+              language="json"
+              label="Cursor, VS Code, Codex, Zed — anything that speaks stdio"
+              code={`{
+  "mcpServers": {
+    "box-kite": { "command": "npx", "args": ["-y", "@box-kite/mcp"] }
+  }
+}`}
+            />
+            <Code
+              language="shell"
+              label="What check_styles answers"
+              code={`check_styles { "props": { "p": 4, "bgColor": "blue-550", "fontSize": 14, "href": "/about" } }
+
+✅ p         → .p-4{padding:1rem}
+❌ bgColor     does not accept "blue-550" — no rule and no class name were written.
+✅ fontSize  → .fontSize-14{font-size:0.875rem}
+⚠️ href        an HTML attribute, not a style prop. It goes in props={{ "href": … }}.`}
+            />
+          </Flex>
+          <Box fontSize={14} lineHeight={22} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }} mt={5}>
+            Six tools, at capability level rather than one per document: <Mono>search_docs</Mono> ranks props, components, nesting keys and
+            rules together, so a goal finds the answer without its name; <Mono>get_props</Mono> measures a numeric prop's scale rather than
+            describing its divider; <Mono>get_component</Mono> carries the keyboard map and the ARIA; <Mono>get_rules</Mono> and{' '}
+            <Mono>get_blocks</Mono> are the rules and the installable sections.
+          </Box>
         </Box>
       </Reveal>
 

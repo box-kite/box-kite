@@ -111,6 +111,6 @@
       "@box-kite/react/components/*": ["./src/components/*"]
     }
   },
-  "include": ["src", "pages", "dev", "registry"],
+  "include": ["src", "pages", "dev", "registry", "mcp"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
