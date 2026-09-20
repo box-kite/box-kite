@@ -21,6 +21,9 @@ _Unreleased. A PR that changes what a consumer sees adds its section here — se
 - **[The whole loop, and the route that runs it](#the-whole-loop-and-the-route-that-runs-it)** — `specSchema()` is on the catalog entry too, so a server route can build the constraint a model generates under; and a node missing a prop it cannot do without is held back rather than left to throw.
 - **[`npx @box-kite/mcp`: the answer a documentation file cannot give](#npx-box-kitemcp-the-answer-a-documentation-file-cannot-give)** — an MCP server whose `check_styles` tool hands your props to the real engine, because a value this library does not accept writes no CSS at all and says nothing about it.
 - **[An agent's turn, in three components](#an-agents-turn-in-three-components)** — a tool call, an approval and a chain of thought, typed and themed and 1.7 KB on top of Box: the inventory an AI feature needs at the layer this library is good at.
+- **[What the agent says, as it arrives](#what-the-agent-says-as-it-arrives)** — `<StreamingText>` fades in the part of a message that was not there a render ago, and costs the same at the ten-thousandth token as at the first.
+- **[Markdown, and the dependency we did not take](#markdown-and-the-dependency-we-did-not-take)** — `markdownComponents` is the `components` map `react-markdown` and Streamdown both take, so a model's prose is themed with no stylesheet, no Tailwind config and no parser chosen for you.
+- **[Where the answer will be](#where-the-answer-will-be)** — `<Skeleton>`, the placeholder: bars with a gloss, `aria-hidden` unless you name what is loading, and it renders on a server.
 
 <!-- One bullet per section below, linking to it: **[Heading](#heading)** — one line on why it matters. -->
 
@@ -656,6 +659,83 @@ control at all, because a header that opens nothing is a tab stop nobody wants t
 closed by default and opens in the same one-row grid an `Accordion` panel does, so nothing is measured.
 All three are in `catalog()`, so a generated UI can build a tool-loop transcript, and the trees are
 `toolCall`, `approval` and `reasoning` for `Box.components()`.
+
+## What the agent says, as it arrives
+
+`<StreamingText>` is the other half of an agent's turn: the message itself. Hand it the text so far and it
+fades in the part that was not there a render ago.
+
+```jsx
+<StreamingText text={message} streaming={status === 'streaming'} />
+```
+
+**Only what arrived animates, and the cost does not grow with the message.** What is on the page is one
+settled string plus the last few runs to reach it — eight by default — so a message that is already whole
+paints at once with nothing moving, which is what a prerendered page and a transcript read back both want,
+and a message still arriving costs the same at the ten-thousandth token as at the first. `window` is that
+number: `0` turns the entrance off, and a stream fast enough to fill the window inside one transition is
+the case for raising it. The judgement is `AgentUtils.advanceStream`, framework-free like the rest of that
+namespace.
+
+The entrance is `@starting-style` rather than a keyframe, so it rides `--transitionTime` and disappears
+under `prefers-reduced-motion` with nothing declared for it; the caret is the `pulse` preset, which stops
+itself for the same reason. It is deliberately **not** a live region — one announcing every token reads the
+message out a word at a time and again when it finishes — so what it carries is `aria-busy`, and what
+announces an agent's turn is the transcript it lands in.
+
+The style tree is `streamingText`, with `segment` and `caret` under it.
+
+## Markdown, and the dependency we did not take
+
+A model writes markdown, and a parser is a choice most apps have already made — so what ships is the half
+that is ours: `markdownComponents`, the `components` map that `react-markdown`, Streamdown and everything
+built on that shape already takes, with this engine's classes on it.
+
+```jsx
+import Markdown from 'react-markdown';
+import { markdownComponents } from '@box-kite/react/components/markdown';
+
+<Box component="markdown">
+  <Markdown components={markdownComponents}>{message}</Markdown>
+</Box>;
+```
+
+Wrapping Streamdown was the other option and it is not worth it: it asks a project for a Tailwind
+`@source` line pointing into its `dist/` and for shadcn's design tokens declared in a global stylesheet —
+which is the one thing this library exists not to need — and it would choose the parser for you. The map
+costs no dependency, works with whichever renderer is already there, and keeps the promise: no stylesheet.
+
+**It is a constant, not a factory, and while streaming that is the whole difference.** A map built inside
+render is a new set of component _types_ every token, which React answers by unmounting the message and
+mounting it again; override a node by spreading at module scope instead. Whether a URL is safe stays the
+renderer's, because by the time a component is called the href has been parsed — `urlTransform` or
+`defaultUrlTransform` is where a `javascript:` link is refused. What the map sets is `rel="noreferrer"`.
+
+1.05 KB gzipped on top of Box, and the tree is `markdown` with `heading`, `paragraph`, `link`, `list`,
+`item`, `quote`, `code`, `codeBlock`, `rule`, `image`, `table`, `row`, `cell`, `inline` and `checkbox`
+under it.
+
+## Where the answer will be
+
+`<Skeleton>` is the placeholder while something is being fetched: bars where the content goes, with a
+gloss crossing them.
+
+```jsx
+<Skeleton lines={3} label="Loading orders" />
+<Skeleton circle width={10} />
+```
+
+With no `label` the whole thing is `aria-hidden`, because a reader told "three empty bars" has been told
+nothing; a `label` makes it a `role="status"` naming what is on its way, and it belongs on the one
+skeleton standing for a region rather than on each bar. The gloss is a named duration, so it sits outside
+what `--transitionTime` zeroes and stops itself under `prefers-reduced-motion`. It renders on a server —
+no state, no effect, no measurement — and costs 0.35 KB gzipped on top of Box. The tree is `skeleton`,
+with `bar` (whose `short` and `circle` variants are the last line and the avatar) and `gloss`.
+
+The whole loop is in `examples/next-app` now: `/agent` is a real AI SDK tool loop where every part of a
+turn is one of these components. AI SDK reports six tool states — four are a `<ToolCallCard>` status, and
+the other two are an `<ApprovalCard>`, because a decision is not a stage a call passes through but a
+question somebody has to answer.
 
 ## Breaking changes
 

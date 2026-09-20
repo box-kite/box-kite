@@ -1,9 +1,10 @@
 /**
- * The model behind the agent chrome — `<ToolCallCard>`, `<ApprovalCard>` and `<Reasoning>`. Three
- * judgements, none of which needs React: what a status is *called*, how long a thought took in words, and
- * how a value a model invented becomes text that is safe to put on a page.
+ * The model behind the agent chrome — `<ToolCallCard>`, `<ApprovalCard>`, `<Reasoning>` and
+ * `<StreamingText>`. Four judgements, none of which needs React: what a status is *called*, how long a
+ * thought took in words, how a value a model invented becomes text that is safe to put on a page, and
+ * which part of a message arrived since the last render.
  *
- * The last one is the reason this file exists. A tool's arguments are whatever the model produced —
+ * The third is the reason this file exists. A tool's arguments are whatever the model produced —
  * possibly circular, possibly a `BigInt`, possibly a megabyte — and `JSON.stringify` answers those three
  * with a throw, a throw and a frozen tab. Components render, models decide.
  */
@@ -121,6 +122,65 @@ namespace AgentUtils {
     const minutes = Math.floor(seconds / 60);
 
     return `${minutes}m ${Math.round(seconds - minutes * 60)}s`;
+  }
+
+  /**
+   * One run of text that arrived together, and the identity React keys it by. Keys are never reused, so a
+   * run that is still fading is never handed a different run's text half way through its entrance.
+   */
+  export interface StreamSegment {
+    key: number;
+    text: string;
+  }
+
+  /**
+   * A streaming message between two renders: the text that has settled, and the last few runs to arrive,
+   * which are the ones still fading in.
+   */
+  export interface StreamState {
+    settled: string;
+    segments: readonly StreamSegment[];
+    /** Monotone, and carried across a reset — a key a fading run still holds is never handed out twice. */
+    nextKey: number;
+  }
+
+  /**
+   * How many runs stay animated at once. The rest settle, so a message of any length is one text node plus
+   * this many spans — the reason the entrance costs the same at the first token and the ten-thousandth.
+   */
+  export const STREAM_WINDOW = 8;
+
+  /** A message that is already whole: all of it settled, none of it animating. */
+  export function initialStream(text: string): StreamState {
+    return { settled: text, segments: [], nextKey: 0 };
+  }
+
+  /** Everything on the page, settled and still arriving. */
+  export function streamText(state: StreamState): string {
+    return state.segments.reduce((text, segment) => text + segment.text, state.settled);
+  }
+
+  /**
+   * The next state for the text as it now stands. Pure, and keyed on the text itself rather than on a
+   * counter, so advancing twice with the same message is the same as advancing once.
+   */
+  export function advanceStream(state: StreamState, text: string, window: number = STREAM_WINDOW): StreamState {
+    const rendered = streamText(state);
+
+    if (text === rendered) return state;
+
+    // Anything but an append is a different message — a regenerate, an edit, a retry — and fading in the
+    // part of it that happens to differ would read as the model having written just that part now.
+    if (!text.startsWith(rendered)) return { settled: text, segments: [], nextKey: state.nextKey };
+
+    const arrived = [...state.segments, { key: state.nextKey, text: text.slice(rendered.length) }];
+    const settling = Math.max(0, arrived.length - Math.max(0, window));
+
+    return {
+      settled: arrived.slice(0, settling).reduce((prefix, segment) => prefix + segment.text, state.settled),
+      segments: arrived.slice(settling),
+      nextKey: state.nextKey + 1,
+    };
   }
 }
 

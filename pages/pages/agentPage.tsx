@@ -2,12 +2,15 @@ import { Bot, ShieldCheck, Sparkles } from 'lucide-react';
 import { ReactNode, useEffect, useRef, useState } from 'react';
 import approvalApi from '../../api/components/approvalcard.json';
 import reasoningApi from '../../api/components/reasoning.json';
+import skeletonApi from '../../api/components/skeleton.json';
+import streamingTextApi from '../../api/components/streamingtext.json';
 import toolCallApi from '../../api/components/toolcallcard.json';
 import Box from '../../src/box';
-import { ApprovalCard, ApprovalDecision, Reasoning, ToolCallCard, ToolCallStatus } from '../../src/components/agent';
+import { ApprovalCard, ApprovalDecision, Reasoning, StreamingText, ToolCallCard, ToolCallStatus } from '../../src/components/agent';
 import Button from '../../src/components/button';
 import Flex from '../../src/components/flex';
 import { H2 } from '../../src/components/semantics';
+import Skeleton from '../../src/components/skeleton';
 import ApiReference from '../components/apiReference';
 import Code from '../components/code';
 import Mono from '../components/mono';
@@ -27,7 +30,7 @@ export default function AgentPage() {
       <PageHeader
         icon={Bot}
         title="Agent"
-        description="The three parts of an agent's turn that are not prose: what it ran, what it was thinking, and what it wants permission to do."
+        description="An agent's turn, in components: what it ran, what it was thinking, what it wants permission to do — and what it says while the answer is still arriving."
       />
 
       <Reveal delay={0.1}>
@@ -35,7 +38,7 @@ export default function AgentPage() {
           <Code
             label="Import"
             language="jsx"
-            code="import { ToolCallCard, ApprovalCard, Reasoning } from '@box-kite/react/components/agent';"
+            code="import { ToolCallCard, ApprovalCard, Reasoning, StreamingText } from '@box-kite/react/components/agent';"
           />
 
           <Section id="usage" title="One turn, from thought to decision">
@@ -202,6 +205,89 @@ const { text, truncated } = AgentUtils.formatValue(part.output, 4000);`}
             </Box>
           </Section>
 
+          <Section id="streaming" title="What it says, as it arrives">
+            <Box>
+              <Mono>StreamingText</Mono> takes the message so far and fades in the part that was not there a render ago. A message that is
+              already whole — a prerendered page, a transcript read back — paints at once with nothing animating, and one still arriving
+              costs the same at the ten-thousandth token as at the first: the text is one settled string plus the last few runs to reach it.
+            </Box>
+            <Box mt={4}>
+              <LiveStream />
+            </Box>
+            <Box mt={4}>
+              <Code language="jsx" codeOnly code={`<StreamingText text={message} streaming={status === 'streaming'} />`} />
+            </Box>
+            <Box mt={4}>
+              The entrance is <Mono>@starting-style</Mono> rather than a keyframe, so it rides <Mono>--transitionTime</Mono> and disappears
+              under <Mono>prefers-reduced-motion</Mono> with nothing declared for it; the caret is the <Mono>pulse</Mono> preset, which
+              stops itself for the same reason. <Mono>window</Mono> is how many runs stay faded at once — <Mono>0</Mono> turns the entrance
+              off, and a stream fast enough to fill the window inside one transition is the case for raising it.
+            </Box>
+            <Box mt={4}>
+              <Note icon={Sparkles} title="It is not a live region">
+                A region announcing every token reads the message out a word at a time, and again when it finishes. What announces an
+                agent's turn is the transcript it lands in; what the element carries is <Mono>aria-busy</Mono> while more is coming.
+              </Note>
+            </Box>
+          </Section>
+
+          <Section id="markdown" title="Markdown, without the stylesheet">
+            <Box>
+              A model writes markdown, and a parser is a choice an app has usually already made — so what ships is the half that is ours:{' '}
+              <Mono>markdownComponents</Mono>, the <Mono>components</Mono> map that <Mono>react-markdown</Mono>, <Mono>streamdown</Mono> and
+              everything built on that shape already takes, with the engine's classes on it. No stylesheet, no Tailwind config, no design
+              tokens to declare.
+            </Box>
+            <Box mt={4}>
+              <Code
+                language="jsx"
+                codeOnly
+                check={false}
+                code={`import Markdown from 'react-markdown';
+import { markdownComponents } from '@box-kite/react/components/markdown';
+
+<Box component="markdown">
+  <Markdown components={markdownComponents}>{message}</Markdown>
+</Box>`}
+              />
+            </Box>
+            <Box mt={4}>
+              It is a <em>constant</em>, not a factory, and while streaming that is the whole difference: a map built inside render is a new
+              set of component types every token, which React answers by unmounting the message and mounting it again. Override a node by
+              spreading at module scope — <Mono>{'{ ...markdownComponents, h1: MyHeading }'}</Mono>.
+            </Box>
+            <Box mt={4}>
+              Whether a URL is safe stays the renderer's: by the time a component is called the href has been parsed, so a{' '}
+              <Mono>javascript:</Mono> link is refused by <Mono>urlTransform</Mono> or <Mono>defaultUrlTransform</Mono>. What the map sets
+              is <Mono>rel="noreferrer"</Mono>, which costs nothing.
+            </Box>
+          </Section>
+
+          <Section id="skeleton" title="Where the answer will be">
+            <Box>
+              <Mono>Skeleton</Mono> is the placeholder: bars where the content goes, with a gloss crossing them. The duration is named in
+              milliseconds, so it sits outside what <Mono>--transitionTime</Mono> zeroes and stops itself under{' '}
+              <Mono>prefers-reduced-motion</Mono>. It renders on a server — no state, no effect, no measurement.
+            </Box>
+            <Box mt={4}>
+              <Code language="jsx" code={`<Skeleton lines={3} label="Loading orders" />`}>
+                <Flex d="column" gap={5} py={4}>
+                  <Skeleton lines={3} label="Loading orders" />
+                  <Flex gap={3} ai="center">
+                    <Skeleton circle width={10} />
+                    <Skeleton lines={2} width={60} />
+                  </Flex>
+                </Flex>
+              </Code>
+            </Box>
+            <Box mt={4}>
+              With no <Mono>label</Mono> the whole thing is <Mono>aria-hidden</Mono>, because a reader told "three empty bars" has been told
+              nothing. A <Mono>label</Mono> makes it a <Mono>role="status"</Mono> naming what is on its way — put it on the one skeleton
+              standing for a region and leave it off the rest, since a screen of placeholders each announcing itself is a screen nobody can
+              listen to.
+            </Box>
+          </Section>
+
           <Section id="styling" title="Styling">
             <Box>
               Three trees: <Mono>toolCall</Mono> with <Mono>header</Mono>, <Mono>summary</Mono>, <Mono>name</Mono>, <Mono>description</Mono>
@@ -211,6 +297,14 @@ const { text, truncated } = AgentUtils.formatValue(part.output, 4000);`}
               <Mono>decision</Mono>; and <Mono>reasoning</Mono> with <Mono>trigger</Mono>, <Mono>arrow</Mono>, <Mono>duration</Mono> and{' '}
               <Mono>body</Mono>. The status is a variant on <Mono>toolCall.status</Mono> and the decision one on <Mono>approval</Mono>{' '}
               itself, so a card can be re-skinned per state without a prop.
+            </Box>
+            <Box mt={4}>
+              Three more for what it says: <Mono>streamingText</Mono> with <Mono>segment</Mono> (the run that fades) and <Mono>caret</Mono>;{' '}
+              <Mono>skeleton</Mono> with <Mono>bar</Mono> — whose <Mono>short</Mono> and <Mono>circle</Mono> variants are the last line and
+              the avatar — and <Mono>gloss</Mono>; and <Mono>markdown</Mono>, whose <Mono>heading</Mono>, <Mono>paragraph</Mono>,{' '}
+              <Mono>link</Mono>, <Mono>list</Mono>, <Mono>item</Mono>, <Mono>quote</Mono>, <Mono>code</Mono>, <Mono>codeBlock</Mono>,{' '}
+              <Mono>rule</Mono>, <Mono>image</Mono>, <Mono>table</Mono>, <Mono>row</Mono>, <Mono>cell</Mono>, <Mono>inline</Mono> and{' '}
+              <Mono>checkbox</Mono> are what a renderer's <Mono>components</Mono> map draws with.
             </Box>
             <Box mt={4}>
               <Code
@@ -229,6 +323,10 @@ const { text, truncated } = AgentUtils.formatValue(part.output, 4000);`}
           <ApiReference api={approvalApi} />
 
           <ApiReference api={reasoningApi} />
+
+          <ApiReference api={streamingTextApi} />
+
+          <ApiReference api={skeletonApi} />
         </Flex>
       </Reveal>
     </Box>
@@ -295,16 +393,48 @@ function LiveTurn() {
   );
 }
 
+const ANSWER =
+  'Order 4182 was placed on the 4th of September, so it is still inside the 30-day refund window. The amount is 6,400 MDL, which is over the threshold a tool may refund on its own — so the refund is waiting on a person rather than on me.';
+
+/** A stream, replayed: a chunk of the answer every 45ms, which is roughly what a model produces. */
+function LiveStream() {
+  const [sent, setSent] = useState(ANSWER.length);
+  const timer = useRef<ReturnType<typeof setInterval>>(undefined);
+  const done = sent >= ANSWER.length;
+
+  useEffect(() => {
+    if (done) return;
+
+    timer.current = setInterval(() => setSent((current) => Math.min(ANSWER.length, current + 2 + Math.floor(Math.random() * 5))), 45);
+
+    return () => clearInterval(timer.current);
+  }, [done]);
+
+  return (
+    <Box>
+      <Flex gap={4} ai="center" mb={4} flexWrap="wrap">
+        <Button onClick={() => setSent(0)}>Stream it again</Button>
+      </Flex>
+      <StreamingText text={ANSWER.slice(0, sent)} streaming={!done} />
+    </Box>
+  );
+}
+
 const sidebarLinks = [
   { id: 'usage', label: 'Usage' },
   { id: 'status', label: 'The status is a word' },
   { id: 'values', label: 'A value the model produced' },
   { id: 'approval', label: 'The decision is one channel' },
   { id: 'reasoning', label: 'Reasoning is an aside' },
+  { id: 'streaming', label: 'What it says, as it arrives' },
+  { id: 'markdown', label: 'Markdown, without the stylesheet' },
+  { id: 'skeleton', label: 'Where the answer will be' },
   { id: 'styling', label: 'Styling' },
   ...apiSections(toolCallApi),
   ...apiSections(approvalApi),
   ...apiSections(reasoningApi),
+  ...apiSections(streamingTextApi),
+  ...apiSections(skeletonApi),
 ];
 
 function Section({ id, title, children }: { id: string; title: string; children: ReactNode }) {

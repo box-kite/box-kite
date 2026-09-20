@@ -12,8 +12,9 @@ export interface BoxComponent {
 export type Components = Record<string, BoxComponent>;
 
 /**
- * What a tool call's JSON is shown in. There is no `fontFamily` prop — a typeface is a decision about a
- * whole page rather than about one element — so it goes through `css`, which is still a shared class.
+ * What a tool call's JSON and a markdown fence are shown in. There is no `fontFamily` prop — a typeface
+ * is a decision about a whole page rather than about one element — so it goes through `css`, which is
+ * still a shared class.
  */
 const FONT_MONO = 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace';
 
@@ -3632,6 +3633,169 @@ const boxComponents = {
           color: 'gray-600',
           whiteSpace: 'pre-wrap',
           theme: { dark: { borderColor: 'gray-800', color: 'gray-400' } },
+        },
+      },
+    },
+  },
+  // Markdown rendered by somebody else's parser, with this engine's classes on it. The root is what a
+  // caller wraps the renderer in; every node below inherits its size and colour, so restyling the prose
+  // is one place. Each inline node says `display: inline` — the base class is `block`.
+  markdown: {
+    styles: { fontSize: 14, lineHeight: 22, color: 'gray-700', theme: { dark: { color: 'gray-300' } } },
+    children: {
+      heading: {
+        styles: { fontWeight: 600, mt: 5, mb: 2, color: 'gray-900', theme: { dark: { color: 'gray-100' } } },
+        variants: {
+          level1: { fontSize: 24, lineHeight: 32 },
+          level2: { fontSize: 20, lineHeight: 28 },
+          level3: { fontSize: 17, lineHeight: 24 },
+          level4: { fontSize: 15, lineHeight: 22 },
+          level5: { fontSize: 14, lineHeight: 20 },
+          level6: { fontSize: 13, lineHeight: 18, color: 'gray-500', theme: { dark: { color: 'gray-400' } } },
+        },
+      },
+      paragraph: { styles: { my: 2 } },
+      link: {
+        styles: {
+          display: 'inline',
+          color: 'indigo-600',
+          textDecoration: 'underline',
+          hover: { color: 'indigo-700' },
+          focusVisible: { outline: 2, outlineColor: 'indigo-500', outlineOffset: 2, borderRadius: 1 },
+          theme: { dark: { color: 'indigo-400', hover: { color: 'indigo-300' } } },
+        },
+      },
+      list: {
+        styles: { my: 2, ps: 5, listStyle: 'disc' },
+        variants: { ordered: { listStyle: 'decimal' } },
+      },
+      item: { styles: { display: 'list-item', my: 1 } },
+      quote: {
+        styles: {
+          my: 3,
+          ps: 4,
+          bs: 2,
+          borderColor: 'gray-300',
+          color: 'gray-600',
+          theme: { dark: { borderColor: 'gray-700', color: 'gray-400' } },
+        },
+      },
+      // The chip. A fenced block never wears it, because `pre` renders the fence itself.
+      code: {
+        styles: {
+          display: 'inline',
+          px: 1,
+          py: 0.25,
+          borderRadius: 1,
+          fontSize: 13,
+          bgColor: 'gray-100',
+          css: { fontFamily: FONT_MONO },
+          color: 'pink-700',
+          theme: { dark: { bgColor: 'gray-800', color: 'pink-300' } },
+        },
+      },
+      codeBlock: {
+        styles: {
+          position: 'relative',
+          my: 3,
+          p: 3,
+          borderRadius: 2,
+          overflow: 'auto',
+          bgColor: 'gray-900',
+          color: 'gray-100',
+          fontSize: 13,
+          lineHeight: 20,
+          css: { fontFamily: FONT_MONO },
+          theme: { dark: { bgColor: 'gray-950' } },
+        },
+        children: {
+          language: {
+            styles: { position: 'absolute', top: 2, insetEnd: 3, fontSize: 11, color: 'gray-400', userSelect: 'none' },
+          },
+          code: { styles: { display: 'block', css: { fontFamily: FONT_MONO } } },
+        },
+      },
+      rule: {
+        styles: { my: 5, bt: 1, borderColor: 'gray-200', theme: { dark: { borderColor: 'gray-800' } } },
+      },
+      image: { styles: { my: 3, maxWidth: 'fit', borderRadius: 2 } },
+      // The scroller is the wrapper rather than the table: a table that scrolls itself loses its layout.
+      tableWrap: { styles: { my: 3, overflow: 'auto' } },
+      table: { styles: { display: 'table', width: 'fit', fontSize: 13, css: { borderCollapse: 'collapse' } } },
+      row: {
+        styles: { display: 'table-row', bb: 1, borderColor: 'gray-200', theme: { dark: { borderColor: 'gray-800' } } },
+      },
+      cell: {
+        styles: { display: 'table-cell', px: 3, py: 2, textAlign: 'start', css: { verticalAlign: 'top' } },
+        variants: { header: { fontWeight: 600, color: 'gray-900', theme: { dark: { color: 'gray-100' } } } },
+      },
+      inline: {
+        styles: { display: 'inline' },
+        variants: {
+          strong: { fontWeight: 600, color: 'gray-900', theme: { dark: { color: 'gray-100' } } },
+          struck: { textDecoration: 'line-through', opacity: 0.7 },
+        },
+      },
+      checkbox: { styles: { display: 'inline-block', me: 1.5, accentColor: 'indigo-600' } },
+    },
+  },
+  // Where content will be. Two elements per bar rather than one, because the gloss travels and the bar
+  // it travels inside has to clip it.
+  skeleton: {
+    styles: { display: 'flex', d: 'column', gap: 2, width: 'fit' },
+    children: {
+      bar: {
+        styles: {
+          position: 'relative',
+          overflow: 'hidden',
+          height: 3,
+          borderRadius: 1,
+          bgColor: 'gray-200',
+          theme: { dark: { bgColor: 'gray-800' } },
+        },
+        variants: {
+          // A paragraph's last line stops short of the margin, and bars of one length read as a table.
+          short: { width: '3/5' },
+          // Far past any avatar, so one radius rounds every size the caller gives.
+          circle: { width: 10, height: 'auto', aspectRatio: 'square', borderRadius: 100 },
+        },
+      },
+      // A named duration is outside what `--transitionTime` zeroes, so the sweep has to stop itself.
+      gloss: {
+        styles: {
+          position: 'absolute',
+          inset: 0,
+          bgGradient: { linear: 'r', colors: ['transparent', 'white/60', 'transparent'] },
+          animationName: 'rb-skeleton-sweep',
+          animationDuration: 1600,
+          animationTimingFunction: 'linear',
+          animationIterationCount: 'infinite',
+          rtl: { animationDirection: 'reverse' },
+          motionReduce: { animationName: 'none' },
+          theme: { dark: { bgGradient: { linear: 'r', colors: ['transparent', 'white/10', 'transparent'] } } },
+        },
+      },
+    },
+  },
+  // What the agent is saying, as it arrives. Two children and no third: the settled text is a bare text
+  // node, because wrapping it would be an element that grows without bound.
+  streamingText: {
+    styles: { whiteSpace: 'pre-wrap', fontSize: 14, lineHeight: 22, color: 'gray-700', theme: { dark: { color: 'gray-300' } } },
+    children: {
+      // Opacity alone, and `display: inline` rather than the base class's `block`: a transform on an
+      // inline box does nothing, and inline-block would stop a run wrapping mid-word.
+      segment: {
+        styles: { display: 'inline', transition: 'opacity', startingStyle: { opacity: 0 } },
+      },
+      // `1em` and `0.5em` rather than the rem scale, because a caret follows the text it sits in.
+      caret: {
+        styles: {
+          display: 'inline-block',
+          ms: 0.5,
+          borderRadius: 0.5,
+          bgColor: 'currentColor',
+          animation: 'pulse',
+          css: { width: '0.5em', height: '1em', verticalAlign: 'text-bottom' },
         },
       },
     },

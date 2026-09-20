@@ -1,7 +1,9 @@
 import { act, fireEvent, screen } from '@testing-library/react';
 import { Sun } from 'lucide-react';
+import { createElement } from 'react';
+import Box from '../../src/box';
 import Accordion, { Collapsible } from '../../src/components/accordion';
-import { ApprovalCard, Reasoning, ToolCallCard } from '../../src/components/agent';
+import { ApprovalCard, Reasoning, StreamingText, ToolCallCard } from '../../src/components/agent';
 import BaseSvg from '../../src/components/baseSvg';
 import Button from '../../src/components/button';
 import { ChartContainer, Gauge, MiniDonut, ProgressRing, Sparkline } from '../../src/components/chart';
@@ -15,6 +17,7 @@ import Flex from '../../src/components/flex';
 import Form from '../../src/components/form';
 import Grid from '../../src/components/grid';
 import Icon from '../../src/components/icon';
+import { markdownComponents } from '../../src/components/markdown';
 import Menu from '../../src/components/menu';
 import Overlay from '../../src/components/overlay';
 import Popover from '../../src/components/popover';
@@ -23,6 +26,7 @@ import RadioButton from '../../src/components/radioButton';
 import RadioGroup from '../../src/components/radioGroup';
 import Select from '../../src/components/select';
 import { H1, Img, Link, Nav, P } from '../../src/components/semantics';
+import Skeleton from '../../src/components/skeleton';
 import Slider from '../../src/components/slider';
 import { Circle, Polyline, Svg, SvgText } from '../../src/components/svg';
 import Switch from '../../src/components/switch';
@@ -697,6 +701,48 @@ export const fixtures: A11yFixture[] = [
         <Reasoning streaming>Checking the refund window…</Reasoning>
         <Reasoning duration={4200}>The refund window closed on the 4th, so the order is outside it.</Reasoning>
       </>
+    ),
+  },
+  {
+    // What the agent says, mid-stream and finished. Neither is a live region, which is the point: the
+    // sweep would see one announcing a word at a time and have nothing to say about it.
+    name: 'StreamingText',
+    render: () => (
+      <>
+        <StreamingText text="Refunding order 4182" streaming />
+        <StreamingText text="Refunded order 4182. The customer has been emailed." />
+      </>
+    ),
+  },
+  {
+    // Decoration and announcement: the first is out of the tree entirely, the second names what is coming.
+    name: 'Skeleton',
+    render: () => (
+      <>
+        <Skeleton lines={3} />
+        <Skeleton circle width={10} />
+        <Skeleton lines={2} label="Loading orders" />
+      </>
+    ),
+  },
+  {
+    // The markdown map as a renderer calls it: every node built by hand, since the parser is the app's.
+    name: 'Markdown components',
+    render: () => (
+      <Box component="markdown">
+        {createElement(markdownComponents.h2, { children: 'Refunds' })}
+        {createElement(markdownComponents.p, {
+          children: ['Two to four days, per the ', createElement(markdownComponents.a, { key: 'a', href: '/policy', children: 'policy' })],
+        })}
+        {createElement(markdownComponents.pre, {
+          children: createElement(markdownComponents.code, { className: 'language-ts', children: 'const days = 4;' }),
+        })}
+        {createElement(markdownComponents.table, {
+          children: createElement(markdownComponents.tbody, {
+            children: createElement(markdownComponents.tr, { children: createElement(markdownComponents.td, { children: '4182' }) }),
+          }),
+        })}
+      </Box>
     ),
   },
   {

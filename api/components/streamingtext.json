@@ -1,0 +1,48 @@
+{
+  "name": "StreamingText",
+  "route": "/agent",
+  "import": "import { StreamingText } from '@box-kite/react/components/agent';",
+  "description": "What the agent is saying, as it arrives.",
+  "pattern": null,
+  "props": [
+    {
+      "name": "text",
+      "type": "string",
+      "required": true,
+      "default": null,
+      "description": "The message so far. Append to it — anything else is a different message and settles without fading."
+    },
+    {
+      "name": "streaming",
+      "type": "boolean",
+      "required": false,
+      "default": "false",
+      "description": "Whether more is still coming. The caret shows while it is true, and the element reports `aria-busy`."
+    },
+    {
+      "name": "window",
+      "type": "number",
+      "required": false,
+      "default": null,
+      "description": "How many of the runs that arrived most recently stay faded in at once; the rest settle. Default `AgentUtils.STREAM_WINDOW` (8), and `0` turns the entrance off altogether. A run is settled once this many newer ones have arrived rather than after a time, so a stream fast enough to fill the window inside one `--transitionTime` cuts the tail of the fade short — raise it if that shows."
+    },
+    {
+      "name": "caret",
+      "type": "boolean",
+      "required": false,
+      "default": "true",
+      "description": "Whether to draw the caret while streaming. Default `true`."
+    }
+  ],
+  "parts": [],
+  "keyboard": [],
+  "a11y": [
+    "`aria-busy` while `streaming`. The element is **not** a live region: a region announcing every token would read the message out a word at a time and again when it finished. What announces an agent's turn is the transcript it lands in."
+  ],
+  "axe": { "fixtures": ["StreamingText"], "knownViolations": [] },
+  "styleTree": [
+    { "path": "streamingText", "depth": 0, "extends": null, "variants": [] },
+    { "path": "streamingText.segment", "depth": 1, "extends": null, "variants": [] },
+    { "path": "streamingText.caret", "depth": 1, "extends": null, "variants": [] }
+  ]
+}

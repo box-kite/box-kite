@@ -96,6 +96,14 @@ export default tseslint.config(
     },
   },
   {
+    // A map of components keyed by HTML tag is what a markdown renderer takes, so the module's one
+    // export has to be the map rather than each component in it.
+    files: ['src/components/markdown.tsx'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
+    },
+  },
+  {
     // The Next.js example is not a Vite app: Next's own convention is a route file exporting both a
     // component and its metadata, which is exactly what this rule exists to prevent elsewhere.
     files: ['examples/next-app/**/*.tsx'],

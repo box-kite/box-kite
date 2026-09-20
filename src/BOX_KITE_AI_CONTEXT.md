@@ -3007,11 +3007,12 @@ so it can be set per breakpoint or per theme.
 
 ## Agent chrome (`components/agent`)
 
-The three parts of an agent's turn that are not prose: what it ran, what it was thinking, and what it
-wants permission to do. One entry, three components, and a framework-free model behind them.
+The parts of an agent's turn that are not prose — what it ran, what it was thinking, what it wants
+permission to do — plus the text it answers with. One entry, four components, and a framework-free model
+behind them.
 
 ```tsx
-import { AgentUtils, ApprovalCard, Reasoning, ToolCallCard } from '@box-kite/react/components/agent';
+import { AgentUtils, ApprovalCard, Reasoning, StreamingText, ToolCallCard } from '@box-kite/react/components/agent';
 
 <Reasoning duration={1400}>{reasoningText}</Reasoning>
 <ToolCallCard name="searchOrders" status="success" input={{ orderId: 4182 }} output={{ total: 6400 }} />
@@ -3094,6 +3095,85 @@ AgentUtils.decisionLabel('approved'); // 'Approved'
 (+ `trigger`, `arrow`, `duration`, `track`, `clip`, `body`). The status is a variant on
 `toolCall.status`, the decision one on `approval` itself, and `toolCall.header`'s `interactive` variant
 is what makes it look pressable — so a card with nothing to open does not.
+
+### StreamingText
+
+What the agent _says_, as it arrives. Same entry.
+
+| Prop        | Type      | What it does                                                                         |
+| ----------- | --------- | ------------------------------------------------------------------------------------ |
+| `text`      | `string`  | The message **so far**, not the delta — knowing what is new means comparing the two. |
+| `streaming` | `boolean` | More is coming: the caret shows and the element reports `aria-busy`.                 |
+| `window`    | `number`  | How many arrived runs stay faded at once. Default 8; `0` turns the entrance off.     |
+| `caret`     | `boolean` | Default `true`.                                                                      |
+
+```tsx
+<StreamingText text={message} streaming={status === 'streaming'} />
+```
+
+What is on the page is one settled string plus the last few runs to arrive, so a message that is already
+whole paints at once with nothing animating — a prerendered page, a transcript read back — and one still
+arriving costs the same at the ten-thousandth token as at the first. Anything but an append (a
+regenerate, an edit) settles at once rather than fading in the part that differs.
+
+The entrance is `@starting-style`, not a keyframe, so it rides `--transitionTime` and disappears under
+`prefers-reduced-motion` with nothing declared for it; the caret is the `pulse` preset. It is **not** a
+live region — one announcing every token reads the message out a word at a time and again when it
+finishes — so what announces the turn is the transcript it lands in. Tree: `streamingText` (+ `segment`,
+`caret`).
+
+`AgentUtils.initialStream`, `advanceStream` and `streamText` are the model behind it, framework-free and
+pure: advancing is keyed on the text rather than on a counter, so doing it twice is doing it once.
+
+## Markdown (`components/markdown`)
+
+`markdownComponents` is the `components` map `react-markdown`, Streamdown and everything built on that
+shape already take, with this engine's classes on it — **not** a renderer, because a parser is a choice
+an app has usually already made, and wrapping Streamdown would ask the project for a Tailwind `@source`
+line and shadcn's design tokens in a global stylesheet.
+
+```tsx
+import Markdown from 'react-markdown';
+import { markdownComponents } from '@box-kite/react/components/markdown';
+
+<Box component="markdown">
+  <Markdown components={markdownComponents}>{message}</Markdown>
+</Box>;
+```
+
+Three things to know. It is a **constant, not a factory**: a map built inside render is a new set of
+component _types_ every token, which React answers by unmounting the whole message and mounting it again
+— override by spreading at module scope (`{ ...markdownComponents, h1: MyHeading }`). Whether a URL is
+safe stays the **renderer's** (`urlTransform`, `defaultUrlTransform`), because the href is parsed before
+a component is called; the map sets `rel="noreferrer"`. And wrapping in `<Box component="markdown">` is
+what gives the block its size and colour, which the nodes inherit.
+
+Covers `h1`–`h6`, `p`, `a`, `ul`, `ol`, `li`, `blockquote`, `code`, `pre`, `hr`, `img`, `table`,
+`thead`, `tbody`, `tr`, `th`, `td`, `strong`, `em`, `del` and a task list's `input`. Tree: `markdown`
+(+ `heading` with `level1`–`level6`, `paragraph`, `link`, `list`, `item`, `quote`, `code`, `codeBlock`
+with `language` and `code`, `rule`, `image`, `tableWrap`, `table`, `row`, `cell`, `inline`, `checkbox`).
+
+## Skeleton (`components/skeleton`)
+
+Where content will be, while it is being fetched.
+
+| Prop     | Type        | What it does                                                                 |
+| -------- | ----------- | ---------------------------------------------------------------------------- |
+| `lines`  | `number`    | How many bars. Default 1; past that the last one is short.                   |
+| `circle` | `boolean`   | One round bar — an avatar. `width` sets its size and the height follows.     |
+| `label`  | `ReactNode` | Makes it a `role="status"` naming what is on its way. Absent: `aria-hidden`. |
+
+```tsx
+<Skeleton lines={3} label="Loading orders" />
+<Skeleton circle width={10} />
+```
+
+A `label` belongs on the one skeleton standing for a region and not on each bar — a screen of
+placeholders each announcing itself is a screen nobody can listen to, and a region inserted together
+with its text is not reliably announced anyway, so what it really buys is words for somebody who lands
+there. The gloss is a named duration in milliseconds, so it sits outside what `--transitionTime` zeroes
+and stops itself under `prefers-reduced-motion`. It renders on a server. Tree: `skeleton` (+ `bar` with
+`short` and `circle` variants, `gloss`).
 
 ## The catalog (`@box-kite/react/catalog`)
 

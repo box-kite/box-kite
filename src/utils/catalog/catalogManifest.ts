@@ -1467,6 +1467,32 @@ const catalogManifest: CatalogManifest = {
       required: [],
       styled: true,
     },
+    StreamingText: {
+      description: 'What the agent is saying, as it arrives.',
+      import: "import { StreamingText } from '@box-kite/react/components/agent';",
+      slots: ['default'],
+      events: [],
+      props: {
+        text: { type: 'string', description: 'The message so far.' },
+        streaming: { type: 'boolean', description: 'Whether more is still coming.' },
+        window: { type: 'number', description: 'How many of the runs that arrived most recently stay faded in at once; the rest settle.' },
+        caret: { type: 'boolean', description: 'Whether to draw the caret while streaming.' },
+      },
+      required: ['text'],
+      styled: true,
+    },
+    Skeleton: {
+      description: 'Where content will be, while it is being fetched.',
+      import: "import Skeleton from '@box-kite/react/components/skeleton';",
+      slots: ['label'],
+      events: [],
+      props: {
+        lines: { type: 'number', description: 'How many bars to draw.' },
+        circle: { type: 'boolean', description: 'A round placeholder — an avatar, a thumbnail.' },
+      },
+      required: [],
+      styled: true,
+    },
   },
 };
 

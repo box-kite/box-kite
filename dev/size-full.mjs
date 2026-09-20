@@ -30,6 +30,7 @@ import * as flex from '../dist/components/flex.mjs';
 import * as form from '../dist/components/form.mjs';
 import * as grid from '../dist/components/grid.mjs';
 import * as icon from '../dist/components/icon.mjs';
+import * as markdown from '../dist/components/markdown.mjs';
 import * as menu from '../dist/components/menu.mjs';
 import * as overlay from '../dist/components/overlay.mjs';
 import * as popover from '../dist/components/popover.mjs';
@@ -40,6 +41,7 @@ import * as radioGroup from '../dist/components/radioGroup.mjs';
 import * as select from '../dist/components/select.mjs';
 import * as slider from '../dist/components/slider.mjs';
 import * as semantics from '../dist/components/semantics.mjs';
+import * as skeleton from '../dist/components/skeleton.mjs';
 import * as svg from '../dist/components/svg.mjs';
 import * as switchControl from '../dist/components/switch.mjs';
 import * as tabs from '../dist/components/tabs.mjs';
@@ -70,6 +72,7 @@ console.log(
   form,
   grid,
   icon,
+  markdown,
   menu,
   overlay,
   popover,
@@ -80,6 +83,7 @@ console.log(
   select,
   slider,
   semantics,
+  skeleton,
   svg,
   switchControl,
   tabs,

@@ -23,6 +23,9 @@ Which component replaces which `<Box tag>`, and the three that carry a pattern o
 | a message sent from anywhere         | `<Toaster>` + `toast()`                | `components/toaster`                                             |
 | widgets arranged, dragged, resized   | `<DashboardGrid>` + `<Widget>`         | `components/dashboard`                                           |
 | a tool call, a thought, an approval  | `<ToolCallCard>`/`<Reasoning>`/…       | `components/agent`                                               |
+| text arriving token by token         | `<StreamingText>`                      | `components/agent`                                               |
+| a model's markdown, themed           | `markdownComponents` (a map)           | `components/markdown`                                            |
+| a placeholder while it loads         | `<Skeleton>`                           | `components/skeleton`                                            |
 | a lucide/Tabler icon, styled         | `<Icon>`                               | `components/icon`                                                |
 | a sparkline, ring, gauge or donut    | `<Sparkline>`/`<ProgressRing>`/…       | `components/chart`                                               |
 | a themed Recharts (or any) chart     | `<ChartContainer>`                     | `components/chart`                                               |

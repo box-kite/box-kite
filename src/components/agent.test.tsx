@@ -1,7 +1,7 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { ApprovalCard, ApprovalDecision, Reasoning, ToolCallCard } from './agent';
+import { ApprovalCard, ApprovalDecision, Reasoning, StreamingText, ToolCallCard } from './agent';
 
 describe('ToolCallCard', () => {
   afterEach(cleanup);
@@ -200,5 +200,72 @@ describe('Reasoning', () => {
     const body = document.getElementById(trigger().getAttribute('aria-controls')!);
 
     expect(body).toHaveTextContent('The refund window closed on the 4th.');
+  });
+});
+
+describe('StreamingText', () => {
+  afterEach(cleanup);
+
+  // The runs still fading are spans; the settled text is a bare node, so counting spans is counting
+  // what is animating.
+  const fading = (container: HTMLElement) => [...container.querySelectorAll('span')].filter((span) => !span.hasAttribute('aria-hidden'));
+
+  it('paints a message that was already whole with nothing animating', () => {
+    const { container } = render(<StreamingText text="Refunded order 4182." />);
+
+    expect(container.firstElementChild).toHaveTextContent('Refunded order 4182.');
+    expect(fading(container)).toHaveLength(0);
+  });
+
+  it('fades in what arrived and leaves the rest alone', () => {
+    const { container, rerender } = render(<StreamingText text="Refunded " streaming />);
+    rerender(<StreamingText text="Refunded order " streaming />);
+
+    expect(fading(container).map((span) => span.textContent)).toEqual(['order ']);
+    expect(container.firstElementChild).toHaveTextContent('Refunded order');
+  });
+
+  it('holds the window however long the message gets, so the DOM does not grow with the token count', () => {
+    const { container, rerender } = render(<StreamingText text="" streaming />);
+
+    let text = '';
+    for (let index = 0; index < 200; index++) rerender(<StreamingText text={(text += `${index} `)} streaming />);
+
+    expect(fading(container)).toHaveLength(8);
+    expect(container.firstElementChild?.textContent).toContain('199 ');
+  });
+
+  it('settles a message that was replaced rather than appended to', () => {
+    const { container, rerender } = render(<StreamingText text="Refunded " streaming />);
+    rerender(<StreamingText text="Refunded order " streaming />);
+    rerender(<StreamingText text="Refused the refund." streaming />);
+
+    expect(fading(container)).toHaveLength(0);
+    expect(container.firstElementChild).toHaveTextContent('Refused the refund.');
+  });
+
+  it('turns the entrance off at a window of zero', () => {
+    const { container, rerender } = render(<StreamingText text="a" window={0} streaming />);
+    rerender(<StreamingText text="ab" window={0} streaming />);
+
+    expect(fading(container)).toHaveLength(0);
+    expect(container.firstElementChild).toHaveTextContent('ab');
+  });
+
+  it('draws the caret while streaming and reports aria-busy, and neither once it is done', () => {
+    const { container, rerender } = render(<StreamingText text="Refunded" streaming />);
+
+    expect(container.firstElementChild).toHaveAttribute('aria-busy', 'true');
+    expect(container.querySelector('[aria-hidden="true"]')).toBeInTheDocument();
+
+    rerender(<StreamingText text="Refunded" />);
+    expect(container.firstElementChild).not.toHaveAttribute('aria-busy');
+    expect(container.querySelector('[aria-hidden="true"]')).not.toBeInTheDocument();
+  });
+
+  it('is not a live region — a region announcing every token reads the message out a word at a time', () => {
+    const { container } = render(<StreamingText text="Refunded" streaming />);
+
+    expect(container.querySelector('[role="status"],[aria-live]')).toBeNull();
   });
 });

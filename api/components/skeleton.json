@@ -1,0 +1,39 @@
+{
+  "name": "Skeleton",
+  "route": "/agent",
+  "import": "import Skeleton from '@box-kite/react/components/skeleton';",
+  "description": "Where content will be, while it is being fetched.",
+  "pattern": null,
+  "props": [
+    {
+      "name": "lines",
+      "type": "number",
+      "required": false,
+      "default": "1",
+      "description": "How many bars to draw. Default `1`; past that the last one is short, the way a paragraph's last line is."
+    },
+    {
+      "name": "circle",
+      "type": "boolean",
+      "required": false,
+      "default": "false",
+      "description": "A round placeholder — an avatar, a thumbnail. `width` sets its size and the height follows."
+    },
+    {
+      "name": "label",
+      "type": "ReactNode",
+      "required": false,
+      "default": null,
+      "description": "What is loading, for a reader. It makes the skeleton a `role=\"status\"` with the words in it, so put it on the one skeleton that stands for a region and leave it off the rest — a screen of placeholders each announcing itself is a screen nobody can listen to."
+    }
+  ],
+  "parts": [],
+  "keyboard": [],
+  "a11y": ["`aria-hidden` unless `label` is given, and then `role=\"status\"` naming what is on its way."],
+  "axe": { "fixtures": ["Skeleton"], "knownViolations": [] },
+  "styleTree": [
+    { "path": "skeleton", "depth": 0, "extends": null, "variants": [] },
+    { "path": "skeleton.bar", "depth": 1, "extends": null, "variants": ["short", "circle"] },
+    { "path": "skeleton.gloss", "depth": 1, "extends": null, "variants": [] }
+  ]
+}
