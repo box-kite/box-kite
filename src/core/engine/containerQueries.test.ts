@@ -141,7 +141,7 @@ describe('container queries', () => {
       '@container (min-width: 28rem){.cq-md-hover-opacity-1:hover{opacity:1}}',
       '@container (min-width: 28rem){.cq-md-dataAttr-state\\=open-color-white[data-state="open"]{color:var(--white)}}',
       '@container (min-width: 28rem){.card:hover .cq-md-hover-card-color-red-500{color:var(--red-500)}}',
-      '@container (min-width: 28rem){.dark .cq-md-theme-dark-bgColor-black{background-color:var(--black)}}',
+      '@container (min-width: 28rem){@scope (.dark) to ([data-theme]){:scope .cq-md-theme-dark-bgColor-black{background-color:var(--black)}}}',
       '@container (min-width: 28rem){.cq-md-before-content-New::before{content:"New"}}',
       '@container (min-width: 28rem){@starting-style{.cq-md-starting-opacity-0{opacity:0!important}}}',
     ]);

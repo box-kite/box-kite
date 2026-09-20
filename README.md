@@ -560,8 +560,8 @@ Notes and limits:
   server matches the one the client bundle resolves for the same props.
 - **Still client-only:** hover-callback children (`{({ isHover }) => …}`) and `Box.Theme`, which
   needs state, storage and a media-query listener. Theme _styles_ are unaffected: a `theme` prop
-  generates ancestor-scoped rules, so setting the theme class on `<html>` in a server component is
-  enough.
+  generates rules scoped to the theme's own subtree, so setting the theme class and `data-theme` on
+  `<html>` in a server component is enough.
 - **Most pre-built components render on the server too.** `Flex`, `Grid`, `Button`, `Textbox`,
   `Textarea`, `RadioButton`, `Icon`, the SVG elements, `VisuallyHidden` and the semantic tags (`H1`, `P`, `Link`, `Nav` …) are
   hook-free wrappers around Box, and their published chunks import the package by name — so the
@@ -659,9 +659,10 @@ Theming is the same state machine `<Box.Theme>` runs, as a plain object:
 ```js
 import { createThemeController } from '@box-kite/core';
 
-// Reads prefers-color-scheme, restores a stored choice, writes the theme onto <html>, and follows
-// the system preference until something overrides it. Theme rules are ancestor-scoped (`.dark .p-4`),
-// so that one class name restyles everything inside.
+// Reads prefers-color-scheme, restores a stored choice, writes the theme class and data-theme onto
+// <html>, and follows the system preference until something overrides it. A theme rule is scoped to
+// the subtree that theme owns (`@scope (.dark) to ([data-theme])`), so one class restyles everything
+// inside it and a nested theme takes over from there.
 const theme = createThemeController({ storageKey: 'theme' });
 
 theme.subscribe((name) => console.log('theme is now', name));

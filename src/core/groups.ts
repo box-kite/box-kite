@@ -84,6 +84,19 @@ namespace Groups {
 
     return { kind: 'theme', name: `theme-${name}`, selector: `.${name}`, combinator: groupKeys.group };
   }
+
+  /** Where a theme's reach ends: the next element declaring one of its own. */
+  const themeBoundary = '[data-theme]';
+
+  /**
+   * A theme rule's `@scope` prelude, which is what makes the *nearest* theme the one that counts:
+   * `.dark .x` and `.light .x` are the same specificity, so nesting used to be settled by source order
+   * alone (bug #189). The limit does the work — proximity only breaks a tie, and an outer theme's rule
+   * carrying one more pseudo-class never gets that far.
+   */
+  export function themeScope(parent: Parent): string {
+    return `@scope (${parent.selector}) to (${themeBoundary})`;
+  }
 }
 
 export default Groups;

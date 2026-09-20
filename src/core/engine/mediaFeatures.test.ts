@@ -58,7 +58,7 @@ describe('device and accessibility media features', () => {
     renderStyles(engine, { forcedColors: { theme: { dark: { borderColor: 'white' } } } });
 
     expect(ruleList(engine)).toEqual([
-      '@media (forced-colors: active){.dark .forcedColors-theme-dark-borderColor-white{border-color:var(--white)}}',
+      '@media (forced-colors: active){@scope (.dark) to ([data-theme]){:scope .forcedColors-theme-dark-borderColor-white{border-color:var(--white)}}}',
     ]);
   });
 

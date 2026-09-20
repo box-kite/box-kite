@@ -605,6 +605,8 @@ export function createStyleEngine(options: StyleEngineOptions = {}): StyleEngine
 
     const sortIndex = cssStylesIndex[key] ?? 0;
     const rank = query.rank;
+    // Filled in below, once the parents are walked: one `@scope` prelude per theme in front of this rule.
+    const scopes: string[] = [];
     // The rank a starting rule is pushed into — see `STARTING_RANK`. It is the same dimension the query
     // uses, so a preference still beats a breakpoint inside each half.
     const mediaOrder = rank + (startingStyle ? STARTING_RANK : 0);
@@ -615,7 +617,8 @@ export function createStyleEngine(options: StyleEngineOptions = {}): StyleEngine
      */
     function finish(rule: string) {
       const starting = startingStyle ? `@starting-style{${rule}}` : rule;
-      const wrapped = query.prelude === null ? starting : `${query.prelude}{${starting}}`;
+      const scoped = scopes.reduceRight((inner, prelude) => `${prelude}{${inner}}`, starting);
+      const wrapped = query.prelude === null ? scoped : `${query.prelude}{${scoped}}`;
       const layer = startingStyle ? startingLayerName(rank) : layerName(rank, sortIndex);
 
       return {
@@ -670,7 +673,22 @@ export function createStyleEngine(options: StyleEngineOptions = {}): StyleEngine
     const themeOnRoot = !!rootSelector && parents.length === 1 && parents[0].kind === 'theme';
     if (rootSelector && parents.length > 0 && !themeOnRoot) return null;
 
-    const ancestors = themeOnRoot ? '' : parents.map((parent) => `${parent.selector}${parent.combinator}`).join('');
+    /**
+     * A theme is an `@scope` block rather than a plain ancestor, so a local `<Box.Theme>` inside a themed
+     * page wins: its styles reach the subtree the theme owns and stop at the next element declaring one.
+     * A root rule keeps the theme *on* it (`html.dark`), where nothing can nest inside it anyway.
+     */
+    const ancestors = themeOnRoot
+      ? ''
+      : parents
+          .map((parent) => {
+            if (parent.kind !== 'theme') return `${parent.selector}${parent.combinator}`;
+
+            scopes.push(Groups.themeScope(parent));
+
+            return `:scope${parent.combinator}`;
+          })
+          .join('');
     const pseudoClassesToUse = pseudoSelector(pseudoClassesOfWeight(weight));
     const baseSelector = `${ancestors}${rootSelector ?? `.${className}`}${themeOnRoot ? parents[0].selector : ''}${variantSelector}`;
     // The element goes in the suffix the `selector` hook is handed, so whatever it builds keeps it last.

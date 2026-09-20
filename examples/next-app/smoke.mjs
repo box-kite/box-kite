@@ -198,11 +198,12 @@ const islandCovered = islandClasses.length > 0 && islandClasses.every((name) => 
 check("a client island's CSS is server-rendered too", islandCovered, `${islandClasses.length} classes on its <button>, all covered`);
 
 // 9. Theming with no provider: the server wrote the theme name on `<html>`, and the rules it
-//    selects are ancestor-scoped, so they are in the same payload as everything else.
+//    selects are scoped to that theme's own subtree, so they are in the same payload as everything
+//    else — `data-theme` beside the class is what would end them at a theme nested inside it.
 check(
   'the server-rendered theme class selects real rules',
-  /<html[^>]*class="dark"/.test(html) && /\.dark ?\._/.test(css),
-  'class="dark" on <html>, with `.dark ._…` rules in the CSS',
+  /<html[^>]*class="dark"/.test(html) && /@scope \(\.dark\) to \(\[data-theme\]\)\{:scope \._/.test(css),
+  'class="dark" on <html>, with `@scope (.dark) to ([data-theme]){:scope ._…` rules in the CSS',
 );
 
 // 10. The second page: the pre-built components, imported by a Server Component. Before the

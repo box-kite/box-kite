@@ -125,7 +125,7 @@ Different props have different dividers — this is the #1 source of bugs:
 - `src/core/theme/themeRuntime.ts` — The framework-free half: reads/watches `prefers-color-scheme`, persists the choice, writes the theme class + `data-theme` onto an element
 - `src/core/theme/themeController.ts` — The provider's state machine (explicit > stored > system, followed live) as a plain object, for consumers with no React
 - `src/react/theme/theme.tsx` — `Box.Theme` provider component (auto-detects system preference, supports `use="global"|"local"`); React state and context over `themeRuntime`
-- Theme styles generate ancestor-scoped selectors (`.dark .className`)
+- Theme styles are scoped to the subtree a theme owns (`@scope (.dark) to ([data-theme]) { :scope .className … }`), so a local `<Box.Theme>` inside a themed page wins and an outer theme's rule does not reach in — `data-theme` is what marks a theme root
 - Themes nest with pseudo-classes: `theme={{ dark: { hover: { ... } } }}`
 
 ### Components (src/components/)

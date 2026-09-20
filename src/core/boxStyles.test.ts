@@ -405,7 +405,7 @@ describe('SVG paint and stroke props', () => {
         String.raw`.hover-fill-url\(\#sky\):hover{fill:url(#sky)}`,
       );
       expect(generatedRulesFor({ theme: { dark: { fill: 'var(--chart-1)' } } }, 'svg-paint-theme')).toContain(
-        String.raw`.dark .theme-dark-fill-var\(--chart-1\){fill:var(--chart-1)}`,
+        String.raw`@scope (.dark) to ([data-theme]){:scope .theme-dark-fill-var\(--chart-1\){fill:var(--chart-1)}}`,
       );
     });
   });
@@ -431,14 +431,14 @@ describe('SVG paint and stroke props', () => {
 
     it('keeps both halves of the selector under a theme', () => {
       expect(generatedRulesFor({ theme: { dark: { vectorEffect: 'none' } } }, 'svg-vector-effect-theme')).toContain(
-        '.dark .theme-dark-vectorEffect-none,.dark .theme-dark-vectorEffect-none *{vector-effect:none}',
+        '@scope (.dark) to ([data-theme]){:scope .theme-dark-vectorEffect-none,:scope .theme-dark-vectorEffect-none *{vector-effect:none}}',
       );
     });
   });
 
   it('nests under a theme, a pseudo-class and a breakpoint like any other prop', () => {
     expect(generatedRulesFor({ theme: { dark: { fill: 'slate-100' } } }, 'svg-theme')).toContain(
-      '.dark .theme-dark-fill-slate-100{fill:var(--slate-100)}',
+      '@scope (.dark) to ([data-theme]){:scope .theme-dark-fill-slate-100{fill:var(--slate-100)}}',
     );
     expect(generatedRulesFor({ hover: { stroke: 'red-500' } }, 'svg-hover')).toContain(
       '.hover-stroke-red-500:hover{stroke:var(--red-500)}',
@@ -507,7 +507,7 @@ describe('SVG text and geometry props', () => {
         '.hover-dominantBaseline-hanging:hover,.hover-dominantBaseline-hanging:hover *{dominant-baseline:hanging}',
       );
       expect(generatedRulesFor({ theme: { dark: { dominantBaseline: 'middle' } } }, 'svg-baseline-theme')).toContain(
-        '.dark .theme-dark-dominantBaseline-middle,.dark .theme-dark-dominantBaseline-middle *{dominant-baseline:middle}',
+        '@scope (.dark) to ([data-theme]){:scope .theme-dark-dominantBaseline-middle,:scope .theme-dark-dominantBaseline-middle *{dominant-baseline:middle}}',
       );
     });
   });
@@ -545,7 +545,7 @@ describe('vars — a CSS variable is a Box prop', () => {
   // the theme through the same ancestor-scoped selector every other prop uses.
   it('flips with the theme and with a breakpoint', () => {
     expect(generatedRulesFor({ theme: { dark: { vars: { 'color-x': 'sky-400' } } } }, 'vars-theme')).toContain(
-      '.dark .theme-dark-vars-color-x-sky-400{--color-x:var(--sky-400)}',
+      '@scope (.dark) to ([data-theme]){:scope .theme-dark-vars-color-x-sky-400{--color-x:var(--sky-400)}}',
     );
     expect(generatedRulesFor({ md: { vars: { 'chart-gap': '8px' } } }, 'vars-breakpoint')).toContain(
       '.md-vars-chart-gap-8px{--chart-gap:8px}',

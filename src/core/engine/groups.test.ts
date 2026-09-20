@@ -73,8 +73,8 @@ describe('group and peer', () => {
     renderStyles(engine, { theme: { dark: { group: { 'card/hover': { color: 'white' } }, peer: { checked: { color: 'black' } } } } });
 
     expect(ruleList(engine)).toEqual([
-      '.dark .card:hover .theme-dark-hover-card-color-white{color:var(--white)}',
-      '.dark .peer:checked~.theme-dark-peer-checked-peer-color-black{color:var(--black)}',
+      '@scope (.dark) to ([data-theme]){:scope .card:hover .theme-dark-hover-card-color-white{color:var(--white)}}',
+      '@scope (.dark) to ([data-theme]){:scope .peer:checked~.theme-dark-peer-checked-peer-color-black{color:var(--black)}}',
     ]);
   });
 

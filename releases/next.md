@@ -16,6 +16,7 @@ _Unreleased. A PR that changes what a consumer sees adds its section here — se
 - **[What a model wrote, rendered safely](#what-a-model-wrote-rendered-safely)** — `<SpecRenderer>` renders a generated spec against the components your app allows: unknown names render nothing, refused props are dropped, and only an event can become a function.
 - **[A dashboard people rearrange, and a model can write](#a-dashboard-people-rearrange-and-a-model-can-write)** — a drag-and-resize widget grid whose layout is JSON in cells: every place is a class, the keyboard gets a grab, and a model can write the same file a drag reports.
 - **[A generated dashboard with something in it](#a-generated-dashboard-with-something-in-it)** — the catalog describes a grid's columns and a dashboard's layout now, so a spec can say where each widget goes and what is inside it.
+- **[A theme inside a theme](#a-theme-inside-a-theme)** — a local `<Box.Theme>` finally wins inside a themed page: a theme reaches the subtree it owns and stops at the next element that declares one.
 - **[The DataGrid exports its types](#the-datagrid-exports-its-types)** — `ColumnType`, `GridDefinition`, `CellModel` and the rest come off `components/dataGrid` now instead of a path inside it.
 - **[The whole loop, and the route that runs it](#the-whole-loop-and-the-route-that-runs-it)** — `specSchema()` is on the catalog entry too, so a server route can build the constraint a model generates under; and a node missing a prop it cannot do without is held back rather than left to throw.
 
@@ -483,6 +484,36 @@ dashboard for the module boundary. Nothing else moved.
 
 [The shapes a spec can write](https://box-kite.dev/ai-context)
 
+## A theme inside a theme
+
+A theme is an ancestor class, so two of them on one page wrote two rules of exactly the same specificity —
+and the one written last won, however far away it was. That made `<Box.Theme use="local">` a coin toss: a
+light panel inside a dark page stayed dark, and every built-in component's dark styling stayed with it,
+since those are written as a dark override over a light base rather than as a pair of themes.
+
+Every theme rule is scoped to the subtree its theme owns now, and ends at the next element declaring one:
+
+```css
+@scope (.light) to ([data-theme]) {
+  :scope .theme-light-bgColor-white { background-color: var(--white); }
+}
+```
+
+So the nearest theme wins — for a property the inner theme never mentions as much as for one it does, and
+even where the outer theme's rule carries one more pseudo-class, which proximity alone would have lost to.
+What marks a theme root is `data-theme`, and `<Box.Theme>` renders it beside the class instead of writing
+it from an effect, so the boundary is in the HTML the first paint uses. A theme class you set by hand — the
+one a prerendered shell puts on `<html>` — wants the attribute beside it.
+
+```tsx
+<Box.Theme use="local" theme="light">
+  <Box p={4} theme={{ light: { bgColor: 'white' }, dark: { bgColor: 'slate-950' } }}>
+    Light in here, whatever the page around it is.
+  </Box>
+</Box.Theme>
+```
+
+[Theme setup](https://box-kite.dev/theme-setup#nesting)
 ## The whole loop, and the route that runs it
 
 `specSchema()` is exported from `@box-kite/react/catalog` as well as from `/spec`, which is what makes
@@ -525,7 +556,11 @@ same place keeps the first one's state, since it is the same component instance.
 
 ## Breaking changes
 
-None.
+- **A theme rule is an `@scope` block now, so theming needs Chrome 118+, Safari 17.4+ or Firefox 128+.**
+  Below that the rules are dropped and elements show their unthemed values, which for the pre-built
+  components is the light design — every one of their theme blocks is a dark override over a light base.
+  Write the design older browsers should get as the plain props and the other one under `theme`, which is
+  what the components themselves do.
 
 ## Fixes
 
