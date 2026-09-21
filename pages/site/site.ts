@@ -144,6 +144,13 @@ export const siteRoutes = [
       'Every Tailwind v4.3 utility family against the props this library ships — what is covered, what is partial, and the one-line answer for the rest.',
   },
   {
+    path: '/radix-comparison',
+    name: 'Radix Comparison',
+    title: 'Box Kite vs Radix UI and Base UI — thirteen patterns, measured',
+    description:
+      'Thirteen patterns all three libraries ship, measured twice each, and the eighteen more where one of the three has nothing at all.',
+  },
+  {
     path: '/escape-hatch',
     name: 'Escape Hatch',
     description:

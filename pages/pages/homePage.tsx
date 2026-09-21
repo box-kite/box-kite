@@ -469,9 +469,24 @@ function AccessibleSection() {
         <Stat value={String(totals.knownViolations)} label="violations in the ledger, which fails on a listed one that stops firing too" />
       </Grid>
 
+      <P fontSize={13} mb={6} theme={{ dark: { color: 'slate-500' }, light: { color: 'slate-500' } }}>
+        Radix and Base UI implement these patterns too, and test them; what neither of them ships is the appearance. Thirteen patterns
+        against both, measured twice each and with the rows this library loses kept in, are on the{' '}
+        <SiteLink
+          to="/radix-comparison"
+          display="inline"
+          theme={{ dark: { color: 'violet-400' }, light: { color: 'violet-600' } }}
+          hover={{ textDecoration: 'underline' }}
+        >
+          comparison page
+        </SiteLink>
+        .
+      </P>
+
       <Flex props={{ 'data-md': 'inline' }} gap={5} flexWrap="wrap">
         <SectionLink to="/menu">A menu button, submenus and all</SectionLink>
         <SectionLink to="/combobox">A combobox over 10,000 rows</SectionLink>
+        <SectionLink to="/radix-comparison">Against Radix and Base UI</SectionLink>
       </Flex>
     </Section>
   );

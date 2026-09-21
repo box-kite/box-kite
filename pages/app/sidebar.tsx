@@ -15,6 +15,7 @@ import {
   DoorOpen,
   Download,
   Gauge,
+  GitCompare,
   Highlighter,
   Languages,
   Layers,
@@ -240,6 +241,9 @@ export default function Sidebar({ toggleTheme, onClose }: SidebarProps) {
           </MenuItem>
           <MenuItem to="/tailwind-parity" icon={<ListChecks />}>
             Tailwind Parity
+          </MenuItem>
+          <MenuItem to="/radix-comparison" icon={<GitCompare />}>
+            Radix Comparison
           </MenuItem>
           <MenuItem to="/escape-hatch" icon={<DoorOpen />}>
             Escape Hatch

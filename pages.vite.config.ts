@@ -118,7 +118,34 @@ function markdownMirror(): Plugin {
   };
 }
 
-export default defineConfig(({ mode, isSsrBuild }) => {
+/**
+ * `preview`, serving the built site the way the static host does. GitHub Pages answers `/installation`
+ * with a 301 to `/installation/` and then the shell; Vite's preview has no such redirect, and as an
+ * `spa` it answered with the *root* shell instead — so the browser hydrated `/`'s markup at another
+ * route, which is a guaranteed mismatch and was bug #133, the React #418 that looked site-wide for a
+ * month. Nothing was ever wrong with the shells: `/installation/` was clean the whole time.
+ */
+function staticHost(): Plugin {
+  const out = join(import.meta.dirname, 'dist-pages');
+
+  return {
+    name: 'static-host',
+    configurePreviewServer(server) {
+      server.middlewares.use((request, response, next) => {
+        const path = new URL(request.url ?? '/', 'http://localhost').pathname;
+
+        // A file request is the host's business; only an extensionless path names a directory.
+        if (path.endsWith('/') || path.slice(path.lastIndexOf('/')).includes('.')) return next();
+        if (!existsSync(join(out, path, 'index.html'))) return next();
+
+        response.writeHead(301, { Location: `${path}/${request.url?.slice(path.length) ?? ''}` });
+        response.end();
+      });
+    },
+  };
+}
+
+export default defineConfig(({ mode, isSsrBuild, isPreview }) => {
   return {
     // `unplugin-icons` is the Iconify bridge the /icon page documents, and this site is where it is
     // proved: `~icons/<set>/<name>` becomes a React component at build time, out of the icon data in
@@ -128,7 +155,17 @@ export default defineConfig(({ mode, isSsrBuild }) => {
     // The prerender pass builds `entry-server.tsx` through this same config (see
     // `scripts/prerender-pages.mjs`), and the metadata plugin has nothing to do there: an SSR bundle
     // has no `index.html` for it to read.
-    plugins: [reactPlugin(), iconsPlugin({ compiler: 'jsx', jsx: 'react' }), ...(isSsrBuild ? [] : [siteMetadata(), markdownMirror()])],
+    plugins: [
+      reactPlugin(),
+      iconsPlugin({ compiler: 'jsx', jsx: 'react' }),
+      ...(isSsrBuild ? [] : [siteMetadata(), markdownMirror(), staticHost()]),
+    ],
+    // `preview` serves a shell per route, not a single-page app: an address with no file behind it is
+    // the host's 404 rather than the root shell served under another route's name. `staticHost` above
+    // is the other half — the trailing-slash redirect that makes the two agree. **Preview only**: the
+    // dev server builds no shells, so the fallback to `index.html` is the only thing that serves a
+    // route there at all.
+    appType: isPreview ? 'mpa' : 'spa',
     // One port, and a failure rather than the next one free. Vite's default walks 5173 → 5174 → … on a
     // port already taken, which is silent: a second `npm run dev` looks like it worked, serves stale
     // code at an address nobody looked at, and outlives the session. Fourteen of them accumulated over
