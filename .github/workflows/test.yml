@@ -49,6 +49,11 @@ jobs:
       # is a claim nothing holds up.
       - name: Check the committed agent files are current 🔧
         run: npm run check:agents
+      # Where this library stands against the ones it is usually weighed against. It is a development
+      # instrument rather than a page on the site, so this is what keeps it runnable: the tables are
+      # held to the live registry by their own tests, and this proves the report still prints them.
+      - name: Check the comparison report runs 🔧
+        run: npm run compare
       - name: Check build 🔧
         run: npm run build
       # The existence proof for the core boundary: a page with no framework, built against the

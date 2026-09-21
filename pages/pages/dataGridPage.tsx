@@ -296,7 +296,7 @@ export default function DataGridPage() {
                 <b>Space on any cell selects its row</b> — or all of them, from the header cell the select-all box sits in — which is how a
                 grid is selected without a mouse now that the checkboxes are reached through their cells. For a data-entry screen that wants
                 the spreadsheet reading instead, <Mono>def.tabNavigation="cells"</Mono> makes Tab walk to the next cell and on into the rows
-                after it, the way AG Grid does; the cost is that Tab is then no longer the way out of the grid.
+                after it, the way a spreadsheet does; the cost is that Tab is then no longer the way out of the grid.
               </Note>
               <Note icon={Table} title="Give it a title">
                 A grid is not named by the rows in it. Pass <Mono>def.title</Mono> and the grid points <Mono>aria-labelledby</Mono> at it.
@@ -1431,16 +1431,16 @@ const dataSource = useMemo(() => ({
           <Section id="tab-navigation" title="Tab through it like a spreadsheet">
             <Box>
               A grid is a composite widget, so APG puts <b>one</b> of its cells in the page tab sequence and Tab leaves for whatever comes
-              after it — the arrow keys are how you move inside. That is the default here, and MUI X's. A screen built for data entry often
-              wants the other reading, though, the one Excel and AG Grid have: <Mono>def.tabNavigation="cells"</Mono> makes Tab walk to the
-              next cell and on into the rows after it, and Shift+Tab walk back.
+              after it — the arrow keys are how you move inside. That is the default here. A screen built for data entry often wants the
+              other reading, though, the one a spreadsheet has: <Mono>def.tabNavigation="cells"</Mono> makes Tab walk to the next cell and
+              on into the rows after it, and Shift+Tab walk back.
             </Box>
             <Flex d="column" gap={3} mt={4}>
               <Note icon={Table} title="The cost is the way out">
                 Tab is how a keyboard leaves a widget it has finished with. Spend it on the cells and there is nothing left to leave with —
-                so this grid lets the key through at the first and last cell rather than swallowing it, which is the one place it differs
-                from AG Grid. Weigh it the way the two libraries did: a grid on a page of content should stay a single tab stop, and a grid
-                that <i>is</i> the screen can afford to keep the key.
+                so this grid lets the key through at the first and last cell rather than swallowing it instead of trapping the keyboard in
+                the cells. Weigh it that way round: a grid on a page of content should stay a single tab stop, and a grid that <i>is</i> the
+                screen can afford to keep the key.
               </Note>
               <Note icon={Table} title="It changes Tab and nothing else">
                 Enter and F2 still step into whatever a cell holds, Tab still walks the controls inside that cell and wraps, Escape still

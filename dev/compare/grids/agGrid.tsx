@@ -1,10 +1,10 @@
 import { AllCommunityModule, ColDef, FilterModel, ModuleRegistry, colorSchemeDark, themeQuartz } from 'ag-grid-community';
 import { AgGridReact } from 'ag-grid-react';
 import { useLayoutEffect, useMemo, useRef } from 'react';
-import Box from '../../src/box';
-import { SORT_COLUMN, benchColumns } from './benchColumns';
-import { BenchRow, FILTER_COUNTRY } from './benchData';
-import { BenchGridProps, GRID_BOX_HEIGHT, GridImpl, HEADER_HEIGHT, ROW_HEIGHT } from './gridImpl';
+import { SORT_COLUMN, benchColumns } from '../../../pages/benchmark/benchColumns';
+import { BenchRow, FILTER_COUNTRY } from '../../../pages/benchmark/benchData';
+import { BenchGridProps, GRID_BOX_HEIGHT, GridImpl, HEADER_HEIGHT, ROW_HEIGHT } from '../../../pages/benchmark/gridImpl';
+import Box from '../../../src/box';
 
 // v33 split the grid into modules and registers none of them itself: without this every grid renders an
 // error panel where the rows go.

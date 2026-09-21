@@ -266,8 +266,10 @@ describe('every declared prop value produces a rule', () => {
     '.cursor/rules/box-kite.mdc',
     '.claude-plugin/marketplace.json',
     'pages/site/site.ts',
-    'pages/pages/aiContextPage.tsx',
   ];
+  // The docs site's own pages are not in that list: they read the figure from `pages/pages/home.ts`,
+  // which `home.test.ts` pins to `api/props.json` — a derived count cannot drift, so guarding the
+  // prose around it would only forbid rewording it.
 
   // `186 typed CSS props`, `186 CSS properties`, `**186** props`: the number, any emphasis, then the noun.
   const quotedCount = /(\d{2,4})\**\s+(?:typed\s+)?(?:CSS\s+)?(?:propert(?:y|ies)|props?)\b/g;

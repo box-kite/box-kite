@@ -235,8 +235,8 @@ const { text, truncated } = AgentUtils.formatValue(part.output, 4000);`}
             <Box>
               A model writes markdown, and a parser is a choice an app has usually already made — so what ships is the half that is ours:{' '}
               <Mono>markdownComponents</Mono>, the <Mono>components</Mono> map that <Mono>react-markdown</Mono>, <Mono>streamdown</Mono> and
-              everything built on that shape already takes, with the engine's classes on it. No stylesheet, no Tailwind config, no design
-              tokens to declare.
+              everything built on that shape already takes, with the engine's classes on it. No stylesheet, no build-tool config and no
+              design tokens to declare.
             </Box>
             <Box mt={4}>
               <Code

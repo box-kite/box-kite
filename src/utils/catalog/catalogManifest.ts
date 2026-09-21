@@ -257,7 +257,7 @@ const catalogManifest: CatalogManifest = {
     bgGradient:
       'A gradient written as a value: the key names the kind and carries its geometry (`linear` a direction or an angle, `radial` a shape, `conic` an angle to start from), `colors` are the stops in order — a palette token, one with an opacity modifier, or a `[colour, position]` pair.',
     shadow:
-      "The elevation of the box: `xxs` through `xxl` on Tailwind's scale, or one of the three original presets (`small`, `medium`, `large`, which carry their own colour).",
+      'The elevation of the box: `xxs` through `xxl` on the elevation scale, or one of the three original presets (`small`, `medium`, `large`, which carry their own colour).',
     shadowColor: "What colour `shadow` draws in — the scale's own translucent black otherwise.",
     insetShadow: 'A shadow drawn inside the border box: `xxs`, `xs` or `sm`.',
     insetShadowColor: 'What colour `insetShadow` draws in.',
@@ -267,7 +267,7 @@ const catalogManifest: CatalogManifest = {
     insetRingColor: 'What colour `insetRing` draws in.',
     textShadow: 'A shadow behind the text rather than the box: `xxs` through `lg`, recoloured by `textShadowColor`.',
     textShadowColor: 'What colour `textShadow` draws in.',
-    blur: "How far the element's own pixels are blurred: a step of Tailwind's scale (`xs` 4px through `xxxl` 64px) or a radius in px.",
+    blur: "How far the element's own pixels are blurred: a step of the named scale (`xs` 4px through `xxxl` 64px) or a radius in px.",
     brightness: 'How bright the element is rendered, as a percentage: `brightness={110}` is 10% brighter, `{50}` is half.',
     contrast: 'How much contrast the element is rendered with, as a percentage — `100` being the element as it is.',
     grayscale: 'How far the element is desaturated, as a percentage: `grayscale={100}` removes colour entirely.',

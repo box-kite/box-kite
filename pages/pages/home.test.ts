@@ -4,8 +4,7 @@ import { resolve, sep } from 'path';
 import { describe, expect, it } from 'vitest';
 import { ComponentApi } from '../site/componentApi';
 import { siteRoutes } from '../site/site';
-import { products } from './gridComparison';
-import { APG_PATTERNS, completions, patternRows, pillars, quotedTiers, totals, typeProof } from './home';
+import { agentTools, APG_PATTERNS, completions, installs, patternRows, pillars, shipped, totals, typeProof } from './home';
 
 const root = process.cwd();
 
@@ -109,10 +108,47 @@ describe('the pillars', () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it('quotes only tiers the comparison page prices', () => {
-    const priced = new Set(products.filter((product) => product.price).map((product) => product.id));
+  // Every card is a jump link, so a pillar whose section was renamed scrolls nowhere and says nothing.
+  it('gives each one a section on the page to jump to', () => {
+    const page = readFileSync(resolve(root, 'pages/pages/homePage.tsx'), 'utf8');
+    const orphans = pillars.filter((pillar) => !page.includes(`id="${pillar.id}"`));
 
-    expect(quotedTiers.filter((id) => !priced.has(id))).toEqual([]);
+    expect(orphans.map((pillar) => pillar.id)).toEqual([]);
+  });
+});
+
+/**
+ * The page's loudest claim is now that the instructions ship with the code, so it is held to the
+ * generator that ships them: `scripts/agent-docs.mjs` writes the tarball's agent files, and
+ * `mcp/README.md` is the MCP server's own tool list — the same file the package's `docs/mcp.md` is
+ * copied from. A row here that neither of them backs is a promise about a file nobody writes.
+ */
+describe('what the package ships for an agent', () => {
+  const generator = readFileSync(resolve(root, 'scripts/agent-docs.mjs'), 'utf8');
+  const postbuild = readFileSync(resolve(root, 'scripts/postbuild.mjs'), 'utf8');
+
+  it('names only files the build actually writes', () => {
+    // The generated docs are written by name; the two copied directories are named by postbuild.
+    const written = `${generator}\n${postbuild}`;
+    const missing = shipped.filter((file) => !written.includes(file.path.replace(/\/$/, '')));
+
+    expect(missing.map((file) => file.path)).toEqual([]);
+  });
+
+  it('lists every tool the MCP server documents, and no others', () => {
+    const readme = readFileSync(resolve(root, 'mcp/README.md'), 'utf8');
+    const documented = [...readme.matchAll(/^\| `(\w+)`\s+\|/gm)].map((match) => match[1]);
+
+    expect([...agentTools].map((tool) => tool.name).sort()).toEqual(documented.sort());
+  });
+
+  it('prints the tool count the section claims', () => {
+    expect(agentTools).toHaveLength(6);
+  });
+
+  // Three routes in, and each is one line the reader pastes: a command with a newline in it is two.
+  it('gives each install route a single-line command', () => {
+    expect(installs.filter((install) => install.command.includes('\n')).map((install) => install.label)).toEqual([]);
   });
 });
 

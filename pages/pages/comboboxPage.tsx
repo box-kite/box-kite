@@ -309,12 +309,11 @@ export default function ComboboxPage() {
             </Box>
           </Section>
 
-          <Section id="comparison" title="The combobox Radix never had">
+          <Section id="whole" title="The whole pattern, in one component">
             <Box>
-              Radix has never shipped one. <Mono>radix-ui/primitives#1342</Mono> asked for it in 2022 and is still open, which is why a
-              Radix-based app reaches for <Mono>downshift</Mono> or <Mono>cmdk</Mono> and then writes the markup, the styling and the ARIA
-              around it. <Mono>downshift</Mono> alone is 17.68 KB gz before any of that; this is 8.65 KB on top of Box, with the listbox,
-              the chips, the create row and the windowing in it.
+              A combobox is usually assembled: a behaviour package for the state machine, then the markup, the styling and the ARIA written
+              around it. This is 8.65 KB on top of Box with all of it inside — the listbox, the chips, the create row and the windowing — so
+              what you write is the data and what it means.
             </Box>
             <Box mt={4}>
               <Code
@@ -330,7 +329,7 @@ export default function ComboboxPage() {
             </Box>
             <Box mt={4}>
               Ten thousand rows, several selected as chips, a query that can become a row, and the value that comes back is one of the
-              objects that went in. The three things a string-only API cannot do are the three complaints that issue collects.
+              objects that went in — not its label. Those three are what a string-only API cannot do.
             </Box>
           </Section>
 
@@ -372,7 +371,7 @@ const sidebarLinks = [
   { id: 'scale', label: 'Ten thousand options' },
   { id: 'keyboard', label: 'What the keyboard does' },
   { id: 'styling', label: 'Styling' },
-  { id: 'comparison', label: 'The one Radix never had' },
+  { id: 'whole', label: 'The whole pattern' },
   ...apiSections(comboboxApi),
 ];
 

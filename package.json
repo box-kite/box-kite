@@ -98,6 +98,10 @@
     "docs:agents": "node scripts/check-agent-files.mjs --fix",
     "check:package": "publint dist && attw --pack dist --ignore-rules false-esm cjs-resolves-to-esm internal-resolution-error && publint dist-core && attw --pack dist-core --ignore-rules false-esm cjs-resolves-to-esm internal-resolution-error",
     "bench": "node bench/run.mjs",
+    "compare": "node dev/compare/report.mjs",
+    "compare:tailwind": "node dev/compare/report.mjs tailwind",
+    "compare:radix": "node dev/compare/report.mjs radix",
+    "compare:grid": "node dev/compare/report.mjs grid",
     "size": "size-limit",
     "size:published": "node dev/published-size.mjs",
     "release": "node scripts/release.mjs"

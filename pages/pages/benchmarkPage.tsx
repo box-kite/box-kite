@@ -5,7 +5,7 @@ import Button from '../../src/components/button';
 import Checkbox from '../../src/components/checkbox';
 import Flex from '../../src/components/flex';
 import RadioGroup from '../../src/components/radioGroup';
-import { H2, Link } from '../../src/components/semantics';
+import { H2 } from '../../src/components/semantics';
 import { BenchRow, BENCH_COLUMN_COUNT, FILTER_COUNTRY, generateRows, GROUP_COLUMN } from '../benchmark/benchData';
 import {
   BenchDriver,
@@ -20,7 +20,7 @@ import {
 } from '../benchmark/benchModel';
 import referenceResults from '../benchmark/benchResults';
 import { BenchGridProps, GridImpl, ROW_HEIGHT, VISIBLE_ROWS } from '../benchmark/gridImpl';
-import impls, { DEFAULT_IMPL } from '../benchmark/impls';
+import impls, { DEFAULT_IMPL, HAS_COMPARISON } from '../benchmark/impls';
 import Code from '../components/code';
 import Mono from '../components/mono';
 import PageHeader from '../components/pageHeader';
@@ -47,9 +47,8 @@ export default function BenchmarkPage() {
           <Box fontSize={15} lineHeight={26} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
             Every grid claims to be fast. This page is the claim with an instrument attached: it generates{' '}
             {rowChoices[1].toLocaleString('en-US')} rows of {BENCH_COLUMN_COUNT} columns in your browser, drives the grid through five
-            operations and reports what it measured — on your machine, in your browser, at your window size. Tick another library and it
-            drives that one through the same five, one after the other. The numbers below are from one laptop and are here for scale; the
-            button is the point.
+            operations and reports what it measured — on your machine, in your browser, at your window size. The numbers below are from one
+            laptop and are here for scale; the button is the point.
           </Box>
 
           <Section id="run" title="Run it">
@@ -71,68 +70,12 @@ export default function BenchmarkPage() {
               </Box>
             )}
             <Box mt={5}>
-              <Note icon={Ruler} title="The fling is inside a frame, and the work inside it is still the gap">
-                First render, filter and sort are in the same class as AG Grid's and MUI X's, the grouping is the quickest of the four and
-                only two of them can group at all. The fling was the one this grid was behind on — twenty milliseconds of work a frame
-                against AG Grid's 2.6 — because it rendered fifty-eight rows around an eighteen-row viewport where those two render about
-                half that. It keeps twelve rows ahead of the scroll and four behind it now, thirty-six in all, and the frame is inside a
-                sixtieth of a second with none of a hard flick blank. What is left is the work inside that frame, which is still several
-                times theirs: published rather than left out, and the number being worked on.
+              <Note icon={Ruler} title="The fling is inside a frame, and the work inside it is the number being worked on">
+                The fling is the operation this grid was slowest at — twenty milliseconds of work a frame — because it rendered fifty-eight
+                rows around an eighteen-row viewport. It keeps twelve rows ahead of the scroll and four behind it now, thirty-six in all,
+                and the frame is inside a sixtieth of a second with none of a hard flick blank. What is left is the work inside that frame,
+                which is published rather than left out, and is the number being worked on.
               </Note>
-            </Box>
-          </Section>
-
-          <Section id="tiers" title="What each grid is allowed to do">
-            <Box>
-              Three of the four are MIT-licensed and free, and two of them still cannot run all five operations — not because they are slow
-              at them, but because the feature is in a tier that is not free. A missing number below is that, and it is the comparison worth
-              having: the fastest grouping is the one you are allowed to use.
-            </Box>
-            <Box mt={5}>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <HeadCell>Grid</HeadCell>
-                    <HeadCell>The tier measured</HeadCell>
-                    <HeadCell>What it cannot run here</HeadCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {impls.map((info) => (
-                    <TableRow key={info.id}>
-                      <Cell theme={{ dark: { color: 'slate-200' }, light: { color: 'slate-800' } }}>
-                        <Link props={{ href: info.href, target: '_blank', rel: 'noreferrer' }}>{info.label}</Link>
-                      </Cell>
-                      <Cell>{info.tier}</Cell>
-                      <Cell>
-                        {Object.entries(info.unavailable ?? {})
-                          .map(([id, reason]) => `${scenarios.find((scenario) => scenario.id === id)?.label ?? id} (${reason})`)
-                          .join(', ') || 'Nothing — it runs all five'}
-                      </Cell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </Box>
-            <Box mt={5}>
-              <Flex d="column" gap={3}>
-                <Note icon={ScanEye} title="The free MUI grid paginates, so there is no fling to measure">
-                  <Mono>DataGrid</Mono> forces <Mono>pagination</Mono> on and caps a page at a hundred rows — both are in the package, not
-                  in the documentation — so the grid never holds more than a hundred of the hundred thousand rows at once. It sorts and
-                  filters all of them, which is what the other two numbers measure; scrolling past the first page is a paid tier, so there
-                  is a reason in that cell rather than a frame time for a hundred rows.
-                </Note>
-                <Note icon={ScanEye} title="Grouping is the paid feature in both of the big grids">
-                  AG Grid Community ships no row-grouping module at all, and MUI X puts row grouping and aggregation in Premium. Neither can
-                  be driven through the grouping scenario, so neither is given a number for it. Box Kite and a hand-written TanStack table
-                  both group and total a hundred thousand rows for nothing.
-                </Note>
-                <Note icon={ScanEye} title="The TanStack column is a baseline, not a product">
-                  TanStack Table is free and does every one of the five, and the grid around it is yours to write: the virtualized body, the
-                  header presses, the group rows and the aggregates on this page are about a hundred and fifty lines in this repository,
-                  with no pinned columns, no keyboard, no editing and no accessibility. That is the trade the number is there to price.
-                </Note>
-              </Flex>
             </Box>
           </Section>
 
@@ -140,8 +83,8 @@ export default function BenchmarkPage() {
             <Box>
               A measurement starts the moment the change is asked for and stops after the browser has painted it. The frame callback runs
               before the paint and a task posted from inside it runs after, so what is timed is React's render, the commit, style, layout
-              and paint — not a DOM write with the expensive half still ahead of it. Every grid is driven through the same five state
-              changes by the same code, and the rows are generated once and handed to all of them.
+              and paint — not a DOM write with the expensive half still ahead of it. The five state changes are driven by the same code
+              every time, and the rows are generated once and handed to the grid.
             </Box>
             <Box mt={5}>
               <Table>
@@ -207,21 +150,21 @@ export default function BenchmarkPage() {
             <Box mt={5}>
               <Flex d="column" gap={3}>
                 <Note icon={ScanEye} title="A canvas grid wins the numbers a canvas grid is built for">
-                  Glide Data Grid and the other canvas grids draw cells into a bitmap rather than creating elements, so their scroll cost is
-                  close to flat however many columns are on screen and nothing here will beat them at it. What they pay for that is
-                  everything a DOM makes free: text selection, find-in-page, a screen reader, a browser extension, a CSS rule, an element
-                  inspector. This grid is a DOM grid and is measured as one.
+                  A grid that draws its cells into a bitmap rather than creating elements has a scroll cost close to flat however many
+                  columns are on screen, and nothing here will beat it at that. What it pays for it is everything a DOM makes free: text
+                  selection, find-in-page, a screen reader, a browser extension, a CSS rule, an element inspector. This grid is a DOM grid
+                  and is measured as one.
                 </Note>
                 <Note icon={ScanEye} title="The scroll is scripted, not thrown by a finger">
                   The scroll scenario sets <Mono>scrollTop</Mono> on every animation frame, at a speed taken from the clock rather than a
                   fixed number of pixels — so a frame that took 100 ms to render lands 400 px further down, the way a real fling does. What
                   it exercises is the virtualization and the re-render, not the compositor path a wheel or a touch drag also takes.
                 </Note>
-                <Note icon={ScanEye} title="Two of the four render only the columns on screen">
-                  Every grid here is left at its own defaults apart from the geometry — the same twenty columns at the same widths, 32px
-                  rows, a 40px header — and AG Grid and MUI X virtualize columns by default where Box Kite and the TanStack baseline render
-                  all twenty. On a page narrower than the table that is roughly a third of the cells, and it is a real advantage of theirs
-                  rather than a thumb on the scale: what a default does is what a reader gets.
+                <Note icon={ScanEye} title="Every one of the twenty columns is rendered">
+                  The grid is left at its own defaults apart from the geometry — twenty columns at the same widths, 32px rows, a 40px header
+                  — and it virtualizes rows but not columns, so all twenty are in the DOM. A grid that renders only the columns on screen is
+                  doing roughly a third of the cell work on a page narrower than the table, which is worth knowing before reading any figure
+                  here as an absolute.
                 </Note>
                 <Note icon={ScanEye} title="The rows are already in memory">
                   Nothing here crosses a network. A grid whose rows arrive from a server a block at a time is a different measurement, and
@@ -355,30 +298,33 @@ function Runner() {
         </Button>
       </Flex>
 
-      <Box mt={5} props={{ role: 'group', 'aria-label': 'Grids' }}>
-        <Box fontSize={13} fontWeight={600} mb={2} theme={{ dark: { color: 'slate-300' }, light: { color: 'slate-700' } }}>
-          Grids — each one is downloaded when you pick it, and measured one after another
+      {/* Development only. The published site measures this grid and ranks nobody — see benchmark/impls.ts. */}
+      {HAS_COMPARISON && (
+        <Box mt={5} props={{ role: 'group', 'aria-label': 'Grids' }}>
+          <Box fontSize={13} fontWeight={600} mb={2} theme={{ dark: { color: 'slate-300' }, light: { color: 'slate-700' } }}>
+            Grids — each one is downloaded when you pick it, and measured one after another
+          </Box>
+          <Flex gap={6} flexWrap="wrap">
+            {impls.map((info) => (
+              <Checkbox
+                key={info.id}
+                label={info.label}
+                checked={picked.includes(info.id)}
+                // The last one ticked stays ticked: a run with nothing to measure is a button that
+                // does nothing and says nothing about why.
+                disabled={running || (picked.length === 1 && picked.includes(info.id))}
+                onChange={(event) =>
+                  setPicked((current) =>
+                    event.target.checked
+                      ? impls.filter((one) => one.id === info.id || current.includes(one.id)).map((one) => one.id)
+                      : current.filter((id) => id !== info.id),
+                  )
+                }
+              />
+            ))}
+          </Flex>
         </Box>
-        <Flex gap={6} flexWrap="wrap">
-          {impls.map((info) => (
-            <Checkbox
-              key={info.id}
-              label={info.label}
-              checked={picked.includes(info.id)}
-              // The last one ticked stays ticked: a run with nothing to measure is a button that
-              // does nothing and says nothing about why.
-              disabled={running || (picked.length === 1 && picked.includes(info.id))}
-              onChange={(event) =>
-                setPicked((current) =>
-                  event.target.checked
-                    ? impls.filter((one) => one.id === info.id || current.includes(one.id)).map((one) => one.id)
-                    : current.filter((id) => id !== info.id),
-                )
-              }
-            />
-          ))}
-        </Flex>
-      </Box>
+      )}
 
       <Box mt={4} minHeight={6} fontSize={13} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-500' } }}>
         <Box props={{ role: 'status' }}>{status ?? doneLabel(results)}</Box>
@@ -618,7 +564,6 @@ function progressLabel(label: string, done: number, total: number, scenario: Sce
 const sidebarLinks = [
   { id: 'run', label: 'Run it' },
   { id: 'results', label: 'What it measured' },
-  { id: 'tiers', label: 'What each grid may do' },
   { id: 'method', label: 'How it is taken' },
   { id: 'limits', label: 'What it leaves out' },
   { id: 'rerun', label: 'Rerunning it' },

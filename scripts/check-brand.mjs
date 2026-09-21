@@ -49,16 +49,6 @@ const ALLOWED = [
     strings: ['@cronocode/react-box'],
   },
   {
-    file: 'pages/pages/migrationPage.tsx',
-    reason: 'the migration page: naming what a reader is migrating from is the whole point of it',
-    strings: ['@cronocode/react-box', 'crono-styles', 'crono-box', '[react-box]'],
-  },
-  {
-    file: 'pages/site/site.ts',
-    reason: "the migration route's title and description, which have to carry the old name to be findable",
-    strings: ['@cronocode/react-box'],
-  },
-  {
     file: 'scripts/build-bridge.mjs',
     reason: 'the generator for the compatibility bridge, which is published under the old name on purpose',
     strings: ['@cronocode/react-box'],

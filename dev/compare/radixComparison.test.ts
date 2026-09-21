@@ -1,8 +1,8 @@
 import { readdirSync, readFileSync } from 'fs';
 import { resolve } from 'path';
 import { describe, expect, it } from 'vitest';
-import { ComponentApi } from '../site/componentApi';
-import { siteRoutes } from '../site/site';
+import { ComponentApi } from '../../pages/site/componentApi';
+import { siteRoutes } from '../../pages/site/site';
 import { coverageRows, libraries, LibraryId, marginalSum, sizeRows, totalFor, VERIFIED_ON } from './radixComparison';
 
 const root = process.cwd();

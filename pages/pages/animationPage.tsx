@@ -50,9 +50,9 @@ export default function AnimationPage() {
       <Reveal delay={0.1}>
         <Flex d="column" gap={10}>
           <Section id="presets" title="Four presets, no registration">
-            <Mono>animation</Mono> takes one of four names — the ones Tailwind ships, because everybody already knows what they do. Their{' '}
-            <Mono>@keyframes</Mono> come with the engine and are written into the stylesheet the first time something asks for one, so an
-            unused preset costs nothing at all.
+            <Mono>animation</Mono> takes one of four names — <Mono>spin</Mono>, <Mono>pulse</Mono>, <Mono>bounce</Mono> and{' '}
+            <Mono>ping</Mono>. Their <Mono>@keyframes</Mono> come with the engine and are written into the stylesheet the first time
+            something asks for one, so an unused preset costs nothing at all.
           </Section>
 
           <Code id="presets-demo" label="Presets" language="jsx">

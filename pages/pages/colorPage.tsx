@@ -12,7 +12,7 @@ import useTableOfContents from '../hooks/useTableOfContents';
 
 /**
  * Grouped off the palette itself rather than listed here: the hand-written list this page used to carry
- * had missed the four families Tailwind added, and every value under a swatch was a hex that no longer is.
+ * had missed four families the palette gained, and every value under a swatch was a hex that no longer is.
  */
 const groups = Object.keys(Palette.colors).reduce<Record<string, string[]>>((grouped, name) => {
   const family = /^(.+)-\d+$/.exec(name)?.[1] ?? 'keywords';
@@ -41,8 +41,8 @@ export default function ColorPage() {
           <Section id="tokens" title="A colour is a variable">
             Every token is a CSS variable, declared in <Mono>:root</Mono> the first time something on the page asks for it, and used through{' '}
             <Mono>var()</Mono> everywhere after that. That is what makes a colour cheap to repeat and possible to override — and why the
-            values below are <Mono>oklch()</Mono> rather than hex: the palette is Tailwind 4.3's, so a component copied from there keeps its
-            colours.
+            values below are <Mono>oklch()</Mono> rather than hex: a perceptual space is what keeps a step even across the hues and a theme
+            legible at every one of them.
           </Section>
 
           <Code
@@ -62,8 +62,8 @@ export default function ColorPage() {
           />
 
           <Section id="families" title="Twenty-six families, eleven steps">
-            Five neutrals, the four Tailwind 4.3 added (<Mono>mauve</Mono>, <Mono>mist</Mono>, <Mono>olive</Mono>, <Mono>taupe</Mono>) and
-            the seventeen hues. Hover a swatch for the value behind it.
+            Five neutrals, four more that sit between them (<Mono>mauve</Mono>, <Mono>mist</Mono>, <Mono>olive</Mono>, <Mono>taupe</Mono>)
+            and the seventeen hues. Hover a swatch for the value behind it.
           </Section>
 
           <Flex d="column" gap={6}>
@@ -104,9 +104,8 @@ export default function ColorPage() {
           </Flex>
 
           <Section id="alpha" title="An opacity modifier">
-            A slash and a number on any colour value — <Mono>bgColor="blue-500/40"</Mono> — is the token at 40% opacity. It is Tailwind's
-            spelling of the same thing, it works on every colour prop, and it nests wherever a colour does: inside a <Mono>hover</Mono>, a
-            theme, a breakpoint, a <Mono>cq</Mono>.
+            A slash and a number on any colour value — <Mono>bgColor="blue-500/40"</Mono> — is the token at 40% opacity. It works on every
+            colour prop, and it nests wherever a colour does: inside a <Mono>hover</Mono>, a theme, a breakpoint, a <Mono>cq</Mono>.
           </Section>
 
           <Code

@@ -180,8 +180,8 @@ export default function RegistryPage() {
               <Mono>npx shadcn@latest search {REGISTRY_NAMESPACE}</Mono> lists what is here.
             </Box>
             <Box>
-              Nothing about this needs Tailwind. The CLI wants a <Mono>components.json</Mono> with a <Mono>tailwind</Mono> key in it, and
-              empty strings satisfy it: these blocks write no CSS file and import no stylesheet, because every style in them is a prop.
+              The CLI expects a <Mono>components.json</Mono> carrying a <Mono>tailwind</Mono> key, and empty strings satisfy it — these
+              blocks write no CSS file and import no stylesheet, because every style in them is a prop.
             </Box>
           </Section>
 
