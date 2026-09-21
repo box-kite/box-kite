@@ -26,6 +26,7 @@ _Unreleased. A PR that changes what a consumer sees adds its section here — se
 - **[Four agent runtimes, one vocabulary](#four-agent-runtimes-one-vocabulary)** — `@box-kite/react/interop`: AI SDK, assistant-ui, CopilotKit, A2UI and AG-UI, each verified against its own published package.
 
 - **[A site about this library, and an answer for the agent writing it](#a-site-about-this-library-and-an-answer-for-the-agent-writing-it)** — the three comparison pages are gone and the docs lead with what ships for an AI instead: `AGENTS.md`, the whole prop reference and an MCP server, all inside the package.
+- **[/box, rebuilt for somebody who has never seen this library](#box-rebuilt-for-somebody-who-has-never-seen-this-library)** — what a Box is, the five things that are not what you would guess, a scale table the page measures live, and all 221 props searchable in one place. `/box-functions` is new beside it.
 
 <!-- One bullet per section below, linking to it: **[Heading](#heading)** — one line on why it matters. -->
 
@@ -66,6 +67,42 @@ Nothing in the library changed. This is the documentation site, the README and o
 trimmed to the runs it still prints.
 
 [Built for AI](https://www.box-kite.dev/ai-context/)
+
+## /box, rebuilt for somebody who has never seen this library
+
+`/box` is the page every component's API reference points at — "all 221 of Box's style props work on it
+too, and those are on /box" — and it was the page that taught the least. It opened on a nine-tab switcher
+over forty-six hand-written demo cards, with no sentence anywhere saying what a Box **is**, what a number
+on a prop means, or why there is no `style` attribute. The four facts that are silently wrong against a
+memory of another library were written down for a machine, in `AGENTS.md`, and nowhere on the site for a
+person.
+
+**It reads top to bottom now**, with nothing to click before the first sentence: what a Box is, then the
+five things to know first — each one printing the guess small and the truth in the heading, with the
+wrong line and the right line side by side — then the numbers, then a card built one prop at a time over
+six steps, then the nesting keys, then the nine props that are not styles at all (`tag`, `props`,
+`component`, `style` and why it exists).
+
+**The numbers section is measured rather than described.** Put a number in the box and every scale family
+shows the CSS it really writes for it, resolved by an isolated `createStyleEngine()` running in the page —
+so `p={16}` is `padding: 4rem` and `fontSize={16}` is `font-size: 1rem`, side by side, and the divider
+cannot drift away from the engine that owns it.
+
+**The nine tabs are one search box.** Every one of the 221 props is in a single table with the CSS it
+emits, filterable by twelve families and searchable by prop name, by CSS property or by a value you are
+looking for — read from `api/props.json`, which `npm run docs:props` measures from the engine, so no
+example on the page is written by hand. The forty-six demo cards covered a fifth of the registry and were
+the last prop documentation on the site that a person maintained.
+
+**`/box-functions` is the other half**, and it is new: `Box.extend()`, `Box.components()`,
+`Box.keyframes()`, `Box.spring()`, `Box.Theme`, `Box.useTheme()`, `Box.configure()`,
+`Box.getVariableValue()`, `useClassNames()` and `useVisibility()`, each with its signature, the smallest
+real example and a link onward. Three of them were documented nowhere at all, including `useClassNames()`,
+which is the only way to put Box props on an element this library does not render.
+
+Nothing in the library changed.
+
+[Box](https://www.box-kite.dev/box/) · [Box functions](https://www.box-kite.dev/box-functions/)
 
 ## A block of cells, and Ctrl+C
 
