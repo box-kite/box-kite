@@ -116,6 +116,13 @@ export const siteRoutes = [
       'Sparklines, progress rings, gauges and mini donuts as Boxes — no chart library — plus the container that themes a Recharts chart with the variables it reads.',
   },
   {
+    path: '/motion',
+    name: 'Motion Showcase',
+    title: 'Motion showcase — six effects, none of them JavaScript',
+    description:
+      'Springs, scroll-driven animation, view transitions and path drawing as typed props: six pieces of motion the browser runs, with no animation library.',
+  },
+  {
     path: '/variants',
     name: 'State Variants',
     description:

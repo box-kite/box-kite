@@ -46,6 +46,7 @@ import {
   TextCursor,
   ToggleLeft,
   Type,
+  Wand2,
   WandSparkles,
   Workflow,
   Wrench,
@@ -225,6 +226,9 @@ export default function Sidebar({ toggleTheme, onClose }: SidebarProps) {
           </MenuItem>
           <MenuItem to="/animation" icon={<Sparkles />}>
             Animation
+          </MenuItem>
+          <MenuItem to="/motion" icon={<Wand2 />}>
+            Motion Showcase
           </MenuItem>
           <MenuItem to="/variants" icon={<SlidersHorizontal />}>
             State Variants
