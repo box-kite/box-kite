@@ -25,6 +25,7 @@ _Unreleased. A PR that changes what a consumer sees adds its section here — se
 - **[Markdown, and the dependency we did not take](#markdown-and-the-dependency-we-did-not-take)** — `markdownComponents` is the `components` map `react-markdown` and Streamdown both take, so a model's prose is themed with no stylesheet, no Tailwind config and no parser chosen for you.
 - **[Where the answer will be](#where-the-answer-will-be)** — `<Skeleton>`, the placeholder: bars with a gloss, `aria-hidden` unless you name what is loading, and it renders on a server.
 - **[Four agent runtimes, one vocabulary](#four-agent-runtimes-one-vocabulary)** — `@box-kite/react/interop`: AI SDK, assistant-ui, CopilotKit, A2UI and AG-UI, each verified against its own published package.
+- **[Against Radix UI and Base UI, measured both ways](#against-radix-ui-and-base-ui-measured-both-ways)** — thirteen patterns against both libraries, two figures in every cell, and the ten rows where this library has nothing.
 
 <!-- One bullet per section below, linking to it: **[Heading](#heading)** — one line on why it matters. -->
 
@@ -793,6 +794,33 @@ so converting a catalog component on its own throws `Reference not found: #/$def
 3.96 KB gzipped, and no engine in it. The recipes per runtime, AG-UI and json-render included, are in
 [docs/interop.md](https://github.com/box-kite/box-kite/blob/main/docs/interop.md) and at
 [box-kite.dev/interop](https://www.box-kite.dev/interop/).
+
+## Against Radix UI and Base UI, measured both ways
+
+[box-kite.dev/radix-comparison](https://www.box-kite.dev/radix-comparison/) is the thirteen patterns all
+three libraries ship — accordion, dialog, menu, popover, tabs, slider, progress, tooltip, toast, checkbox,
+switch, radio group and select — with two figures in every cell, and eighteen further rows where one of
+the three has nothing.
+
+The two figures are the point. **Alone** is what a component costs as the only thing you import, which is
+the figure a package page prints. **One more** is what it costs an app that already has the other twelve,
+measured by leaving it out of the bundle and taking the difference. They are a long way apart: the
+thirteen Radix packages come to 184.08 KB gzipped added up and bundle to 55.75 KB together, so a column
+of solo figures compares nothing at all.
+
+The whole-app number is the honest headline, and it is **not** a win. Box plus all thirteen components is
+55.37 KB gzipped, against Radix's 55.75 KB and Base UI's 97.89 KB. What differs is what is inside those
+numbers: 31.96 KB of the first is a styling engine, and the components it carries arrive styled, where
+neither of the other two ships a `.css` file anywhere in its package — so the stylesheet an app writes for
+them is real weight that appears in no figure on the page. The page says that rather than exploiting it.
+
+Radix wins a row (tabs, 0.68 KB against 1.83), ten of the eighteen coverage rows are a blank in this
+library's own column — no navigation menu, menubar, context menu, scroll area, hover card, toolbar, toggle
+group or avatar — and the page recommends Radix outright for a team that already has a styling layer it is
+happy with. The test beside the page fails if either kind of losing row ever quietly disappears.
+
+Every byte was measured with `node dev/published-size.mjs`, which ships in this repository and gained a
+`--marginal` mode for the leave-one-out figures, so the numbers can be re-derived rather than believed.
 
 ## Breaking changes
 

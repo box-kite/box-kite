@@ -4,10 +4,15 @@
 //
 //   node dev/published-size.mjs accordion tabs        # after npm run build
 //   node dev/published-size.mjs --bare @radix-ui/react-accordion+@radix-ui/react-collapsible
+//   node dev/published-size.mjs --marginal accordion tabs dialog
 //
 // A `+` measures several entries in one bundle, which is the fair comparison for packages that share
 // their own internals. `--bare` drops the Box baseline and resolves from `dir`, for a third-party
 // package installed somewhere else — pass `--dir <path>`.
+//
+// `--marginal` answers the other question, and it is the only fair one across libraries: what one more
+// component costs an app that already has the rest of them. Measured by leaving it out — thirteen Radix
+// packages sum to 184 KB alone and bundle to 56 together, so a column of solo figures compares nothing.
 import { fileURLToPath } from 'node:url';
 import { gzipSync } from 'node:zlib';
 import esbuild from 'esbuild';
@@ -15,6 +20,7 @@ import esbuild from 'esbuild';
 const root = fileURLToPath(new URL('..', import.meta.url));
 const args = process.argv.slice(2);
 const bare = args.includes('--bare');
+const marginal = args.includes('--marginal');
 const dirAt = args.indexOf('--dir');
 const resolveDir = dirAt === -1 ? root : args[dirAt + 1];
 // `dirAt + 1` is `--dir`'s value, and it is only a value when `--dir` is actually there — with no flag
@@ -37,15 +43,32 @@ async function gzipped(source) {
 /** The default import, because that is what a consumer writes and what tree-shaking is measured against. */
 const box = bare ? '' : "import Box from './dist/box.mjs';\n";
 const baseline = await gzipped(`${box}console.log(${bare ? 1 : 'Box'});`);
-console.log(`${(bare ? 'empty baseline' : 'baseline (Box)').padEnd(46)} ${baseline} B gz`);
 
-for (const group of groups) {
-  const entries = group.split('+').map((each) => (bare ? each : `./dist/components/${each}.mjs`));
+/** What the given groups cost together, over the baseline — one bundle, so anything they share is shared. */
+async function sizeOf(chosen) {
+  const entries = chosen.flatMap((group) => group.split('+')).map((each) => (bare ? each : `./dist/components/${each}.mjs`));
   const source =
     box +
     entries.map((each, index) => `import * as C${index} from '${each}';`).join('\n') +
     `\nconsole.log(${bare ? '' : 'Box,'}${entries.map((_, index) => `C${index}`).join(',')});`;
-  const size = (await gzipped(source)) - baseline;
 
-  console.log(`${group.padEnd(46)} ${size} B gz  (${(size / 1000).toFixed(2)} KB)`);
+  return (await gzipped(source)) - baseline;
+}
+
+function report(label, size) {
+  console.log(`${label.padEnd(46)} ${size} B gz  (${(size / 1000).toFixed(2)} KB)`);
+}
+
+console.log(`${(bare ? 'empty baseline' : 'baseline (Box)').padEnd(46)} ${baseline} B gz`);
+
+if (marginal) {
+  const together = await sizeOf(groups);
+
+  report(`all ${groups.length} together`, together);
+
+  for (const group of groups) {
+    report(group, together - (await sizeOf(groups.filter((each) => each !== group))));
+  }
+} else {
+  for (const group of groups) report(group, await sizeOf([group]));
 }

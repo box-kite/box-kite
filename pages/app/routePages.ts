@@ -28,6 +28,7 @@ const loaders: Record<SiteRoutePath, () => Promise<{ default: ComponentType }>> 
   '/anchor': () => import('../pages/anchorPage'),
   '/rtl': () => import('../pages/rtlPage'),
   '/tailwind-parity': () => import('../pages/tailwindParityPage'),
+  '/radix-comparison': () => import('../pages/radixComparisonPage'),
   '/escape-hatch': () => import('../pages/escapeHatchPage'),
   '/button': () => import('../pages/buttonPage'),
   '/textbox': () => import('../pages/textboxPage'),
