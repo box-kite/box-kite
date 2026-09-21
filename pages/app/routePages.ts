@@ -22,6 +22,7 @@ const loaders: Record<SiteRoutePath, () => Promise<{ default: ComponentType }>> 
   '/icon': () => import('../pages/iconPage'),
   '/charts': () => import('../pages/chartsPage'),
   '/animation': () => import('../pages/animationPage'),
+  '/motion': () => import('../pages/motionPage'),
   '/variants': () => import('../pages/variantsPage'),
   '/pseudo-elements': () => import('../pages/pseudoElementsPage'),
   '/container-queries': () => import('../pages/containerQueriesPage'),

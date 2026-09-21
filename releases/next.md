@@ -61,6 +61,10 @@ It feature-detects and hands back the same `ready`/`finished`/`updateCallbackDon
 
 One prop, because the recipe has the `flushSync` trap in it and this is the one change every app has. Off by default; reduced motion skips it and the theme still changes. The docs site runs it.
 
+## All of it on one page
+
+[**/motion**](https://www.box-kite.dev/motion) is the new showcase: the four presets, a spring playground whose three dials write the `linear()` curve the CSS actually receives, a panel that animates both ways without unmounting, a chart that draws itself on a `view()` timeline, a layout change the browser animates between, and an SVG path drawing itself from `strokeDashoffset`. Each one carries the code to copy and a line saying what it is _not_ running — the `IntersectionObserver`, the physics loop, the FLIP measurement. [/animation](https://www.box-kite.dev/animation) stays the reference that explains every prop.
+
 ## Breaking changes
 
 None.
