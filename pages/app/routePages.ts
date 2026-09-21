@@ -3,68 +3,94 @@ import { RELEASES_PATH } from '../site/releases';
 import { SiteRoutePath } from '../site/site';
 
 /**
- * One dynamic import per route. The record is keyed by the route table's own paths, so a page the
- * table names and this file misses is a type error — the same guarantee the eager record it replaced
- * gave, now with a chunk per page: a reader of /textbox no longer downloads the DataGrid, the 5 MB of
- * mock rows behind it, or Recharts (bug #84).
+ * One page module per route. The record is keyed by the route table's own paths, so a page the table
+ * names and this file misses is a type error — and a chunk per page: a reader of /textbox no longer
+ * downloads the DataGrid, the 5 MB of mock rows behind it, or Recharts (bug #84).
+ *
+ * The value is the module's **file name** rather than its import, so one entry answers both questions:
+ * which chunk to load, and which file to open on GitHub ("Edit this page", G5). A path and a loader
+ * written side by side could disagree; a name resolved through the glob below cannot.
  */
-const loaders: Record<SiteRoutePath, () => Promise<{ default: ComponentType }>> = {
-  '/': () => import('../pages/homePage'),
-  '/installation': () => import('../pages/installationPage'),
-  '/releases': () => import('../pages/releasesPage'),
-  '/theme-setup': () => import('../pages/themeSetupPage'),
-  '/server-components': () => import('../pages/serverComponentsPage'),
-  '/generative-ui': () => import('../pages/generativeUiPage'),
-  '/interop': () => import('../pages/interopPage'),
-  '/box': () => import('../pages/boxPage'),
-  '/box-functions': () => import('../pages/boxFunctionsPage'),
-  '/svg': () => import('../pages/svgPage'),
-  '/icon': () => import('../pages/iconPage'),
-  '/charts': () => import('../pages/chartsPage'),
-  '/animation': () => import('../pages/animationPage'),
-  '/motion': () => import('../pages/motionPage'),
-  '/variants': () => import('../pages/variantsPage'),
-  '/pseudo-elements': () => import('../pages/pseudoElementsPage'),
-  '/container-queries': () => import('../pages/containerQueriesPage'),
-  '/anchor': () => import('../pages/anchorPage'),
-  '/rtl': () => import('../pages/rtlPage'),
-  '/escape-hatch': () => import('../pages/escapeHatchPage'),
-  '/button': () => import('../pages/buttonPage'),
-  '/textbox': () => import('../pages/textboxPage'),
-  '/textarea': () => import('../pages/textareaPage'),
-  '/checkbox': () => import('../pages/checkboxPage'),
-  '/radiobutton': () => import('../pages/radioButtonPage'),
-  '/switch': () => import('../pages/switchPage'),
-  '/tooltip': () => import('../pages/tooltipPage'),
-  '/overlay': () => import('../pages/overlayPage'),
-  '/popover': () => import('../pages/popoverPage'),
-  '/dialog': () => import('../pages/dialogPage'),
-  '/menu': () => import('../pages/menuPage'),
-  '/tabs': () => import('../pages/tabsPage'),
-  '/accordion': () => import('../pages/accordionPage'),
-  '/slider': () => import('../pages/sliderPage'),
-  '/progress': () => import('../pages/progressPage'),
-  '/toaster': () => import('../pages/toasterPage'),
-  '/combobox': () => import('../pages/comboboxPage'),
-  '/dropdown': () => import('../pages/dropdownPage'),
-  '/agent': () => import('../pages/agentPage'),
-  '/dashboard': () => import('../pages/dashboardPage'),
-  '/datagrid': () => import('../pages/dataGridPage'),
-  '/benchmark': () => import('../pages/benchmarkPage'),
-  '/registry': () => import('../pages/registryPage'),
-  '/flex': () => import('../pages/flexPage'),
-  '/grid': () => import('../pages/gridPage'),
-  '/style-grouping': () => import('../pages/textStylePage'),
-  '/colors': () => import('../pages/colorPage'),
-  '/gradients-shadows': () => import('../pages/gradientsShadowsPage'),
-  '/ai-context': () => import('../pages/aiContextPage'),
+const pages = import.meta.glob('../pages/*.tsx') as Record<string, () => Promise<{ default: ComponentType }>>;
+
+/** Where the page modules live, from the repository root — the half of the GitHub link that is a path. */
+export const PAGES_DIRECTORY = 'pages/pages';
+
+const files: Record<SiteRoutePath, string> = {
+  '/': 'homePage',
+  '/installation': 'installationPage',
+  '/releases': 'releasesPage',
+  '/theme-setup': 'themeSetupPage',
+  '/server-components': 'serverComponentsPage',
+  '/generative-ui': 'generativeUiPage',
+  '/interop': 'interopPage',
+  '/box': 'boxPage',
+  '/box-functions': 'boxFunctionsPage',
+  '/svg': 'svgPage',
+  '/icon': 'iconPage',
+  '/charts': 'chartsPage',
+  '/animation': 'animationPage',
+  '/motion': 'motionPage',
+  '/variants': 'variantsPage',
+  '/pseudo-elements': 'pseudoElementsPage',
+  '/container-queries': 'containerQueriesPage',
+  '/anchor': 'anchorPage',
+  '/rtl': 'rtlPage',
+  '/escape-hatch': 'escapeHatchPage',
+  '/button': 'buttonPage',
+  '/textbox': 'textboxPage',
+  '/textarea': 'textareaPage',
+  '/checkbox': 'checkboxPage',
+  '/radiobutton': 'radioButtonPage',
+  '/switch': 'switchPage',
+  '/tooltip': 'tooltipPage',
+  '/overlay': 'overlayPage',
+  '/popover': 'popoverPage',
+  '/dialog': 'dialogPage',
+  '/menu': 'menuPage',
+  '/tabs': 'tabsPage',
+  '/accordion': 'accordionPage',
+  '/slider': 'sliderPage',
+  '/progress': 'progressPage',
+  '/toaster': 'toasterPage',
+  '/combobox': 'comboboxPage',
+  '/dropdown': 'dropdownPage',
+  '/agent': 'agentPage',
+  '/dashboard': 'dashboardPage',
+  '/datagrid': 'dataGridPage',
+  '/benchmark': 'benchmarkPage',
+  '/registry': 'registryPage',
+  '/flex': 'flexPage',
+  '/grid': 'gridPage',
+  '/style-grouping': 'textStylePage',
+  '/colors': 'colorPage',
+  '/gradients-shadows': 'gradientsShadowsPage',
+  '/ai-context': 'aiContextPage',
 };
 
 // Every release has a route of its own, but one page module: the version is in the pathname.
-const releasePage = () => import('../pages/releasePage');
+const RELEASE_FILE = 'releasePage';
+
+function fileFor(path: string): string | undefined {
+  return files[path as SiteRoutePath] ?? (path.startsWith(`${RELEASES_PATH}/`) ? RELEASE_FILE : undefined);
+}
 
 function loaderFor(path: string) {
-  return loaders[path as SiteRoutePath] ?? (path.startsWith(`${RELEASES_PATH}/`) ? releasePage : undefined);
+  const file = fileFor(path);
+
+  return file ? pages[`../pages/${file}.tsx`] : undefined;
+}
+
+/**
+ * The file a route is written in, for the link that opens it on GitHub. A release page is the one route
+ * whose content is not its module: the notes are `releases/<version>.md`, which is what to edit.
+ */
+export function sourceFor(path: string): string | undefined {
+  if (path.startsWith(`${RELEASES_PATH}/`)) return `releases/${path.slice(RELEASES_PATH.length + 1)}.md`;
+
+  const file = files[path as SiteRoutePath];
+
+  return file ? `${PAGES_DIRECTORY}/${file}.tsx` : undefined;
 }
 
 // Modules resolved before rendering starts. `React.lazy` always suspends on its first render, and a

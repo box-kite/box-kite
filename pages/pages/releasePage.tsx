@@ -1,5 +1,6 @@
 import { Rocket } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
+import { version } from '../../package.json';
 import Box from '../../src/box';
 import Flex from '../../src/components/flex';
 import { Link } from '../../src/components/semantics';
@@ -36,6 +37,30 @@ export default function ReleasePage() {
         badge={release.date}
         description="What changed in this version, written as it landed. The same notes are the body of the GitHub release."
       />
+
+      {release.version !== version && (
+        <Reveal delay={0.05}>
+          <Box
+            mb={8}
+            p={4}
+            borderRadius={3}
+            b={1}
+            fontSize={14}
+            lineHeight={22}
+            maxWidth={210}
+            theme={{
+              dark: { bgColor: 'amber-950', borderColor: 'amber-900', color: 'amber-200' },
+              light: { bgColor: 'amber-50', borderColor: 'amber-200', color: 'amber-900' },
+            }}
+          >
+            These notes are for {release.version}. The documentation on this site is for{' '}
+            <SiteLink to={`${RELEASES_PATH}/${version}`} textDecoration="underline" display="inline">
+              {version}
+            </SiteLink>
+            , the current release — this site documents the newest version only.
+          </Box>
+        </Reveal>
+      )}
 
       <Reveal delay={0.1}>
         <Markdown source={body} maxWidth={210} />

@@ -59,14 +59,18 @@ import Box from '../../src/box';
 import Button from '../../src/components/button';
 import Flex from '../../src/components/flex';
 import Icon from '../../src/components/icon';
+import SearchTrigger from '../components/searchTrigger';
+import SiteLink from '../components/siteLink';
+import { RELEASES_PATH } from '../site/releases';
 import { prefetchPage } from './routePages';
 
 interface SidebarProps {
   toggleTheme: () => void;
   onClose?: () => void;
+  onSearch: () => void;
 }
 
-export default function Sidebar({ toggleTheme, onClose }: SidebarProps) {
+export default function Sidebar({ toggleTheme, onClose, onSearch }: SidebarProps) {
   const [theme] = Box.useTheme();
 
   return (
@@ -83,23 +87,38 @@ export default function Sidebar({ toggleTheme, onClose }: SidebarProps) {
     >
       {/* Header */}
       <Flex ai="center" jc="space-between" p={4} bb={1} theme={{ dark: { borderColor: 'slate-800' }, light: { borderColor: 'slate-100' } }}>
-        <NavLink to="/">
-          <Flex ai="center" gap={3}>
+        <Flex ai="center" gap={3}>
+          <NavLink to="/">
             <Box width={10} height={10} borderRadius={2} bgImage="gradient-primary" display="flex" ai="center" jc="center" shadow="medium">
               <Icon size={5} color="white" strokeWidth={2.5}>
                 <BoxIcon />
               </Icon>
             </Box>
-            <Box>
+          </NavLink>
+          <Box>
+            <NavLink to="/">
               <Box fontWeight={700} fontSize={16} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }}>
                 Box Kite
               </Box>
-              <Box fontSize={11} theme={{ dark: { color: 'slate-500' }, light: { color: 'slate-400' } }}>
-                v{version}
-              </Box>
-            </Box>
-          </Flex>
-        </NavLink>
+            </NavLink>
+            {/* Which version these pages document, and the notes for it — the site documents the
+                current release only, so this is the whole of G5's version selector. */}
+            <SiteLink
+              to={`${RELEASES_PATH}/${version}`}
+              label={`Version ${version} — what changed in it`}
+              display="block"
+              fontSize={11}
+              textDecoration="none"
+              theme={{
+                dark: { color: 'slate-500', hover: { color: 'slate-300' } },
+                light: { color: 'slate-400', hover: { color: 'slate-600' } },
+              }}
+              hover={{ textDecoration: 'underline' }}
+            >
+              v{version}
+            </SiteLink>
+          </Box>
+        </Flex>
         <Button
           clean
           p={2}
@@ -114,8 +133,12 @@ export default function Sidebar({ toggleTheme, onClose }: SidebarProps) {
         </Button>
       </Flex>
 
+      <Box px={3} pt={3}>
+        <SearchTrigger onOpen={onSearch} />
+      </Box>
+
       {/* Navigation */}
-      <Box flex1 overflow="auto" py={4} px={3}>
+      <Box flex1 overflow="auto" pt={3} pb={4} px={3}>
         {/* The library's own headline, so it is the first thing in the nav rather than a row in a list. */}
         <Box mb={4}>
           <NavLink to="/ai-context">

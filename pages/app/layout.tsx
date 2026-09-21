@@ -1,5 +1,5 @@
 import { Box as BoxIcon, Menu, Moon, Sun, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import Box from '../../src/box';
 import Button from '../../src/components/button';
@@ -9,10 +9,15 @@ import Presence from '../../src/components/presence';
 import IconSwap from '../components/iconSwap';
 import PageFooter from '../components/pageFooter';
 import Reveal from '../components/reveal';
+import SearchTrigger, { useSearchShortcut } from '../components/searchTrigger';
 import TableOfContents from '../components/tableOfContents';
 import PageContext, { TocEntry } from '../pageContext';
 import DocumentHead from '../site/documentHead';
 import Sidebar from './sidebar';
+
+// The dialog is a chunk of its own, and nothing renders it until a reader asks for it — on a page
+// nobody searches it costs the trigger and the two shortcut keys (see `searchTrigger.tsx`).
+const SearchDialog = lazy(() => import('../components/searchDialog'));
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -20,11 +25,22 @@ interface LayoutProps {
 
 export default function Layout({ children }: LayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  // Stays true once opened: the chunk is loaded, and an exit transition needs the node to survive.
+  const [searchMounted, setSearchMounted] = useState(false);
   const [tocEntries, setTocEntries] = useState<TocEntry[]>([]);
   const [theme, setTheme] = Box.useTheme();
   const location = useLocation();
 
   const toggleTheme = () => setTheme(theme === 'dark' ? 'light' : 'dark');
+
+  // Stable, or the shortcut's listener is torn down and re-added on every render of the page.
+  const openSearch = useCallback(() => {
+    setSearchMounted(true);
+    setSearchOpen(true);
+  }, []);
+
+  useSearchShortcut(searchOpen, openSearch);
 
   // Close sidebar on route change (mobile) — render-phase sync, no effect needed.
   const [prevPathname, setPrevPathname] = useState(location.pathname);
@@ -43,7 +59,12 @@ export default function Layout({ children }: LayoutProps) {
       }}
     >
       <DocumentHead />
-      <ScrollToTop />
+      <ScrollToLocation />
+      {searchMounted && (
+        <Suspense fallback={null}>
+          <SearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
+        </Suspense>
+      )}
 
       {/* Mobile Header */}
       <Box
@@ -89,7 +110,10 @@ export default function Layout({ children }: LayoutProps) {
               </Flex>
             </NavLink>
           </Flex>
-          <ThemeToggle theme={theme} toggleTheme={toggleTheme} />
+          <Flex ai="center" gap={2}>
+            <SearchTrigger icon onOpen={openSearch} />
+            <ThemeToggle theme={theme} toggleTheme={toggleTheme} />
+          </Flex>
         </Flex>
       </Box>
 
@@ -125,7 +149,7 @@ export default function Layout({ children }: LayoutProps) {
           transitionDuration={300}
           transitionTimingFunction="ease-in-out"
         >
-          <Sidebar toggleTheme={toggleTheme} onClose={() => setSidebarOpen(false)} />
+          <Sidebar toggleTheme={toggleTheme} onClose={() => setSidebarOpen(false)} onSearch={openSearch} />
         </Box>
 
         {/* Main Content + Right Sidebar */}
@@ -182,12 +206,36 @@ function ThemeToggle({ theme, toggleTheme }: { theme: string; toggleTheme: () =>
   );
 }
 
-function ScrollToTop() {
-  const { pathname } = useLocation();
+/**
+ * The top of the page on a navigation — or the section a link named. A hash has to be *waited* for:
+ * the route's chunk is loaded on demand, so the element a search result points at is not in the
+ * document on the frame the URL changes (and the browser only scrolls to a hash on a full load).
+ */
+function ScrollToLocation() {
+  const { pathname, hash } = useLocation();
 
   useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [pathname]);
+    if (!hash) {
+      window.scrollTo(0, 0);
+
+      return;
+    }
+
+    let frame = 0;
+    let frames = 0;
+
+    const find = () => {
+      const target = document.getElementById(decodeURIComponent(hash.slice(1)));
+
+      if (target) return target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // About a second at 60Hz, after which the anchor is not going to appear.
+      if (frames++ < 60) frame = requestAnimationFrame(find);
+    };
+
+    find();
+
+    return () => cancelAnimationFrame(frame);
+  }, [hash, pathname]);
 
   return null;
 }

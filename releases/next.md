@@ -65,6 +65,12 @@ One prop, because the recipe has the `flushSync` trap in it and this is the one 
 
 [**/motion**](https://www.box-kite.dev/motion) is the new showcase: the four presets, a spring playground whose three dials write the `linear()` curve the CSS actually receives, a panel that animates both ways without unmounting, a chart that draws itself on a `view()` timeline, a layout change the browser animates between, and an SVG path drawing itself from `strokeDashoffset`. Each one carries the code to copy and a line saying what it is _not_ running — the `IntersectionObserver`, the physics loop, the FLIP measurement. [/animation](https://www.box-kite.dev/animation) stays the reference that explains every prop.
 
+## The docs answer a question now
+
+[**box-kite.dev**](https://www.box-kite.dev) has a search box: **/** or **⌘K** anywhere on the site, arrow keys through the results, Enter to open one. It searches the pages, every heading on them, and all 235 props — and a prop result opens the Box page with the finder filtered to that one prop, so `fontSize` is two keys and a return away from the CSS it writes.
+
+Nothing is sent anywhere: the index is one file the build writes out of the rendered pages themselves (the markdown mirror's own walk, so it cannot fall behind what a page shows), fetched the first time the dialog opens. Two smaller things arrived with it — every page's footer links to the file it is written in on GitHub, and the version under the logo links to that version's release notes, since this site documents the newest release only.
+
 ## Breaking changes
 
 None.
