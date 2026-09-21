@@ -2319,7 +2319,7 @@
     },
     {
       "name": "shadow",
-      "description": "The elevation of the box: `xxs` through `xxl` on Tailwind's scale, or one of the three original presets (`small`, `medium`, `large`, which carry their own colour). `shadowColor` recolours the scale, and the shadow stacks with `ring`, `insetRing` and `insetShadow` rather than replacing them.",
+      "description": "The elevation of the box: `xxs` through `xxl` on the elevation scale, or one of the three original presets (`small`, `medium`, `large`, which carry their own colour). `shadowColor` recolours the scale, and the shadow stacks with `ring`, `insetRing` and `insetShadow` rather than replacing them.",
       "properties": ["--boxShadow", "box-shadow"],
       "example": {
         "value": "xxs",
@@ -2373,7 +2373,7 @@
     },
     {
       "name": "ringColor",
-      "description": "What colour `ring` draws in. `currentColor` otherwise, the way Tailwind's is.",
+      "description": "What colour `ring` draws in. `currentColor` otherwise.",
       "properties": ["--boxRingColor"],
       "example": { "value": "sky-500", "css": "--boxRingColor: var(--sky-500)" },
       "numeric": false,
@@ -2421,7 +2421,7 @@
     },
     {
       "name": "blur",
-      "description": "How far the element's own pixels are blurred: a step of Tailwind's scale (`xs` 4px through `xxxl` 64px) or a radius in px. One of nine functions that compose into a single `filter`, so a blur and a `brightness` coexist; `none` clears this one and leaves the rest.",
+      "description": "How far the element's own pixels are blurred: a step of the named scale (`xs` 4px through `xxxl` 64px) or a radius in px. One of nine functions that compose into a single `filter`, so a blur and a `brightness` coexist; `none` clears this one and leaves the rest.",
       "properties": ["--boxBlur", "filter"],
       "example": {
         "value": 3,

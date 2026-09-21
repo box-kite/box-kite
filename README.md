@@ -14,10 +14,11 @@ convention to remember.
 [Support](SUPPORT.md) · [Security](SECURITY.md) ·
 [Releases](https://github.com/box-kite/box-kite/releases)
 
-**How it compares**, with the numbers measured rather than quoted and the rows it loses kept in:
-[against Radix UI and Base UI](https://www.box-kite.dev/radix-comparison/) ·
-[against Tailwind, utility by utility](https://www.box-kite.dev/tailwind-parity/) ·
-[the data grid against the market](https://www.box-kite.dev/grid-comparison/)
+**Built to be written by an AI.** The rules, every prop with the CSS it emits and a docs folder are
+inside the package, generated from the prop registry itself — so what your agent reads is never a
+version behind what it is writing against: [Built for AI](https://www.box-kite.dev/ai-context/) ·
+[`npx @box-kite/mcp`](https://www.npmjs.com/package/@box-kite/mcp) ·
+[generative UI](https://www.box-kite.dev/generative-ui/)
 
 > **Renamed at 1.0.0.** This was `@cronocode/react-box`. The API is unchanged — the move is one
 > find-and-replace, and `@cronocode/react-box@3.4.0` re-exports this package if you are not ready

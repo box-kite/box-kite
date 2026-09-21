@@ -1,9 +1,10 @@
 /**
  * What the homepage claims, as data, so `home.test.ts` can hold every claim to the thing it is a claim
  * about: a completion row to the prop reference the engine measured, the pattern table to the component
- * references generated from the components themselves, the compiler diagnostic to the compiler. A number
- * typed in by hand here is a number that can quietly stop being true, which on this page of all pages is
- * the one thing that must not happen.
+ * references generated from the components themselves, the shipped-file table to the generator that
+ * writes those files, the compiler diagnostic to the compiler. A number typed in by hand here is a
+ * number that can quietly stop being true, which on this page of all pages is the one thing that must
+ * not happen.
  *
  * The counts are written out rather than imported: `api/props.json` is 120 KB and the generated component
  * references are thirty-eight files, and neither belongs in the chunk the site's most-visited page fetches.
@@ -11,14 +12,14 @@
  */
 
 /**
- * The four numbers the page prints about itself. `props` is `api/props.json`'s own count; the other three
- * are the whole axe sweep, not just the ten rows below. The last one is the one worth printing — the
- * `knownViolations` ledger fails both ways, so a listed violation that stopped firing is a failure too,
- * and an empty ledger means empty.
+ * The numbers the page prints about itself. `props` is `api/props.json`'s own count; the three a11y ones
+ * are the whole axe sweep, not just the ten rows below. `knownViolations` is the one worth printing — the
+ * ledger fails both ways, so a listed violation that stopped firing is a failure too, and an empty ledger
+ * means empty.
  */
 export const totals = { props: 221, components: 38, keyboardRows: 105, fixtures: 51, knownViolations: 0 } as const;
 
-/** The four pillars G6 names, in the order the page tells them. The `id` is the anchor its card jumps to. */
+/** The four pillars, in the order the page tells them. The `id` is the anchor its card jumps to. */
 export interface Pillar {
   id: string;
   /** What the pillar is, in the fewest words that are still a claim. */
@@ -31,38 +32,38 @@ export interface Pillar {
 
 export const pillars: readonly Pillar[] = [
   {
+    id: 'agent',
+    title: 'An agent writes it correctly',
+    claim: `The rules, every prop with the CSS it emits, and an MCP server that runs the real engine all ship inside the package — generated from the prop registry, so what a model reads is never a version behind what it is writing against.`,
+    proof: 'What is in the tarball',
+  },
+  {
     id: 'typed',
-    title: 'Typed props, not class strings',
-    claim: `${totals.props} CSS properties your editor completes and the compiler checks, so a colour that is not in the palette is an error rather than an element with no background.`,
+    title: 'And the compiler catches the rest',
+    claim: `${totals.props} CSS properties the compiler checks, so a value a model invented is an error in your editor rather than an element that renders with no background.`,
     proof: 'A real compiler diagnostic',
   },
   {
-    id: 'accessible',
-    title: 'The keyboard is already in them',
+    id: 'generative',
+    title: 'A model can compose the UI at runtime',
     claim:
-      'Ten components implement a published W3C pattern, and the arrow keys, the roles and the focus moves are tested on every commit rather than described in a README.',
+      'catalog() describes every component and every value its props take as JSON Schema, and <SpecRenderer> renders what comes back against the components your app allows — an unknown name renders nothing.',
+    proof: 'The schema, and what it refuses',
+  },
+  {
+    id: 'finished',
+    title: 'What it writes is finished',
+    claim:
+      'Ten components implement a published W3C pattern with the keyboard tested on every commit, every one of them renders in a Server Component, and the data grid is in the box.',
     proof: 'The pattern table, generated',
-  },
-  {
-    id: 'server',
-    title: 'It renders in a Server Component',
-    claim:
-      "No 'use client', no provider and no stylesheet: the react-server build has no hook and no effect in it, and its CSS is part of the HTML React streams.",
-    proof: 'The mechanism, in eight lines',
-  },
-  {
-    id: 'grid',
-    title: 'The data grid costs nothing',
-    claim:
-      'Sorting, grouping, virtualization, tree data, a server-side row model, range selection and an XLSX export — under MIT, in the same package as everything else.',
-    proof: 'What the others charge',
   },
 ];
 
 /**
- * The hero's completion list: six props whose measured CSS is the whole argument for the editor knowing
- * them. Five of the six take a number and no two of those numbers mean the same thing — which is exactly
- * the knowledge a class string keeps in your head and a typed prop keeps in the type.
+ * The hero's completion list: six props whose measured CSS is the whole argument for the editor — and the
+ * model reading the same types — knowing them. Five of the six take a number and no two of those numbers
+ * mean the same thing, which is exactly the knowledge a class string keeps in your head and a typed prop
+ * keeps in the type.
  *
  * Every row is one prop's `@example` out of `api/props.json`, which `npm run docs:props` measures from the
  * engine. Writing a row by hand would make this list the one place on the site that is not measured.
@@ -88,9 +89,66 @@ export const completions: readonly Completion[] = [
 ];
 
 /**
- * The typo, twice. `bg-blue-550` is a string a bundler has nothing to check against — it compiles, it
- * ships, and it paints nothing — and `bgColor="blue-550"` is the same mistake made where the type system
- * can see it.
+ * What the package carries for whatever is writing the code, and what writes each file. Everything here
+ * is generated at build time from the prop registry, the component types or the rules file — which is the
+ * claim the section makes, so the test holds every path to `scripts/agent-docs.mjs`, the generator that
+ * emits them. A file this table names and the build does not write fails the suite.
+ */
+export interface ShippedFile {
+  /** Its path inside the installed package. */
+  path: string;
+  /** What it is, in a line. */
+  what: string;
+}
+
+export const shipped: readonly ShippedFile[] = [
+  { path: 'AGENTS.md', what: 'The rules, and the block that tells a model its prior is a different library. Read first.' },
+  { path: 'docs/props.md', what: 'Every prop, the values it takes and one example measured from the engine.' },
+  {
+    path: 'docs/components.md',
+    what: "Every component, its import specifier and whether it renders on a server — read off the built chunks' own exports.",
+  },
+  { path: 'docs/a11y.md', what: 'The behaviour hooks, for a pattern this library does not ship.' },
+  { path: 'docs/anchor.md', what: 'Where a floating layer goes, in CSS and in the measured fallback.' },
+  { path: 'docs/catalog.md', what: 'What a generated UI may build, and how it renders.' },
+  { path: 'docs/interop.md', what: 'The agentic runtimes, each verified against its own published package.' },
+  { path: 'docs/mcp.md', what: 'The MCP server, and why one tool of it cannot be replaced by a file.' },
+  { path: 'BOX_KITE_AI_CONTEXT.md', what: 'The long-form reference: prop tables, the DataGrid API, debugging.' },
+  { path: '.claude/skills/box-kite/', what: 'The same rules as an installable skill, with four references beside it.' },
+  { path: '.cursor/rules/box-kite.mdc', what: 'That skill as a Cursor rule.' },
+];
+
+/**
+ * The MCP server's tools. `check_styles` is the reason the server exists at all and is listed last for
+ * it: a value this library does not accept writes no CSS and says nothing about having done so, which is
+ * the one answer a documentation file cannot give however complete it is.
+ */
+export interface AgentTool {
+  name: string;
+  what: string;
+}
+
+export const agentTools: readonly AgentTool[] = [
+  { name: 'search_docs', what: 'The prop, component, nesting key or rule for what you are building — ranked across all four.' },
+  { name: 'get_props', what: "A prop's whole record, with a numeric prop's scale measured at 1/2/4/8 rather than described." },
+  { name: 'get_component', what: "One component's contract: props and defaults, sub-parts, the keyboard map and the ARIA it writes." },
+  { name: 'get_rules', what: 'The rules the library is written by, as an index or in full.' },
+  { name: 'get_blocks', what: 'Whole sections the shadcn CLI installs — a data-grid page, a settings form, a dashboard shell.' },
+  { name: 'check_styles', what: 'A prop bag through the real engine: the CSS each prop wrote, or why it wrote none.' },
+];
+
+/** The one command each of the three install routes takes. */
+export const installs = [
+  { label: 'Any agent that reads a root AGENTS.md', command: 'cp node_modules/@box-kite/react/AGENTS.md ./AGENTS.md' },
+  { label: 'As a skill, in roughly forty-five agents', command: 'npx skills add box-kite/box-kite' },
+  { label: 'As an MCP server, with the engine behind it', command: 'npx @box-kite/mcp' },
+] as const;
+
+/**
+ * The typo, twice. A value in a class string is something a bundler has nothing to check against — it
+ * compiles, it ships, and it paints nothing — and `bgColor="blue-550"` is the same mistake made where the
+ * type system can see it. It is the mistake a model makes most: a plausible value from a neighbouring
+ * scale.
  *
  * The diagnostic is the compiler's own, re-run by the test rather than transcribed: the test asserts the
  * code and both ends of the message. The union in the middle is elided here because it is the palette,
@@ -142,6 +200,3 @@ export const patternRows: readonly PatternRow[] = [
 
 /** Where the pattern names above resolve to. */
 export const APG_PATTERNS = 'https://www.w3.org/WAI/ARIA/apg/patterns/';
-
-/** The paid tiers the grid section quotes, by their id in `gridComparison.ts` — the prices live there. */
-export const quotedTiers = ['ag-enterprise', 'mui-pro', 'mui-premium'] as const;

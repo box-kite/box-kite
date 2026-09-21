@@ -592,12 +592,13 @@ export default function SvgPage() {
 
           <Section id="collisions" title="Where a name means two things">
             <Box>
-              An SVG attribute and a Box prop can be the same word, and the clash is silent — Chakra once turned a path&apos;s{' '}
-              <Mono>d</Mono> into <Mono>display</Mono> this way. Here <Mono>d</Mono> is already the shorthand for <Mono>flexDirection</Mono>
-              , a <Mono>&lt;rect&gt;</Mono>&apos;s <Mono>width</Mono> is the ÷4 layout scale, and a <Mono>&lt;text&gt;</Mono>&apos;s{' '}
-              <Mono>x</Mono> is a CSS geometry property that does not apply to text at all. So each component settles those names for its
-              own element: on <Mono>Path</Mono>, <Mono>d</Mono> is path data; on <Mono>Rect</Mono>, <Mono>width</Mono> is user units; on{' '}
-              <Mono>SvgText</Mono>, <Mono>x</Mono> is the attribute. Everywhere else they keep their Box meaning.
+              An SVG attribute and a Box prop can be the same word, and the clash is silent: a prop table that takes <Mono>d</Mono> for{' '}
+              <Mono>display</Mono> writes a path no browser can draw, and reports nothing. Here <Mono>d</Mono> is already the shorthand for{' '}
+              <Mono>flexDirection</Mono>, a <Mono>&lt;rect&gt;</Mono>&apos;s <Mono>width</Mono> is the ÷4 layout scale, and a{' '}
+              <Mono>&lt;text&gt;</Mono>&apos;s <Mono>x</Mono> is a CSS geometry property that does not apply to text at all. So each
+              component settles those names for its own element: on <Mono>Path</Mono>, <Mono>d</Mono> is path data; on <Mono>Rect</Mono>,{' '}
+              <Mono>width</Mono> is user units; on <Mono>SvgText</Mono>, <Mono>x</Mono> is the attribute. Everywhere else they keep their
+              Box meaning.
             </Box>
             <Box mt={4}>
               One name can be answered twice, because the answer belongs to the element and not to the word. <Mono>cx</Mono> on a{' '}

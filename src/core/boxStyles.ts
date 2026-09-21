@@ -136,7 +136,7 @@ function filterFunction(layer: Filters.Layer, name: string, unit: string) {
   ];
 }
 
-/** The blur function, which has a scale beside its number: Tailwind's steps, `xs` (4px) to `xxxl` (64px). */
+/** The blur function, which has a named scale beside its number: `xs` (4px) to `xxxl` (64px). */
 function blurFunction(layer: 'Blur' | 'BackdropBlur') {
   return [
     {
@@ -2979,7 +2979,7 @@ export const cssStyles = {
     },
   ],
   /**
-   * The elevation of the box: `xxs` through `xxl` on Tailwind's scale, or one of the three original
+   * The elevation of the box: `xxs` through `xxl` on the elevation scale, or one of the three original
    * presets (`small`, `medium`, `large`, which carry their own colour). `shadowColor` recolours the
    * scale, and the shadow stacks with `ring`, `insetRing` and `insetShadow` rather than replacing them.
    * @example shadow="xxs" → --boxShadow: 0 1px var(--boxShadowColor, rgb(0 0 0 / .05)); box-shadow: var(--boxInsetShadow, 0 0 #0…
@@ -3026,7 +3026,7 @@ export const cssStyles = {
     },
   ],
   /**
-   * What colour `ring` draws in. `currentColor` otherwise, the way Tailwind's is.
+   * What colour `ring` draws in. `currentColor` otherwise.
    * @example ringColor="sky-500" → --boxRingColor: var(--sky-500)
    */
   ringColor: shadowColor('Ring'),
@@ -3062,7 +3062,7 @@ export const cssStyles = {
    */
   textShadowColor: shadowColor('TextShadow'),
   /**
-   * How far the element's own pixels are blurred: a step of Tailwind's scale (`xs` 4px through `xxxl` 64px)
+   * How far the element's own pixels are blurred: a step of the named scale (`xs` 4px through `xxxl` 64px)
    * or a radius in px. One of nine functions that compose into a single `filter`, so a blur and a
    * `brightness` coexist; `none` clears this one and leaves the rest.
    * @example blur={3} → --boxBlur: blur(3px); filter: var(--boxBlur,) var(--boxBrightness,) var(--boxContrast,) var(--boxGra…
@@ -3378,7 +3378,7 @@ export const pseudo1 = {
   inert: ':is([inert],[inert] *)',
   /**
    * The element's own resolved direction, which is what `dir` on any ancestor (usually `<html>`) settles.
-   * `:dir()` rather than Tailwind's `[dir="rtl"] &`, because direction is a property of *this* element and
+   * `:dir()` rather than an ancestor selector like `[dir="rtl"] &`, because direction is a property of *this* element and
    * an ancestor selector cannot see a `<bdi>` or a `dir="auto"` that flipped it. Note the consequence:
    * with no `dir` anywhere the document is left-to-right, so `ltr` matches — it is the state, not an attribute.
    */
@@ -3430,7 +3430,7 @@ export function generatesContent(key: PseudoElementKey): boolean {
 /**
  * The two that belong to a *descendant*: a `::marker` is the list item's, a `::selection` is whatever
  * holds the text — but the prop is written on the list or the paragraph, so their rules name the
- * descendants as well. The same two selectors Tailwind's `marker:`/`selection:` variants emit.
+ * descendants as well: the prop is written on the list or the paragraph, not on the item that draws the marker.
  */
 const inheritedElements: readonly PseudoElementKey[] = ['marker', 'selection'];
 

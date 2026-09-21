@@ -30,14 +30,21 @@ export const siteRoutes = [
   {
     path: '/',
     name: 'Introduction',
-    title: 'Box Kite — every CSS property is a typed prop',
+    title: 'Box Kite — the React library your AI already knows',
     description:
-      'A React library where every CSS property is a typed prop the compiler checks. Accessible components, a server-rendered runtime, a free data grid.',
+      'A React library built to be written by an AI: the rules and the whole prop reference ship inside the package, and the compiler checks every value.',
   },
   {
     path: '/installation',
     name: 'Installation',
     description: 'Install Box Kite and render your first Box: two dependencies, no bundler plugin, and no stylesheet to import.',
+  },
+  {
+    path: '/ai-context',
+    name: 'Built for AI',
+    title: 'Built for AI — the instructions ship with the library',
+    description:
+      'AGENTS.md, the whole prop reference and an MCP server that runs the real engine, all inside the package and generated from the prop registry itself.',
   },
   {
     path: '/registry',
@@ -136,19 +143,6 @@ export const siteRoutes = [
     name: 'Right to Left',
     description:
       'One dir attribute mirrors the whole page: logical sides, arrow keys that follow the reading order, and pinned grid columns that hold their edges.',
-  },
-  {
-    path: '/tailwind-parity',
-    name: 'Tailwind Parity',
-    description:
-      'Every Tailwind v4.3 utility family against the props this library ships — what is covered, what is partial, and the one-line answer for the rest.',
-  },
-  {
-    path: '/radix-comparison',
-    name: 'Radix Comparison',
-    title: 'Box Kite vs Radix UI and Base UI — thirteen patterns, measured',
-    description:
-      'Thirteen patterns all three libraries ship, measured twice each, and the eighteen more where one of the three has nothing at all.',
   },
   {
     path: '/escape-hatch',
@@ -289,13 +283,6 @@ export const siteRoutes = [
       'A hundred thousand rows by twenty columns, measured in your own browser: first render, scroll frames, filter, sort and grouped totals.',
   },
   {
-    path: '/grid-comparison',
-    name: 'Grid Comparison',
-    title: 'Free here, paid elsewhere — data grid features and what they cost',
-    description:
-      'Fourteen data grid features against seven tiers of AG Grid, MUI X, TanStack Table and Box Kite, with the price of each and the day it was checked.',
-  },
-  {
     path: '/flex',
     name: 'Flex',
     description: 'A shortcut component for display: flex, with alignment, direction and spacing props.',
@@ -321,12 +308,6 @@ export const siteRoutes = [
     name: 'Gradients & Effects',
     description:
       'A gradient written as a value, with palette tokens for stops — plus the shadow layers, filter functions and masks that stack instead of overwriting each other.',
-  },
-  {
-    path: '/ai-context',
-    name: 'AI Assistant Context',
-    description:
-      'What the package ships for the agent writing the code, and what the site serves for one reading it: AGENTS.md, llms.txt, and a markdown copy of every page.',
   },
 ] as const satisfies readonly SiteRoute[];
 

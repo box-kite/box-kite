@@ -18,7 +18,7 @@ export default function ContainerQueriesPage() {
       <PageHeader
         icon={Proportions}
         title="Container Queries"
-        description="A component that answers to the space it was given rather than to the size of the window — cq, keyed by the same six sizes Tailwind uses."
+        description="A component that answers to the space it was given rather than to the size of the window — cq, keyed by six sizes of its own."
         badge="NEW"
       />
 
@@ -129,10 +129,9 @@ export default function ContainerQueriesPage() {
           </Code>
 
           <Section id="scale" title="Six sizes, and their complements">
-            The scale is Tailwind's <Mono>@xs</Mono>…<Mono>@2xl</Mono>, so a component copied from there queries at the same widths — and
-            deliberately far smaller than the breakpoints, because a card is 400px wide and a viewport is not. Every size has a{' '}
-            <Mono>max</Mono> form, which is its <em>complement</em> rather than a max-width an epsilon below it: <Mono>md</Mono> and{' '}
-            <Mono>maxMd</Mono> can never both match.
+            Six sizes from <Mono>xs</Mono> (20rem) to <Mono>xxl</Mono> (42rem), deliberately far smaller than the breakpoints, because a
+            card is 400px wide and a viewport is not. Every size has a <Mono>max</Mono> form, which is its <em>complement</em> rather than a
+            max-width an epsilon below it: <Mono>md</Mono> and <Mono>maxMd</Mono> can never both match.
           </Section>
 
           <Code

@@ -147,9 +147,9 @@ export default function GradientsShadowsPage() {
           <Section id="shadows" title="Four shadows, one property">
             CSS gives an element one <Mono>box-shadow</Mono>, which normally means the last rule wins and an elevation and a ring cannot
             coexist. Here each is a layer with a custom property of its own, and all four write the same composed declaration — so they
-            compose the way <Mono>translateX</Mono> and <Mono>translateY</Mono> do. <Mono>shadow</Mono> is Tailwind elevation, from{' '}
-            <Mono>xxs</Mono> to <Mono>xxl</Mono>; the older <Mono>small</Mono>, <Mono>medium</Mono> and <Mono>large</Mono> presets still
-            work and carry their own colour.
+            compose the way <Mono>translateX</Mono> and <Mono>translateY</Mono> do. <Mono>shadow</Mono> is elevation, from <Mono>xxs</Mono>{' '}
+            to <Mono>xxl</Mono>; the older <Mono>small</Mono>, <Mono>medium</Mono> and <Mono>large</Mono> presets still work and carry their
+            own colour.
           </Section>
 
           <Code
@@ -271,9 +271,9 @@ export default function GradientsShadowsPage() {
 
           <Section id="units" title="A number is the function's own unit">
             Six of them are a percentage — <Mono>brightness={'{110}'}</Mono> is ten percent brighter, <Mono>grayscale={'{100}'}</Mono>{' '}
-            removes colour entirely — <Mono>hueRotate</Mono> is degrees, and <Mono>blur</Mono> is a radius in pixels with Tailwind&apos;s
-            scale beside it, <Mono>xs</Mono> (4px) through <Mono>xxxl</Mono> (64px). <Mono>none</Mono> clears one function and leaves the
-            other eight painting, the way <Mono>none</Mono> clears one shadow layer.
+            removes colour entirely — <Mono>hueRotate</Mono> is degrees, and <Mono>blur</Mono> is a radius in pixels with a named scale
+            beside it, <Mono>xs</Mono> (4px) through <Mono>xxxl</Mono> (64px). <Mono>none</Mono> clears one function and leaves the other
+            eight painting, the way <Mono>none</Mono> clears one shadow layer.
           </Section>
 
           <Section id="drop-shadow" title="A drop shadow follows the shape">

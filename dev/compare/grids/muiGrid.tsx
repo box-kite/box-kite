@@ -2,10 +2,10 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { DataGrid, GridColDef, GridFilterModel } from '@mui/x-data-grid';
 import { version } from '@mui/x-data-grid/package.json';
 import { useMemo } from 'react';
-import Box from '../../src/box';
-import { SORT_COLUMN, benchColumns } from './benchColumns';
-import { BenchRow, FILTER_COUNTRY } from './benchData';
-import { BenchGridProps, GRID_BOX_HEIGHT, GridImpl, HEADER_HEIGHT, ROW_HEIGHT } from './gridImpl';
+import { SORT_COLUMN, benchColumns } from '../../../pages/benchmark/benchColumns';
+import { BenchRow, FILTER_COUNTRY } from '../../../pages/benchmark/benchData';
+import { BenchGridProps, GRID_BOX_HEIGHT, GridImpl, HEADER_HEIGHT, ROW_HEIGHT } from '../../../pages/benchmark/gridImpl';
+import Box from '../../../src/box';
 
 const columns: GridColDef<BenchRow>[] = benchColumns.map((column) => ({
   field: column.key,

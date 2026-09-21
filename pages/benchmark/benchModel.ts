@@ -277,9 +277,9 @@ export async function flickCoverage(element: HTMLElement, selector: string, velo
   const bottom = Math.min(box.bottom, window.innerHeight) - 2;
   const points = PROBE_POINTS.map((point) => box.top + (bottom - box.top) * point);
 
-  // Every element at the point rather than the top one: a grid's own furniture — AG Grid's horizontal
-  // scrollbar strip, which covers the last fifteen pixels of its viewport — is over the rows rather than
-  // instead of them, and a probe that read only the topmost element scored that as a hole on every frame.
+  // Every element at the point rather than the top one: a grid's own furniture — a horizontal scrollbar
+  // strip covering the last fifteen pixels of its viewport — sits over the rows rather than instead of
+  // them, and a probe that read only the topmost element scored that as a hole on every frame.
   const covered = (): boolean => points.every((y) => document.elementsFromPoint(x, y).some((element) => element.closest(selector)));
 
   // Loudly, for the reason the missing scroller is: a probe that matches nothing reports a grid with no

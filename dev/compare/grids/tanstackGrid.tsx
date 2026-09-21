@@ -23,10 +23,10 @@ import {
 import { version } from '@tanstack/react-table/package.json';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { CSSProperties, useMemo, useRef, useState } from 'react';
-import Box from '../../src/box';
-import { SORT_COLUMN, benchColumns } from './benchColumns';
-import { BenchRow, FILTER_COUNTRY, GROUP_COLUMN } from './benchData';
-import { BenchGridProps, GRID_HEIGHT, GridImpl, HEADER_HEIGHT, ROW_HEIGHT } from './gridImpl';
+import { SORT_COLUMN, benchColumns } from '../../../pages/benchmark/benchColumns';
+import { BenchRow, FILTER_COUNTRY, GROUP_COLUMN } from '../../../pages/benchmark/benchData';
+import { BenchGridProps, GRID_HEIGHT, GridImpl, HEADER_HEIGHT, ROW_HEIGHT } from '../../../pages/benchmark/gridImpl';
+import Box from '../../../src/box';
 
 /**
  * The do-it-yourself baseline: TanStack Table for the model, TanStack Virtual for the window, and the

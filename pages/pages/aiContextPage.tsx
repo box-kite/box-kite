@@ -1,249 +1,165 @@
-import { Bot, CheckCircle2, Code2, FileText, Lightbulb, MessageSquare, Rocket, Sparkles, Zap } from 'lucide-react';
+import { Bot, FileCode2, PlugZap, Radar, ShieldCheck, Terminal } from 'lucide-react';
+import { ReactNode } from 'react';
 import Box from '../../src/box';
 import Flex from '../../src/components/flex';
+import { H2, H3, Li, P, Ul } from '../../src/components/semantics';
 import Code from '../components/code';
 import Mono from '../components/mono';
 import PageHeader from '../components/pageHeader';
 import Reveal from '../components/reveal';
+import SiteLink from '../components/siteLink';
+import { Cell, HeadCell, Table, TableBody, TableHead, TableRow } from '../components/table';
+import useTableOfContents from '../hooks/useTableOfContents';
 import { SITE_URL } from '../site/site';
+import { agentTools, shipped, totals } from './home';
 
 export default function AiContextPage() {
+  useTableOfContents(sidebarLinks);
+
   return (
     <Box>
       <PageHeader
         icon={Bot}
-        title="AI Assistant Context"
-        description="The instructions the package ships for whatever writes the code: the rules, the formatter traps, and every prop with the CSS it emits."
+        title="Built for AI"
+        description="The instructions an agent needs ship inside the package, generated from the engine itself — so what it reads is never a version behind what it writes."
       />
 
-      {/* Hero Message */}
       <Reveal delay={0.1}>
-        <Flex
-          d="column"
-          ai="center"
-          textAlign="center"
-          py={10}
-          px={6}
-          mb={10}
-          theme={{ dark: { bgImage: 'gradient-hero-dark' }, light: { bgImage: 'gradient-hero' } }}
-          borderRadius={4}
-        >
-          <Flex ai="center" gap={3} mb={4}>
-            <Box fontSize={40}>
-              <Sparkles size={40} color="#a78bfa" />
-            </Box>
-          </Flex>
-          <Box
-            tag="h2"
-            fontSize={24}
-            sm={{ fontSize: 28 }}
-            fontWeight={700}
-            theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }}
-            mb={4}
-          >
-            The instructions ship with the library.
+        <Flex d="column" gap={10}>
+          <Box fontSize={15} lineHeight={26} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
+            A model writing against a library it has not seen guesses, and the guesses that compile are the expensive ones. This library was
+            renamed at 1.0.0 and its prop surface nearly doubled on the way, so a plausible-looking memory of it is a memory of something
+            else — and the prop names collide with other libraries&rsquo; while the numbers mean different things.{' '}
+            <Mono>p=&#123;4&#125;</Mono> is a rem, <Mono>fontSize=&#123;14&#125;</Mono> is a pixel size and <Mono>b=&#123;1&#125;</Mono> is
+            one pixel. None of that is guessable, so none of it is left to be guessed.
           </Box>
-          <Box fontSize={16} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }} maxWidth={140} lineHeight={26}>
-            AGENTS.md and a docs folder are inside the package, generated from the prop registry itself — so the file an agent finds is
-            never a version behind the library it describes.
-          </Box>
-        </Flex>
-      </Reveal>
 
-      {/* Why This Matters */}
-      <Reveal delay={0.2}>
-        <Box mb={12}>
-          <Box tag="h3" fontSize={20} fontWeight={600} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }} mb={6}>
-            Why does this matter?
-          </Box>
-          <Flex d="column" gap={4}>
-            <ReasonCard
-              icon={<Zap size={20} />}
-              title="AI assistants don't know your library"
-              description="Without context, AI tools make mistakes. They might use wrong prop names, incorrect values, or miss important patterns. BOX_KITE_AI_CONTEXT.md fixes this."
-            />
-            <ReasonCard
-              icon={<Lightbulb size={20} />}
-              title="Teaching is faster than fixing"
-              description="Instead of correcting AI mistakes over and over, give it the knowledge upfront. One-time setup, permanent improvement."
-            />
-            <ReasonCard
-              icon={<Rocket size={20} />}
-              title="Write code 10x faster"
-              description="When your AI assistant truly understands Box Kite, it generates production-ready code on the first try. Every time."
-            />
-          </Flex>
-        </Box>
-      </Reveal>
+          <Section id="why" title="Three things make it work">
+            <Grid3>
+              <Reason
+                icon={FileCode2}
+                title="The instructions travel with the code"
+                description="Installing the package installs AGENTS.md, the whole prop reference and a docs folder beside it. There is nothing to fetch, nothing to keep in sync and no version skew: the files were generated from the same registry the code was built from."
+              />
+              <Reason
+                icon={ShieldCheck}
+                title="The compiler catches the rest"
+                description={`${totals.props} props are typed unions, so a value a model invented is an error in the editor rather than an element that renders with no background — and the diagnostic names the nearest real value, which is a repair an agent can apply on its own.`}
+              />
+              <Reason
+                icon={Radar}
+                title="One question needs the engine"
+                description="A value this library refuses writes no CSS and says nothing about it, which is right and is invisible. The MCP server runs the real engine so the answer to “did that work?” is measured rather than recalled."
+              />
+            </Grid3>
+          </Section>
 
-      {/* How to Use - Highlighted Section */}
-      <Reveal delay={0.3}>
-        <Box
-          mb={12}
-          p={6}
-          borderRadius={4}
-          theme={{
-            dark: { bgImage: 'gradient-hero-dark', borderColor: 'indigo-800' },
-            light: { bgImage: 'gradient-hero', borderColor: 'indigo-200' },
-          }}
-          b={2}
-        >
-          <Flex ai="center" gap={3} mb={6}>
-            <Box width={10} height={10} display="flex" ai="center" jc="center" bgImage="gradient-primary" borderRadius={2} color="white">
-              <Rocket size={20} />
+          <Section id="setup" title="Setting it up">
+            <Box mb={6}>
+              Three routes in, and they compose — an <Mono>AGENTS.md</Mono> in the root for the rules, the MCP server for the questions that
+              come up mid-task. Pick the first one that fits your agent.
             </Box>
-            <Box>
-              <Box tag="h3" fontSize={22} fontWeight={700} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }}>
-                How to use it
-              </Box>
-              <Box fontSize={14} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
-                3 simple steps to supercharge your AI
-              </Box>
-            </Box>
-          </Flex>
 
-          <Flex d="column" gap={6}>
-            <StepCard
-              step={1}
-              title="Copy AGENTS.md to your repo root"
-              description="Every file below is already in the package. AGENTS.md is the one an agent reads on its own: Codex, Cursor, Copilot, VS Code, Windsurf, Cline and Zed read a root AGENTS.md natively, and Claude Code reads CLAUDE.md — one line saying @AGENTS.md points it at the same file."
-            >
-              <Code language="shell" code="cp node_modules/@box-kite/react/AGENTS.md ./AGENTS.md" />
-            </StepCard>
-
-            <StepCard
-              step={2}
-              title="Point your assistant at the rest"
-              description="AGENTS.md carries the rules and the traps; the reference is what it reads for a prop it has not seen. Most tools take a file reference in the prompt."
-            >
-              <Flex d="column" gap={4}>
-                <ToolExample
-                  tool="Claude Code / Cursor"
-                  example="Type @AGENTS.md, or @node_modules/@box-kite/react/docs/props.md for the whole prop surface"
-                />
-                <ToolExample tool="GitHub Copilot Chat" example="Attach AGENTS.md to your conversation or paste the content" />
-                <ToolExample tool="ChatGPT / Claude Web" example="Copy and paste BOX_KITE_AI_CONTEXT.md into your first message" />
-              </Flex>
-            </StepCard>
-
-            <StepCard
-              step={3}
-              title="Start coding"
-              description="Your AI assistant now understands Box Kite deeply. Just describe what you want to build."
-            >
-              <Box
-                p={4}
-                borderRadius={2}
-                theme={{
-                  dark: { bgColor: 'slate-800', borderColor: 'slate-700' },
-                  light: { bgColor: 'slate-50', borderColor: 'slate-200' },
-                }}
-                b={1}
+            <Flex d="column" gap={6}>
+              <Route
+                icon={FileCode2}
+                title="A file in your repository root"
+                description="Codex, Cursor, Copilot, VS Code, Windsurf, Cline and Zed read a root AGENTS.md natively; Claude Code reads CLAUDE.md, so one line saying @AGENTS.md points it at the same file. A file in the root is read on every run — one referenced by hand is read when somebody remembers."
               >
-                <Box fontSize={14} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }} mb={3}>
-                  Example prompt:
-                </Box>
-                <Box
-                  fontSize={15}
-                  lineHeight={24}
-                  theme={{ dark: { color: 'slate-200' }, light: { color: 'slate-800' } }}
-                  fontStyle="italic"
-                >
-                  "Create a responsive card component with a header, body, and footer. It should have a subtle shadow, rounded corners, and
-                  look good in both light and dark themes."
-                </Box>
-              </Box>
-            </StepCard>
-          </Flex>
-        </Box>
-      </Reveal>
+                <Code
+                  language="shell"
+                  code={`cp node_modules/@box-kite/react/AGENTS.md ./AGENTS.md
+echo '@AGENTS.md' > CLAUDE.md   # Claude Code reads this one`}
+                />
+              </Route>
 
-      {/* What ships in the package */}
-      <Reveal delay={0.35}>
-        <Box mb={12}>
-          <Box tag="h3" fontSize={20} fontWeight={600} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }} mb={3}>
-            What ships in the package
-          </Box>
-          <Box fontSize={14} lineHeight={22} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }} mb={5}>
-            All of it generated from this repository during the build — the prop reference from the registry itself, the component table
-            from the built chunks' own exports — because a stale instruction file is worse than none: an agent trusts it over its own
-            priors.
-          </Box>
-          <Code
-            language="shell"
-            code={`node_modules/@box-kite/react/
-  AGENTS.md                the rules, and the block that argues with the model's priors
-  docs/props.md            every prop, the CSS it writes and one measured example
-  docs/components.md       every component, its import, and whether it renders on a server
-  docs/a11y.md             the behaviour hooks, for a pattern this library does not ship
-  docs/catalog.md          what a generated UI may build, and how it renders
-  docs/mcp.md              the MCP server, and the one tool that settles whether a value works
-  BOX_KITE_AI_CONTEXT.md   the long-form reference
-  .claude/skills/box-kite/ the same rules as a skill, with four references beside it
-  .cursor/rules/           and as a Cursor rule, to copy into .cursor/rules/`}
-          />
-        </Box>
-      </Reveal>
-
-      {/* Install it instead of copying it */}
-      <Reveal delay={0.36}>
-        <Box mb={12}>
-          <Box tag="h3" fontSize={20} fontWeight={600} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }} mb={3}>
-            Or install the rules as a skill
-          </Box>
-          <Box fontSize={14} lineHeight={22} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }} mb={5}>
-            Agent Skills are an open standard about forty-five coding agents read, so one <Mono>SKILL.md</Mono> reaches nearly all of them —
-            and unlike a file you copy, an install command keeps it current. It is the same rules file as <Mono>AGENTS.md</Mono>, with a
-            measured table of the dividers and four references it loads only when the question needs them.
-          </Box>
-          <Flex d="column" gap={4}>
-            <Code
-              language="shell"
-              label="Any agent — Claude Code, Cursor, Codex, Copilot, Gemini CLI, Zed…"
-              code={`npx skills add box-kite/box-kite
+              <Route
+                icon={Terminal}
+                title="As a skill, in roughly forty-five agents"
+                description="Agent Skills are an open standard, so one SKILL.md reaches nearly all of them — and unlike a file you copy, an install command keeps it current. Same rules as AGENTS.md, with a measured table of the dividers and four references it loads only when the question needs them."
+              >
+                <Flex d="column" gap={4}>
+                  <Code
+                    language="shell"
+                    label="Any agent — Claude Code, Cursor, Codex, Copilot, Gemini CLI, Zed…"
+                    code={`npx skills add box-kite/box-kite
 npx skills add box-kite/box-kite -a cursor -g   # one agent, and globally`}
-            />
-            <Code
-              language="shell"
-              label="Claude Code, as a plugin"
-              code={`/plugin marketplace add box-kite/box-kite
+                  />
+                  <Code
+                    language="shell"
+                    label="Claude Code, as a plugin"
+                    code={`/plugin marketplace add box-kite/box-kite
 /plugin install box-kite@box-kite`}
-            />
-            <Code
-              language="shell"
-              label="Cursor, as a rule file"
-              code={`mkdir -p .cursor/rules
+                  />
+                  <Code
+                    language="shell"
+                    label="Cursor, as a rule file"
+                    code={`mkdir -p .cursor/rules
 cp node_modules/@box-kite/react/.cursor/rules/box-kite.mdc .cursor/rules/
 curl -O ${SITE_URL}/box-kite.mdc   # or without the package installed`}
-            />
-          </Flex>
-        </Box>
-      </Reveal>
+                  />
+                </Flex>
+              </Route>
 
-      {/* The MCP server: the one answer a file cannot give */}
-      <Reveal delay={0.37}>
-        <Box mb={12}>
-          <Box tag="h3" fontSize={20} fontWeight={600} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }} mb={3}>
-            Or connect it as an MCP server
-          </Box>
-          <Box fontSize={14} lineHeight={22} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }} mb={5}>
-            A file is read once, at the start. An MCP server is asked mid-task, which is when the question actually comes up — and it can
-            answer one thing no file can. This library accepts a closed set of values per prop, and a value it does not accept writes{' '}
-            <strong>no rule and no class name</strong>, silently, because a typo must never emit a broken declaration. That is the right
-            behaviour and it is invisible, so <Mono>check_styles</Mono> hands your props to the real engine and shows you what each one
-            wrote. No key and no network: the references and the engine are built into the package.
-          </Box>
-          <Flex d="column" gap={4}>
-            <Code language="shell" label="Claude Code" code="claude mcp add box-kite -- npx -y @box-kite/mcp" />
-            <Code
-              language="json"
-              label="Cursor, VS Code, Codex, Zed — anything that speaks stdio"
-              code={`{
+              <Route
+                icon={PlugZap}
+                title="As an MCP server, with the engine behind it"
+                description="A file is read once, at the start. A server is asked mid-task, which is when the question actually comes up. No key and no network: the references and the engine are built into the package."
+              >
+                <Flex d="column" gap={4}>
+                  <Code language="shell" label="Claude Code" code="claude mcp add box-kite -- npx -y @box-kite/mcp" />
+                  <Code
+                    language="json"
+                    label="Cursor, VS Code, Codex, Zed — anything that speaks stdio"
+                    code={`{
   "mcpServers": {
     "box-kite": { "command": "npx", "args": ["-y", "@box-kite/mcp"] }
   }
 }`}
-            />
+                  />
+                </Flex>
+              </Route>
+            </Flex>
+          </Section>
+
+          <Section id="package" title="What is in the package">
+            <Box mb={6}>
+              All of it generated during the build — the prop reference from the registry itself, the component table from the built
+              chunks&rsquo; own exports — because a stale instruction file is worse than none: an agent trusts it over its own priors. The
+              build fails if a generated file comes out empty, if a component no longer loads, or if the reference disagrees with itself
+              about the prop count.
+            </Box>
+
+            <Box overflow="auto">
+              <Table width="auto">
+                <TableHead>
+                  <TableRow>
+                    <HeadCell>File</HeadCell>
+                    <HeadCell>What it is</HeadCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {shipped.map((file) => (
+                    <TableRow key={file.path}>
+                      <Cell whiteSpace="nowrap">
+                        <Mono>{file.path}</Mono>
+                      </Cell>
+                      <Cell>{file.what}</Cell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </Box>
+          </Section>
+
+          <Section id="check" title="The answer a file cannot give">
+            <Box mb={6}>
+              This library accepts a closed set of values per prop, and a value it does not accept writes{' '}
+              <strong>no rule and no class name</strong>, silently — because a typo must never emit a broken declaration. That is the right
+              behaviour and it is invisible, which makes &ldquo;did that actually work?&rdquo; the one question no reference can settle.{' '}
+              <Mono>check_styles</Mono> hands your props to the real engine and reports what each one wrote.
+            </Box>
+
             <Code
               language="shell"
               label="What check_styles answers"
@@ -254,57 +170,63 @@ curl -O ${SITE_URL}/box-kite.mdc   # or without the package installed`}
 ✅ fontSize  → .fontSize-14{font-size:0.875rem}
 ⚠️ href        an HTML attribute, not a style prop. It goes in props={{ "href": … }}.`}
             />
-          </Flex>
-          <Box fontSize={14} lineHeight={22} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }} mt={5}>
-            Six tools, at capability level rather than one per document: <Mono>search_docs</Mono> ranks props, components, nesting keys and
-            rules together, so a goal finds the answer without its name; <Mono>get_props</Mono> measures a numeric prop's scale rather than
-            describing its divider; <Mono>get_component</Mono> carries the keyboard map and the ARIA; <Mono>get_rules</Mono> and{' '}
-            <Mono>get_blocks</Mono> are the rules and the installable sections.
-          </Box>
-        </Box>
-      </Reveal>
 
-      {/* The docs, as markdown */}
-      <Reveal delay={0.375}>
-        <Box mb={12}>
-          <Box tag="h3" fontSize={20} fontWeight={600} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }} mb={3}>
-            And the docs site answers in markdown
-          </Box>
-          <Box fontSize={14} lineHeight={22} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }} mb={5}>
-            An agent that fetches a documentation page gets an HTML shell and a JavaScript bundle it has no reason to parse. Every page here
-            is also served as markdown at its own address with <Mono>.md</Mono> appended, and <Mono>llms.txt</Mono> is the index of all of
-            them — one line per page, with the block of facts to read before writing any props. The files are converted from the pages
-            themselves during the build, so nothing here is a second copy that can fall behind.
-          </Box>
-          <Code
-            language="shell"
-            code={`curl ${SITE_URL}/llms.txt      # the index: every page, and what each one covers
+            <Box mt={6} mb={6}>
+              Six tools, at capability level rather than one per document — so a goal finds the answer without already knowing its name.
+            </Box>
+
+            <Box overflow="auto">
+              <Table width="auto">
+                <TableHead>
+                  <TableRow>
+                    <HeadCell>Tool</HeadCell>
+                    <HeadCell>What it answers</HeadCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {agentTools.map((tool) => (
+                    <TableRow key={tool.name}>
+                      <Cell whiteSpace="nowrap">
+                        <Mono>{tool.name}</Mono>
+                      </Cell>
+                      <Cell>{tool.what}</Cell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </Box>
+          </Section>
+
+          <Section id="markdown" title="The docs site answers in markdown">
+            <Box mb={6}>
+              An agent that fetches a documentation page gets an HTML shell and a JavaScript bundle it has no reason to parse. Every page
+              here is also served as markdown at its own address with <Mono>.md</Mono> appended, and <Mono>llms.txt</Mono> is the index of
+              all of them — one line per page, with the block of facts to read before writing any props. The files are converted from the
+              pages themselves during the build, so nothing here is a second copy that can fall behind.
+            </Box>
+            <Code
+              language="shell"
+              code={`curl ${SITE_URL}/llms.txt      # the index: every page, and what each one covers
 curl ${SITE_URL}/box.md        # any page, as markdown — append .md to the address
 curl ${SITE_URL}/props.md      # every prop, the CSS it writes, one measured example
 curl ${SITE_URL}/skill.md      # the skill itself, for an agent with no install command
 curl ${SITE_URL}/box-kite.mdc  # and the Cursor rule
 curl ${SITE_URL}/llms-full.txt # all of it in one file, for a tool that indexes a site`}
-          />
-        </Box>
-      </Reveal>
+            />
+          </Section>
 
-      {/* The catalog: what an AI may build at runtime, not what it writes at dev time */}
-      <Reveal delay={0.38}>
-        <Box mb={12}>
-          <Box tag="h3" fontSize={20} fontWeight={600} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }} mb={3}>
-            And what an AI may build at runtime
-          </Box>
-          <Box fontSize={14} lineHeight={22} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }} mb={5}>
-            Everything above is for whatever writes your code. <Mono>catalog()</Mono> is the other half: what a model is allowed to compose
-            while your app is running. It describes every component and every value its props take, as JSON Schema — so a generated tree can
-            be validated before it renders, and a colour it asks for has to be one the theme has. The prop registry is read live, so a{' '}
-            <Mono>Box.extend()</Mono> prop is in the catalog with nothing regenerated. <Mono>&lt;SpecRenderer&gt;</Mono> is what renders the
-            answer: a name the app did not register renders nothing, a prop the schema refuses is dropped, and the only prop that can become
-            a function is one the catalog calls an event.
-          </Box>
-          <Code
-            language="javascript"
-            code={`import { catalog } from '@box-kite/react/catalog';
+          <Section id="runtime" title="And what an AI may build at runtime">
+            <Box mb={6}>
+              Everything above is for whatever writes your code. <Mono>catalog()</Mono> is the other half: what a model is allowed to
+              compose while your app is running. It describes every component and every value its props take, as JSON Schema — so a
+              generated tree can be validated before it renders, and a colour it asks for has to be one the theme has. The prop registry is
+              read live, so a <Mono>Box.extend()</Mono> prop is in the catalog with nothing regenerated. <Mono>&lt;SpecRenderer&gt;</Mono>{' '}
+              renders the answer: a name the app did not register renders nothing, a prop the schema refuses is dropped, and the only prop
+              that can become a function is one the catalog calls an event.
+            </Box>
+            <Code
+              language="javascript"
+              code={`import { catalog } from '@box-kite/react/catalog';
 import SpecRenderer, { createSpecRegistry } from '@box-kite/react/spec';
 
 // The allow-list is yours: the library ships everything it can render.
@@ -317,254 +239,112 @@ allowed.rules;                   // the dividers — what a schema cannot say an
 const registry = createSpecRegistry({ catalog: allowed, components: { Flex, H2, P, Sparkline } });
 
 <SpecRenderer spec={spec} registry={registry} data={data} onAction={(action) => run(action)} />;`}
-          />
-        </Box>
-      </Reveal>
+            />
 
-      {/* What's Inside */}
-      <Reveal delay={0.4}>
-        <Box mb={12}>
-          <Box tag="h3" fontSize={20} fontWeight={600} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }} mb={6}>
-            What's inside BOX_KITE_AI_CONTEXT.md?
-          </Box>
-
-          <Flex d="column" gap={3}>
-            <FeatureItem
-              icon={<Code2 size={18} />}
-              title="Complete prop reference"
-              description="All 221 props with their CSS mappings and accepted values"
-            />
-            <FeatureItem
-              icon={<Zap size={18} />}
-              title="Critical gotchas"
-              description="Like fontSize using divider 16 (not 4) - saves hours of debugging"
-            />
-            <FeatureItem
-              icon={<FileText size={18} />}
-              title="Component catalog"
-              description="All pre-built components: Flex, Grid, Button, Textbox, and more"
-            />
-            <FeatureItem
-              icon={<Sparkles size={18} />}
-              title="Theme system"
-              description="How to create light/dark themes with nested pseudo-classes"
-            />
-            <FeatureItem
-              icon={<MessageSquare size={18} />}
-              title="Common patterns"
-              description="Ready-to-use code snippets for cards, layouts, forms"
-            />
-            <FeatureItem icon={<Bot size={18} />} title="Extension system" description="How to add custom colors, props, and components" />
-          </Flex>
-        </Box>
-      </Reveal>
-
-      {/* Pro Tip */}
-      <Reveal delay={0.5}>
-        <Flex
-          gap={4}
-          p={5}
-          mb={10}
-          theme={{
-            dark: { bgColor: 'indigo-950', borderColor: 'indigo-800' },
-            light: { bgColor: 'indigo-50', borderColor: 'indigo-200' },
-          }}
-          b={1}
-          borderRadius={3}
-        >
-          <Box flexShrink={0}>
-            <Box width={10} height={10} display="flex" ai="center" jc="center" bgImage="gradient-primary" borderRadius={2} color="white">
-              <Lightbulb size={20} />
-            </Box>
-          </Box>
-          <Box>
-            <Box fontSize={16} fontWeight={600} theme={{ dark: { color: 'indigo-200' }, light: { color: 'indigo-900' } }} mb={2}>
-              Pro tip: Keep it in your project root
-            </Box>
-            <Box fontSize={14} lineHeight={22} theme={{ dark: { color: 'indigo-300' }, light: { color: 'indigo-700' } }}>
-              A file in the root is read on every run; one referenced by hand is read when somebody remembers. AGENTS.md is the one to copy
-              there — it is the file agents look for — and BOX_KITE_AI_CONTEXT.md beside it for the depth.
-            </Box>
-          </Box>
-        </Flex>
-      </Reveal>
-
-      {/* Bottom CTA */}
-      <Reveal delay={0.6}>
-        <Flex
-          d="column"
-          ai="center"
-          textAlign="center"
-          py={10}
-          px={6}
-          theme={{ dark: { bgImage: 'gradient-hero-dark' }, light: { bgImage: 'gradient-hero' } }}
-          borderRadius={4}
-        >
-          <Box width={14} height={14} display="flex" ai="center" jc="center" bgColor="emerald-500" borderRadius={10} color="white" mb={5}>
-            <CheckCircle2 size={28} />
-          </Box>
-          <Box tag="h3" fontSize={22} fontWeight={700} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }} mb={3}>
-            That's it. Seriously.
-          </Box>
-          <Box fontSize={15} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }} maxWidth={120} lineHeight={24}>
-            Your AI assistant is now a Box Kite expert. Go build something amazing.
-          </Box>
+            <Ul display="flex" d="column" gap={2} listStyle="none" p={0} mt={6} m={0}>
+              <Next to="/generative-ui">The catalog and the renderer, in full</Next>
+              <Next to="/interop">AI SDK, assistant-ui, CopilotKit, AG-UI and A2UI, in one vocabulary</Next>
+              <Next to="/agent">The components an agent&rsquo;s turn needs: the tool call, the approval, the reasoning</Next>
+              <Next to="/box">Every prop, with the CSS the engine writes for it</Next>
+            </Ul>
+          </Section>
         </Flex>
       </Reveal>
     </Box>
   );
 }
 
-interface ReasonCardProps {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-}
+const sidebarLinks = [
+  { id: 'why', label: 'Why it works' },
+  { id: 'setup', label: 'Setting it up' },
+  { id: 'package', label: "What's in the package" },
+  { id: 'check', label: 'The MCP server' },
+  { id: 'markdown', label: 'Docs as markdown' },
+  { id: 'runtime', label: 'At runtime' },
+];
 
-function ReasonCard({ icon, title, description }: ReasonCardProps) {
+function Section({ id, title, children }: { id: string; title: string; children: ReactNode }) {
   return (
-    <Flex
-      gap={4}
-      p={4}
-      theme={{
-        dark: { bgColor: 'slate-800', borderColor: 'slate-700' },
-        light: { bgColor: 'white', borderColor: 'slate-200' },
-      }}
-      b={1}
-      borderRadius={2}
-    >
-      <Box flexShrink={0}>
-        <Box width={10} height={10} display="flex" ai="center" jc="center" bgImage="gradient-primary" borderRadius={2} color="white">
-          {icon}
-        </Box>
+    <Box id={id} css={{ scrollMarginTop: '5rem' }}>
+      <H2 fontSize={20} fontWeight={600} mb={4} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }}>
+        {title}
+      </H2>
+      <Box fontSize={15} lineHeight={26} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
+        {children}
       </Box>
-      <Box>
-        <Box fontSize={15} fontWeight={600} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }} mb={1}>
-          {title}
-        </Box>
-        <Box fontSize={14} lineHeight={22} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
-          {description}
-        </Box>
-      </Box>
-    </Flex>
+    </Box>
   );
 }
 
-interface StepCardProps {
-  step: number;
-  title: string;
-  description: string;
-  children: React.ReactNode;
-}
-
-function StepCard({ step, title, description, children }: StepCardProps) {
+/** Three across on a desktop, stacked on a phone — the `Grid` import would shadow nothing else here. */
+function Grid3({ children }: { children: ReactNode }) {
   return (
-    <Box
-      p={5}
-      theme={{
-        dark: { bgColor: 'slate-800', borderColor: 'slate-700' },
-        light: { bgColor: 'white', borderColor: 'slate-200' },
-      }}
-      b={1}
-      borderRadius={3}
-    >
-      <Flex ai="center" gap={3} mb={3}>
-        <Box
-          width={8}
-          height={8}
-          display="flex"
-          ai="center"
-          jc="center"
-          bgImage="gradient-primary"
-          borderRadius={10}
-          color="white"
-          fontSize={14}
-          fontWeight={700}
-        >
-          {step}
-        </Box>
-        <Box fontSize={17} fontWeight={600} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }}>
-          {title}
-        </Box>
-      </Flex>
-      <Box fontSize={14} lineHeight={22} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }} mb={4}>
-        {description}
-      </Box>
+    <Box display="grid" gridTemplateColumns={1} md={{ gridTemplateColumns: 3 }} gap={4}>
       {children}
     </Box>
   );
 }
 
-interface ToolExampleProps {
-  tool: string;
-  example: string;
+function Reason({ icon: ReasonIcon, title, description }: { icon: typeof Bot; title: string; description: string }) {
+  return (
+    <Flex
+      d="column"
+      gap={3}
+      p={4}
+      b={1}
+      borderRadius={3}
+      theme={{ dark: { bgColor: 'slate-800', borderColor: 'slate-700' }, light: { bgColor: 'white', borderColor: 'slate-200' } }}
+    >
+      <Flex width={10} height={10} ai="center" jc="center" bgImage="gradient-primary" borderRadius={2} color="white">
+        <ReasonIcon size={20} />
+      </Flex>
+      <H3 fontSize={15} fontWeight={600} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }}>
+        {title}
+      </H3>
+      <Box fontSize={14} lineHeight={22} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
+        {description}
+      </Box>
+    </Flex>
+  );
 }
 
-function ToolExample({ tool, example }: ToolExampleProps) {
+interface RouteProps {
+  icon: typeof Bot;
+  title: string;
+  description: string;
+  children: ReactNode;
+}
+
+function Route({ icon: RouteIcon, title, description, children }: RouteProps) {
   return (
     <Box
-      p={3}
-      borderRadius={2}
-      theme={{
-        dark: { bgColor: 'slate-900', borderColor: 'slate-700' },
-        light: { bgColor: 'slate-50', borderColor: 'slate-200' },
-      }}
+      p={5}
       b={1}
+      borderRadius={3}
+      theme={{ dark: { bgColor: 'slate-800', borderColor: 'slate-700' }, light: { bgColor: 'white', borderColor: 'slate-200' } }}
     >
-      <Box
-        tag="span"
-        display="inline-block"
-        px={2}
-        py={0.5}
-        borderRadius={1}
-        fontSize={12}
-        fontWeight={600}
-        bgImage="gradient-primary"
-        color="white"
-        mb={2}
-      >
-        {tool}
-      </Box>
-      <Box fontSize={14} theme={{ dark: { color: 'slate-300' }, light: { color: 'slate-700' } }}>
-        {example}
-      </Box>
+      <Flex ai="center" gap={3} mb={3}>
+        <Flex width={9} height={9} ai="center" jc="center" bgImage="gradient-primary" borderRadius={2} color="white" flexShrink={0}>
+          <RouteIcon size={18} />
+        </Flex>
+        <H3 fontSize={16} fontWeight={600} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }}>
+          {title}
+        </H3>
+      </Flex>
+      <P fontSize={14} lineHeight={22} mb={4} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
+        {description}
+      </P>
+      {children}
     </Box>
   );
 }
 
-interface FeatureItemProps {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-}
-
-function FeatureItem({ icon, title, description }: FeatureItemProps) {
+function Next({ to, children }: { to: string; children: ReactNode }) {
   return (
-    <Flex
-      ai="center"
-      gap={4}
-      py={3}
-      px={4}
-      theme={{
-        dark: { bgColor: 'slate-800', borderColor: 'slate-700' },
-        light: { bgColor: 'white', borderColor: 'slate-200' },
-      }}
-      b={1}
-      borderRadius={2}
-    >
-      <Box theme={{ dark: { color: 'indigo-400' }, light: { color: 'indigo-500' } }} flexShrink={0}>
-        {icon}
-      </Box>
-      <Box>
-        <Flex ai="center" gap={2} flexWrap="wrap">
-          <Box fontSize={14} fontWeight={600} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }}>
-            {title}
-          </Box>
-          <Box fontSize={13} theme={{ dark: { color: 'slate-500' }, light: { color: 'slate-500' } }}>
-            {description}
-          </Box>
-        </Flex>
-      </Box>
-    </Flex>
+    <Li fontSize={14} lineHeight={24}>
+      <SiteLink to={to} theme={{ dark: { color: 'violet-400' }, light: { color: 'violet-600' } }} hover={{ textDecoration: 'underline' }}>
+        {children}
+      </SiteLink>
+    </Li>
   );
 }

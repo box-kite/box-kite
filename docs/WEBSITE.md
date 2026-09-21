@@ -156,11 +156,11 @@ Where the markup alone does not say what the markdown should be, the component s
 | -------- | ---------------------------------------------------------- | --------------------------------------------------------------- |
 | `skip`   | a control, or a rendered demo whose snippet is the content | `Code`'s demo area and toolbar, the `NEW` badge, `/box`'s cards |
 | `label`  | a line titling the block under it, emitted bold            | `Code`'s label                                                  |
-| `inline` | children that belong on one line, joined with `·`          | the colour families, `/tailwind-parity`'s prop and status cells |
+| `inline` | children that belong on one line, joined with `·`          | the colour families, the homepage's stat and signal cards      |
 
 `inline` is the one worth remembering: a row of chips laid out with a `gap` carries no whitespace
-between the elements, so concatenating them gives `` `display``inline` `` — 103 cells of the parity
-table read that way before the hint.
+between the elements, so concatenating them gives `` `display``inline` `` — a whole table of
+chip cells read that way before the hint.
 
 **The dev server answers the same addresses**, rendering the page on demand
 ([pages.vite.config.ts](pages.vite.config.ts), the `markdown-mirror` plugin) — without it the SPA

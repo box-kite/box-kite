@@ -47,9 +47,8 @@ setOpen(false, { reason: 'escape', event });
 `onChange(value, { reason, event })` is the point of the hook. A component that only reports
 `onOpenChange(false)` makes its consumer guess whether the popup closed because something was
 picked, because Escape was pressed, because the user clicked away, or because the component decided
-on its own — and each of those wants different behaviour from the surrounding app. This is the
-Base UI shape, and it is the answer to the long-standing complaints about controlled state in
-Radix.
+on its own — and each of those wants different behaviour from the surrounding app. A reason on
+every change is what a controlled component owes its consumer.
 
 Details worth knowing:
 

@@ -15,13 +15,11 @@ import {
   DoorOpen,
   Download,
   Gauge,
-  GitCompare,
   Highlighter,
   Languages,
   Layers,
   LayoutDashboard,
   LayoutGrid,
-  ListChecks,
   ListCollapse,
   LoaderCircle,
   MessageSquare,
@@ -34,7 +32,6 @@ import {
   Proportions,
   Rocket,
   Rows3,
-  Scale,
   Search,
   Server,
   Shapes,
@@ -117,38 +114,7 @@ export default function Sidebar({ toggleTheme, onClose }: SidebarProps) {
 
       {/* Navigation */}
       <Box flex1 overflow="auto" py={4} px={3}>
-        {/* Getting Started */}
-        <MenuSection label="Getting Started">
-          <MenuItem to="/" icon={<BookOpen />}>
-            Introduction
-          </MenuItem>
-          <MenuItem to="/installation" icon={<Download />}>
-            Installation
-          </MenuItem>
-          <MenuItem to="/registry" icon={<Blocks />}>
-            Blocks
-          </MenuItem>
-          <MenuItem to="/migrating" icon={<PackageIcon />}>
-            Migrating
-          </MenuItem>
-          <MenuItem to="/releases" icon={<Rocket />}>
-            Releases
-          </MenuItem>
-          <MenuItem to="/theme-setup" icon={<Paintbrush />}>
-            Theme Setup
-          </MenuItem>
-          <MenuItem to="/server-components" icon={<Server />}>
-            Server Components
-          </MenuItem>
-          <MenuItem to="/generative-ui" icon={<WandSparkles />}>
-            Generative UI
-          </MenuItem>
-          <MenuItem to="/interop" icon={<Workflow />}>
-            Interop
-          </MenuItem>
-        </MenuSection>
-
-        {/* AI Context - Highlighted */}
+        {/* The library's own headline, so it is the first thing in the nav rather than a row in a list. */}
         <Box mb={4}>
           <NavLink to="/ai-context">
             {({ isActive }) => (
@@ -185,7 +151,7 @@ export default function Sidebar({ toggleTheme, onClose }: SidebarProps) {
                 >
                   <Bot />
                 </Icon>
-                <Box flex1>AI Context</Box>
+                <Box flex1>Built for AI</Box>
                 <Box
                   px={2}
                   py={0.5}
@@ -197,12 +163,50 @@ export default function Sidebar({ toggleTheme, onClose }: SidebarProps) {
                     light: { bgColor: isActive ? 'white' : 'indigo-200', color: 'indigo-600' },
                   }}
                 >
-                  NEW
+                  MCP
                 </Box>
               </Flex>
             )}
           </NavLink>
         </Box>
+
+        {/* Getting Started */}
+        <MenuSection label="Getting Started">
+          <MenuItem to="/" icon={<BookOpen />}>
+            Introduction
+          </MenuItem>
+          <MenuItem to="/installation" icon={<Download />}>
+            Installation
+          </MenuItem>
+          <MenuItem to="/registry" icon={<Blocks />}>
+            Blocks
+          </MenuItem>
+          <MenuItem to="/migrating" icon={<PackageIcon />}>
+            Migrating
+          </MenuItem>
+          <MenuItem to="/releases" icon={<Rocket />}>
+            Releases
+          </MenuItem>
+          <MenuItem to="/theme-setup" icon={<Paintbrush />}>
+            Theme Setup
+          </MenuItem>
+          <MenuItem to="/server-components" icon={<Server />}>
+            Server Components
+          </MenuItem>
+        </MenuSection>
+
+        {/* What a model does at runtime, as opposed to what it writes — which is the highlighted link above. */}
+        <MenuSection label="Working with AI" defaultOpen>
+          <MenuItem to="/generative-ui" icon={<WandSparkles />}>
+            Generative UI
+          </MenuItem>
+          <MenuItem to="/interop" icon={<Workflow />}>
+            Interop
+          </MenuItem>
+          <MenuItem to="/agent" icon={<Bot />}>
+            Agent
+          </MenuItem>
+        </MenuSection>
 
         {/* Core */}
         <MenuSection label="Core" defaultOpen>
@@ -238,12 +242,6 @@ export default function Sidebar({ toggleTheme, onClose }: SidebarProps) {
           </MenuItem>
           <MenuItem to="/rtl" icon={<Languages />}>
             Right to Left
-          </MenuItem>
-          <MenuItem to="/tailwind-parity" icon={<ListChecks />}>
-            Tailwind Parity
-          </MenuItem>
-          <MenuItem to="/radix-comparison" icon={<GitCompare />}>
-            Radix Comparison
           </MenuItem>
           <MenuItem to="/escape-hatch" icon={<DoorOpen />}>
             Escape Hatch
@@ -306,9 +304,6 @@ export default function Sidebar({ toggleTheme, onClose }: SidebarProps) {
           <MenuItem to="/dropdown" icon={<ChevronDown />}>
             Dropdown
           </MenuItem>
-          <MenuItem to="/agent" icon={<Bot />}>
-            Agent
-          </MenuItem>
           <MenuItem to="/dashboard" icon={<LayoutDashboard />}>
             Dashboard
           </MenuItem>
@@ -317,9 +312,6 @@ export default function Sidebar({ toggleTheme, onClose }: SidebarProps) {
           </MenuItem>
           <MenuItem to="/benchmark" icon={<Gauge />}>
             Benchmark
-          </MenuItem>
-          <MenuItem to="/grid-comparison" icon={<Scale />}>
-            Comparison
           </MenuItem>
         </MenuSection>
 

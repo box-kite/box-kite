@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
 import { describe, expect, it } from 'vitest';
-import { siteRoutes } from '../site/site';
+import { siteRoutes } from '../../pages/site/site';
 import { ComparisonRow, comparisonRows, countShipped, products, ProductId, VERIFIED_ON } from './gridComparison';
 
 /**

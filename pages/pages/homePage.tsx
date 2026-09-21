@@ -1,4 +1,4 @@
-import { ArrowRight, Check, Keyboard, Server, Table2, Type } from 'lucide-react';
+import { ArrowRight, Bot, Check, Keyboard, ShieldCheck, Type } from 'lucide-react';
 import { ReactNode } from 'react';
 import { version } from '../../package.json';
 import Box from '../../src/box';
@@ -12,12 +12,11 @@ import Mono from '../components/mono';
 import Reveal from '../components/reveal';
 import SiteLink from '../components/siteLink';
 import { Cell, HeadCell, Table, TableBody, TableHead, TableRow } from '../components/table';
-import { products, VERIFIED_ON } from './gridComparison';
-import { APG_PATTERNS, completions, patternRows, Pillar, pillars, quotedTiers, totals, typeProof } from './home';
+import { agentTools, APG_PATTERNS, completions, installs, patternRows, Pillar, pillars, shipped, totals, typeProof } from './home';
 import SiGithub from '~icons/simple-icons/github';
 
 /** One icon per pillar, keyed by the anchor its card jumps to. */
-const PILLAR_ICONS = { typed: Type, accessible: Keyboard, server: Server, grid: Table2 };
+const PILLAR_ICONS = { agent: Bot, typed: Type, generative: ShieldCheck, finished: Keyboard };
 
 /** The four colours the hand-written code lines use — a syntax theme small enough to be a record. */
 const TOKEN_COLORS = {
@@ -53,10 +52,10 @@ export default function HomePage() {
         </Box>
       </Reveal>
       <Pillars />
+      <AgentSection />
       <TypedSection />
-      <AccessibleSection />
-      <ServerSection />
-      <GridSection />
+      <GenerativeSection />
+      <FinishedSection />
       <QuickStart />
       <HealthSignals />
     </Box>
@@ -99,7 +98,7 @@ function Hero() {
           mb={6}
           maxWidth={190}
         >
-          <Box theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }}>Every CSS property is a typed prop.</Box>
+          <Box theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }}>The React library your AI already knows.</Box>
           {/* The library's own gradient-on-text, which is inert without the transparent colour beside it. */}
           <Box
             width="fit-content"
@@ -108,7 +107,7 @@ function Hero() {
             bgClip="text"
             color="transparent"
           >
-            Nothing to import. Nothing to merge.
+            Every CSS property is a typed prop.
           </Box>
         </H1>
       </Reveal>
@@ -122,8 +121,9 @@ function Hero() {
           lineHeight={28}
           mb={10}
         >
-          {totals.props} props your editor completes and the compiler checks, {totals.components} components with the keyboard and the ARIA
-          already in them, and a data grid that costs nothing. No stylesheet, no build step, no <Mono>&apos;use client&apos;</Mono>.
+          The instructions an agent needs ship inside the package, generated from the engine itself. {totals.props} props the compiler
+          checks catch what it still gets wrong. {totals.components} components arrive with the keyboard and the ARIA already in them. No
+          stylesheet, no build step, no <Mono>&apos;use client&apos;</Mono>.
         </P>
       </Reveal>
 
@@ -137,16 +137,16 @@ function Hero() {
               </Flex>
             </Button>
           </SiteLink>
-          <Link props={{ href: 'https://github.com/box-kite/box-kite', target: '_blank', rel: 'noopener noreferrer' }}>
+          <SiteLink to="/ai-context">
             <Button variant="secondary" px={6} py={3} fontSize={15} theme={{ dark: { color: 'slate-300' }, light: { color: 'slate-700' } }}>
               <Flex ai="center" gap={2}>
                 <Icon size={4.5}>
-                  <SiGithub />
+                  <Bot />
                 </Icon>
-                View on GitHub
+                Set up your agent
               </Flex>
             </Button>
-          </Link>
+          </SiteLink>
         </Flex>
       </Reveal>
     </Flex>
@@ -261,7 +261,7 @@ function CompletionDemo() {
         }}
       >
         The same <Mono>4</Mono> is a rem here and a pixel there, because a padding and a border are not measured the same way. The editor
-        knows which is which; a class name cannot.
+        knows which is which, and so does anything reading the same types.
       </Box>
     </Box>
   );
@@ -319,18 +319,115 @@ function PillarCard({ pillar }: { pillar: Pillar }) {
   );
 }
 
+function AgentSection() {
+  return (
+    <Section id="agent" eyebrow="01" title="The instructions are inside the package">
+      <P mb={6}>
+        A model writing against a library it has not seen guesses, and a guess that compiles is the expensive kind. So the answers travel
+        with the code: installing <Mono>@box-kite/react</Mono> installs the rules, the whole prop reference and a docs folder beside them.
+        Every file is generated at build time from the prop registry, the component types or the rules file — a stale instruction file is
+        worse than none, because an agent trusts it over its priors.
+      </P>
+
+      <Box overflow="auto" mb={6}>
+        <Table width="auto">
+          <TableHead>
+            <TableRow>
+              <HeadCell>In the package</HeadCell>
+              <HeadCell>What it is</HeadCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {shipped.map((file) => (
+              <TableRow key={file.path}>
+                <Cell whiteSpace="nowrap">
+                  <Mono>{file.path}</Mono>
+                </Cell>
+                <Cell>{file.what}</Cell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </Box>
+
+      <H3 fontSize={17} fontWeight={600} mb={3} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }}>
+        One line, whichever agent you use
+      </H3>
+
+      <Flex d="column" gap={4} mb={8}>
+        {installs.map((install) => (
+          <Code key={install.command} label={install.label} language="shell" code={install.command} />
+        ))}
+      </Flex>
+
+      <H3 fontSize={17} fontWeight={600} mb={3} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }}>
+        The answer a file cannot give
+      </H3>
+
+      <P mb={5}>
+        A value this library does not accept writes no CSS and says nothing about having done so — so the one question a reference cannot
+        settle is &ldquo;did that actually work?&rdquo;. <Mono>@box-kite/mcp</Mono> answers it by running the engine: hand{' '}
+        <Mono>check_styles</Mono> a prop bag and it reports the CSS each prop wrote, or why it wrote none. Six tools over stdio, with the
+        engine and the generated reference inlined.
+      </P>
+
+      <Box overflow="auto" mb={6}>
+        <Table width="auto">
+          <TableHead>
+            <TableRow>
+              <HeadCell>Tool</HeadCell>
+              <HeadCell>What it answers</HeadCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {agentTools.map((tool) => (
+              <TableRow key={tool.name}>
+                <Cell whiteSpace="nowrap">
+                  <Mono>{tool.name}</Mono>
+                </Cell>
+                <Cell>{tool.what}</Cell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </Box>
+
+      <Ul display="flex" d="column" gap={3} listStyle="none" p={0} m={0}>
+        <Point>
+          <strong>Generated, not written.</strong> Every example in <Mono>docs/props.md</Mono> is the CSS the engine emitted for it, and CI
+          fails when one drifts — so the reference cannot describe a divider the library no longer uses.
+        </Point>
+        <Point>
+          <strong>The prior is the problem, and it is addressed first.</strong> The prop names collide with other libraries&rsquo; while the
+          numbers mean different things, so <Mono>AGENTS.md</Mono> opens by saying so rather than assuming a model arrives empty-handed.
+        </Point>
+        <Point>
+          <strong>The site is readable too.</strong> Every page here has a markdown mirror, and <Mono>llms.txt</Mono> indexes them — so an
+          agent browsing the docs gets prose rather than a React shell.
+        </Point>
+      </Ul>
+
+      <Flex props={{ 'data-md': 'inline' }} gap={5} mt={6} flexWrap="wrap">
+        <SectionLink to="/ai-context">Set your agent up, step by step</SectionLink>
+        <SectionLink to="/box">Every prop, with the CSS it writes</SectionLink>
+      </Flex>
+    </Section>
+  );
+}
+
 function TypedSection() {
   return (
-    <Section id="typed" eyebrow="01" title="A value the palette does not have is an error">
+    <Section id="typed" eyebrow="02" title="A value the palette does not have is an error">
       <P mb={6}>
-        Both columns below make the same mistake: no palette family has a <Mono>550</Mono> step. Only one of them says so.
+        Generated code is only as good as what catches it. Both columns below make the same mistake — the one a model makes most, a
+        plausible value from a neighbouring scale, since no palette family has a <Mono>550</Mono> step. Only one of them says so.
       </P>
 
       <Grid gridTemplateColumns={1} md={{ gridTemplateColumns: 2 }} gap={5} mb={6}>
         <ProofPanel
           tone="muted"
           title="A class name"
-          caption="No error anywhere — not in the editor, not in the build, not at runtime. The element renders with no background."
+          caption="No error anywhere — not in the editor, not in the build, not at runtime. The element renders with no background, and whoever asked for it finds out by looking."
         >
           <Box tag="code" display="block" fontSize={13} lineHeight={22}>
             <Tok kind="punct">&lt;div className=</Tok>
@@ -342,7 +439,7 @@ function TypedSection() {
         <ProofPanel
           tone="error"
           title="A typed prop"
-          caption="The compiler's own message. This site's test suite re-runs it rather than trusting what is printed here."
+          caption="The compiler's own message, in the editor, before it is ever run. This site's test suite re-runs it rather than trusting what is printed here."
         >
           <Box tag="code" display="block" fontSize={13} lineHeight={22}>
             <Tok kind="punct">&lt;</Tok>
@@ -393,8 +490,12 @@ function TypedSection() {
 
       <Ul display="flex" d="column" gap={3} listStyle="none" p={0} m={0}>
         <Point>
-          <strong>Nothing merges.</strong> Two components setting the same prop resolve by prop, last one wins — so there is no{' '}
-          <Mono>tailwind-merge</Mono>, no <Mono>clsx</Mono> and no specificity to hold in your head.
+          <strong>It suggests the fix.</strong> The diagnostic ends in <Mono>Did you mean &quot;{typeProof.nearest}&quot;?</Mono> — which is
+          a repair an agent can apply on its own, from a message no string could have produced.
+        </Point>
+        <Point>
+          <strong>Nothing merges.</strong> Two components setting the same prop resolve by prop, last one wins — so there is no class-string
+          arithmetic and no specificity to hold in your head.
         </Point>
         <Point>
           <strong>The class is shared.</strong> <Mono>p={'{4}'}</Mono> is one rule however many components write it, generated the first
@@ -408,18 +509,75 @@ function TypedSection() {
 
       <Flex props={{ 'data-md': 'inline' }} gap={5} mt={6} flexWrap="wrap">
         <SectionLink to="/box">Every prop, with the CSS it writes</SectionLink>
-        <SectionLink to="/tailwind-parity">The Tailwind map, gaps marked</SectionLink>
+        <SectionLink to="/escape-hatch">The one-off that is still a class</SectionLink>
       </Flex>
     </Section>
   );
 }
 
-function AccessibleSection() {
+function GenerativeSection() {
   return (
-    <Section id="accessible" eyebrow="02" title="Ten patterns, and the tests that say so">
+    <Section id="generative" eyebrow="03" title="A model composes it, your app still owns it">
       <P mb={6}>
-        Every pre-built component ships with its roles, its ARIA and its keyboard map. The two numbers beside each one come out of the
-        generated reference: how many keyboard rows that component documents, and how many fixtures the axe sweep renders it in.
+        The other half of writing code with a model is letting one build the interface at runtime. <Mono>catalog()</Mono> describes every
+        component and every value its props take as JSON Schema — read off the live prop registry, so a prop you added with{' '}
+        <Mono>Box.extend()</Mono> is in it with nothing regenerated. <Mono>specSchema()</Mono> turns that into the one schema a model
+        generates a whole tree under, and <Mono>&lt;SpecRenderer&gt;</Mono> renders what came back against an allow-list your app builds.
+      </P>
+
+      <Code
+        label="The constraint and the renderer come out of one description"
+        language="jsx"
+        codeOnly
+        code={`import { catalog, specSchema } from '@box-kite/react/catalog';
+import { SpecRenderer, createSpecRegistry } from '@box-kite/react/spec';
+
+const registry = createSpecRegistry({ catalog: catalog(), components: { Flex, H2, Sparkline } });
+
+// On the server: what the model is allowed to generate.
+const schema = specSchema(registry);
+
+// In the app: what came back, rendered against the same description.
+<SpecRenderer spec={spec} registry={registry} data={data} onAction={run} onIssues={log} />;`}
+      />
+
+      <Ul display="flex" d="column" gap={3} listStyle="none" p={0} mt={6} mb={6}>
+        <Point>
+          <strong>A colour stays a token.</strong> A colour prop is a pattern over the palette in the schema, which is the one thing a
+          generated tree cannot get around — so a model cannot invent a brand colour into your app.
+        </Point>
+        <Point>
+          <strong>Unknown names render nothing.</strong> A component the registry does not hold, a prop its schema refuses, an event the
+          catalog does not list: each is dropped and reported through <Mono>onIssues</Mono> rather than thrown or silently obeyed.
+        </Point>
+        <Point>
+          <strong>A stream is handled as a stream.</strong> A spec arrives in pieces, so a half-written value is held back rather than
+          rendered, and every node has an error boundary of its own — a component that throws on invented props costs that node and nothing
+          around it.
+        </Point>
+        <Point>
+          <strong>The runtimes are already mapped.</strong> <Mono>@box-kite/react/interop</Mono> reads a tool call from AI SDK,
+          assistant-ui, CopilotKit, AG-UI and A2UI into one vocabulary — and imports none of them, so the adapter does not choose a runtime
+          for your app.
+        </Point>
+      </Ul>
+
+      <Flex props={{ 'data-md': 'inline' }} gap={5} flexWrap="wrap">
+        <SectionLink to="/generative-ui">The catalog and the renderer</SectionLink>
+        <SectionLink to="/interop">Five runtimes, one vocabulary</SectionLink>
+        <SectionLink to="/agent">The components an agent&rsquo;s turn needs</SectionLink>
+      </Flex>
+    </Section>
+  );
+}
+
+function FinishedSection() {
+  return (
+    <Section id="finished" eyebrow="04" title="What comes out is finished, not scaffolding">
+      <P mb={6}>
+        Code a model wrote is worth what it does for the person using it. Every pre-built component ships with its roles, its ARIA and its
+        keyboard map, and the two numbers beside each one come out of the generated reference: how many keyboard rows that component
+        documents, and how many fixtures the axe sweep renders it in.
       </P>
 
       <Box overflow="auto" mb={6}>
@@ -463,42 +621,21 @@ function AccessibleSection() {
         </Table>
       </Box>
 
-      <Grid gridTemplateColumns={1} sm={{ gridTemplateColumns: 3 }} gap={4} mb={6}>
+      <Grid gridTemplateColumns={1} sm={{ gridTemplateColumns: 3 }} gap={4} mb={8}>
         <Stat value={String(totals.keyboardRows)} label="keyboard rows documented and driven, across every component" />
         <Stat value={String(totals.fixtures)} label={`axe fixtures rendered on every commit, over ${totals.components} components`} />
         <Stat value={String(totals.knownViolations)} label="violations in the ledger, which fails on a listed one that stops firing too" />
       </Grid>
 
-      <P fontSize={13} mb={6} theme={{ dark: { color: 'slate-500' }, light: { color: 'slate-500' } }}>
-        Radix and Base UI implement these patterns too, and test them; what neither of them ships is the appearance. Thirteen patterns
-        against both, measured twice each and with the rows this library loses kept in, are on the{' '}
-        <SiteLink
-          to="/radix-comparison"
-          display="inline"
-          theme={{ dark: { color: 'violet-400' }, light: { color: 'violet-600' } }}
-          hover={{ textDecoration: 'underline' }}
-        >
-          comparison page
-        </SiteLink>
-        .
-      </P>
+      <H3 fontSize={17} fontWeight={600} mb={3} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }}>
+        It renders in a Server Component, with nothing added
+      </H3>
 
-      <Flex props={{ 'data-md': 'inline' }} gap={5} flexWrap="wrap">
-        <SectionLink to="/menu">A menu button, submenus and all</SectionLink>
-        <SectionLink to="/combobox">A combobox over 10,000 rows</SectionLink>
-        <SectionLink to="/radix-comparison">Against Radix and Base UI</SectionLink>
-      </Flex>
-    </Section>
-  );
-}
-
-function ServerSection() {
-  return (
-    <Section id="server" eyebrow="03" title="A Server Component, with nothing added to it">
-      <P mb={6}>
+      <P mb={5}>
         A Server Component cannot inject styles: there is no effect to run and no document to write to. The <Mono>react-server</Mono>{' '}
         condition resolves to a build of Box that calls no hook and touches no DOM, and the rules it needs come back as{' '}
-        <Mono>&lt;style href precedence&gt;</Mono> elements React 19 hoists and dedupes. Importing the package is the whole setup.
+        <Mono>&lt;style href precedence&gt;</Mono> elements React 19 hoists and dedupes. Importing the package is the whole setup — which is
+        also why generated code needs no <Mono>&apos;use client&apos;</Mono> added to it after the fact.
       </P>
 
       <Code
@@ -518,7 +655,7 @@ export default function Page() {
 }`}
       />
 
-      <Ul display="flex" d="column" gap={3} listStyle="none" p={0} mt={6} mb={6}>
+      <Ul display="flex" d="column" gap={3} listStyle="none" p={0} mt={6} mb={8}>
         <Point>
           <strong>The boundary is a check, not a promise.</strong> CI fails if the <Mono>react-server</Mono> entry reaches a client hook, or
           if the engine itself imports React.
@@ -533,50 +670,20 @@ export default function Page() {
         </Point>
       </Ul>
 
-      <Flex props={{ 'data-md': 'inline' }} gap={5} flexWrap="wrap">
-        <SectionLink to="/server-components">How the server path works</SectionLink>
-        <SectionLink to="/installation">Install it</SectionLink>
-      </Flex>
-    </Section>
-  );
-}
+      <H3 fontSize={17} fontWeight={600} mb={3} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }}>
+        And the data grid is in the box
+      </H3>
 
-function GridSection() {
-  const quoted = products.filter((product) => (quotedTiers as readonly string[]).includes(product.id));
-
-  return (
-    <Section id="grid" eyebrow="04" title="The data grid is in the box">
       <P mb={6}>
         Sorting, multi-column grouping with aggregation, row virtualization over 100,000 rows, tree data, a server-side row model, range
-        selection with clipboard paste, cell editing and a styled XLSX export. The same MIT package as everything else, taking Box props
-        like everything else.
-      </P>
-
-      <Grid gridTemplateColumns={1} sm={{ gridTemplateColumns: 2 }} lg={{ gridTemplateColumns: 4 }} gap={4} mb={5}>
-        <Stat value="Free" label="MIT, one tier, and this is it" accent />
-        {quoted.map((product) => (
-          <Stat key={product.id} value={product.price ?? ''} label={`${product.name} — ${product.terms ?? ''}`} />
-        ))}
-      </Grid>
-
-      <P fontSize={13} mb={6} theme={{ dark: { color: 'slate-500' }, light: { color: 'slate-500' } }}>
-        Prices as each vendor&rsquo;s own pricing page printed them on {VERIFIED_ON}. The feature-by-feature table, including the two rows
-        this library loses, is on the{' '}
-        <SiteLink
-          to="/grid-comparison"
-          display="inline"
-          theme={{ dark: { color: 'violet-400' }, light: { color: 'violet-600' } }}
-          hover={{ textDecoration: 'underline' }}
-        >
-          comparison page
-        </SiteLink>
-        .
+        selection with clipboard paste, cell editing and a styled XLSX export. MIT, one tier, in the same package as everything else, taking
+        Box props like everything else — so a grid a model generated is the grid you would have written.
       </P>
 
       <Flex props={{ 'data-md': 'inline' }} gap={5} flexWrap="wrap">
         <SectionLink to="/datagrid">The grid, with every feature demoed</SectionLink>
         <SectionLink to="/benchmark">The 100,000-row benchmark</SectionLink>
-        <SectionLink to="/grid-comparison">What the market charges</SectionLink>
+        <SectionLink to="/server-components">How the server path works</SectionLink>
       </Flex>
     </Section>
   );
@@ -663,7 +770,12 @@ function HealthSignals() {
             theme={{ dark: { color: 'violet-400' }, light: { color: 'violet-600' } }}
             hover={{ textDecoration: 'underline' }}
           >
-            The repository
+            <Flex props={{ 'data-md': 'inline' }} display="inline-flex" ai="center" gap={2}>
+              <Icon size={3.5}>
+                <SiGithub />
+              </Icon>
+              The repository
+            </Flex>
           </Link>
           <Link
             props={{ href: 'https://www.npmjs.com/package/@box-kite/react', target: '_blank', rel: 'noopener noreferrer' }}

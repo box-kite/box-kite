@@ -159,8 +159,8 @@ export default function EscapeHatchPage() {
 
           <Section id="governance" title="The three ways out, in order">
             <Bullet>
-              <strong>A typed prop</strong>, if one exists. <Mono>/tailwind-parity</Mono> lists every family against the props that cover
-              it; most of what feels missing is a spelling away.
+              <strong>A typed prop</strong>, if one exists. The prop reference lists all 221 of them with the CSS each one writes; most of
+              what feels missing is a spelling away.
             </Bullet>
             <Bullet>
               <strong>

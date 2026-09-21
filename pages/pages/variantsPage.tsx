@@ -226,9 +226,9 @@ export default function VariantsPage() {
 
           <Section id="group" title="group and peer — a state that belongs to somebody else">
             Every key above is about the element itself. <Mono>group</Mono> is about an <em>ancestor</em> and <Mono>peer</Mono> about a
-            preceding <em>sibling</em>: the record key is the state, either on the default class (<Mono>group</Mono>, <Mono>peer</Mono> —
-            the names Tailwind uses) or on one you name, <Mono>'card/hover'</Mono>. The state vocabulary is <Mono>not</Mono>'s, so any
-            pseudo-class works, and a <Mono>data-</Mono>/<Mono>aria-</Mono> prefix reaches an attribute the ancestor carries instead.
+            preceding <em>sibling</em>: the record key is the state, either on the default class (<Mono>group</Mono>, <Mono>peer</Mono>) or
+            on one you name, <Mono>'card/hover'</Mono>. The state vocabulary is <Mono>not</Mono>'s, so any pseudo-class works, and a{' '}
+            <Mono>data-</Mono>/<Mono>aria-</Mono> prefix reaches an attribute the ancestor carries instead.
           </Section>
 
           <Code
@@ -358,10 +358,10 @@ export default function VariantsPage() {
             <Mono>bs</Mono>/<Mono>be</Mono>, <Mono>insetStart</Mono>/<Mono>insetEnd</Mono> and <Mono>borderRadiusStart</Mono>/
             <Mono>borderRadiusEnd</Mono> swap sides the moment <Mono>dir="rtl"</Mono> is set on any ancestor, because the browser resolves
             them and nothing has to re-render. These two keys are for what is left: an arrow that has to point the other way, a shadow that
-            has to fall the other way. The selector is <Mono>:dir(rtl)</Mono> rather than the <Mono>[dir="rtl"] &amp;</Mono> Tailwind emits
-            — direction is a property of <em>this</em> element, so a <Mono>&lt;bdi&gt;</Mono> or a <Mono>dir="auto"</Mono> that flipped one
-            paragraph is seen. The consequence worth knowing: with no <Mono>dir</Mono> anywhere the document is left-to-right, so{' '}
-            <Mono>ltr</Mono> matches. It is a state, not an attribute you have to write.
+            has to fall the other way. The selector is <Mono>:dir(rtl)</Mono> rather than an ancestor selector like{' '}
+            <Mono>[dir="rtl"] &amp;</Mono>— direction is a property of <em>this</em> element, so a <Mono>&lt;bdi&gt;</Mono> or a{' '}
+            <Mono>dir="auto"</Mono> that flipped one paragraph is seen. The consequence worth knowing: with no <Mono>dir</Mono> anywhere the
+            document is left-to-right, so <Mono>ltr</Mono> matches. It is a state, not an attribute you have to write.
           </Section>
 
           <Code
@@ -451,8 +451,8 @@ export default function VariantsPage() {
           />
 
           <Section id="presence" title="The exit, written as CSS instead of a ternary">
-            <Mono>&lt;Presence&gt;</Mono> hands its child <Mono>{`{ 'data-state': 'open' | 'closed' }`}</Mono> — the Radix and Base UI
-            spelling, so a selector written for either works here. With <Mono>dataAttr</Mono> the whole entrance and exit is two records and
+            <Mono>&lt;Presence&gt;</Mono> hands its child <Mono>{`{ 'data-state': 'open' | 'closed' }`}</Mono> — the conventional spelling,
+            so a selector written against it elsewhere works here. With <Mono>dataAttr</Mono> the whole entrance and exit is two records and
             no conditional value in the markup: the element says where it is, and the stylesheet says what that looks like.
           </Section>
 

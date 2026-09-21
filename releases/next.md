@@ -8,8 +8,7 @@ _Unreleased. A PR that changes what a consumer sees adds its section here — se
 
 - **[A block of cells, and Ctrl+C](#a-block-of-cells-and-ctrlc)** — drag or Shift+arrow across a DataGrid and copy it straight into a spreadsheet.
 - **[Ctrl+V, one judgement per cell](#ctrlv-one-judgement-per-cell)** — paste a block back in, judged by the same `def.onCellEdit` an editor is.
-- **[A hundred thousand rows, and a page that measures them](#a-hundred-thousand-rows-and-a-page-that-measures-them)** — the grid benchmark is public, reruns in your own browser against AG Grid, MUI X and TanStack, and says where this grid wins and where it does not.
-- **[Free here, paid elsewhere](#free-here-paid-elsewhere)** — fourteen data grid features against seven tiers of AG Grid, MUI X and TanStack, with what each one costs and where it was checked.
+- **[A hundred thousand rows, and a page that measures them](#a-hundred-thousand-rows-and-a-page-that-measures-them)** — the grid benchmark is public, reruns in your own browser, and says where this grid is quick and where it is not.
 - **[A fling renders where you are going](#a-fling-renders-where-you-are-going)** — the DataGrid keeps its rendered rows ahead of the scroll instead of on both sides of it: 36 rows around an 18-row screen where it used to be 58, and a fling at 125 frames a second where it was 81.
 - **[`npx shadcn add @box-kite/data-grid`](#npx-shadcn-add-box-kitedata-grid)** — three finished sections the shadcn CLI installs into your own repository, from a registry on box-kite.dev.
 - **[What an AI may build, as JSON Schema](#what-an-ai-may-build-as-json-schema)** — `catalog()` describes every component and every value its props take, so a generated UI can be validated before it renders and cannot invent a colour.
@@ -22,14 +21,47 @@ _Unreleased. A PR that changes what a consumer sees adds its section here — se
 - **[`npx @box-kite/mcp`: the answer a documentation file cannot give](#npx-box-kitemcp-the-answer-a-documentation-file-cannot-give)** — an MCP server whose `check_styles` tool hands your props to the real engine, because a value this library does not accept writes no CSS at all and says nothing about it.
 - **[An agent's turn, in three components](#an-agents-turn-in-three-components)** — a tool call, an approval and a chain of thought, typed and themed and 1.7 KB on top of Box: the inventory an AI feature needs at the layer this library is good at.
 - **[What the agent says, as it arrives](#what-the-agent-says-as-it-arrives)** — `<StreamingText>` fades in the part of a message that was not there a render ago, and costs the same at the ten-thousandth token as at the first.
-- **[Markdown, and the dependency we did not take](#markdown-and-the-dependency-we-did-not-take)** — `markdownComponents` is the `components` map `react-markdown` and Streamdown both take, so a model's prose is themed with no stylesheet, no Tailwind config and no parser chosen for you.
+- **[Markdown, and the dependency we did not take](#markdown-and-the-dependency-we-did-not-take)** — `markdownComponents` is the `components` map `react-markdown` and Streamdown both take, so a model's prose is themed with no stylesheet, no build-tool config and no parser chosen for you.
 - **[Where the answer will be](#where-the-answer-will-be)** — `<Skeleton>`, the placeholder: bars with a gloss, `aria-hidden` unless you name what is loading, and it renders on a server.
 - **[Four agent runtimes, one vocabulary](#four-agent-runtimes-one-vocabulary)** — `@box-kite/react/interop`: AI SDK, assistant-ui, CopilotKit, A2UI and AG-UI, each verified against its own published package.
-- **[Against Radix UI and Base UI, measured both ways](#against-radix-ui-and-base-ui-measured-both-ways)** — thirteen patterns against both libraries, two figures in every cell, and the ten rows where this library has nothing.
+
+- **[A site about this library, and an answer for the agent writing it](#a-site-about-this-library-and-an-answer-for-the-agent-writing-it)** — the three comparison pages are gone and the docs lead with what ships for an AI instead: `AGENTS.md`, the whole prop reference and an MCP server, all inside the package.
 
 <!-- One bullet per section below, linking to it: **[Heading](#heading)** — one line on why it matters. -->
 
 <!-- One `##` per change, above Breaking changes: a sentence for the heading, a paragraph on what and why, an example if it helps. -->
+
+## A site about this library, and an answer for the agent writing it
+
+[box-kite.dev](https://www.box-kite.dev) no longer argues with other libraries. The three comparison
+pages — the utility-family parity table, the accessible-pattern comparison and the data grid feature
+matrix — have been removed, along with the picker that ran the benchmark against three other grids and
+every versus line scattered through the component pages. A documentation site that argues with other
+libraries is a site about those libraries, and a reader who arrived to find out what this one does had to
+read past the argument to get there.
+
+**The numbers were worth keeping, so they were kept.** They are a development instrument now rather than a
+page: `npm run compare` prints all three tables in a terminal, and takes a section name to print just
+one. The data and its tests moved to `dev/compare/`, and the tests still run in
+`npm test` — they hold each table to the live prop registry and to this site's own routes, so a prop added
+and not mapped still fails the suite. `npm run compare` runs in CI too, which proves the report prints;
+the tests are what prove it is right. The benchmark page keeps its Run button and measures this grid
+alone, with the other three adapters in `dev/compare/grids/` and wired in outside a production build — so
+`npm run dev` still offers the four-way picker.
+
+**What the site leads with instead is the thing that is actually unusual about it.** Everything an agent
+needs to write this library correctly ships inside the package, generated from the prop registry at build
+time: `AGENTS.md`, `docs/props.md` with every prop's measured example, a docs folder beside it, the skill,
+the Cursor rule — and `npx @box-kite/mcp`, whose `check_styles` runs the real engine, because a value this
+library refuses writes no CSS and says nothing about having done so. The homepage is four claims in that
+order now (the instructions ship with the code, the compiler catches the rest, a model can compose the UI
+at runtime, and what it writes is finished), `/ai-context` has become **Built for AI** and sits at the top
+of the nav, and Generative UI, Interop and Agent are a section of their own.
+
+Nothing in the library changed. This is the documentation site, the README and one `bench/results.json`
+trimmed to the runs it still prints.
+
+[Built for AI](https://www.box-kite.dev/ai-context/)
 
 ## A block of cells, and Ctrl+C
 
@@ -124,33 +156,23 @@ it now renders the row that arrived. On the machine the published figures come f
 fast fling over a hundred thousand rows **halved, from 24 ms to 12 ms** — forty-one frames a second to
 eighty-two, with the worst frame down from 38 ms to 24 — and not a prop changed.
 
-**It measures the other grids too.** Tick AG Grid Community, the free MUI X Data Grid or TanStack Table
-with a hand-written UI, and the page drives each of them through the same five operations, one after the
-other, and prints them side by side — each library downloaded only when it is picked, so reading the page
-costs nothing. Two of the cells are not about speed at all: AG Grid puts row grouping behind Enterprise and
-MUI X behind Premium, and the free MUI grid forces pagination at a hundred rows a page, so it has no
-hundred thousand rows to fling. Those cells carry the reason rather than a number, because a grid measured
-doing something else is worse than a blank.
-
 What it says about this grid, on one quiet laptop, five runs of a hundred thousand rows by twenty columns:
-first render, filter and sort are in the same class as AG Grid's and MUI X's, the grouping is the fastest of
-the four and only two of them can do it at all — and **the fling was the one this grid was behind on**,
-about 20 ms of work a frame against AG Grid's 2.6 and a hand-rolled TanStack table's 2.8, eighty-one frames
-a second against a hundred and sixty-four. That is what the next section is about: the fling is inside a
-frame now, and what is left of the gap is the work inside it.
+first render, filter, sort and grouping all land inside a frame — and **the fling was the one it was
+slowest at**, about 20 ms of work a frame, eighty-one frames a second. That is what the next section is
+about: the fling is inside a frame now, and what is left is the work inside it.
 
 `npm run bench` is the same measurement headless, and it is the whole harness: the page is the benchmark
 and the script only presses its button, so a rerun in CI measures the code a reader measures. It runs on
 every pull request that touches the grid or the engine, against budgets sized for a shared runner — and
-only for this grid, so asking it for a comparison never fails a build.
+only for this grid.
 
 [The benchmark](https://box-kite.dev/benchmark)
 
 ## A fling renders where you are going
 
 A `DataGrid` kept twenty rows rendered on each side of its viewport, whichever way the rows were actually
-moving — fifty-eight of them around an eighteen-row screen, where AG Grid renders about twenty-eight and a
-hand-written virtual table twenty-six. A buffer is cover for the frame between a scroll and the render that
+moving — fifty-eight of them around an eighteen-row screen, roughly twice what a virtualized body needs. A
+buffer is cover for the frame between a scroll and the render that
 answers it, so it is only ever wanted in the direction of travel. It is **twelve rows ahead and four
 behind** now, and it turns round when the reader does. Nothing to configure, and no prop changed.
 
@@ -162,39 +184,12 @@ filter 65 to 42 and sort 89 to 76 carried along with it.
 The number that keeps that honest is new, because a grid that renders nothing at all is the fastest grid on
 the page. The benchmark now flicks each grid past at ten thousand pixels a second — the top of what a hard
 flick reaches, five rows between one frame and the next at 60 fps — and hit-tests four points down it at
-the start of every frame, against the scroll position that frame is about to paint. Box Kite, AG Grid
-Community and the TanStack baseline paint every one of those frames. With the buffer taken away altogether
+the start of every frame, against the scroll position that frame is about to paint. This grid paints every
+one of those frames. With the buffer taken away altogether
 the same pass reports every frame blank, which is what says it is looking at something; with eight rows of
 cover instead of twelve, four frames in a hundred.
 
 [The benchmark](https://box-kite.dev/benchmark)
-
-## Free here, paid elsewhere
-
-There is a second page beside the benchmark now — [box-kite.dev/grid-comparison](https://box-kite.dev/grid-comparison) —
-and it answers the question the numbers do not: fourteen data grid features against seven tiers of AG Grid,
-MUI X, TanStack Table and this library, with what each tier costs and the day the price was read. Twelve of
-the fourteen ship here under the same MIT licence as the rest of the library. Row grouping, aggregation, a
-real `.xlsx`, a server-side row model, tree data, master/detail panels, range selection and paste are
-AG Grid Enterprise at $999 a developer, or MUI X Premium at $599 a developer a year.
-
-Every tick in this library's column links to a working demo on the data grid page, and a test fails the
-build if one of them ever points at a section that is not there. Two of the fourteen rows are crosses in
-that column — there is no pivoting here and no dragging a header to reorder its column, and both are ticks
-for the paid tiers — because a table with no cross in its own column is an advertisement rather than a
-comparison.
-
-The cells were read out of the packages rather than off a marketing page, and the page says so row by row.
-AG Grid publishes its split in its own types: `EnterpriseModuleName` in `ag-grid-community` names every
-module the free package does not implement, which is where `RowGroupingModule`, `ExcelExportModule`,
-`TreeDataModule`, `MasterDetailModule`, `CellSelectionModule` and `ServerSideRowModelModule` come from —
-and column pinning is deliberately _not_ in it, so that row is a tick for AG Grid Community. The free MUI X
-grid's whole feature set is the list of hooks its own `useDataGridComponent` calls, which is also where two
-things that are forced on rather than absent turn up: `disableColumnReorder: true`, and a pagination that
-throws above a hundred rows a page. The prices were read off the vendors' own pricing pages on 2026-09-18
-and are linked from the page, since neither comparison is helped by a number that was true last year.
-
-[Free here, paid elsewhere](https://box-kite.dev/grid-comparison)
 
 ## `npx shadcn add @box-kite/data-grid`
 
@@ -218,7 +213,7 @@ Register the namespace once in `components.json` and the address becomes a name 
 }
 ```
 
-**None of it needs Tailwind.** The CLI wants a `components.json` with a `tailwind` key in it and empty
+**No stylesheet anywhere.** The CLI expects a `components.json` carrying a `tailwind` key, and empty
 strings satisfy it, because these blocks import no stylesheet and write no CSS file — every style in them
 is a prop. Verified end to end against a fresh `create-next-app`: the files land, `lucide-react` installs
 with the dashboard shell, and `next build` prerenders the page with the CSS in the HTML.
@@ -702,8 +697,8 @@ import { markdownComponents } from '@box-kite/react/components/markdown';
 </Box>;
 ```
 
-Wrapping Streamdown was the other option and it is not worth it: it asks a project for a Tailwind
-`@source` line pointing into its `dist/` and for shadcn's design tokens declared in a global stylesheet —
+Wrapping a renderer was the other option and it is not worth it: the ones on offer ask a project for a
+build-tool directive pointing into their `dist/` and for design tokens declared in a global stylesheet —
 which is the one thing this library exists not to need — and it would choose the parser for you. The map
 costs no dependency, works with whichever renderer is already there, and keeps the promise: no stylesheet.
 
@@ -794,33 +789,6 @@ so converting a catalog component on its own throws `Reference not found: #/$def
 3.96 KB gzipped, and no engine in it. The recipes per runtime, AG-UI and json-render included, are in
 [docs/interop.md](https://github.com/box-kite/box-kite/blob/main/docs/interop.md) and at
 [box-kite.dev/interop](https://www.box-kite.dev/interop/).
-
-## Against Radix UI and Base UI, measured both ways
-
-[box-kite.dev/radix-comparison](https://www.box-kite.dev/radix-comparison/) is the thirteen patterns all
-three libraries ship — accordion, dialog, menu, popover, tabs, slider, progress, tooltip, toast, checkbox,
-switch, radio group and select — with two figures in every cell, and eighteen further rows where one of
-the three has nothing.
-
-The two figures are the point. **Alone** is what a component costs as the only thing you import, which is
-the figure a package page prints. **One more** is what it costs an app that already has the other twelve,
-measured by leaving it out of the bundle and taking the difference. They are a long way apart: the
-thirteen Radix packages come to 184.08 KB gzipped added up and bundle to 55.75 KB together, so a column
-of solo figures compares nothing at all.
-
-The whole-app number is the honest headline, and it is **not** a win. Box plus all thirteen components is
-55.37 KB gzipped, against Radix's 55.75 KB and Base UI's 97.89 KB. What differs is what is inside those
-numbers: 31.96 KB of the first is a styling engine, and the components it carries arrive styled, where
-neither of the other two ships a `.css` file anywhere in its package — so the stylesheet an app writes for
-them is real weight that appears in no figure on the page. The page says that rather than exploiting it.
-
-Radix wins a row (tabs, 0.68 KB against 1.83), ten of the eighteen coverage rows are a blank in this
-library's own column — no navigation menu, menubar, context menu, scroll area, hover card, toolbar, toggle
-group or avatar — and the page recommends Radix outright for a team that already has a styling layer it is
-happy with. The test beside the page fails if either kind of losing row ever quietly disappears.
-
-Every byte was measured with `node dev/published-size.mjs`, which ships in this repository and gained a
-`--marginal` mode for the leave-one-out figures, so the numbers can be re-derived rather than believed.
 
 ## Breaking changes
 
