@@ -48,6 +48,7 @@ const PROVIDED = {
   useMemo: "import { useMemo } from 'react';",
   useRef: "import { useRef } from 'react';",
   useState: "import { useState } from 'react';",
+  flushSync: "import { flushSync } from 'react-dom';",
   BaseSvg: "import BaseSvg from '@box-kite/react/components/baseSvg';",
   Box: "import Box from '@box-kite/react';",
   useAnchorPosition: "import { useAnchorPosition } from '@box-kite/react/anchor';",

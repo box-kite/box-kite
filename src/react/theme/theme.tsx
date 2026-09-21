@@ -1,4 +1,5 @@
 import React, { useCallback, useContext, useLayoutEffect, useState } from 'react';
+import { flushSync } from 'react-dom';
 import Box from '../../box';
 import {
   applyThemeToElement,
@@ -7,6 +8,7 @@ import {
   documentRoot,
   getSystemTheme,
   readStoredTheme,
+  startViewTransition,
   watchSystemTheme,
   writeStoredTheme,
 } from '../../core';
@@ -26,6 +28,16 @@ interface ThemeProps {
    * `globalStyles={{ scrollbarColor: ['violet-500', 'transparent'], theme: { dark: { scrollbarColor: [...] } } }}`.
    */
   globalStyles?: BoxStyleProps;
+  /**
+   * Cross-fade the page when the theme changes, where the browser has view transitions. Off by default,
+   * because a transition is a decision about the app rather than about theming.
+   *
+   * It exists as a prop rather than a recipe because the recipe has a trap in it: `startViewTransition`
+   * screenshots the page the moment its callback returns, and a `setState` has not rendered by then — so
+   * a hand-rolled version captures the old theme twice and nothing appears to change. This flushes the
+   * update inside the callback. Reduced motion skips the transition and keeps the theme change.
+   */
+  viewTransition?: boolean;
 }
 
 /**
@@ -35,7 +47,7 @@ interface ThemeProps {
  * and context around it.
  */
 function Theme(props: ThemeProps) {
-  const { children, theme, use = 'local', storageKey, globalStyles } = props;
+  const { children, theme, use = 'local', storageKey, globalStyles, viewTransition } = props;
 
   // In element mode the global rules come back as `<style>` elements to render: they target `html`,
   // so no Box owns them and nothing else would put them in the document.
@@ -46,16 +58,23 @@ function Theme(props: ThemeProps) {
 
   const handleSetTheme = useCallback(
     (value: string | null) => {
-      if (value === null) {
-        if (storageKey) clearStoredTheme(storageKey);
-        setIsUserOverride(false);
-      } else {
-        if (storageKey) writeStoredTheme(storageKey, value);
-        setThemeName(value);
-        setIsUserOverride(true);
-      }
+      const apply = () => {
+        if (value === null) {
+          if (storageKey) clearStoredTheme(storageKey);
+          setIsUserOverride(false);
+        } else {
+          if (storageKey) writeStoredTheme(storageKey, value);
+          setThemeName(value);
+          setIsUserOverride(true);
+        }
+      };
+
+      // `flushSync` is the whole point of the prop: the transition screenshots the page when this callback
+      // returns, so an unflushed `setState` is captured as the theme that was already there.
+      if (viewTransition) startViewTransition(() => flushSync(apply));
+      else apply();
     },
-    [storageKey],
+    [storageKey, viewTransition],
   );
 
   // Sync with theme prop changes (render-phase, no effect — initial state already covers mount).

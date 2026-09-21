@@ -1,5 +1,5 @@
 {
-  "propCount": 221,
+  "propCount": 235,
   "props": [
     {
       "name": "appearance",
@@ -81,6 +81,42 @@
       "numeric": false,
       "open": false,
       "values": ["running", "paused"]
+    },
+    {
+      "name": "animationRange",
+      "description": "The shorthand that sets both ends of the range at once: one value sets the start and leaves the end at `normal`, two set both. `entry` is the whole of the element coming into view, `cover 0% cover 50%` the first half of its pass across the scrollport. Only meaningful beside a view timeline.",
+      "properties": ["animation-range"],
+      "example": { "value": "entry", "css": "animation-range: entry" },
+      "numeric": false,
+      "open": true,
+      "values": []
+    },
+    {
+      "name": "animationRangeEnd",
+      "description": "Where along the timeline the animation finishes: a named part of the pass (`cover`, `contain`, `entry`, `exit`, `entry-crossing`, `exit-crossing`), an offset into one, or a plain length.",
+      "properties": ["animation-range-end"],
+      "example": { "value": "exit", "css": "animation-range-end: exit" },
+      "numeric": false,
+      "open": true,
+      "values": []
+    },
+    {
+      "name": "animationRangeStart",
+      "description": "Where along the timeline the animation starts. Same values as the end, and the pair is what turns \"when this element is scrolled past\" into \"while it is entering, and no longer\".",
+      "properties": ["animation-range-start"],
+      "example": { "value": "entry 25%", "css": "animation-range-start: entry 25%" },
+      "numeric": false,
+      "open": true,
+      "values": []
+    },
+    {
+      "name": "animationTimeline",
+      "description": "What drives the animation — a scroll position rather than a clock, so there is no rAF loop, no scroll listener and no state. `scroll()` is the nearest scrollport's progress (`scroll(root)` the page's), `view()` this element's progress through it; both need nothing declared anywhere else. A name is a timeline `scrollTimeline`/`viewTimeline` declared elsewhere. Two things to know. **It is declared after `animation`**, because the CSS shorthand resets this property to `auto` — the registry's order is what stops `animation=\"spin\"` quietly undoing it. And a scroll-driven animation has **no duration**, so `--transitionTime` cannot reach it and reduced motion needs saying out loud: `motionReduce={{ animation: 'none' }}`.",
+      "properties": ["animation-timeline"],
+      "example": { "value": "scroll()", "css": "animation-timeline: scroll()" },
+      "numeric": false,
+      "open": true,
+      "values": ["none", "auto"]
     },
     {
       "name": "animationTimingFunction",
@@ -3026,6 +3062,96 @@
       "numeric": false,
       "open": false,
       "values": ["auto", "stable", "stable both-edges"]
+    },
+    {
+      "name": "scrollTimeline",
+      "description": "Declares a named scroll timeline on this scroller — the shorthand, `<name>` or `<name> <axis>`, and the one to reach for: the longhands exist to override half of it. The name is written with or without the `--`, the way an anchor's is. Anything inside this element can then name it on `animationTimeline`; anything outside needs a `timelineScope` on a common ancestor.",
+      "properties": ["scroll-timeline"],
+      "example": { "value": "page block", "css": "scroll-timeline: --page block" },
+      "numeric": false,
+      "open": true,
+      "values": ["none"]
+    },
+    {
+      "name": "scrollTimelineAxis",
+      "description": "Which axis of this scroller the named timeline follows. `block`/`inline` are the writing mode's, so a timeline declared on the block axis is the vertical one in English and still correct in Japanese.",
+      "properties": ["scroll-timeline-axis"],
+      "example": { "value": "block", "css": "scroll-timeline-axis: block" },
+      "numeric": false,
+      "open": false,
+      "values": ["block", "inline", "x", "y"]
+    },
+    {
+      "name": "scrollTimelineName",
+      "description": "The name half of `scrollTimeline`, on its own.",
+      "properties": ["scroll-timeline-name"],
+      "example": { "value": "page", "css": "scroll-timeline-name: --page" },
+      "numeric": false,
+      "open": true,
+      "values": ["none"]
+    },
+    {
+      "name": "viewTimeline",
+      "description": "Declares a named view timeline on this element — its own progress across the scrollport, rather than the scroller's progress through its content. Same shorthand shape as `scrollTimeline`, and the same rule about who can see the name.",
+      "properties": ["view-timeline"],
+      "example": { "value": "card block", "css": "view-timeline: --card block" },
+      "numeric": false,
+      "open": true,
+      "values": ["none"]
+    },
+    {
+      "name": "viewTimelineAxis",
+      "description": "Which axis this element's pass across the scrollport is measured on.",
+      "properties": ["view-timeline-axis"],
+      "example": { "value": "block", "css": "view-timeline-axis: block" },
+      "numeric": false,
+      "open": false,
+      "values": ["block", "inline", "x", "y"]
+    },
+    {
+      "name": "viewTimelineInset",
+      "description": "Shrinks the scrollport the timeline measures against, so the pass starts and ends somewhere other than the viewport edges: one value for both ends, two for the start and the end. A positive inset moves the edge inwards, which is what makes an element count as \"in view\" before it really is.",
+      "properties": ["view-timeline-inset"],
+      "example": { "value": "20%", "css": "view-timeline-inset: 20%" },
+      "numeric": false,
+      "open": true,
+      "values": []
+    },
+    {
+      "name": "viewTimelineName",
+      "description": "The name half of `viewTimeline`, on its own.",
+      "properties": ["view-timeline-name"],
+      "example": { "value": "card", "css": "view-timeline-name: --card" },
+      "numeric": false,
+      "open": true,
+      "values": ["none"]
+    },
+    {
+      "name": "timelineScope",
+      "description": "Makes the named timelines below this element reachable from anywhere else below it. A timeline is otherwise visible only to the declaring element's own descendants, so a progress bar that is not inside the article it tracks needs their common ancestor to declare the scope. Comma-separated.",
+      "properties": ["timeline-scope"],
+      "example": { "value": "page", "css": "timeline-scope: --page" },
+      "numeric": false,
+      "open": true,
+      "values": ["none"]
+    },
+    {
+      "name": "viewTransitionName",
+      "description": "Names this element for a view transition, which is what makes the browser animate it from where it was to where it is rather than cross-fading the whole page over it. A name has to be **unique in the document while the transition runs** — two elements sharing one is how a transition silently does nothing — so a list wants a name per item, and that is a rule per item this library would never free: write those with `props={{ style: { viewTransitionName: id } }}`, the exception `useAnchorPosition` already takes. This prop is for the handful of names a layout has (`header`, `main`, `sidebar`).",
+      "properties": ["view-transition-name"],
+      "example": { "value": "header", "css": "view-transition-name: header" },
+      "numeric": false,
+      "open": true,
+      "values": ["none", "auto", "match-element"]
+    },
+    {
+      "name": "viewTransitionClass",
+      "description": "A class shared by several named elements, so one rule styles the lot of them: `::view-transition-group(.card)` reaches every element carrying `viewTransitionClass=\"card\"`. Space separated for more than one.",
+      "properties": ["view-transition-class"],
+      "example": { "value": "card", "css": "view-transition-class: card" },
+      "numeric": false,
+      "open": true,
+      "values": ["none"]
     },
     {
       "name": "vars",

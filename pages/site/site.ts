@@ -88,7 +88,7 @@ export const siteRoutes = [
     path: '/box',
     name: 'Box',
     description:
-      'The foundational component, from scratch: what a Box is, the five things that are not what you would guess, and all 221 props with the CSS each one writes.',
+      'The foundational component, from scratch: what a Box is, the five things that are not what you would guess, and all 235 props with the CSS each one writes.',
   },
   {
     path: '/box-functions',

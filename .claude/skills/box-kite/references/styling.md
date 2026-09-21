@@ -87,6 +87,29 @@ child's own CSS says the transition is over, then lets React remove it. `ref` go
 `height: auto` animate inside it (inherited; Chromium-only, elsewhere it snaps). `Box.configure({ transition: 'colors' | false })` changes
 what the base class transitions, before the first render.
 
+**Scroll-driven animation & view transitions**: `animationTimeline` takes the animation's progress off a scroll position instead of a
+clock — `'scroll()'` is the nearest scrollport's progress (`'scroll(root)'` the page's, `'scroll(self inline)'` an axis and a scroller
+named in either order), `'view()'` is this element's own pass across it, and both need nothing declared anywhere else. A named timeline
+is the two-sided form: `scrollTimeline="page block"` on the scroller or `viewTimeline="card block"` on the subject, `animationTimeline="page"`
+on whatever animates, and `timelineScope="page"` on a common ancestor when the animated element is not inside the declaring one (a
+timeline is otherwise visible only to its descendants). The `--` on a name is optional and added for you; the axis is `'block'`/`'inline'`/`'x'`/`'y'`;
+`scrollTimelineName`/`scrollTimelineAxis` and `viewTimelineName`/`viewTimelineAxis` are the longhands. **`animationRange`** picks the
+part of the pass the animation occupies — `'cover'`, `'contain'`, `'entry'`, `'exit'`, `'entry-crossing'`, `'exit-crossing'`, each taking an
+offset (`animationRange="entry 0% entry 50%"`, or `animationRangeStart`/`animationRangeEnd` one end at a time), and `viewTimelineInset`
+(`'auto'`, or one or two lengths) shrinks the scrollport it is measured against so a reveal fires before the element reaches the edge.
+`<Box animation="fade-up" animationTimeline="view()" animationRange="entry 0% entry 60%" motionReduce={{ animation: 'none' }} />` is a
+reveal-on-scroll with no JavaScript. Three traps: the CSS `animation` **shorthand resets `animation-timeline`** (the registry declares the
+timeline after it, so the props are safe — an `animation` inside `css` is not); a scroll-driven animation has **no duration**, so
+`--transitionTime` cannot zero it and it is the one motion here that does not stop itself under reduced motion; and where the browser has
+neither (Safari, Firefox behind a flag) the _declaration_ is dropped, not the animation, so it plays on the document timeline — make the
+end state the resting state. **View transitions** are `viewTransitionName` (a `<custom-ident>`, **not** dashed, unique in the document
+while the transition runs) and `viewTransitionClass` (a shared name, so `::view-transition-group(.card)` reaches a set), with
+`Box.viewTransition(update, { reducedMotion, types })` around the change itself: it feature-detects, hands back the same
+`ready`/`finished`/`updateCallbackDone`/`skip()` handle whether or not a transition ran, and **skips under reduced motion while still
+applying the update**. In React the update must be flushed inside the callback — `Box.viewTransition(() => flushSync(() => setTab(next)))` —
+or the screenshot catches the old state twice; `<Box.Theme viewTransition>` is that already done for a theme switch. A name _per list item_
+is a rule per item that is never freed, so that one belongs in `props={{ style: { viewTransitionName: id } }}`.
+
 **Gradients**: `bgGradient` — a gradient as a _value_, written as a record, so its stops are palette tokens and it is
 themed, takes the opacity modifier and shares one class. The key names the kind and carries its geometry:
 `{ linear: 'r', colors: ['blue-500', 'pink-500'] }` (a direction `t`/`tr`/`r`/`br`/`b`/`bl`/`l`/`tl`, or a number of

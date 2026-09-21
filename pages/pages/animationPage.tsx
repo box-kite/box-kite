@@ -1,5 +1,6 @@
 import { Loader2, Sparkles } from 'lucide-react';
 import { ReactNode, useState } from 'react';
+import { flushSync } from 'react-dom';
 import presenceApi from '../../api/components/presence.json';
 import Box from '../../src/box';
 import Button from '../../src/components/button';
@@ -28,6 +29,14 @@ Box.keyframes({
     from: { width: 0 },
     to: { width: 'fit' },
   },
+  'docs-progress': {
+    from: { scale: 0 },
+    to: { scale: 1 },
+  },
+  'docs-reveal': {
+    from: { opacity: 0, translateY: 4 },
+    to: { opacity: 1, translateY: 0 },
+  },
 });
 
 export default function AnimationPage() {
@@ -38,6 +47,7 @@ export default function AnimationPage() {
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [leaving, setLeaving] = useState(false);
+  const [atEnd, setAtEnd] = useState(false);
 
   return (
     <Box>
@@ -515,6 +525,156 @@ const wobble = Box.spring({ stiffness: 120, damping: 8 });
             </Box>
           </Code>
 
+          <Section id="scroll" title="Progress that comes from a scroll position">
+            <Mono>animationTimeline</Mono> takes the animation's progress off a scroll position instead of a clock. <Mono>scroll()</Mono> is
+            the nearest scrolling ancestor's progress and <Mono>view()</Mono> is this element's own pass across it — so a reading-progress
+            bar and a reveal-on-scroll are both CSS. No listener, no <Mono>requestAnimationFrame</Mono>, no{' '}
+            <Mono>IntersectionObserver</Mono>, no state: the browser runs them on the compositor. Scroll the panel below.
+          </Section>
+
+          <Code
+            id="scroll-demo"
+            label="scroll() and view()"
+            language="jsx"
+            code={`Box.keyframes({
+  progress: { from: { scale: 0 }, to: { scale: 1 } },
+  reveal: { from: { opacity: 0, translateY: 4 }, to: { opacity: 1, translateY: 0 } },
+});
+
+<Box height={40} overflow="auto">
+  <Box position="sticky" top={0} height={1} bgColor="sky-500" css={{ transformOrigin: 'left' }}
+    animationName="progress" animationTimeline="scroll()" animationFillMode="both"
+    motionReduce={{ animation: 'none' }} />
+
+  <Box animationName="reveal" animationTimeline="view()" animationRange="entry 0% entry 60%"
+    animationFillMode="both" motionReduce={{ animation: 'none' }}>…</Box>
+</Box>`}
+          >
+            <Box
+              height={40}
+              overflow="auto"
+              borderRadius={2}
+              b={1}
+              theme={{ dark: { borderColor: 'slate-700' }, light: { borderColor: 'slate-200' } }}
+            >
+              <Box
+                position="sticky"
+                top={0}
+                height={1}
+                bgColor="sky-500"
+                zIndex={1}
+                css={{ transformOrigin: 'left' }}
+                animationName="docs-progress"
+                animationTimeline="scroll()"
+                animationFillMode="both"
+                motionReduce={{ animation: 'none' }}
+              />
+              <Flex d="column" gap={4} p={4}>
+                {['Nothing measures this', 'The browser owns the timeline', 'Each card has its own pass', 'One rule, every card'].map(
+                  (label) => (
+                    <Box
+                      key={label}
+                      p={4}
+                      borderRadius={2}
+                      fontSize={14}
+                      theme={{ dark: { bgColor: 'slate-800', color: 'slate-300' }, light: { bgColor: 'slate-50', color: 'slate-700' } }}
+                      animationName="docs-reveal"
+                      animationTimeline="view()"
+                      animationRange="entry 0% entry 60%"
+                      animationFillMode="both"
+                      motionReduce={{ animation: 'none' }}
+                    >
+                      {label}
+                    </Box>
+                  ),
+                )}
+                <Box height={40} />
+              </Flex>
+            </Box>
+          </Code>
+
+          <Section id="scroll-named" title="Naming a timeline, for when the scroller is somewhere else">
+            <Mono>scroll()</Mono> only reaches a scroller this element is <em>inside</em>. When it is not — a progress bar above the article
+            it tracks — the scroller declares a name with <Mono>scrollTimeline</Mono> (or the subject with <Mono>viewTimeline</Mono>), the
+            animated element names it on <Mono>animationTimeline</Mono>, and a common ancestor opens it up with <Mono>timelineScope</Mono>,
+            because a timeline is otherwise visible only to the declaring element's descendants. The <Mono>--</Mono> is optional and added
+            for you; the axis is logical, so <Mono>block</Mono> mirrors with the writing mode.
+          </Section>
+
+          <Code
+            id="scroll-named-demo"
+            label="A named timeline"
+            language="jsx"
+            codeOnly
+            code={`<Box timelineScope="page">
+  <Box height={1} bgColor="sky-500" css={{ transformOrigin: 'left' }}
+    animationName="progress" animationTimeline="page" animationFillMode="both" />
+
+  <Box height="fit-screen" overflow="auto" scrollTimeline="page block">
+    …
+  </Box>
+</Box>`}
+          />
+
+          <Section id="scroll-honest" title="What a scroll-driven animation does not do for you">
+            Two of these matter more than the props.{' '}
+            <strong>
+              The CSS <Mono>animation</Mono> shorthand resets <Mono>animation-timeline</Mono>
+            </strong>{' '}
+            — the registry declares the timeline after it, so writing both props is safe in either order, but an <Mono>animation</Mono>{' '}
+            written inside <Mono>css</Mono> sorts last and will undo it. And <strong>a scroll-driven animation has no duration</strong>, so{' '}
+            <Mono>--transitionTime</Mono> cannot zero it: it is the one kind of motion here that does not stop itself when the reader asked
+            for less, which is why every demo above carries <Mono>motionReduce=&#123;&#123; animation: 'none' &#125;&#125;</Mono>. Where the
+            browser has none — Safari below 26, Firefox behind a flag — the <em>declaration</em> is dropped rather than the animation, so it
+            plays once on the document timeline instead; end the sequence where the element belongs and add{' '}
+            <Mono>animationFillMode="both"</Mono>, and the degradation is "already arrived" rather than a loop.
+          </Section>
+
+          <Section id="view-transitions" title="A change the browser animates between">
+            A view transition screenshots the page, runs your update, screenshots again and animates between the two — so a change that was
+            a jump becomes a transition with nothing animated by hand. <Mono>Box.viewTransition(update)</Mono> is the call:
+            feature-detected, and it hands back the same <Mono>ready</Mono>/<Mono>finished</Mono>/<Mono>updateCallbackDone</Mono> promises
+            and a <Mono>skip()</Mono> whether or not a transition ran, so there is one code path rather than two. Give an element a{' '}
+            <Mono>viewTransitionName</Mono> and it animates <em>from where it was to where it is</em> instead of being cross-faded along
+            with everything else. This site's own theme toggle is one: <Mono>&lt;Box.Theme viewTransition&gt;</Mono>.
+          </Section>
+
+          <Code
+            id="view-transitions-demo"
+            label="Box.viewTransition()"
+            language="jsx"
+            context="declare function setEnd(value: boolean | ((previous: boolean) => boolean)): void;"
+            code={`// flushSync (from react-dom) is the point: the browser screenshots the page the
+// moment the callback returns, and a setState has not rendered by then.
+<Button onClick={() => Box.viewTransition(() => flushSync(() => setEnd((on) => !on)))}>Move it</Button>
+
+<Flex jc={atEnd ? 'flex-end' : 'flex-start'}>
+  <Box viewTransitionName="docs-card" p={4} borderRadius={2} bgColor="violet-500" />
+</Flex>`}
+          >
+            <Flex d="column" gap={4} ai="flex-start">
+              <Button variant="secondary" onClick={() => Box.viewTransition(() => flushSync(() => setAtEnd((on) => !on)))}>
+                Move it
+              </Button>
+              <Flex width="fit" jc={atEnd ? 'flex-end' : 'flex-start'}>
+                <Box viewTransitionName="docs-card" px={5} py={3} borderRadius={2} fontSize={14} color="white" bgColor="violet-500">
+                  No transition written
+                </Box>
+              </Flex>
+            </Flex>
+          </Code>
+
+          <Section id="view-transitions-honest" title="One name, one element">
+            A <Mono>viewTransitionName</Mono> has to be unique in the document while the transition runs — two elements sharing one is how a
+            transition silently does nothing. So the prop is for the handful of names a layout has (<Mono>header</Mono>, <Mono>main</Mono>),
+            while a name <em>per list item</em> would be a rule per item that is never freed: write that one as{' '}
+            <Mono>props=&#123;&#123; style: &#123; viewTransitionName: id &#125; &#125;&#125;</Mono>, the same exception an anchor's name
+            and a slider's thumb already take. <Mono>viewTransitionClass</Mono> is the other direction — one name shared by many, so{' '}
+            <Mono>::view-transition-group(.card)</Mono> styles the set. Reduced motion <strong>skips</strong> the transition and still
+            applies the update, a whole-page cross-fade being exactly the motion the preference is about;{' '}
+            <Mono>&#123; reducedMotion: 'play' &#125;</Mono> is the opt-out.
+          </Section>
+
           <Section id="server" title="On a server, and in a Server Component">
             A sequence is part of the stylesheet, not of a component's markup, so it travels the way every other rule does:{' '}
             <Mono>getStyles()</Mono> returns it for static output, and in element mode it rides the base <Mono>&lt;style&gt;</Mono> element
@@ -595,6 +755,11 @@ const sidebarLinks = [
   { id: 'presence', label: 'Presence' },
   { id: 'sizes', label: 'height: auto' },
   { id: 'drawing', label: 'Animating any prop' },
+  { id: 'scroll', label: 'Scroll-driven' },
+  { id: 'scroll-named', label: 'A named timeline' },
+  { id: 'scroll-honest', label: 'What it does not do' },
+  { id: 'view-transitions', label: 'View transitions' },
+  { id: 'view-transitions-honest', label: 'One name, one element' },
   { id: 'server', label: 'On a server' },
   { id: 'off', label: 'Turning it off' },
   ...apiSections(presenceApi),

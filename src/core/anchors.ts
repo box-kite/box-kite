@@ -18,9 +18,16 @@ namespace Anchors {
   // and added on the way out. The rest is what the ident grammar takes.
   const anchorName = /^(--)?[a-zA-Z_][\w-]*$/;
 
-  /** Whether a value may name an anchor — the `anchorName`/`positionAnchor` props' `match`. */
+  /** The keywords `anchorName` and `positionAnchor` take, which a name must never swallow. */
+  const keywords = new Set(['none', 'auto']);
+
+  /**
+   * Whether a value may name an anchor — the `anchorName`/`positionAnchor` props' `match`. The keywords
+   * those two take on their own are excluded here rather than left to the order the definitions happen
+   * to be declared in: this one is tried first, so `anchorName="none"` used to write `--none` (bug #195).
+   */
   export function isName(value: BoxStyleValue): boolean {
-    return typeof value === 'string' && anchorName.test(value);
+    return typeof value === 'string' && !keywords.has(value) && anchorName.test(value);
   }
 
   /** A name as CSS spells it: `trigger` and `--trigger` both reach `--trigger`, so a translation of the markup needs no second rule. */

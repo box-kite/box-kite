@@ -18,6 +18,14 @@ describe('Anchors.isName', () => {
     expect(Anchors.isName(4)).toBe(false);
   });
 
+  // The keyword definitions sit behind this one, so a name that swallowed them made them unreachable:
+  // `anchorName="none"` wrote `anchor-name: --none` and `positionAnchor="auto"` `--auto` (bug #195).
+  it('never swallows a keyword the two props take on their own', () => {
+    expect(Anchors.isName('none')).toBe(false);
+    expect(Anchors.isName('auto')).toBe(false);
+    expect(Anchors.isName('--none')).toBe(true);
+  });
+
   it('spells both forms the same way, so a name written either way reaches the same anchor', () => {
     expect(Anchors.dashedName('trigger')).toBe('--trigger');
     expect(Anchors.dashedName('--trigger')).toBe('--trigger');

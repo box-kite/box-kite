@@ -35,6 +35,8 @@ export { manualScheduler, microtaskScheduler, syncScheduler } from './core/engin
 export type { KeyframeStop, KeyframeStops, Keyframes } from './core/engine/keyframes';
 export type { FlushScheduler } from './core/engine/flushScheduler';
 export type { SinkMode, SortedRule, StyleElementDescriptor, StyleSink } from './core/engine/styleSink';
+export { default as startViewTransition } from './core/viewTransition';
+export type { ViewTransitionHandle, ViewTransitionOptions, ViewTransitionUpdate } from './core/viewTransition';
 export { default as createThemeController } from './core/theme/themeController';
 export type { ThemeController, ThemeControllerOptions } from './core/theme/themeController';
 export {

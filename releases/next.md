@@ -2,13 +2,64 @@
 
 _Unreleased. A PR that changes what a consumer sees adds its section here — see CONTRIBUTING.md, "Release notes"._
 
-<!-- Intro: one or two sentences on what this release is about. The first one becomes the CHANGELOG line. -->
+Scroll position and view transitions become props: fourteen of them, so an animation can take its progress from a scrollbar instead of a clock, and a change the browser used to jump through can be animated between. Both are the platform's, so neither costs a listener, a `requestAnimationFrame` or a line of state.
 
 ## Highlights
 
-<!-- One bullet per section below, linking to it: **[Heading](#heading)** — one line on why it matters. -->
+- **[An animation can run off a scroll position](#an-animation-can-run-off-a-scroll-position)** — `animationTimeline="scroll()"` and `"view()"`, plus the named timelines and the range props, for reading-progress bars and reveal-on-scroll with no JavaScript at all.
+- **[A change the browser animates between](#a-change-the-browser-animates-between)** — `viewTransitionName`, `viewTransitionClass` and `Box.viewTransition()`, with the React `flushSync` trap handled for you.
+- **[A theme switch can cross-fade](#a-theme-switch-can-cross-fade)** — one prop on `<Box.Theme>`.
 
-<!-- One `##` per change, above Breaking changes: a sentence for the heading, a paragraph on what and why, an example if it helps. -->
+## An animation can run off a scroll position
+
+`animationTimeline` takes the animation's progress off a scroll position rather than a clock. `scroll()` is the nearest scrolling ancestor's progress and `view()` is this element's own pass across it, and neither needs anything declared anywhere else:
+
+```jsx
+Box.keyframes({ progress: { from: { scale: 0 }, to: { scale: 1 } } });
+
+<Box height={40} overflow="auto">
+  <Box
+    position="sticky"
+    top={0}
+    height={1}
+    bgColor="sky-500"
+    css={{ transformOrigin: 'left' }}
+    animationName="progress"
+    animationTimeline="scroll()"
+    animationFillMode="both"
+    motionReduce={{ animation: 'none' }}
+  />
+  …
+</Box>;
+```
+
+Where the animated element is not inside the scroller, name a timeline instead: `scrollTimeline="page block"` on the scroller (or `viewTimeline="card block"` on the subject), `animationTimeline="page"` on whatever animates, and `timelineScope="page"` on a common ancestor, since a timeline is otherwise visible only to the declaring element's descendants. The `--` on a name is optional and added for you, and the axis is logical, so `block` mirrors with the writing mode.
+
+`animationRange` picks which part of the pass the animation occupies — `cover`, `contain`, `entry`, `exit`, `entry-crossing`, `exit-crossing`, each taking an offset — with `animationRangeStart`/`animationRangeEnd` setting one end at a time, and `viewTimelineInset` shrinking the scrollport the pass is measured against so a reveal can fire before the element reaches the edge.
+
+Fourteen props in all: `animationTimeline`, `animationRange`, `animationRangeStart`, `animationRangeEnd`, `scrollTimeline`, `scrollTimelineName`, `scrollTimelineAxis`, `viewTimeline`, `viewTimelineName`, `viewTimelineAxis`, `viewTimelineInset`, `timelineScope`, `viewTransitionName` and `viewTransitionClass`. The registry holds **235**.
+
+**Three things to know, all measured in Chrome 153.** The CSS `animation` shorthand **resets `animation-timeline`** — a timeline declared before it is silently undone — so the registry declares `animationTimeline` after `animation` and writing both props is safe in either order; an `animation` written inside `css` sorts last and is not. A scroll-driven animation has **no duration**, so `--transitionTime` cannot zero it: it is the one kind of motion here that does not stop itself when the reader asked for less, and `motionReduce={{ animation: 'none' }}` is not optional. And where the browser has none — Safari below 26, Firefox behind a flag — the _declaration_ is dropped rather than the animation, so it plays once on the document timeline; end the sequence where the element belongs and add `animationFillMode="both"`, and the degradation is "already arrived" rather than a loop.
+
+## A change the browser animates between
+
+A view transition screenshots the page, runs the update, screenshots again and animates between the two. `viewTransitionName` is what makes an element move _from where it was to where it is_ instead of being cross-faded along with everything else, `viewTransitionClass` groups several of them so `::view-transition-group(.card)` styles the set, and `Box.viewTransition()` is the call around the change:
+
+```jsx
+Box.viewTransition(() => flushSync(() => setTab(next)), { types: ['forward'] });
+```
+
+It feature-detects and hands back the same `ready`/`finished`/`updateCallbackDone` promises and a `skip()` whether or not a transition ran, so a caller has one code path rather than two. Reduced motion **skips** the transition and still applies the update — a whole-page cross-fade is exactly the motion the preference is about — and `{ reducedMotion: 'play' }` is the opt-out. `startViewTransition` is exported from `@box-kite/core` too, so a framework-free app gets it.
+
+**In React the update has to be flushed.** The browser takes its second screenshot the moment the callback returns, and a `setState` has not rendered by then — so a hand-rolled version captures the old state twice and nothing appears to move. And a `viewTransitionName` has to be unique in the document while the transition runs, so the prop is for the handful of names a layout has; a name _per list item_ is a rule per item that would never be freed, and that one belongs in `props={{ style: { viewTransitionName: id } }}` — the exception an anchor's name and a slider's thumb already take.
+
+## A theme switch can cross-fade
+
+```jsx
+<Box.Theme use="global" viewTransition>
+```
+
+One prop, because the recipe has the `flushSync` trap in it and this is the one change every app has. Off by default; reduced motion skips it and the theme still changes. The docs site runs it.
 
 ## Breaking changes
 
@@ -16,4 +67,4 @@ None.
 
 ## Fixes
 
-<!-- One bullet per fix: **What was wrong.** What it does now. -->
+- **`anchorName="none"` wrote `anchor-name: --none`, and `positionAnchor="auto"` wrote `--auto`.** The definition that accepts a name is tried before the one that lists the keywords, and it accepted those two as names — so the keyword definitions were unreachable. A name no longer swallows a keyword the prop takes on its own.
