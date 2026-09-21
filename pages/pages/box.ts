@@ -558,6 +558,14 @@ export const boxMembers: readonly BoxMember[] = [
     more: { label: 'Animation', to: '/animation' },
   },
   {
+    id: 'viewtransition',
+    name: 'Box.viewTransition()',
+    signature: 'Box.viewTransition(update, { reducedMotion, types })',
+    summary:
+      'Run a DOM change inside a view transition where the browser has one, and plainly where it has not — the same three promises either way.',
+    more: { label: 'Animation', to: '/animation' },
+  },
+  {
     id: 'theme',
     name: 'Box.Theme',
     signature: '<Box.Theme use="global" storageKey="theme" globalStyles={…}>',

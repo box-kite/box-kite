@@ -4,7 +4,7 @@ import { acceptedValues, component, components, packageName, priorFacts, prop, p
 
 describe('the corpora', () => {
   it('holds every style prop the reference measured', () => {
-    expect(props).toHaveLength(221);
+    expect(props).toHaveLength(235);
     expect(prop('fontSize')?.example.css).toBe('font-size: 0.875rem');
   });
 

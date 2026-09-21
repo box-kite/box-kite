@@ -9,6 +9,7 @@ import Filters from './filters';
 import Gradients from './gradients';
 import Palette from './palette';
 import Shadows from './shadows';
+import Timelines from './timelines';
 import Variables from './variables';
 
 /** The opacity scale shared by `opacity`, `fillOpacity` and `strokeOpacity`. */
@@ -252,6 +253,76 @@ export const cssStyles = {
     {
       values: ['running', 'paused'] as const,
       styleName: 'animation-play-state',
+    },
+  ],
+  /**
+   * The shorthand that sets both ends of the range at once: one value sets the start and leaves the end
+   * at `normal`, two set both. `entry` is the whole of the element coming into view, `cover 0% cover 50%`
+   * the first half of its pass across the scrollport. Only meaningful beside a view timeline.
+   * @example animationRange="entry" → animation-range: entry
+   */
+  animationRange: [
+    {
+      values: Timelines.range,
+      match: Timelines.isRangeValue,
+      styleName: 'animation-range',
+      valueFormat: (value: string) => Timelines.rangeValue(value),
+    },
+  ],
+  /**
+   * Where along the timeline the animation finishes: a named part of the pass (`cover`, `contain`,
+   * `entry`, `exit`, `entry-crossing`, `exit-crossing`), an offset into one, or a plain length.
+   * @example animationRangeEnd="exit" → animation-range-end: exit
+   */
+  animationRangeEnd: [
+    {
+      values: Timelines.rangeEdge,
+      match: Timelines.isRangeEdge,
+      styleName: 'animation-range-end',
+      valueFormat: (value: string) => Timelines.rangeValue(value),
+    },
+  ],
+  /**
+   * Where along the timeline the animation starts. Same values as the end, and the pair is what turns
+   * "when this element is scrolled past" into "while it is entering, and no longer".
+   * @example animationRangeStart="entry 25%" → animation-range-start: entry 25%
+   */
+  animationRangeStart: [
+    {
+      values: Timelines.rangeEdge,
+      match: Timelines.isRangeEdge,
+      styleName: 'animation-range-start',
+      valueFormat: (value: string) => Timelines.rangeValue(value),
+    },
+  ],
+  /**
+   * What drives the animation — a scroll position rather than a clock, so there is no rAF loop, no
+   * scroll listener and no state. `scroll()` is the nearest scrollport's progress (`scroll(root)` the
+   * page's), `view()` this element's progress through it; both need nothing declared anywhere else. A
+   * name is a timeline `scrollTimeline`/`viewTimeline` declared elsewhere.
+   *
+   * Two things to know. **It is declared after `animation`**, because the CSS shorthand resets this
+   * property to `auto` — the registry's order is what stops `animation="spin"` quietly undoing it. And a
+   * scroll-driven animation has **no duration**, so `--transitionTime` cannot reach it and reduced motion
+   * needs saying out loud: `motionReduce={{ animation: 'none' }}`.
+   * @example animationTimeline="scroll()" → animation-timeline: scroll()
+   */
+  animationTimeline: [
+    {
+      values: ['none', 'auto'] as const,
+      styleName: 'animation-timeline',
+    },
+    {
+      values: Timelines.timeline,
+      match: Timelines.isAnonymousTimeline,
+      styleName: 'animation-timeline',
+      valueFormat: (value: string) => Timelines.anonymousValue(value),
+    },
+    {
+      values: Timelines.timeline,
+      match: Timelines.isName,
+      styleName: 'animation-timeline',
+      valueFormat: (value: string) => Timelines.dashedName(value),
     },
   ],
   /**
@@ -3307,6 +3378,164 @@ export const cssStyles = {
     {
       styleName: 'scrollbar-gutter',
       values: ['auto', 'stable', 'stable both-edges'] as const,
+    },
+  ],
+  /**
+   * Declares a named scroll timeline on this scroller — the shorthand, `<name>` or `<name> <axis>`, and
+   * the one to reach for: the longhands exist to override half of it. The name is written with or
+   * without the `--`, the way an anchor's is. Anything inside this element can then name it on
+   * `animationTimeline`; anything outside needs a `timelineScope` on a common ancestor.
+   * @example scrollTimeline="page block" → scroll-timeline: --page block
+   */
+  scrollTimeline: [
+    {
+      values: Timelines.timelineShorthand,
+      match: Timelines.isTimelineShorthand,
+      styleName: 'scroll-timeline',
+      valueFormat: (value: string) => Timelines.timelineShorthandValue(value),
+    },
+    {
+      values: ['none'] as const,
+      styleName: 'scroll-timeline',
+    },
+  ],
+  /**
+   * Which axis of this scroller the named timeline follows. `block`/`inline` are the writing mode's, so
+   * a timeline declared on the block axis is the vertical one in English and still correct in Japanese.
+   * @example scrollTimelineAxis="block" → scroll-timeline-axis: block
+   */
+  scrollTimelineAxis: [
+    {
+      values: [...Timelines.axes] as const,
+      styleName: 'scroll-timeline-axis',
+    },
+  ],
+  /**
+   * The name half of `scrollTimeline`, on its own.
+   * @example scrollTimelineName="page" → scroll-timeline-name: --page
+   */
+  scrollTimelineName: [
+    {
+      values: ['none'] as const,
+      styleName: 'scroll-timeline-name',
+    },
+    {
+      values: '',
+      match: Timelines.isName,
+      styleName: 'scroll-timeline-name',
+      valueFormat: (value: string) => Timelines.dashedName(value),
+    },
+  ],
+  /**
+   * Declares a named view timeline on this element — its own progress across the scrollport, rather
+   * than the scroller's progress through its content. Same shorthand shape as `scrollTimeline`, and the
+   * same rule about who can see the name.
+   * @example viewTimeline="card block" → view-timeline: --card block
+   */
+  viewTimeline: [
+    {
+      values: Timelines.timelineShorthand,
+      match: Timelines.isTimelineShorthand,
+      styleName: 'view-timeline',
+      valueFormat: (value: string) => Timelines.timelineShorthandValue(value),
+    },
+    {
+      values: ['none'] as const,
+      styleName: 'view-timeline',
+    },
+  ],
+  /**
+   * Which axis this element's pass across the scrollport is measured on.
+   * @example viewTimelineAxis="block" → view-timeline-axis: block
+   */
+  viewTimelineAxis: [
+    {
+      values: [...Timelines.axes] as const,
+      styleName: 'view-timeline-axis',
+    },
+  ],
+  /**
+   * Shrinks the scrollport the timeline measures against, so the pass starts and ends somewhere other
+   * than the viewport edges: one value for both ends, two for the start and the end. A positive inset
+   * moves the edge inwards, which is what makes an element count as "in view" before it really is.
+   * @example viewTimelineInset="20%" → view-timeline-inset: 20%
+   */
+  viewTimelineInset: [
+    {
+      values: Timelines.inset,
+      match: Timelines.isInset,
+      styleName: 'view-timeline-inset',
+    },
+  ],
+  /**
+   * The name half of `viewTimeline`, on its own.
+   * @example viewTimelineName="card" → view-timeline-name: --card
+   */
+  viewTimelineName: [
+    {
+      values: ['none'] as const,
+      styleName: 'view-timeline-name',
+    },
+    {
+      values: '',
+      match: Timelines.isName,
+      styleName: 'view-timeline-name',
+      valueFormat: (value: string) => Timelines.dashedName(value),
+    },
+  ],
+  /**
+   * Makes the named timelines below this element reachable from anywhere else below it. A timeline is
+   * otherwise visible only to the declaring element's own descendants, so a progress bar that is not
+   * inside the article it tracks needs their common ancestor to declare the scope. Comma-separated.
+   * @example timelineScope="page" → timeline-scope: --page
+   */
+  timelineScope: [
+    {
+      values: ['none'] as const,
+      styleName: 'timeline-scope',
+    },
+    {
+      values: '',
+      match: Timelines.isScope,
+      styleName: 'timeline-scope',
+      valueFormat: (value: string) => Timelines.scopeValue(value),
+    },
+  ],
+  /**
+   * Names this element for a view transition, which is what makes the browser animate it from where it
+   * was to where it is rather than cross-fading the whole page over it. A name has to be **unique in the
+   * document while the transition runs** — two elements sharing one is how a transition silently does
+   * nothing — so a list wants a name per item, and that is a rule per item this library would never free:
+   * write those with `props={{ style: { viewTransitionName: id } }}`, the exception `useAnchorPosition`
+   * already takes. This prop is for the handful of names a layout has (`header`, `main`, `sidebar`).
+   * @example viewTransitionName="header" → view-transition-name: header
+   */
+  viewTransitionName: [
+    {
+      values: ['none', 'auto', 'match-element'] as const,
+      styleName: 'view-transition-name',
+    },
+    {
+      values: '',
+      match: Timelines.isTransitionName,
+      styleName: 'view-transition-name',
+    },
+  ],
+  /**
+   * A class shared by several named elements, so one rule styles the lot of them:
+   * `::view-transition-group(.card)` reaches every element carrying `viewTransitionClass="card"`. Space
+   * separated for more than one.
+   * @example viewTransitionClass="card" → view-transition-class: card
+   */
+  viewTransitionClass: [
+    {
+      values: ['none'] as const,
+      styleName: 'view-transition-class',
+    },
+    {
+      values: '',
+      match: Timelines.isTransitionClass,
+      styleName: 'view-transition-class',
     },
   ],
   /**

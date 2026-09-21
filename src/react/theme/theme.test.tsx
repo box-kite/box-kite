@@ -802,4 +802,76 @@ describe('Theme', () => {
       expect(content.textContent).toBe('dark');
     });
   });
+
+  /**
+   * The prop exists because the recipe has a trap: `startViewTransition` screenshots the page when its
+   * callback returns, so an unflushed `setState` is captured as the theme that was already there.
+   */
+  describe('viewTransition', () => {
+    type Doc = Record<'startViewTransition', unknown>;
+
+    function captureThemeDuringTransition() {
+      const seen: (string | null)[] = [];
+
+      (document as unknown as Doc).startViewTransition = (update: () => void) => {
+        update();
+        // Read after the callback returns, which is exactly when the browser takes its second screenshot.
+        seen.push(document.documentElement.getAttribute('data-theme'));
+
+        const done = Promise.resolve();
+
+        return { ready: done, finished: done, updateCallbackDone: done, skipTransition: vi.fn() };
+      };
+
+      return seen;
+    }
+
+    afterEach(() => {
+      delete (document as unknown as Partial<Doc>).startViewTransition;
+    });
+
+    function Toggle() {
+      const [theme, setTheme] = Theme.useTheme();
+
+      return (
+        <Box tag="button" id={testId} props={{ onClick: () => setTheme('dark') }}>
+          {theme}
+        </Box>
+      );
+    }
+
+    it('has the new theme in the DOM before the transition screenshots it', () => {
+      const seen = captureThemeDuringTransition();
+
+      render(
+        <Theme theme="light" use="global" viewTransition>
+          <Toggle />
+        </Theme>,
+      );
+
+      act(() => {
+        document.getElementById(testId)?.click();
+      });
+
+      expect(seen).toEqual(['dark']);
+      expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
+    });
+
+    it('changes theme without a transition when the prop is off', () => {
+      const seen = captureThemeDuringTransition();
+
+      render(
+        <Theme theme="light" use="global">
+          <Toggle />
+        </Theme>,
+      );
+
+      act(() => {
+        document.getElementById(testId)?.click();
+      });
+
+      expect(seen).toEqual([]);
+      expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
+    });
+  });
 });

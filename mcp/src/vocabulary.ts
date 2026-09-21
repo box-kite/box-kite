@@ -12,7 +12,7 @@ import Groups from '../../src/core/groups';
 import Variants from '../../src/core/variants';
 
 /**
- * Every key a Box takes that is *not* one of the 221 style props: the nesting keys, and the four
+ * Every key a Box takes that is *not* one of the 235 style props: the nesting keys, and the four
  * reserved names. Imported from the engine's own records rather than listed here, so a key added to
  * the library is in the MCP server the same day — the whole reason this package lives in this repo.
  */

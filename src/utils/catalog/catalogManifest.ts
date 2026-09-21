@@ -23,6 +23,13 @@ const catalogManifest: CatalogManifest = {
     animationName:
       'Which `@keyframes` to run: a sequence registered with `Box.keyframes()`, one of the four preset names, or a name from a stylesheet this library never wrote — an unknown name is left alone rather than dropped, because `@keyframes` can come from anywhere.',
     animationPlayState: 'The animation-play-state CSS property sets whether an animation is running or paused.',
+    animationRange:
+      'The shorthand that sets both ends of the range at once: one value sets the start and leaves the end at `normal`, two set both.',
+    animationRangeEnd:
+      'Where along the timeline the animation finishes: a named part of the pass (`cover`, `contain`, `entry`, `exit`, `entry-crossing`, `exit-crossing`), an offset into one, or a plain length.',
+    animationRangeStart: 'Where along the timeline the animation starts.',
+    animationTimeline:
+      'What drives the animation — a scroll position rather than a clock, so there is no rAF loop, no scroll listener and no state.',
     animationTimingFunction:
       'How an animation progresses through each cycle: a keyword, one of the four sampled springs, or a curve of your own — `cubic-bezier()`, `steps()` and `linear()` are values.',
     b: "The border-width shorthand CSS property sets the width of an element's border.",
@@ -299,6 +306,21 @@ const catalogManifest: CatalogManifest = {
     scrollbarColor: 'The scrollbar-color CSS property sets the color of the scrollbar thumb and track.',
     scrollbarGutter:
       'The scrollbar-gutter CSS property reserves the space a scrollbar would take before there is one, so a panel does not shift sideways the moment its content overflows.',
+    scrollTimeline:
+      'Declares a named scroll timeline on this scroller — the shorthand, `<name>` or `<name> <axis>`, and the one to reach for: the longhands exist to override half of it.',
+    scrollTimelineAxis: 'Which axis of this scroller the named timeline follows.',
+    scrollTimelineName: 'The name half of `scrollTimeline`, on its own.',
+    viewTimeline:
+      "Declares a named view timeline on this element — its own progress across the scrollport, rather than the scroller's progress through its content.",
+    viewTimelineAxis: "Which axis this element's pass across the scrollport is measured on.",
+    viewTimelineInset:
+      'Shrinks the scrollport the timeline measures against, so the pass starts and ends somewhere other than the viewport edges: one value for both ends, two for the start and the end.',
+    viewTimelineName: 'The name half of `viewTimeline`, on its own.',
+    timelineScope: 'Makes the named timelines below this element reachable from anywhere else below it.',
+    viewTransitionName:
+      'Names this element for a view transition, which is what makes the browser animate it from where it was to where it is rather than cross-fading the whole page over it.',
+    viewTransitionClass:
+      'A class shared by several named elements, so one rule styles the lot of them: `::view-transition-group(.card)` reaches every element carrying `viewTransitionClass="card"`.',
     vars: "CSS custom properties on this element, inherited by everything inside it: `vars={{ 'color-x': 'sky-500' }}` emits `--color-x: var(--sky-500)`.",
     css: 'The escape hatch: a style object for the properties this library has no prop for, compiled into a class through the same pipeline as every other prop — shared, nestable, server-rendered — rather than an inline style.',
   },

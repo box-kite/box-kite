@@ -1,5 +1,5 @@
 import React from 'react';
-import { BoxExtends, getDefaultEngine, Springs, StylesConfiguration } from './core';
+import { BoxExtends, getDefaultEngine, Springs, startViewTransition, StylesConfiguration } from './core';
 import boxClassNames, { BoxClassNames } from './react/boxClassNames';
 import { BoxClassNameProps, BoxCoreProps } from './react/boxProps';
 import buildTagProps from './react/boxTagProps';
@@ -51,6 +51,11 @@ interface RscBoxType {
   getVariableValue: (name: string) => string;
   /** Explicit engine configuration. Element mode is already on; this is for the rest of it. */
   configure: (config: StylesConfiguration) => void;
+  /**
+   * Run a DOM change inside a view transition. Here for parity with the client entry — with no document
+   * there is no transition, so on a server it is the update and nothing else.
+   */
+  viewTransition: typeof startViewTransition;
 }
 
 const RscBox = Box as RscBoxType;
@@ -61,6 +66,7 @@ RscBox.keyframes = BoxExtends.keyframes;
 RscBox.spring = Springs.spring;
 RscBox.getVariableValue = (name: string) => getDefaultEngine().getVariableValue(name);
 RscBox.configure = (config: StylesConfiguration) => getDefaultEngine().configure(config);
+RscBox.viewTransition = startViewTransition;
 
 /**
  * The Server-Component half of `useClassNames` — see the client entry for what it is for. Not a hook

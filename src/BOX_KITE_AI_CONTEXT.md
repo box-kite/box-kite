@@ -1,6 +1,6 @@
 # @box-kite/react - AI Assistant Context
 
-Runtime CSS-in-JS library. `Box` component accepts 221 CSS props and generates CSS classes at runtime. Same prop values share a single class.
+Runtime CSS-in-JS library. `Box` component accepts 235 CSS props and generates CSS classes at runtime. Same prop values share a single class.
 
 ---
 
@@ -639,6 +639,131 @@ const wobble = Box.spring({ stiffness: 120, damping: 8 });
 - **`Box.configure({ transition })`** changes what the base class transitions for the whole engine:
   a group name, or `false` to declare nothing at all and leave transitions entirely to the props.
   Call it before the first render.
+
+---
+
+### Scroll-driven animations
+
+An animation's progress can come from a scroll position rather than a clock. There is no listener, no
+`requestAnimationFrame` and no state: the browser runs it off the compositor, and the whole thing is props.
+
+| Prop                                        | CSS Property                 | Notes                                                                                                                                                 |
+| ------------------------------------------- | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `animationTimeline`                         | animation-timeline           | `'none'`, `'auto'`, an anonymous timeline (`'scroll()'`, `'scroll(root block)'`, `'view()'`, `'view(inline 20%)'`) or a name a declaration below gave |
+| `animationRange`                            | animation-range              | One end or both: `'entry'`, `'cover 20%'`, `'entry 0% entry 100%'`, `'normal'`                                                                        |
+| `animationRangeStart` / `animationRangeEnd` | animation-range-start / -end | One end at a time. A named part of the pass with an optional offset, a bare length, or `'normal'`                                                     |
+| `scrollTimeline`                            | scroll-timeline              | Declares a named timeline on a **scroller**: `'page'` or `'page block'`. The `--` is optional and added for you                                       |
+| `scrollTimelineName` / `scrollTimelineAxis` | scroll-timeline-name / -axis | The two halves of that shorthand. Axis: `'block'`, `'inline'`, `'x'`, `'y'`                                                                           |
+| `viewTimeline`                              | view-timeline                | Declares a named timeline on a **subject** — its own pass across the scrollport: `'card'` or `'card block'`                                           |
+| `viewTimelineName` / `viewTimelineAxis`     | view-timeline-name / -axis   | The two halves of that one                                                                                                                            |
+| `viewTimelineInset`                         | view-timeline-inset          | `'auto'`, or one or two lengths, shrinking the scrollport the pass is measured against                                                                |
+| `timelineScope`                             | timeline-scope               | Makes named timelines below this element reachable from anywhere else below it. Comma-separated                                                       |
+
+The two anonymous timelines cover most of it and need nothing declared elsewhere:
+
+```tsx
+// A reading-progress bar: the page's own scroll, driving a scaleX from 0 to 1.
+Box.keyframes({ progress: { from: { scale: 0 }, to: { scale: 1 } } });
+
+<Box
+  position="fixed"
+  top={0}
+  insetX={0}
+  height={1}
+  bgColor="sky-500"
+  css={{ transformOrigin: 'left' }}
+  animationName="progress"
+  animationTimeline="scroll(root)"
+  animationFillMode="both"
+  motionReduce={{ animation: 'none' }}
+/>;
+
+// Reveal on scroll: this element's own pass, over the first 60% of its entry.
+Box.keyframes({ 'fade-up': { from: { opacity: 0, translateY: 4 }, to: { opacity: 1, translateY: 0 } } });
+
+<Box animationName="fade-up" animationTimeline="view()" animationRange="entry 0% entry 60%" motionReduce={{ animation: 'none' }}>
+  …
+</Box>;
+```
+
+A **named** timeline is the two-sided form, for when the animated element is not inside the scroller:
+
+```tsx
+<Box timelineScope="page">
+  <Box height="fit-screen" overflow="auto" scrollTimeline="page block">
+    …
+  </Box>
+  <Box animationName="progress" animationTimeline="page" animationFillMode="both" />
+</Box>
+```
+
+**Three things to know, and all three are traps:**
+
+- **The CSS `animation` shorthand resets `animation-timeline`.** A timeline declared before it is
+  silently undone. The registry declares `animationTimeline` after `animation`, so writing both props is
+  safe in either order — but an `animation` written inside `css` sorts last and will undo it.
+- **A scroll-driven animation has no duration**, so `--transitionTime` cannot zero it. It is the one kind
+  of motion in this library that does **not** stop itself under `prefers-reduced-motion`: pair it with
+  `motionReduce={{ animation: 'none' }}`, every time.
+- **Where the browser has none, the declaration is dropped rather than the animation.** It then runs on the
+  document timeline over whatever duration it was given. Make the end state the resting state — with
+  `animationFillMode="both"` and a sequence that ends where the element belongs, a missing timeline degrades
+  to "already arrived" rather than to a loop. Chrome/Edge 115+, Safari 26+; Firefox is behind a flag.
+
+---
+
+### View transitions
+
+The browser screenshots the page, runs the update, screenshots again, and cross-fades between the two —
+so a change that was a jump becomes a transition with nothing animated by hand.
+
+| Prop / API                            | What it does                                                                                                                                         |
+| ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `viewTransitionName`                  | Names this element, so it animates _from where it was to where it is_ instead of being cross-faded with the page. A `<custom-ident>`, **not** dashed |
+| `viewTransitionClass`                 | A name shared by several elements, so `::view-transition-group(.card)` styles them together. Space-separated for more than one                       |
+| `Box.viewTransition(update, options)` | Runs `update` inside `document.startViewTransition` where the browser has one, and plainly where it has not                                          |
+| `<Box.Theme viewTransition>`          | That call around a theme change, `flushSync` included                                                                                                |
+
+```tsx
+const handle = Box.viewTransition(() => flushSync(() => setTab(next)), { types: ['forward'] });
+await handle.finished;
+```
+
+```ts
+interface ViewTransitionOptions {
+  /** `'skip'` (default) runs the update with no transition under reduced motion; `'play'` transitions anyway. */
+  reducedMotion?: 'skip' | 'play';
+  /** Types `:active-view-transition-type(name)` selects on, so forward and back can differ. */
+  types?: string[];
+}
+
+interface ViewTransitionHandle {
+  ready: Promise<void>;
+  finished: Promise<void>;
+  updateCallbackDone: Promise<void>;
+  skip(): void;
+  /** False when the browser had no API, or reduced motion skipped it. */
+  transitioned: boolean;
+}
+```
+
+**Four things to know:**
+
+- **In React the update has to be flushed.** The browser takes its second screenshot the moment the
+  callback returns, and a `setState` has not rendered by then — so a hand-rolled version captures the old
+  state twice and nothing appears to move. `flushSync` inside the callback is the fix, and
+  `<Box.Theme viewTransition>` is it already done for the one change every app has.
+- **A name has to be unique in the document while the transition runs.** Two elements sharing one is how a
+  transition silently does nothing. The prop is for the handful of names a layout has (`header`, `main`);
+  a name **per list item** is a rule per item that is never freed, so that one goes in
+  `props={{ style: { viewTransitionName: id } }}` — the exception `useAnchorPosition`'s anchor name and a
+  `Slider` thumb already take.
+- **Reduced motion skips the transition and keeps the update.** A whole-page cross-fade is exactly the
+  motion the preference is about. `{ reducedMotion: 'play' }` is the opt-out, for a change that is
+  unreadable without one.
+- **The handle is the same shape either way**, so there is one code path: with no API, `finished` is an
+  already-resolved promise, `skip()` a no-op and `transitioned` false. `ready` rejects when a transition is
+  skipped, which is not an error — branch on `finished`.
 
 ---
 
@@ -3204,7 +3329,7 @@ allowed.tokens; // the colours, the @keyframes names and the style-tree nodes a 
   `DataGrid`'s `def` (required — the columns and the grid-wide flags) and `data`, `DashboardGrid`'s
   `layout`/`defaultLayout`/`columns`, `Widget`'s `empty`, `ChartContainer`'s `series`. A column's nested
   `columns`, and `dataSource`/`onCellEdit`/`rowDetail`/`treeData`, stay out — they are the app's to pass.
-- **The allow-list is the app's.** `catalog()` with no options is all 78 components and all 221 props —
+- **The allow-list is the app's.** `catalog()` with no options is all 78 components and all 235 props —
   ~4.6 MB serialized. `include`, `exclude` and `styleProps` are how an app narrows it.
 
 Full reference: `docs/catalog.md`.

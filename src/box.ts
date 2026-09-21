@@ -1,5 +1,5 @@
 import React, { forwardRef, memo, Ref, RefAttributes, useMemo, useState } from 'react';
-import { BoxExtends, getDefaultEngine, Springs } from './core';
+import { BoxExtends, getDefaultEngine, Springs, startViewTransition } from './core';
 import boxClassNames, { BoxClassNames } from './react/boxClassNames';
 import { BoxClassNameProps, BoxCoreProps } from './react/boxProps';
 import buildTagProps from './react/boxTagProps';
@@ -55,6 +55,8 @@ interface BoxType {
   getVariableValue: (name: string) => string;
   /** Explicit engine configuration (class-name hashing, style sink). Call once, before the first render. */
   configure: typeof StylesContext.configure;
+  /** Run a DOM change inside a view transition where the browser has one, and plainly where it has not. */
+  viewTransition: typeof startViewTransition;
 }
 
 const Box = memo(forwardRef(BoxComponent)) as unknown as BoxType;
@@ -68,6 +70,7 @@ Box.Theme = Theme;
 Box.useTheme = Theme.useTheme;
 Box.getVariableValue = (name: string) => getDefaultEngine().getVariableValue(name);
 Box.configure = StylesContext.configure;
+Box.viewTransition = startViewTransition;
 
 export default Box;
 
