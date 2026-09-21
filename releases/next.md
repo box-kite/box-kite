@@ -24,6 +24,7 @@ _Unreleased. A PR that changes what a consumer sees adds its section here — se
 - **[What the agent says, as it arrives](#what-the-agent-says-as-it-arrives)** — `<StreamingText>` fades in the part of a message that was not there a render ago, and costs the same at the ten-thousandth token as at the first.
 - **[Markdown, and the dependency we did not take](#markdown-and-the-dependency-we-did-not-take)** — `markdownComponents` is the `components` map `react-markdown` and Streamdown both take, so a model's prose is themed with no stylesheet, no Tailwind config and no parser chosen for you.
 - **[Where the answer will be](#where-the-answer-will-be)** — `<Skeleton>`, the placeholder: bars with a gloss, `aria-hidden` unless you name what is loading, and it renders on a server.
+- **[Four agent runtimes, one vocabulary](#four-agent-runtimes-one-vocabulary)** — `@box-kite/react/interop`: AI SDK, assistant-ui, CopilotKit, A2UI and AG-UI, each verified against its own published package.
 
 <!-- One bullet per section below, linking to it: **[Heading](#heading)** — one line on why it matters. -->
 
@@ -736,6 +737,62 @@ The whole loop is in `examples/next-app` now: `/agent` is a real AI SDK tool loo
 turn is one of these components. AI SDK reports six tool states — four are a `<ToolCallCard>` status, and
 the other two are an `<ApprovalCard>`, because a decision is not a stage a call passes through but a
 question somebody has to answer.
+
+## Four agent runtimes, one vocabulary
+
+`@box-kite/react/interop` is this library's shapes and the agentic ecosystem's, mapped onto each other.
+It imports none of them: an adapter that pulled in a runtime would be choosing one for your app, and your
+app has already chosen.
+
+```jsx
+import { toolPart, a2uiApply, a2uiSurface, a2uiToSpec, a2uiCatalog } from '@box-kite/react/interop';
+
+const mapped = toolPart(part); // AI SDK, assistant-ui or CopilotKit
+<ToolCallCard name="searchOrders" status={mapped.status} input={mapped.input} output={mapped.output} />;
+```
+
+Every runtime describes the same two things in words of its own — a tool call, and a tree of components.
+`toolPart(part)` answers the first in the words `<ToolCallCard>` and `<ApprovalCard>` already take, and
+the split worth knowing is that **a decision is not a stage a call passes through**: it is a question
+somebody answers, which is why two components cover what AI SDK reports as six states, and why the three
+runtimes reporting four keep their human-in-the-loop on a second channel. AG-UI is the odd one out — it
+reports _events_ rather than parts, so `applyToolEvent(parts, event)` is a fold rather than a mapping.
+
+**A2UI is the one that is genuinely a different shape**, and so the one with real code behind it: a flat
+adjacency list of components referring to each other by id, arriving one message at a time, with a data
+model of its own per surface. `a2uiApply` folds a v0.8 or v0.9 stream, and `a2uiToSpec` walks a surface
+into the tree `<SpecRenderer>` renders.
+
+```jsx
+const [state, setState] = useState(a2uiEmpty);
+const surface = a2uiSurface(state);
+
+<SpecRenderer spec={a2uiToSpec(surface, { catalog })} registry={registry} data={surface?.data} onAction={run} />;
+```
+
+Three things the two models turned out to already agree on. A2UI's data binding is a JSON Pointer and
+`$data` has taken one since it was written, so a binding is a rename rather than a parse; a template
+(`children: { componentId, path }`) is one node per item of an array, which is what `repeat` means; and a
+half-arrived surface is the ordinary case, since an agent streams a leaf before the branch that holds it.
+The other direction is `a2uiCatalog(catalog())` — the same components and the same values their props
+take, in the shape an adjacency list needs, which is what an agent generates against.
+
+assistant-ui's `GenerativeUISpec` is the same idea arrived at twice, so `fromGenerativeUi` and
+`toGenerativeUi` are a rename plus an honest accounting: their nodes carry no data binding, no repeat and
+no action channel, so the second **reports what it could not carry** rather than emitting a tree that
+renders half a view in silence.
+
+Every runtime named is a devDependency of the repository and the adapters run against the published
+packages rather than against a memory of them: `@assistant-ui/core`'s own types accept what
+`toGenerativeUi` emits, `@copilotkit/a2ui-renderer`'s `createCatalog` accepts the document `a2uiCatalog`
+builds, and a surface generated against that document renders here. One trap came out of it, measured
+against zod 4.6: **a `$ref` resolves against the document, not against the piece you lifted out of it**,
+so converting a catalog component on its own throws `Reference not found: #/$defs/color` —
+`a2uiComponentSchema(document, name)` is that component with the document's definitions attached.
+
+3.96 KB gzipped, and no engine in it. The recipes per runtime, AG-UI and json-render included, are in
+[docs/interop.md](https://github.com/box-kite/box-kite/blob/main/docs/interop.md) and at
+[box-kite.dev/interop](https://www.box-kite.dev/interop/).
 
 ## Breaking changes
 

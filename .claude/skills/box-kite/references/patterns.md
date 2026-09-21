@@ -25,3 +25,26 @@ The recipes, plus the parts of the library that are not props: server rendering,
 **Menu** (`components/menu`): APG's menu button on the same Popover API, and a submenu is a popover nested inside it. `<Menu trigger={(t) => <Button {...t}>Actions</Button>}><Menu.Item onSelect={duplicate}>Duplicate</Menu.Item><Menu.Separator /><Menu.Sub label="Share"><Menu.Item>Copy link</Menu.Item></Menu.Sub></Menu>`. Parts: `Menu.Item`, `Menu.CheckboxItem` (`checked`/`defaultChecked`/`onCheckedChange`), `Menu.RadioGroup` (`value`/`defaultValue`/`onValueChange`) + `Menu.RadioItem value`, `Menu.Group label` (which names the group through `aria-labelledby`), `Menu.Separator`, and `Menu.Sub label`, which renders its own `menuitem` with `aria-haspopup="menu"` and `aria-expanded` plus the menu beside it. Props on the menu: `trigger`, `open`/`defaultOpen`/`onOpenChange(open, { reason })` with `select`|`tab` beside `trigger`|`escape`|`outside-pointer`|`imperative`, `label`/`labelledBy` (left out, the menu takes its trigger's name — APG's rule), and the four placement props `side`/`align`/`offset`/`flip`, which `Menu.Sub` takes too (`side="end"`, `offset={0}` by default, so a submenu abuts its menu). The platform supplies the top layer, light dismiss — Escape closing the innermost menu first — and the toggle; the component supplies the roles, the keys (Down/Up wrapping, Home/End, typeahead where a letter again cycles, Right/Left for a submenu in **reading order**, so they swap in a right-to-left menu) and the focus moves the browser does not make: into the first item on open, and back onto a submenu's own item when it closes. Four things to know: a `disabled` item is `aria-disabled` and **stays focusable**, as APG asks; `Menu.Item` closes the menu on select while a checkbox or radio item does not, and `closeOnSelect` swaps either default; the menu is **always rendered** (closed is `display: none`), so the exit is a CSS transition and never `<Presence>`, and expensive items want gating with `{open ? … : null}`; and it inherits the top layer's one cost, keeping the side it opened on (see `Overlay`). The semantic `<menu>` element is `MenuList` from `components/semantics` now, since two exports named `Menu` are one import away from the wrong component.
 
 **Tooltip** (`components/tooltip`): the APG pattern on that layer. `<Tooltip content="Deletes the row">{(trigger) => <Button {...trigger}>Delete</Button>}</Tooltip>` — the child is a render prop because `aria-describedby` has to land on the control itself; the bag is `{ ref, props }`, so one spread on a Box component, or `<button ref={trigger.ref} {...trigger.props}>` on a plain one. The `ref` is what positions the bubble under the trigger. Gives you `role="tooltip"`, the describedby wiring while open, hover **and** focus opening (`openDelay` 300 ms, focus ignores it), Escape with focus left in place, and WCAG 1.4.13: the pointer can travel onto the bubble (`closeDelay` 150 ms) and nothing hides it on a timer. `open`/`defaultOpen`/`onOpenChange(open, { reason })` with reasons `hover`|`focus`|`pointer-leave`|`blur`|`escape`; other Box props style the bubble.
+
+## Another runtime's agent shapes
+
+`@box-kite/react/interop` maps the agentic ecosystem's shapes onto this library's, and imports none of
+them. `toolPart(part)` reads a part from AI SDK, assistant-ui or CopilotKit into
+`{ kind: 'call' | 'approval', status, decision, input, output, error }` — the words `<ToolCallCard>` and
+`<ApprovalCard>` already take. **A decision is not a stage a call passes through**, so AI SDK's
+`approval-requested`/`approval-responded`, assistant-ui's `requires-action` and the `executing`
+CopilotKit hands a `respond` with are all the second component. **AG-UI reports events, not parts**, so
+it folds: `applyToolEvent(parts, event)`.
+
+```tsx
+const mapped = toolPart(part);
+
+mapped?.kind === 'approval' ? <ApprovalCard title="Refund 4182" onDecisionChange={answer} /> : <ToolCallCard {...mapped} />;
+```
+
+A2UI is a flat adjacency list rather than a tree, so it has real code behind it: `a2uiApply(state, message)`
+folds a v0.8 or v0.9 stream, `a2uiSurface(state)` picks one out, and `a2uiToSpec(surface, { catalog })`
+walks it into what `<SpecRenderer>` renders — its `{ "path": "/x" }` binding is already `{ $data: '/x' }`
+and its `children: { componentId, path }` template is already `repeat`. `a2uiCatalog(catalog())` is the
+other direction, and `a2uiComponentSchema(document, name)` is one component of it with the document's
+`$defs` attached, which is what `z.fromJSONSchema` needs. Full reference: `docs/interop.md`.

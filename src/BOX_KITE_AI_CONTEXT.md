@@ -3291,3 +3291,75 @@ so the server half of the loop needs no components. `renderSpec(spec, options)` 
 no hook in it — it returns `{ element, issues }`, so a static spec renders on a server.
 
 Full reference: `docs/catalog.md`.
+
+## Ecosystem interop (`@box-kite/react/interop`)
+
+The agentic runtimes' shapes and this library's, mapped onto each other. It **imports none of them**:
+an adapter that pulled in a runtime would be choosing one for the app. Framework-free and engine-free,
+so a route handler and a client both import from it.
+
+```ts
+import { toolPart, applyToolEvent } from '@box-kite/react/interop';
+import { a2uiApply, a2uiEmpty, a2uiSurface, a2uiToSpec, a2uiCatalog, a2uiComponentSchema } from '@box-kite/react/interop';
+import { fromGenerativeUi, toGenerativeUi } from '@box-kite/react/interop';
+```
+
+`toolPart(part)` reads a part from AI SDK, assistant-ui or CopilotKit and answers
+`{ kind, status, decision, input, output, error }` — `kind` is `'call'` or `'approval'`, `status` is
+the `pending`/`running`/`success`/`error` `<ToolCallCard>` takes, and `null` means it is not a tool part
+at all. **A decision is not a stage a call passes through, it is a question somebody answers**, which is
+why two components cover six states:
+
+| Runtime      | Call                                                                  | Question                                  |
+| ------------ | --------------------------------------------------------------------- | ----------------------------------------- |
+| AI SDK 6/7   | `input-streaming` `input-available` `output-available` `output-error` | `approval-requested` `approval-responded` |
+| assistant-ui | `status.type` `running` `complete` `incomplete`                       | `requires-action`, under either reason    |
+| CopilotKit   | `inProgress` `executing` `complete`                                   | `executing` holding a `respond`           |
+| AG-UI        | `TOOL_CALL_START` `_ARGS` `_END` `_RESULT`                            | `INTERRUPT`                               |
+
+**AG-UI reports events, not parts**, so its cards are a fold rather than a mapping:
+`applyToolEvent(parts, event)`, one call per event, oldest first, keyed by `toolCallId`.
+
+### A2UI
+
+The only genuinely different shape here: a **flat adjacency list** of components referring to each other
+by id, arriving one message at a time, with a data model of its own per surface.
+
+```tsx
+const [state, setState] = useState(a2uiEmpty);
+// v0.8 and v0.9 both. Pure, and the same state back when a message changed nothing.
+const next = (message: unknown) => setState((current) => a2uiApply(current, message));
+const surface = a2uiSurface(state);
+
+<SpecRenderer spec={a2uiToSpec(surface, { catalog })} registry={registry} data={surface?.data} onAction={run} />;
+```
+
+- **Its data binding is already `$data`.** `{ "path": "/user/email" }` is a JSON Pointer, which `$data`
+  has always taken — a rename, not a parse. The surface's own data model goes in `<SpecRenderer data>`.
+- **A template is a `repeat`.** `children: { componentId, path }` is one node per item of an array.
+- **A half-arrived surface is the ordinary case.** A component nothing reaches from the root is not
+  rendered yet; a cycle in the id graph is cut rather than walked.
+- **`id`, `component`, `child`, `children` and `action` never reach the registry as props.** `action`
+  becomes an `on` binding under that name, so an app registering Box components under A2UI's own names
+  declares `events: ['action']` on them. Pass `{ catalog }` instead where the agent generated against
+  this library, and a prop the catalog calls an event is bound as one.
+
+`a2uiCatalog(catalog(), { catalogId })` is the other direction — `catalog()` as an A2UI catalog
+document, where a component carries its own `id`, its type is a property rather than the key above it,
+and its children are **ids**. Serve it at the `catalogId` you gave it.
+
+### assistant-ui, CopilotKit, json-render
+
+`fromGenerativeUi(spec)` reads their `GenerativeUISpec` (`component` where this says `type`, a bare
+string child that renders as text) and `toGenerativeUi(node)` goes back, returning `{ spec, losses }`:
+their nodes carry no data binding, no repeat and no action channel, so what could not come along is
+**reported** rather than dropped in silence. Tool UI is `makeAssistantToolUI` with the cards in it.
+
+CopilotKit is two surfaces. Its A2UI renderer takes Zod, so `z.fromJSONSchema` over the catalog document
+is the bridge — and **a `$ref` resolves against the document, not against the piece you lifted out of
+it**, so `a2uiComponentSchema(document, name)` is what to convert (measured: zod 4.6 throws
+`Reference not found: #/$defs/color` otherwise). Its actions take a render function, where `render` is a
+call being shown and `renderAndWaitForResponse` is a question whose `respond` is what
+`onDecisionChange` calls. json-render is the same `z.fromJSONSchema` over `catalog()` itself.
+
+Full reference: `docs/interop.md`.

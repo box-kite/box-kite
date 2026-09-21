@@ -29,6 +29,7 @@ const PACKAGE_PATHS = {
   '@box-kite/react/a11y': ['src/a11y.ts'],
   '@box-kite/react/anchor': ['src/anchor.ts'],
   '@box-kite/react/catalog': ['src/catalog.ts'],
+  '@box-kite/react/interop': ['src/interop.ts'],
   '@box-kite/core': ['src/core.ts'],
   '@box-kite/react/rsc': ['src/rsc.ts'],
   '@box-kite/react/spec': ['src/spec.ts'],
