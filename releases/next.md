@@ -16,6 +16,7 @@ _Unreleased. A PR that changes what a consumer sees adds its section here — se
 - **[A dashboard people rearrange, and a model can write](#a-dashboard-people-rearrange-and-a-model-can-write)** — a drag-and-resize widget grid whose layout is JSON in cells: every place is a class, the keyboard gets a grab, and a model can write the same file a drag reports.
 - **[A generated dashboard with something in it](#a-generated-dashboard-with-something-in-it)** — the catalog describes a grid's columns and a dashboard's layout now, so a spec can say where each widget goes and what is inside it.
 - **[A theme inside a theme](#a-theme-inside-a-theme)** — a local `<Box.Theme>` finally wins inside a themed page: a theme reaches the subtree it owns and stops at the next element that declares one.
+- **[Theming now needs a 2023 browser](#theming-now-needs-a-2023-browser)** — the rule a `theme` block generates is an `@scope` block, so below Chrome 118 / Safari 17.4 / Firefox 128 the theme is dropped and the unthemed values show. No API changed.
 - **[The DataGrid exports its types](#the-datagrid-exports-its-types)** — `ColumnType`, `GridDefinition`, `CellModel` and the rest come off `components/dataGrid` now instead of a path inside it.
 - **[The whole loop, and the route that runs it](#the-whole-loop-and-the-route-that-runs-it)** — `specSchema()` is on the catalog entry too, so a server route can build the constraint a model generates under; and a node missing a prop it cannot do without is held back rather than left to throw.
 - **[`npx @box-kite/mcp`: the answer a documentation file cannot give](#npx-box-kitemcp-the-answer-a-documentation-file-cannot-give)** — an MCP server whose `check_styles` tool hands your props to the real engine, because a value this library does not accept writes no CSS at all and says nothing about it.
@@ -527,6 +528,22 @@ dashboard for the module boundary. Nothing else moved.
 
 [The shapes a spec can write](https://box-kite.dev/ai-context)
 
+## Theming now needs a 2023 browser
+
+Nothing in the API changed, so nothing you have written has to change — but the rule this release generates
+for a `theme` block is an `@scope` block, and that is **Chrome 118+, Safari 17.4+ or Firefox 128+**. Below
+those versions the theme rules are dropped rather than misapplied: an element shows its unthemed values,
+which for every pre-built component is the light design, because each of their theme blocks is a dark
+override over a light base. There is no error and nothing in the console — it simply looks unthemed.
+
+If you support a browser below that floor, write the design it should get as the plain props and the other
+one under `theme`, which is what the pre-built components already do:
+
+```jsx
+// The old browser gets the light design; the new one gets either.
+<Box bgColor="white" color="slate-900" theme={{ dark: { bgColor: 'slate-900', color: 'white' } }} />
+```
+
 ## A theme inside a theme
 
 A theme is an ancestor class, so two of them on one page wrote two rules of exactly the same specificity —
@@ -833,11 +850,7 @@ so converting a catalog component on its own throws `Reference not found: #/$def
 
 ## Breaking changes
 
-- **A theme rule is an `@scope` block now, so theming needs Chrome 118+, Safari 17.4+ or Firefox 128+.**
-  Below that the rules are dropped and elements show their unthemed values, which for the pre-built
-  components is the light design — every one of their theme blocks is a dark override over a light base.
-  Write the design older browsers should get as the plain props and the other one under `theme`, which is
-  what the components themselves do.
+None.
 
 ## Fixes
 
