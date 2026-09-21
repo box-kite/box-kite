@@ -12,12 +12,11 @@ const root = join(import.meta.dirname, '..');
 const PAGES = 'pages';
 
 /**
- * Which JSX elements carry a snippet, and how the page renders it. `DemoCard` documents a *prop fragment*
- * inside a Box, so the check wraps it the same way the page does.
+ * Which JSX elements carry a snippet, and how the page renders it. A second entry wraps its `code` —
+ * `/box`'s old demo cards held a prop fragment, so theirs went inside a `<Box>` the way the page showed it.
  */
 const SNIPPET_TAGS = {
   Code: (code) => code,
-  DemoCard: (code) => `<Box ${code}>content</Box>`,
 };
 
 /** Snippets in these languages are not TypeScript, so there is nothing here to compile. */
@@ -193,9 +192,8 @@ function collectSnippets(path) {
         if (NOT_TYPESCRIPT.has(language)) found.push({ path, line, skipped: language });
         else if (optedOut) found.push({ path, line, skipped: 'opted out' });
         // No `code` at all means the block is printed from the live demo beside it, which is real
-        // JSX in the page and so already checked by `npm run compile`. A template with a
-        // substitution in it is assembled at runtime — boxPage builds one from the DemoCard
-        // fragment this check reads at the call site instead.
+        // JSX in the page and so already checked by `npm run compile`. A template with a substitution
+        // in it is assembled at runtime, and there is nothing here to read.
         else if (!attribute(node, 'code', source)) found.push({ path, line, skipped: 'rendered from the demo' });
         else if (!code) found.push({ path, line, skipped: 'assembled at runtime' });
         else {

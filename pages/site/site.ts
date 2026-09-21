@@ -87,7 +87,15 @@ export const siteRoutes = [
   {
     path: '/box',
     name: 'Box',
-    description: 'The foundational component: 221 CSS properties as type-safe props, with the numeric formatters explained.',
+    description:
+      'The foundational component, from scratch: what a Box is, the five things that are not what you would guess, and all 221 props with the CSS each one writes.',
+  },
+  {
+    path: '/box-functions',
+    name: 'Box functions',
+    title: 'Box functions — extend, components, keyframes, spring, Theme, configure',
+    description:
+      'Everything Box carries that is not a prop: Box.extend(), Box.components(), Box.keyframes(), Box.spring(), Box.Theme and Box.configure(), each with an example.',
   },
   {
     path: '/svg',

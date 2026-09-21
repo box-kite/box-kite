@@ -48,6 +48,7 @@ import {
   Type,
   WandSparkles,
   Workflow,
+  Wrench,
   X,
 } from 'lucide-react';
 import { useState } from 'react';
@@ -209,6 +210,9 @@ export default function Sidebar({ toggleTheme, onClose }: SidebarProps) {
         <MenuSection label="Core" defaultOpen>
           <MenuItem to="/box" icon={<BoxIcon />}>
             Box
+          </MenuItem>
+          <MenuItem to="/box-functions" icon={<Wrench />}>
+            Box functions
           </MenuItem>
           <MenuItem to="/svg" icon={<Spline />}>
             SVG

@@ -17,6 +17,7 @@ const loaders: Record<SiteRoutePath, () => Promise<{ default: ComponentType }>> 
   '/generative-ui': () => import('../pages/generativeUiPage'),
   '/interop': () => import('../pages/interopPage'),
   '/box': () => import('../pages/boxPage'),
+  '/box-functions': () => import('../pages/boxFunctionsPage'),
   '/svg': () => import('../pages/svgPage'),
   '/icon': () => import('../pages/iconPage'),
   '/charts': () => import('../pages/chartsPage'),
