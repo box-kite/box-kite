@@ -30,9 +30,9 @@ export const siteRoutes = [
   {
     path: '/',
     name: 'Introduction',
-    title: 'Box Kite — build beautiful UIs without writing CSS',
+    title: 'Box Kite — every CSS property is a typed prop',
     description:
-      'A React library where every CSS property is a typed prop. Classes are generated at runtime and shared between components, so there is no stylesheet to import.',
+      'A React library where every CSS property is a typed prop the compiler checks. Accessible components, a server-rendered runtime, a free data grid.',
   },
   {
     path: '/installation',
