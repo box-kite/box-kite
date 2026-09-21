@@ -58,6 +58,10 @@ order now (the instructions ship with the code, the compiler catches the rest, a
 at runtime, and what it writes is finished), `/ai-context` has become **Built for AI** and sits at the top
 of the nav, and Generative UI, Interop and Agent are a section of their own.
 
+The `/migrating` page is gone with them — it existed for a rename nobody had to follow, and the three
+things the compatibility bridge cannot forward are still written down in the 1.0.0 notes and in the
+bridge's own README, which is where somebody still on the old package would be reading.
+
 Nothing in the library changed. This is the documentation site, the README and one `bench/results.json`
 trimmed to the runs it still prints.
 

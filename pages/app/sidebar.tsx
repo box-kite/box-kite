@@ -181,9 +181,6 @@ export default function Sidebar({ toggleTheme, onClose }: SidebarProps) {
           <MenuItem to="/registry" icon={<Blocks />}>
             Blocks
           </MenuItem>
-          <MenuItem to="/migrating" icon={<PackageIcon />}>
-            Migrating
-          </MenuItem>
           <MenuItem to="/releases" icon={<Rocket />}>
             Releases
           </MenuItem>

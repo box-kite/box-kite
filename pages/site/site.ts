@@ -54,13 +54,6 @@ export const siteRoutes = [
       'Finished sections the shadcn CLI installs into your own repository: an invoices data grid, a settings form and a dashboard shell, each one code you then own.',
   },
   {
-    path: '/migrating',
-    name: 'Migrating',
-    title: 'Migrating to Box Kite — from @cronocode/react-box',
-    description:
-      'The library was @cronocode/react-box until 1.0.0. One find-and-replace, a compatibility bridge if you are not ready, and the three things it cannot forward.',
-  },
-  {
     path: '/releases',
     name: 'Releases',
     description:

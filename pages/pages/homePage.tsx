@@ -739,7 +739,6 @@ export default function App() {
 function HealthSignals() {
   const links = [
     { label: 'Releases, every version', to: '/releases' },
-    { label: 'Migrating from 0.x', to: '/migrating' },
     { label: 'What an agent should read', to: '/ai-context' },
   ];
 
