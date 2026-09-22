@@ -1,14 +1,14 @@
-import { Check, Copy, Terminal } from 'lucide-react';
-import Prism from 'prismjs';
-import 'prismjs/components/prism-bash';
-import 'prismjs/components/prism-jsx';
+import { Check, Copy, PlayCircle, Terminal } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Box, { BoxProps } from '../../src/box';
 import Button from '../../src/components/button';
 import Flex from '../../src/components/flex';
 import Icon from '../../src/components/icon';
+import highlight from '../site/highlight';
+import { canOpenInPlayground, playgroundHref } from '../site/playground';
 import reactToJsx from '../utils/reactToJsx';
 import IconSwap from './iconSwap';
+import SiteLink from './siteLink';
 
 interface Props extends BoxProps {
   language?: 'javascript' | 'shell' | 'jsx' | 'css' | 'json' | 'auto';
@@ -38,7 +38,7 @@ interface Props extends BoxProps {
 export default function Code(props: Props) {
   // `check` and `context` are metadata for scripts/check-docs-snippets.mjs — pulled out of the
   // props so they never reach the DOM, and never read here.
-  const { children, language = 'jsx', label, code: codeProp, codeOnly, defer, check: _check, context: _context, ...restProps } = props;
+  const { children, language = 'jsx', label, code: codeProp, codeOnly, defer, check, context: _context, ...restProps } = props;
   const [copied, setCopied] = useState(false);
 
   // Convert children to JSX string if no explicit code prop
@@ -78,13 +78,10 @@ export default function Code(props: Props) {
   // the highlighted markup, so a reader never sees a page of plain code repaint; and `highlightAll()`
   // walked every block in the document on every mount, so a page with thirty of them did that thirty
   // times. A language Prism does not know (`auto`) falls back to plain text, as it did before.
-  const highlighted = useMemo(() => {
-    const grammar = Prism.languages[language];
-
-    return grammar ? Prism.highlight(code, grammar, language) : null;
-  }, [code, language]);
+  const highlighted = useMemo(() => highlight(code, language), [code, language]);
 
   const isShell = language === 'shell';
+  const playable = useMemo(() => Boolean(code) && canOpenInPlayground(code, { language, check }), [code, language, check]);
 
   return (
     <Box {...restProps}>
@@ -140,27 +137,52 @@ export default function Code(props: Props) {
               <Box>{isShell ? 'Terminal' : language.toUpperCase()}</Box>
             </Flex>
 
-            {code && (
-              <Button
-                clean
-                p={2}
-                px={3}
-                borderRadius={2}
-                bgColor={copied ? 'emerald-500' : 'slate-700'}
-                color={copied ? 'white' : 'slate-300'}
-                hover={{ bgColor: copied ? 'emerald-500' : 'slate-600' }}
-                cursor={copied ? 'default' : 'pointer'}
-                onClick={() => !copied && copyHandler()}
-                transitionDuration={150}
-              >
-                <Flex ai="center" gap={2} fontSize={12}>
-                  <IconSwap key={copied ? 'check' : 'copy'} scale={0.8}>
-                    <Icon size={3.5}>{copied ? <Check /> : <Copy />}</Icon>
-                  </IconSwap>
-                  {copied ? 'Copied!' : 'Copy'}
-                </Flex>
-              </Button>
-            )}
+            <Flex ai="center" gap={2} props={{ 'data-md': 'skip' }}>
+              {/* Only where the snippet would actually run: the test beside it agrees with the compiler on
+                  every block the site shows, so a link offered here is never one that opens on nothing. */}
+              {playable && (
+                <SiteLink
+                  to={playgroundHref(code)}
+                  p={2}
+                  px={3}
+                  borderRadius={2}
+                  bgColor="slate-700"
+                  color="slate-300"
+                  hover={{ bgColor: 'slate-600' }}
+                  textDecoration="none"
+                  transitionDuration={150}
+                >
+                  <Flex ai="center" gap={2} fontSize={12}>
+                    <Icon size={3.5}>
+                      <PlayCircle />
+                    </Icon>
+                    Playground
+                  </Flex>
+                </SiteLink>
+              )}
+
+              {code && (
+                <Button
+                  clean
+                  p={2}
+                  px={3}
+                  borderRadius={2}
+                  bgColor={copied ? 'emerald-500' : 'slate-700'}
+                  color={copied ? 'white' : 'slate-300'}
+                  hover={{ bgColor: copied ? 'emerald-500' : 'slate-600' }}
+                  cursor={copied ? 'default' : 'pointer'}
+                  onClick={() => !copied && copyHandler()}
+                  transitionDuration={150}
+                >
+                  <Flex ai="center" gap={2} fontSize={12}>
+                    <IconSwap key={copied ? 'check' : 'copy'} scale={0.8}>
+                      <Icon size={3.5}>{copied ? <Check /> : <Copy />}</Icon>
+                    </IconSwap>
+                    {copied ? 'Copied!' : 'Copy'}
+                  </Flex>
+                </Button>
+              )}
+            </Flex>
           </Flex>
 
           {/* Code Content */}

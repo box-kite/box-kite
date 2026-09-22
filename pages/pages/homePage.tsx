@@ -1,4 +1,4 @@
-import { ArrowRight, Bot, Check, Keyboard, ShieldCheck, Type } from 'lucide-react';
+import { ArrowRight, Bot, Check, CirclePlay, Keyboard, ShieldCheck, Type } from 'lucide-react';
 import { ReactNode } from 'react';
 import { version } from '../../package.json';
 import Box from '../../src/box';
@@ -144,6 +144,16 @@ function Hero() {
                   <Bot />
                 </Icon>
                 Set up your agent
+              </Flex>
+            </Button>
+          </SiteLink>
+          <SiteLink to="/playground">
+            <Button variant="secondary" px={6} py={3} fontSize={15} theme={{ dark: { color: 'slate-300' }, light: { color: 'slate-700' } }}>
+              <Flex ai="center" gap={2}>
+                <Icon size={4.5}>
+                  <CirclePlay />
+                </Icon>
+                Try it
               </Flex>
             </Button>
           </SiteLink>

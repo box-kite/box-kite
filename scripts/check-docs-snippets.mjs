@@ -4,20 +4,13 @@
 // compile as a reader would compile them, against the published specifiers and without the site's own
 // augmentation. A snippet is a fragment: its components are imported for it, a *lowercase* undeclared name
 // becomes `any`, `context` adds hidden declarations, `check={false}` opts out. Run: npm run check:docs
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import ts from 'typescript';
+import { collectDocsSnippets } from './docsSnippets.mjs';
+import { importStatement, SNIPPET_SCOPE } from './snippetScope.mjs';
 
 const root = join(import.meta.dirname, '..');
-const PAGES = 'pages';
-
-/**
- * Which JSX elements carry a snippet, and how the page renders it. A second entry wraps its `code` —
- * `/box`'s old demo cards held a prop fragment, so theirs went inside a `<Box>` the way the page showed it.
- */
-const SNIPPET_TAGS = {
-  Code: (code) => code,
-};
 
 /** Snippets in these languages are not TypeScript, so there is nothing here to compile. */
 const NOT_TYPESCRIPT = new Set(['shell', 'css', 'json']);
@@ -38,98 +31,12 @@ const PACKAGE_PATHS = {
 };
 
 /**
- * What a snippet may use without importing it — one import statement per name, so a snippet that
- * writes its own import for something keeps its own and gets no duplicate.
+ * What a snippet may use without importing it, as the import statement it would have written — one per
+ * name, so a snippet that imports something for itself keeps its own and gets no duplicate. The names
+ * come from `snippetScope.mjs`, which the playground reads as *values*: a name only one of the two
+ * knows about is a snippet that compiles here and throws `is not defined` when a reader opens it.
  */
-const PROVIDED = {
-  React: "import * as React from 'react';",
-  useCallback: "import { useCallback } from 'react';",
-  useEffect: "import { useEffect } from 'react';",
-  useMemo: "import { useMemo } from 'react';",
-  useRef: "import { useRef } from 'react';",
-  useState: "import { useState } from 'react';",
-  flushSync: "import { flushSync } from 'react-dom';",
-  BaseSvg: "import BaseSvg from '@box-kite/react/components/baseSvg';",
-  Box: "import Box from '@box-kite/react';",
-  useAnchorPosition: "import { useAnchorPosition } from '@box-kite/react/anchor';",
-  AlertDialog: "import { AlertDialog } from '@box-kite/react/components/dialog';",
-  Button: "import Button from '@box-kite/react/components/button';",
-  Checkbox: "import Checkbox from '@box-kite/react/components/checkbox';",
-  Combobox: "import Combobox from '@box-kite/react/components/combobox';",
-  Accordion: "import Accordion from '@box-kite/react/components/accordion';",
-  ApprovalCard: "import { ApprovalCard } from '@box-kite/react/components/agent';",
-  Reasoning: "import { Reasoning } from '@box-kite/react/components/agent';",
-  ToolCallCard: "import { ToolCallCard } from '@box-kite/react/components/agent';",
-  StreamingText: "import { StreamingText } from '@box-kite/react/components/agent';",
-  Skeleton: "import Skeleton from '@box-kite/react/components/skeleton';",
-  markdownComponents: "import { markdownComponents } from '@box-kite/react/components/markdown';",
-  Collapsible: "import { Collapsible } from '@box-kite/react/components/accordion';",
-  Progress: "import Progress from '@box-kite/react/components/progress';",
-  Slider: "import Slider from '@box-kite/react/components/slider';",
-  SpecRenderer: "import SpecRenderer from '@box-kite/react/spec';",
-  DashboardGrid: "import DashboardGrid from '@box-kite/react/components/dashboard';",
-  DataGrid: "import DataGrid from '@box-kite/react/components/dataGrid';",
-  Widget: "import { Widget } from '@box-kite/react/components/dashboard';",
-  Dialog: "import Dialog from '@box-kite/react/components/dialog';",
-  Dropdown: "import Dropdown from '@box-kite/react/components/dropdown';",
-  Flex: "import Flex from '@box-kite/react/components/flex';",
-  Form: "import Form from '@box-kite/react/components/form';",
-  Grid: "import Grid from '@box-kite/react/components/grid';",
-  Icon: "import Icon from '@box-kite/react/components/icon';",
-  Menu: "import Menu from '@box-kite/react/components/menu';",
-  Overlay: "import Overlay from '@box-kite/react/components/overlay';",
-  Popover: "import Popover from '@box-kite/react/components/popover';",
-  Presence: "import Presence from '@box-kite/react/components/presence';",
-  RadioButton: "import RadioButton from '@box-kite/react/components/radioButton';",
-  RadioGroup: "import RadioGroup from '@box-kite/react/components/radioGroup';",
-  Select: "import Select from '@box-kite/react/components/select';",
-  Switch: "import Switch from '@box-kite/react/components/switch';",
-  Tabs: "import Tabs from '@box-kite/react/components/tabs';",
-  Textarea: "import Textarea from '@box-kite/react/components/textarea';",
-  Textbox: "import Textbox from '@box-kite/react/components/textbox';",
-  Toaster: "import Toaster from '@box-kite/react/components/toaster';",
-  toast: "import { toast } from '@box-kite/react/components/toaster';",
-  Tooltip: "import Tooltip from '@box-kite/react/components/tooltip';",
-  VisuallyHidden: "import VisuallyHidden from '@box-kite/react/components/visuallyHidden';",
-  // The semantic tags a snippet writes prose with, all from the one entry.
-  H1: "import { H1 } from '@box-kite/react/components/semantics';",
-  H2: "import { H2 } from '@box-kite/react/components/semantics';",
-  H3: "import { H3 } from '@box-kite/react/components/semantics';",
-  H4: "import { H4 } from '@box-kite/react/components/semantics';",
-  H5: "import { H5 } from '@box-kite/react/components/semantics';",
-  H6: "import { H6 } from '@box-kite/react/components/semantics';",
-  Li: "import { Li } from '@box-kite/react/components/semantics';",
-  Ol: "import { Ol } from '@box-kite/react/components/semantics';",
-  P: "import { P } from '@box-kite/react/components/semantics';",
-  Ul: "import { Ul } from '@box-kite/react/components/semantics';",
-  // The chart primitives and the theming container, one entry between them.
-  ChartContainer: "import { ChartContainer } from '@box-kite/react/components/chart';",
-  Gauge: "import { Gauge } from '@box-kite/react/components/chart';",
-  MiniDonut: "import { MiniDonut } from '@box-kite/react/components/chart';",
-  ProgressRing: "import { ProgressRing } from '@box-kite/react/components/chart';",
-  Sparkline: "import { Sparkline } from '@box-kite/react/components/chart';",
-  // The SVG elements — one entry each, so a drawing in a snippet reads as a drawing would.
-  Circle: "import { Circle } from '@box-kite/react/components/svg';",
-  ClipPath: "import { ClipPath } from '@box-kite/react/components/svg';",
-  Defs: "import { Defs } from '@box-kite/react/components/svg';",
-  Ellipse: "import { Ellipse } from '@box-kite/react/components/svg';",
-  G: "import { G } from '@box-kite/react/components/svg';",
-  Line: "import { Line } from '@box-kite/react/components/svg';",
-  LinearGradient: "import { LinearGradient } from '@box-kite/react/components/svg';",
-  Marker: "import { Marker } from '@box-kite/react/components/svg';",
-  Mask: "import { Mask } from '@box-kite/react/components/svg';",
-  Path: "import { Path } from '@box-kite/react/components/svg';",
-  Polygon: "import { Polygon } from '@box-kite/react/components/svg';",
-  Polyline: "import { Polyline } from '@box-kite/react/components/svg';",
-  RadialGradient: "import { RadialGradient } from '@box-kite/react/components/svg';",
-  Rect: "import { Rect } from '@box-kite/react/components/svg';",
-  Stop: "import { Stop } from '@box-kite/react/components/svg';",
-  Svg: "import { Svg } from '@box-kite/react/components/svg';",
-  SvgSymbol: "import { SvgSymbol } from '@box-kite/react/components/svg';",
-  SvgText: "import { SvgText } from '@box-kite/react/components/svg';",
-  TSpan: "import { TSpan } from '@box-kite/react/components/svg';",
-  Use: "import { Use } from '@box-kite/react/components/svg';",
-};
+const PROVIDED = Object.fromEntries(Object.entries(SNIPPET_SCOPE).map(([name, entry]) => [name, importStatement(name, entry)]));
 
 /** A name TypeScript could not find is the page's own context — but only if it is a value. */
 const MISSING_NAME = /Cannot find name '([^']+)'/;
@@ -137,79 +44,26 @@ const MISSING_NAME = /Cannot find name '([^']+)'/;
 /** "JSX expressions must have one parent element": the snippet shows sibling elements, as docs do. */
 const NEEDS_FRAGMENT = 2657;
 
-/** Every `.tsx` file under `pages/`, as a repo-relative POSIX path. */
-function walk(dir) {
-  const out = [];
+/**
+ * Every snippet the site shows, sorted into the ones to compile and the ones there is nothing to compile
+ * about. The blocks themselves come from `docsSnippets.mjs`, which the playground's test reads too — a
+ * collector per reader would drift, and the way it would show is a block that compiles here and has a
+ * dead "Open in playground" link.
+ */
+function collectSnippets() {
+  return collectDocsSnippets(root).map((snippet) => {
+    const { path, line, codeLine, language, hasCode, code, check, context } = snippet;
 
-  for (const name of readdirSync(join(root, dir))) {
-    const path = `${dir}/${name}`;
+    if (NOT_TYPESCRIPT.has(language)) return { path, line, skipped: language };
+    if (!check) return { path, line, skipped: 'opted out' };
+    // No `code` at all means the block is printed from the live demo beside it, which is real JSX in the
+    // page and so already checked by `npm run compile`. A template with a substitution in it is assembled
+    // at runtime, and there is nothing here to read.
+    if (!hasCode) return { path, line, skipped: 'rendered from the demo' };
+    if (code === undefined) return { path, line, skipped: 'assembled at runtime' };
 
-    if (statSync(join(root, path)).isDirectory()) out.push(...walk(path));
-    else if (path.endsWith('.tsx')) out.push(path);
-  }
-
-  return out;
-}
-
-function attribute(element, name, source) {
-  const found = element.attributes.properties.find((p) => ts.isJsxAttribute(p) && p.name.getText(source) === name);
-
-  return found?.initializer;
-}
-
-/** The literal a `code`/`language`/`context` attribute holds, unwrapping the `{…}` JSX adds. */
-function literalOf(initializer) {
-  if (!initializer) return undefined;
-
-  const node = ts.isJsxExpression(initializer) ? initializer.expression : initializer;
-
-  if (!node) return undefined;
-  if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) return node;
-
-  return undefined;
-}
-
-/** Every snippet a page displays, with the position of the string that holds it. */
-function collectSnippets(path) {
-  const text = readFileSync(join(root, path), 'utf8');
-  const source = ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
-  const found = [];
-
-  visit(source);
-
-  return found;
-
-  function visit(node) {
-    if (ts.isJsxSelfClosingElement(node) || ts.isJsxOpeningElement(node)) {
-      const wrap = SNIPPET_TAGS[node.tagName.getText(source)];
-
-      if (wrap) {
-        const language = literalOf(attribute(node, 'language', source))?.text ?? 'jsx';
-        const code = literalOf(attribute(node, 'code', source));
-        const check = attribute(node, 'check', source);
-        const optedOut = check && ts.isJsxExpression(check) && check.expression?.kind === ts.SyntaxKind.FalseKeyword;
-        const line = ts.getLineAndCharacterOfPosition(source, node.getStart(source)).line + 1;
-
-        if (NOT_TYPESCRIPT.has(language)) found.push({ path, line, skipped: language });
-        else if (optedOut) found.push({ path, line, skipped: 'opted out' });
-        // No `code` at all means the block is printed from the live demo beside it, which is real
-        // JSX in the page and so already checked by `npm run compile`. A template with a substitution
-        // in it is assembled at runtime, and there is nothing here to read.
-        else if (!attribute(node, 'code', source)) found.push({ path, line, skipped: 'rendered from the demo' });
-        else if (!code) found.push({ path, line, skipped: 'assembled at runtime' });
-        else {
-          // +1 for the opening quote or backtick: the content starts right after it, so that
-          // position is the snippet's own line 1.
-          const start = ts.getLineAndCharacterOfPosition(source, code.getStart(source) + 1);
-          const context = literalOf(attribute(node, 'context', source))?.text;
-
-          found.push({ path, line: start.line + 1, code: wrap(code.text), context });
-        }
-      }
-    }
-
-    ts.forEachChild(node, visit);
-  }
+    return { path, line: codeLine, code, context };
+  });
 }
 
 /** The names a snippet declares for itself — imports, variables, functions, classes, types. */
@@ -300,7 +154,7 @@ function compile(modules, options) {
   return diagnostics;
 }
 
-const all = walk(PAGES).flatMap(collectSnippets);
+const all = collectSnippets();
 const snippets = all.filter((s) => s.code !== undefined);
 const skipped = all.filter((s) => s.skipped);
 const options = compilerOptions();

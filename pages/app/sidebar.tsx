@@ -11,6 +11,7 @@ import {
   CheckSquare,
   ChevronDown,
   Circle,
+  CirclePlay,
   Columns3,
   DoorOpen,
   Download,
@@ -202,6 +203,9 @@ export default function Sidebar({ toggleTheme, onClose, onSearch }: SidebarProps
           </MenuItem>
           <MenuItem to="/installation" icon={<Download />}>
             Installation
+          </MenuItem>
+          <MenuItem to="/playground" icon={<CirclePlay />}>
+            Playground
           </MenuItem>
           <MenuItem to="/registry" icon={<Blocks />}>
             Blocks
