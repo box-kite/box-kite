@@ -1,11 +1,13 @@
 import { Box as BoxIcon, Check, Search, X } from 'lucide-react';
 import { ReactNode, useMemo, useState } from 'react';
+import { useLocation, useSearchParams } from 'react-router-dom';
 import Box from '../../src/box';
 import Button from '../../src/components/button';
 import Flex from '../../src/components/flex';
 import Icon from '../../src/components/icon';
 import { H2, H3, Span } from '../../src/components/semantics';
 import Textbox from '../../src/components/textbox';
+import { useHydrated } from '../app/hydration';
 import Code from '../components/code';
 import Mono from '../components/mono';
 import PageHeader from '../components/pageHeader';
@@ -13,6 +15,7 @@ import Reveal from '../components/reveal';
 import SiteLink from '../components/siteLink';
 import { Cell, HeadCell, Table, TableBody, TableHead, TableRow } from '../components/table';
 import useTableOfContents from '../hooks/useTableOfContents';
+import { PROP_QUERY } from '../site/searchQuery';
 import {
   categoryCounts,
   categoryOf,
@@ -654,7 +657,25 @@ function PlainPropsSection() {
 }
 
 function FinderSection() {
-  const [search, setSearch] = useState('');
+  // Docs search sends a prop result here as `?prop=fontSize`, so the table opens on the one row that
+  // answers the question — the finder is the prop reference, and a reader should not search it twice.
+  const [params] = useSearchParams();
+  const { key } = useLocation();
+  // Not while the prerendered HTML is being adopted: that copy was rendered with no query on it, so a
+  // filtered table on the first render is a hydration mismatch — React #418, measured on a direct load
+  // of /box?prop=fontSize before this line existed.
+  const asked = useHydrated() ? (params.get(PROP_QUERY) ?? '') : '';
+  const [typed, setTyped] = useState<string | null>(null);
+  const search = typed ?? asked;
+
+  // A search that lands here again is a navigation whether or not the address changed, so the field
+  // goes back to answering the query.
+  const [previous, setPrevious] = useState(key);
+  if (key !== previous) {
+    setPrevious(key);
+    setTyped(null);
+  }
+
   const [category, setCategory] = useState<string | null>(null);
   const counts = useMemo(() => categoryCounts(), []);
 
@@ -683,7 +704,7 @@ function FinderSection() {
               flex1
               pl={10}
               value={search}
-              onChange={(event) => setSearch(event.target.value)}
+              onChange={(event) => setTyped(event.target.value)}
               type="search"
               placeholder="padding, background-color, sticky…"
               props={{ 'aria-label': 'Search the props' }}

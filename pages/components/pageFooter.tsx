@@ -2,8 +2,10 @@ import { useLocation } from 'react-router-dom';
 import Box from '../../src/box';
 import Flex from '../../src/components/flex';
 import { Link } from '../../src/components/semantics';
+import { sourceFor } from '../app/routePages';
 import { markdownPath } from '../site/pageMarkdown';
 import { routes } from '../site/routes';
+import { REPO_URL } from '../site/site';
 import { routeFor } from '../site/siteMeta';
 
 /**
@@ -26,6 +28,8 @@ export default function PageFooter() {
     ['llms.txt', '/llms.txt'],
     ['Every prop, measured', '/props.md'],
   ];
+  // The file this page is written in — its module, or for a release the notes it renders.
+  const source = sourceFor(route.path);
 
   return (
     <Flex
@@ -55,6 +59,16 @@ export default function PageFooter() {
           </Flex>
         ))}
       </Flex>
+      {source && (
+        <Link
+          props={{ href: `${REPO_URL}/blob/main/${source}`, target: '_blank', rel: 'noopener noreferrer' }}
+          ms="auto"
+          theme={{ dark: { color: 'slate-500' }, light: { color: 'slate-400' } }}
+          hover={{ textDecoration: 'underline' }}
+        >
+          Edit this page
+        </Link>
+      )}
     </Flex>
   );
 }

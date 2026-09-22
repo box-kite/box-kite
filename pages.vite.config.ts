@@ -5,6 +5,7 @@ import reactPlugin from '@vitejs/plugin-react';
 import iconsPlugin from 'unplugin-icons/vite';
 import { defineConfig, Plugin } from 'vite';
 import { parseReleases, releaseRoutes } from './pages/site/releases';
+import { SEARCH_INDEX_PATH } from './pages/site/searchIndex';
 import { SITE_URL, SiteRoute, siteRoutes } from './pages/site/site';
 import { buildRobotsTxt, buildSitemap, notFoundMeta, pageMeta, withHeadHtml } from './pages/site/siteMeta';
 
@@ -86,13 +87,16 @@ function markdownMirror(): Plugin {
         // `/registry.json` and `/r/*.json` are the shadcn registry (F4), built from the block sources
         // by the same mirror — so `npx shadcn add http://localhost:5173/r/data-grid.json` works in dev.
         const isRegistry = url === '/registry.json' || (url.startsWith('/r/') && url.endsWith('.json'));
-        const mirrored = url.endsWith('.md') || isRegistry || ['/llms.txt', '/llms-full.txt', '/box-kite.mdc'].includes(url);
+        const isJson = isRegistry || url === SEARCH_INDEX_PATH;
+        const mirrored = url.endsWith('.md') || isJson || ['/llms.txt', '/llms-full.txt', '/box-kite.mdc'].includes(url);
 
         if (!mirrored) return next();
 
-        // The corpus is every page, so it renders all of them: about half a minute, and silence
+        // Both of these are every page, so they render all of them: about half a minute, and silence
         // looks like a hung request.
-        if (url === '/llms-full.txt') server.config.logger.info('  markdown mirror: rendering every page for llms-full.txt…');
+        if (url === '/llms-full.txt' || url === SEARCH_INDEX_PATH) {
+          server.config.logger.info(`  markdown mirror: rendering every page for ${url.slice(1)}…`);
+        }
 
         try {
           // Resolved from this file rather than by specifier: the config is bundled into a temporary
@@ -106,7 +110,7 @@ function markdownMirror(): Plugin {
           // `.mdc` is markdown too, but it is a file to save rather than one to read in a browser. The
           // registry is served as JSON here because the build's static `.json` files are — the dev
           // server answering the same address with `text/plain` is a difference nobody wants to find.
-          const type = url.endsWith('.md') ? 'text/markdown' : isRegistry ? 'application/json' : 'text/plain';
+          const type = url.endsWith('.md') ? 'text/markdown' : isJson ? 'application/json' : 'text/plain';
 
           response.setHeader('Content-Type', `${type}; charset=utf-8`);
           response.end(content);

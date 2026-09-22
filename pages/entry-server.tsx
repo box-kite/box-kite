@@ -29,6 +29,8 @@ export { PRERENDERED_STYLE_ID, releases, routes };
 // `scripts/prerender-pages.mjs` is a plain script and these are TypeScript.
 export { elementMarkdown, markdownPath, pageMarkdown } from './site/pageMarkdown';
 export { buildLlmsFull, buildLlmsTxt } from './site/llms';
+// Docs search (G5): the index is built from the same rendered markup the markdown mirror converts.
+export { buildSearchIndex, pageSections, RELEASE_TEXT_LIMIT, SEARCH_INDEX_PATH } from './site/searchIndex';
 export { routeFor } from './site/siteMeta';
 // The shadcn registry is served from this build too: the items are declared here and the block sources
 // come through a glob, neither of which a plain script can read.

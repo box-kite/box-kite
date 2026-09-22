@@ -38,6 +38,11 @@ const MIN_MARKDOWN = 250;
  * degraded across most of the site fails even where each page still clears its own floor.
  */
 const MIN_CORPUS = 150_000;
+/**
+ * The search index, which is the whole site's prose: below this the conversion found nothing on most
+ * of the pages, which a search box would report as a site with nothing in it.
+ */
+const MIN_SEARCH = 250_000;
 /** The generated reference and the index: each is a file an agent reads instead of the site. */
 const MIN_PROPS = 50_000;
 const MIN_LLMS = 2000;
@@ -85,7 +90,7 @@ async function serverBundle() {
 }
 
 const bundle = await serverBundle();
-const { renderRoute, prerenderPaths, NOT_FOUND_PATH, PRERENDERED_STYLE_ID, routes, routeFor, markdownPath } = bundle;
+const { renderRoute, prerenderPaths, NOT_FOUND_PATH, PRERENDERED_STYLE_ID, routes, routeFor, markdownPath, SEARCH_INDEX_PATH } = bundle;
 
 // The same builder the dev server serves from, so the two can only ever produce the same files.
 const mirror = siteMarkdown(bundle);
@@ -116,6 +121,7 @@ const targets = [
 const failures = [];
 const rows = [];
 const pages = [];
+const searchPages = [];
 
 for (const { path, file } of targets) {
   const shell = await readFile(file, 'utf8');
@@ -150,6 +156,7 @@ for (const { path, file } of targets) {
 
     await writeMarkdown(path, markdown);
     pages.push({ path, markdown });
+    searchPages.push(mirror.searchFrom(route, html));
   }
 
   rows.push({ route: path, html: html.length, css: styles.length, md: markdown.length, file: file.slice(dirname(CLIENT_OUT).length + 1) });
@@ -161,6 +168,8 @@ const generated = [
   ['llms.txt', mirror.llms(), MIN_LLMS],
   ['llms-full.txt', mirror.llmsFull(pages), MIN_CORPUS],
   ['props.md', mirror.props(), MIN_PROPS],
+  // Docs search (G5): one file, fetched the first time somebody opens the dialog.
+  [SEARCH_INDEX_PATH.slice(1), mirror.search(searchPages), MIN_SEARCH],
   // The two the repository also commits, so an agent with a URL and no CLI gets the same bytes (AI3).
   ['skill.md', await mirror.skill(), MIN_SKILL],
   ['box-kite.mdc', await mirror.cursor(), MIN_SKILL],

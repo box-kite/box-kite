@@ -46,6 +46,20 @@ export function siteMarkdown(entry) {
 
   const page = async (route) => pageFrom(route, (await entry.renderRoute(route.path)).html);
 
+  /**
+   * One page's blocks for the search index (G5), read off the same markup. A release note keeps its
+   * headings and the first line under each: the whole set of them is 204 KB, and the page that
+   * documents a feature is a better answer than the note announcing it.
+   */
+  function searchFrom(route, html) {
+    window.document.body.innerHTML = html;
+    const main = window.document.querySelector('main');
+    const release = entry.releases.some((item) => item.path === route.path);
+    const sections = main ? entry.pageSections(main, release ? { maxText: entry.RELEASE_TEXT_LIMIT } : {}) : [];
+
+    return { route, sections };
+  }
+
   /** The route a `.md` address asks for: `/box.md` and `/box/index.md` are both `/box`. */
   function routeFor(url) {
     if (!url.endsWith('.md')) return undefined;
@@ -63,12 +77,32 @@ export function siteMarkdown(entry) {
     return pages;
   }
 
+  async function everySearchPage() {
+    const pages = [];
+
+    for (const route of entry.routes) pages.push(searchFrom(route, (await entry.renderRoute(route.path)).html));
+
+    return pages;
+  }
+
   return {
     pageFrom,
+    searchFrom,
     routeFor,
     llms: () => entry.buildLlmsTxt(llmsInput()),
     llmsFull: (pages) => entry.buildLlmsFull(pages, llmsInput()),
     props: () => `${propsMarkdown().trimEnd()}\n`,
+
+    /**
+     * The docs search index: every page's blocks, plus one entry per prop out of the generated
+     * reference — which is what makes the dialog answer `fontSize` with the prop rather than with the
+     * eleven pages that mention it.
+     */
+    search(pages) {
+      const { props } = JSON.parse(readFileSync(join(root, 'api/props.json'), 'utf8'));
+
+      return `${JSON.stringify(entry.buildSearchIndex({ version, pages, props }))}\n`;
+    },
 
     /**
      * The skill and the Cursor rule, for an agent that can fetch a URL but cannot run
@@ -107,6 +141,7 @@ export function siteMarkdown(entry) {
     async fileFor(url) {
       if (url === '/llms.txt') return this.llms();
       if (url === '/llms-full.txt') return this.llmsFull(await everyPage());
+      if (url === entry.SEARCH_INDEX_PATH) return this.search(await everySearchPage());
       if (url === '/props.md') return this.props();
       if (url === '/skill.md') return this.skill();
       if (url === '/box-kite.mdc') return this.cursor();

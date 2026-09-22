@@ -5,6 +5,9 @@
  */
 export const SITE_URL = 'https://www.box-kite.dev';
 
+/** The repository, which is where a page's own source and the release notes are edited. */
+export const REPO_URL = 'https://github.com/box-kite/box-kite';
+
 /** Second half of every document title, and the Open Graph site name. */
 export const SITE_NAME = 'Box Kite';
 

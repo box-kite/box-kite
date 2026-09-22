@@ -58,7 +58,11 @@ const collapse = (text: string) => text.replace(/\s+/g, ' ');
 
 const hint = (node: Element) => node.getAttribute(MARKDOWN_HINT) as MarkdownHint | null;
 
-const skipped = (node: Element) => SKIPPED.has(node.tagName) || hint(node) === 'skip';
+/** Chrome, a control, or a block a page marked as not being content — the skip both mirrors make. */
+export const isChrome = (node: Element) => SKIPPED.has(node.tagName) || hint(node) === 'skip';
+
+/** An element that ends the line it is on, so the text around it needs a space put back. */
+export const isBlock = (node: Element) => BLOCK_TAGS.has(node.tagName);
 
 /**
  * An internal link, as the markdown mirror of the page it points at: an agent following a link out of
@@ -85,7 +89,7 @@ function inlineMarkdown(node: ChildNode, siteUrl: string): string {
   if (node.nodeType !== ELEMENT_NODE) return '';
 
   const element = node as Element;
-  if (skipped(element)) return '';
+  if (isChrome(element)) return '';
   if (element.tagName === 'BR') return '\n';
 
   // A row of chips: laid out with a gap and written with no whitespace between the elements, so the
@@ -178,7 +182,7 @@ function walk(node: ChildNode, siteUrl: string, blocks: string[]): void {
   if (node.nodeType !== ELEMENT_NODE) return;
 
   const element = node as Element;
-  if (skipped(element)) return;
+  if (isChrome(element)) return;
 
   const heading = HEADINGS[element.tagName];
   if (heading) {
