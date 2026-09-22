@@ -430,6 +430,7 @@
     "react-router-dom": "^7.18.2",
     "recharts": "^3.10.1",
     "size-limit": "^13.0.3",
+    "sucrase": "^3.35.1",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.66.0",
     "unplugin-icons": "^23.0.1",

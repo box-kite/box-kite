@@ -65,6 +65,14 @@ One prop, because the recipe has the `flushSync` trap in it and this is the one 
 
 [**/motion**](https://www.box-kite.dev/motion) is the new showcase: the four presets, a spring playground whose three dials write the `linear()` curve the CSS actually receives, a panel that animates both ways without unmounting, a chart that draws itself on a `view()` timeline, a layout change the browser animates between, and an SVG path drawing itself from `strokeDashoffset`. Each one carries the code to copy and a line saying what it is _not_ running — the `IntersectionObserver`, the physics loop, the FLIP measurement. [/animation](https://www.box-kite.dev/animation) stays the reference that explains every prop.
 
+## Every example on the site is editable
+
+[**box-kite.dev/playground**](https://www.box-kite.dev/playground) runs a snippet against the real library and shows, beside it, **every CSS rule the engine wrote for it** — one atomic class per declaration, in the engine's own cascade order, at-rules and all. That pane is the thing no other styling playground can show: here the class is the name of a rule the engine generated from a prop, so "why is this style applied" is a list you can read rather than a stylesheet you have to go and find.
+
+Every code block on the site now carries a **Playground** button beside its Copy button, so a snippet is one click from being editable. The URL carries the snippet, which makes it the whole share, and **Open in StackBlitz** forks it into a Vite project with the published package in its `dependencies`.
+
+Three things worth knowing. The button is offered **only where the snippet would actually run** — the decision is made without the compiler, since `<Code>` is on every page and cannot load one, and a test runs the cheap rule and the compiler over all 314 snippets the site shows and fails on any disagreement. The names a snippet may use without importing them come from **one record** that the playground reads as values and `npm run check:docs` reads as import statements, so a name only one of them knows about is a build failure rather than an `X is not defined` a reader finds. And the compiler is a lazy chunk on that route alone: no other page downloads it.
+
 ## The docs answer a question now
 
 [**box-kite.dev**](https://www.box-kite.dev) has a search box: **/** or **⌘K** anywhere on the site, arrow keys through the results, Enter to open one. It searches the pages, every heading on them, and all 235 props — and a prop result opens the Box page with the finder filtered to that one prop, so `fontSize` is two keys and a return away from the CSS it writes.

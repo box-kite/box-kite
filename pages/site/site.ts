@@ -88,6 +88,13 @@ export const siteRoutes = [
       'Four agentic runtimes describe a tool call and a tree of components in words of their own. The mapping, verified against each package.',
   },
   {
+    path: '/playground',
+    name: 'Playground',
+    title: 'Playground — edit the props, watch the CSS',
+    description:
+      'Edit a snippet, see it run against the real library, and read every CSS rule the engine wrote for it. Share the URL, or fork it into StackBlitz.',
+  },
+  {
     path: '/box',
     name: 'Box',
     description:
