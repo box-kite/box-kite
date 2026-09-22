@@ -73,6 +73,27 @@ Every code block on the site now carries a **Playground** button beside its Copy
 
 Three things worth knowing. The button is offered **only where the snippet would actually run** — the decision is made without the compiler, since `<Code>` is on every page and cannot load one, and a test runs the cheap rule and the compiler over all 314 snippets the site shows and fails on any disagreement. The names a snippet may use without importing them come from **one record** that the playground reads as values and `npm run check:docs` reads as import statements, so a name only one of them knows about is a build failure rather than an `X is not defined` a reader finds. And the compiler is a lazy chunk on that route alone: no other page downloads it.
 
+## Every component on one page, in both themes
+
+[**box-kite.dev/showcase**](https://www.box-kite.dev/showcase) is all 38 components the library ships, on one page, each drawn **twice** — a light theme and a dark one side by side, whatever theme you are reading the page in. It is the page to open when you want to see what this looks like before installing anything, and the one to screenshot when you want to know whether a change moved something it should not have.
+
+The two halves of every card are nothing but a `<Box.Theme use="local">` each:
+
+```jsx
+<Box.Theme use="local" theme="light">
+  <Button>Save</Button>
+</Box.Theme>
+<Box.Theme use="local" theme="dark">
+  <Button>Save</Button>
+</Box.Theme>
+```
+
+That is the whole mechanism, and it is worth seeing at this scale: a theme is a class on an ancestor and every rule the engine writes is scoped to the subtree that theme owns, so a light half inside a dark page is light throughout — including for the props the inner theme never mentions. No re-render, no context read inside a component, no second stylesheet.
+
+The list of components is not typed out: a test holds it to `api/components/*.json`, the reference generated from the components themselves, so one added to the library and not to the page fails CI. Where a component paints in the browser's top layer — a dialog, a menu, a tooltip — the card shows its trigger, which is what the page itself draws.
+
+Every card links to the page that documents the rest of that component, and every snippet on those pages opens in the [playground](https://www.box-kite.dev/playground) — which a test now checks for each of them, rather than trusting that it is still true.
+
 ## The docs answer a question now
 
 [**box-kite.dev**](https://www.box-kite.dev) has a search box: **/** or **⌘K** anywhere on the site, arrow keys through the results, Enter to open one. It searches the pages, every heading on them, and all 235 props — and a prop result opens the Box page with the finder filtered to that one prop, so `fontSize` is two keys and a return away from the CSS it writes.

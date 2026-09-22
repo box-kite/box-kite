@@ -12,6 +12,8 @@ export interface DocsSnippet {
   language: string;
   /** Whether the block has a `code` attribute at all — without one it is printed from the live demo. */
   hasCode: boolean;
+  /** Whether it has children — a live demo, whose JSX is the snippet when `code` is absent. */
+  hasDemo: boolean;
   /** The snippet, when the attribute is a literal. Absent for one assembled at runtime. */
   code?: string;
   /** `false` when the block opted out with `check={false}`: deliberately not compilable code. */

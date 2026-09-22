@@ -95,6 +95,13 @@ export const siteRoutes = [
       'Edit a snippet, see it run against the real library, and read every CSS rule the engine wrote for it. Share the URL, or fork it into StackBlitz.',
   },
   {
+    path: '/showcase',
+    name: 'Showcase',
+    title: 'Showcase — every component, in both themes',
+    description:
+      'Every component the library ships, on one page, drawn twice: a light theme and a dark one side by side, whatever theme you are reading in.',
+  },
+  {
     path: '/box',
     name: 'Box',
     description:

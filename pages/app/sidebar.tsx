@@ -21,6 +21,7 @@ import {
   Layers,
   LayoutDashboard,
   LayoutGrid,
+  LayoutList,
   ListCollapse,
   LoaderCircle,
   MessageSquare,
@@ -206,6 +207,9 @@ export default function Sidebar({ toggleTheme, onClose, onSearch }: SidebarProps
           </MenuItem>
           <MenuItem to="/playground" icon={<CirclePlay />}>
             Playground
+          </MenuItem>
+          <MenuItem to="/showcase" icon={<LayoutList />}>
+            Showcase
           </MenuItem>
           <MenuItem to="/registry" icon={<Blocks />}>
             Blocks

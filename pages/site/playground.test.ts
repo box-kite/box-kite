@@ -1,7 +1,9 @@
+import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { transform } from 'sucrase';
 import { describe, expect, it } from 'vitest';
 import { collectDocsSnippets, DocsSnippet } from '../../scripts/docsSnippets.mjs';
+import { sourceFor } from '../app/routePages';
 import { SNIPPET_SCOPE } from '../../scripts/snippetScope.mjs';
 import {
   canOpenInPlayground,
@@ -41,8 +43,11 @@ const check = (body: string) => {
   }
 };
 
+/** Every `<Code>` block on the site, snippet or not — one parse of the pages, read by both describes below. */
+const blocks: DocsSnippet[] = collectDocsSnippets(root);
+
 /** The blocks with a snippet in them, as `<Code>` wrote it — the same blocks `npm run check:docs` compiles. */
-const snippets: DocsSnippet[] = collectDocsSnippets(root).filter(
+const snippets: DocsSnippet[] = blocks.filter(
   (snippet): snippet is DocsSnippet & { code: string } => snippet.code !== undefined && !NOT_TYPESCRIPT.has(snippet.language),
 );
 
@@ -100,6 +105,38 @@ describe('the docs corpus', () => {
       .flatMap((snippet) => compileSnippet(snippet.code!, scope).unresolved.filter((name) => !provided.has(name)));
 
     expect(unresolved).toEqual([]);
+  });
+});
+
+/**
+ * G9's other half: the affordance is worth nothing on a page that has no runnable snippet on it. The
+ * component list is the generated reference — the same list the showcase is held to — so a component
+ * documented with nothing but prose fails here rather than shipping a page with no way in.
+ */
+describe('the component pages', () => {
+  const documented = new Set(
+    readdirSync(join(root, 'api/components'))
+      .filter((file) => file.endsWith('.json'))
+      .map((file) => JSON.parse(readFileSync(join(root, 'api/components', file), 'utf8')).route as string),
+  );
+
+  /**
+   * The same two shapes `<Code>` itself offers the link on: a snippet written out, judged by the rule,
+   * or one printed from the live demo beside it, which is JSX that renders by construction.
+   */
+  const offersLink = (block: DocsSnippet) =>
+    block.code !== undefined
+      ? canOpenInPlayground(block.code, block)
+      : !block.hasCode && block.hasDemo && block.check && !NOT_TYPESCRIPT.has(block.language);
+
+  it('opens at least one snippet in the playground, on every one of them', () => {
+    const withoutLink = [...documented].filter((route) => {
+      const file = sourceFor(route);
+
+      return !blocks.some((block) => block.path === file && offersLink(block));
+    });
+
+    expect(withoutLink.sort()).toEqual([]);
   });
 });
 
