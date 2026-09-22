@@ -3,8 +3,8 @@ import { join } from 'node:path';
 import { transform } from 'sucrase';
 import { describe, expect, it } from 'vitest';
 import { collectDocsSnippets, DocsSnippet } from '../../scripts/docsSnippets.mjs';
-import { sourceFor } from '../app/routePages';
 import { SNIPPET_SCOPE } from '../../scripts/snippetScope.mjs';
+import { sourceFor } from '../app/routePages';
 import {
   canOpenInPlayground,
   decodeSnippet,
