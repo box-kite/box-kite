@@ -4,6 +4,7 @@ import Box, { BoxProps } from '../box';
 import useAnchorPosition from '../react/anchor/useAnchorPosition';
 import { useIsomorphicLayoutEffect } from '../react/effects';
 import usePortalContainer from '../react/hooks/usePortalContainer';
+import useTopLayer from '../react/popover/useTopLayer';
 import { ExtractElementFromTag } from '../react/reactTypes';
 import { ComponentsAndVariants } from '../types';
 import { AnchorAlign, AnchorSide } from '../utils/anchor/anchorUtils';
@@ -73,6 +74,10 @@ type Props = OverlayProps & Omit<BoxProps, 'flip'>;
  * behaviour and all of its compromises. Measured in Chrome 152: the top layer paints over a
  * `z-index: 9999` sibling that covers a plain `position: fixed` control at the same coordinates.
  *
+ * A server emits the top-layer shape too, so a layer that is *open* in server-rendered HTML is in that
+ * HTML and hydrates as it stands; a browser with no Popover API moves it into the portal on the render
+ * after. Asking the browser during a server render answered false and emitted nothing (bug #197).
+ *
  * **The layer keeps the side it chose when it opened.** Chrome re-evaluates `position-try-fallbacks` on
  * scroll for an ordinary positioned element and *never* for one in the top layer (measured in 152, with
  * hand-written CSS and with the library) — so a layer left open while the page scrolls does not flip when
@@ -106,13 +111,12 @@ function OverlayImpl(props: Props, ref: Ref<HTMLDivElement>) {
   const [placeholder, setPlaceholder] = useState<HTMLElement | null>(null);
   const [rtl, setRtl] = useState(false);
   const reported = useRef<AnchorSide | null>(null);
-  // Decided on the first render rather than corrected in an effect, which is what the other two
-  // capability checks in this library do. A layer is a *different position* in the React tree on the two
-  // paths — in place, or inside a portal — so flipping the answer afterwards unmounts the layer and mounts
-  // a replacement, and anything the caller had focused inside it drops to `<body>` (measured: it is what
-  // took the DataGrid column menu's first item away). With no DOM this answers false and the portal
-  // branch renders nothing, which is exactly what a server render did before there was a top layer.
-  const [topLayer] = useState(supportsPopover);
+  // Read during render rather than corrected in an effect: a layer is a *different position* in the React
+  // tree on the two paths — in place, or inside a portal — so flipping the answer afterwards unmounts the
+  // layer and mounts a replacement, and anything the caller had focused inside it drops to `<body>`
+  // (measured: it is what took the DataGrid column menu's first item away). What a server emits is the
+  // top-layer shape rather than nothing at all, which is the hook's whole job.
+  const topLayer = useTopLayer();
   const layerElement = useRef<HTMLElement | null>(null);
   const portalContainer = usePortalContainer(!topLayer);
 
@@ -136,7 +140,10 @@ function OverlayImpl(props: Props, ref: Ref<HTMLDivElement>) {
   // pair with it: `manual` is never shown or hidden by the browser, and removing the element hides it.
   useIsomorphicLayoutEffect(() => {
     const element = layerElement.current;
-    if (!topLayer || !element || !element.isConnected || element.matches(':popover-open')) return;
+    // `supportsPopover()` rather than the state alone: while hydrating, `topLayer` is what the server
+    // emitted and the browser's correction has not re-rendered yet — and `:popover-open` is not a
+    // selector a browser without the API can be asked about.
+    if (!topLayer || !supportsPopover() || !element || !element.isConnected || element.matches(':popover-open')) return;
 
     element.showPopover();
   });

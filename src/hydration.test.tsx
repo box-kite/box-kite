@@ -3,8 +3,10 @@ import React from 'react';
 import { hydrateRoot } from 'react-dom/client';
 import { renderToString } from 'react-dom/server';
 import { afterEach, beforeEach, describe, expect, it, MockInstance, vi } from 'vitest';
+import { installPopoverApi } from '../dev/tests';
 import Box from './box';
 import Flex from './components/flex';
+import Overlay from './components/overlay';
 import Toaster from './components/toaster';
 import { DEFAULT_STYLE_ELEMENT_ID } from './core/engine/styleEngine';
 import { StylesContext } from './react/useStyles';
@@ -44,9 +46,15 @@ describe('hydration', () => {
     if (styleElement) styleElement.textContent = '';
   });
 
-  async function hydrate(element: React.ReactElement) {
+  /**
+   * Server pass, then hydration pass. `browser` runs between the two, which is the only place a
+   * capability the server did not have can be installed — both passes share this environment, so a
+   * contract installed around the call is one the server read too, and the asymmetry disappears.
+   */
+  async function hydrate(element: React.ReactElement, browser?: () => void) {
     container.innerHTML = renderToString(element);
     const serverHtml = container.innerHTML;
+    browser?.();
 
     let root: ReturnType<typeof hydrateRoot>;
     await act(async () => {
@@ -118,6 +126,40 @@ describe('hydration', () => {
     // region — React #418 on every load of the page. The viewport has to be in the server markup.
     expect(serverHtml).toContain('aria-live="polite"');
     expect(hydrationErrors(errorSpy)).toEqual([]);
+    await unmount();
+  });
+
+  it('hydrates an open Overlay into the top layer the server could not read', async () => {
+    let uninstall = () => {};
+
+    try {
+      const { serverHtml, unmount } = await hydrate(<Overlay>layer</Overlay>, () => (uninstall = installPopoverApi()));
+
+      // Bug #197: read during render, the capability answered false on the server, so the portal branch
+      // emitted nothing where the client put the layer — React #418 on every load of a page holding an
+      // open one. Nothing this library ships had met it: they all mount their Overlay when it opens.
+      expect(serverHtml).toContain('popover="manual"');
+      expect(hydrationErrors(errorSpy)).toEqual([]);
+
+      const layer = container.querySelector('[popover="manual"]');
+      expect(layer).toHaveTextContent('layer');
+      expect(layer?.matches(':popover-open')).toBe(true);
+      await unmount();
+    } finally {
+      uninstall();
+    }
+  });
+
+  it('corrects an open Overlay into a portal only after hydrating, where the browser has no Popover API', async () => {
+    // The environment implements none, which is the browser this is about. The server snapshot is what
+    // hydrates — matching the markup — and the real answer arrives on the render after, where the layer
+    // moves. Safe here and nowhere else: a layer that arrives with the HTML has had nothing focused in it.
+    const { serverHtml, unmount } = await hydrate(<Overlay>layer</Overlay>);
+
+    expect(serverHtml).toContain('popover="manual"');
+    expect(hydrationErrors(errorSpy)).toEqual([]);
+    expect(container.querySelector('[popover]')).toBeNull();
+    expect(document.getElementById('box-kite-portal')).toHaveTextContent('layer');
     await unmount();
   });
 

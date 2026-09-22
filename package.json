@@ -211,7 +211,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "40.08 KB"
+      "limit": "40.12 KB"
     },
     {
       "name": "Accordion",
@@ -301,7 +301,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "43.33 KB"
+      "limit": "43.37 KB"
     },
     {
       "name": "Dashboard",
@@ -321,7 +321,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "81.23 KB"
+      "limit": "81.3 KB"
     },
     {
       "name": "DataGrid export, the chunk fetched on the first press",
@@ -341,7 +341,7 @@
         "react-dom"
       ],
       "gzip": true,
-      "limit": "112.78 KB"
+      "limit": "112.88 KB"
     }
   ],
   "repository": {

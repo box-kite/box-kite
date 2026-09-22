@@ -32,7 +32,6 @@ import Textbox from '../../src/components/textbox';
 import Toaster, { toast } from '../../src/components/toaster';
 import Tooltip from '../../src/components/tooltip';
 import { DashboardLayout } from '../../src/utils/dashboard/dashboardUtils';
-import { useHydrated } from '../app/hydration';
 import Code from '../components/code';
 import Mono from '../components/mono';
 import PageHeader from '../components/pageHeader';
@@ -544,34 +543,29 @@ const demos: Record<ShowcaseName, (scope: string) => ReactNode> = {
 
 /**
  * Anchored to a real element rather than to the spot it was declared in, which is a box with no size.
- * It is also the one demo held back until after hydration: an `Overlay` reads whether the browser has a
- * top layer *during render*, so with no DOM it takes the portal branch and renders nothing — an open one
- * in prerendered HTML is a guaranteed React #418 (bug #197). Every layer the library ships mounts its
- * `Overlay` when it opens, which is why none of them has ever met this.
+ * Open in the prerendered HTML, which is the shape bug #197 was about — an `Overlay` server-renders in
+ * the top layer now, so this needs no gate on hydration.
  */
 function OverlayDemo() {
   const anchor = useRef<HTMLButtonElement>(null);
-  const hydrated = useHydrated();
 
   return (
     <Box height={28}>
       <Button ref={anchor} variant="secondary">
         Anchor
       </Button>
-      {hydrated && (
-        <Overlay anchor={anchor} side="bottom" align="start" offset={2} matchWidth={false} flip={false}>
-          <Box
-            p={3}
-            borderRadius={2}
-            b={1}
-            fontSize={13}
-            shadow="large"
-            theme={{ dark: { bgColor: 'slate-800', borderColor: 'slate-700' }, light: { bgColor: 'white', borderColor: 'slate-200' } }}
-          >
-            In the top layer, beside its anchor.
-          </Box>
-        </Overlay>
-      )}
+      <Overlay anchor={anchor} side="bottom" align="start" offset={2} matchWidth={false} flip={false}>
+        <Box
+          p={3}
+          borderRadius={2}
+          b={1}
+          fontSize={13}
+          shadow="large"
+          theme={{ dark: { bgColor: 'slate-800', borderColor: 'slate-700' }, light: { bgColor: 'white', borderColor: 'slate-200' } }}
+        >
+          In the top layer, beside its anchor.
+        </Box>
+      </Overlay>
     </Box>
   );
 }

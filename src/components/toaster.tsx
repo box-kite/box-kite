@@ -1,10 +1,11 @@
-import { FunctionComponent, useCallback, useRef, useState } from 'react';
+import { FunctionComponent, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useSyncExternalStore } from 'use-sync-external-store/shim';
 import Box, { BoxProps } from '../box';
 import usePresence from '../react/animation/usePresence';
 import { useIsomorphicLayoutEffect } from '../react/effects';
 import usePortalContainer from '../react/hooks/usePortalContainer';
+import useTopLayer from '../react/popover/useTopLayer';
 import { ComponentsAndVariants } from '../types';
 import { documentOrNull, supportsPopover } from '../utils/environment/environmentUtils';
 import createToastStore, { Toast, ToastAction, ToastDismissReason, ToastKind, ToastOptions, ToastStore } from '../utils/toast/toastStore';
@@ -235,13 +236,7 @@ function ToasterImpl<TKey extends keyof ComponentsAndVariants = 'toaster'>(props
   } = props;
 
   const state = useSyncExternalStore(store.subscribe, store.getSnapshot, store.getServerSnapshot);
-  // Starts on the platform path so a server render and the first client render agree — the viewport is
-  // rendered either way, and what a server emits is the top-layer shape. Reading `supportsPopover()` here
-  // instead put the section in place on the client where the server had emitted nothing (the portal
-  // renders nothing without a document), which is React #418 on every load. A browser with no Popover API
-  // says so in the first layout effect, and remounting an empty viewport costs nothing: the toasts are
-  // the store's, and nothing has been focused inside it yet.
-  const [topLayer, setTopLayer] = useState(true);
+  const topLayer = useTopLayer();
   const portalContainer = usePortalContainer(!topLayer);
   const viewportRef = useRef<HTMLDivElement>(null);
   // Where focus was before it came into the stack, so Escape can hand it back.
@@ -254,10 +249,6 @@ function ToasterImpl<TKey extends keyof ComponentsAndVariants = 'toaster'>(props
     if (hovered || focused || hidden) store.pause();
     else store.resume();
   }, [store]);
-
-  useIsomorphicLayoutEffect(() => {
-    if (!supportsPopover()) setTopLayer(false);
-  }, []);
 
   useIsomorphicLayoutEffect(() => store.setLimit(limit), [store, limit]);
   useIsomorphicLayoutEffect(() => store.setDefaultDuration(duration), [store, duration]);
