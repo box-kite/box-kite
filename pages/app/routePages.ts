@@ -25,6 +25,7 @@ const files: Record<SiteRoutePath, string> = {
   '/generative-ui': 'generativeUiPage',
   '/interop': 'interopPage',
   '/playground': 'playgroundPage',
+  '/showcase': 'showcasePage',
   '/box': 'boxPage',
   '/box-functions': 'boxFunctionsPage',
   '/svg': 'svgPage',

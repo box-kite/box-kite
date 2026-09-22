@@ -68,6 +68,9 @@ function snippetsIn(root, path) {
         // Present but not a literal means the block is assembled at runtime; absent means it is printed
         // from the live demo beside it, which is real JSX in the page and so already type-checked.
         hasCode: Boolean(codeAttribute),
+        // A block with children and no `code` prints its own live demo, so its snippet is JSX that
+        // renders by construction — which is what decides the playground link on it.
+        hasDemo: !ts.isJsxSelfClosingElement(node),
         code: code?.text,
         check: !(check && ts.isJsxExpression(check) && check.expression?.kind === ts.SyntaxKind.FalseKeyword),
         context: literalOf(attribute(node, 'context', source))?.text,
