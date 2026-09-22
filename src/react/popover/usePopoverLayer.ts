@@ -7,6 +7,7 @@ import useDismiss from '../a11y/useDismiss';
 import useFocusReturn from '../a11y/useFocusReturn';
 import { useIsomorphicLayoutEffect } from '../effects';
 import useIdentifier from '../identity/useIdentifier';
+import useTopLayer from './useTopLayer';
 
 /** Why a layer opened or closed — every component built on this reports the same four. */
 export type PopoverReason = 'trigger' | 'escape' | 'outside-pointer' | 'imperative';
@@ -116,13 +117,7 @@ export default function usePopoverLayer<THasPopup extends PopoverHasPopup, TReas
   // anchored to), and a ref read in render is both a lint error here and a real staleness bug.
   const [triggerElement, setTriggerElement] = useState<HTMLElement | null>(null);
   const [panel, setPanel] = useState<HTMLElement | null>(null);
-  // Starts on the platform path so a server render and the first client render agree: the panel is
-  // rendered whether or not it is open, so what a server emits is the platform shape. A browser with
-  // no Popover API says so in the first layout effect — before anything can have been focused inside,
-  // which is what makes the correction safe here. The two paths are different *positions* in the React
-  // tree, so it remounts the panel; `Overlay`, whose caller mounts it already open, cannot afford that
-  // and reads the answer on its first render instead.
-  const [platform, setPlatform] = useState(true);
+  const platform = useTopLayer();
   // What the DOM says, mirrored as state so the two can be compared on a commit. Without it a controlled
   // layer the browser closed would stay closed: `isOpen` never changed, so nothing would re-render.
   const [domOpen, setDomOpen] = useState(false);
@@ -131,10 +126,6 @@ export default function usePopoverLayer<THasPopup extends PopoverHasPopup, TReas
   const dismissReason = useRef<PopoverReason>('imperative');
   // Whether the panel had focus when it started closing, read at `beforetoggle` while it still does.
   const heldFocus = useRef(false);
-
-  useIsomorphicLayoutEffect(() => {
-    if (!supportsPopover()) setPlatform(false);
-  }, []);
 
   const opened = useEventCallback(onOpened);
   const closing = useEventCallback(onClosing);
@@ -193,7 +184,9 @@ export default function usePopoverLayer<THasPopup extends PopoverHasPopup, TReas
   // flushed synchronously: React re-renders and runs this *inside* the browser's own show operation,
   // where the selector does not match yet and `showPopover` throws `InvalidStateError` (measured).
   useIsomorphicLayoutEffect(() => {
-    if (!platform || !panel || isOpen === domOpen) return;
+    // `supportsPopover()` beside the state: while hydrating, `platform` is what the server emitted and
+    // the browser's correction has not re-rendered yet, so this can run in one with nothing to call.
+    if (!platform || !supportsPopover() || !panel || isOpen === domOpen) return;
 
     if (isOpen) panel.showPopover();
     else panel.hidePopover();

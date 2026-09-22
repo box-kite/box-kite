@@ -3,6 +3,7 @@ import { renderToString } from 'react-dom/server';
 import { StaticRouter } from 'react-router-dom';
 import Box from '../src/box';
 import { getStyles, resetStyles } from '../src/ssg';
+import AfterHydration from './app/afterHydration';
 import Root from './app/root';
 import { preloadPage } from './app/routePages';
 import { PRERENDERED_STYLE_ID } from './site/prerender';
@@ -46,6 +47,11 @@ export async function renderRoute(path: string): Promise<{ html: string; styles:
     <StrictMode>
       <StaticRouter location={path}>
         <Root />
+        {/* Renders nothing and runs nothing here. It is in the tree because `main.tsx` has it, and
+            `useId` counts a parent's children: one child on the server and two in the browser names
+            every id below this differently, which is invisible until one end of a pair is written by
+            an effect — an `Overlay` anchored to an element, whose layer then points at no anchor. */}
+        <AfterHydration />
       </StaticRouter>
     </StrictMode>,
   );
