@@ -126,6 +126,16 @@ Every card links to the page that documents the rest of that component, and ever
 
 Nothing is sent anywhere: the index is one file the build writes out of the rendered pages themselves (the markdown mirror's own walk, so it cannot fall behind what a page shows), fetched the first time the dialog opens. Two smaller things arrived with it — every page's footer links to the file it is written in on GitHub, and the version under the logo links to that version's release notes, since this site documents the newest release only.
 
+## The MCP server is on npm
+
+[`@box-kite/mcp`](https://www.npmjs.com/package/@box-kite/mcp) was documented and never published — `npx @box-kite/mcp` answered with a 404. It is published with every release now, at the same version as the library, so the references and the engine inlined in it are the ones the version you install was built from:
+
+```bash
+claude mcp add box-kite -- npx -y @box-kite/mcp
+```
+
+Six tools, no key and no network. The one worth installing it for is `check_styles`, which hands a prop bag to the real engine and reports the CSS each prop wrote — or that it wrote none, which is the answer to a value this library does not accept, since that value fails silently by design. It needs Node 22 or newer.
+
 ## Breaking changes
 
 None.

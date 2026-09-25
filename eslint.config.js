@@ -9,7 +9,7 @@ import tseslint from 'typescript-eslint';
 export default tseslint.config(
   // Build output, ours and Next's: `.next/types/**` and `next-env.d.ts` are generated files the
   // Next.js example rewrites on every build.
-  { ignores: ['dist', 'dist-core', 'dist-bridge', '**/.next/**', '**/next-env.d.ts'] },
+  { ignores: ['dist', 'dist-core', 'dist-mcp', 'dist-bridge', '**/.next/**', '**/next-env.d.ts'] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ['**/*.{ts,tsx}'],
