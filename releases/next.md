@@ -73,6 +73,20 @@ Every code block on the site now carries a **Playground** button beside its Copy
 
 Three things worth knowing. The button is offered **only where the snippet would actually run** — the decision is made without the compiler, since `<Code>` is on every page and cannot load one, and a test runs the cheap rule and the compiler over all 314 snippets the site shows and fails on any disagreement. The names a snippet may use without importing them come from **one record** that the playground reads as values and `npm run check:docs` reads as import statements, so a name only one of them knows about is a build failure rather than an `X is not defined` a reader finds. And the compiler is a lazy chunk on that route alone: no other page downloads it.
 
+## The playground's editor knows every prop
+
+The [playground](https://www.box-kite.dev/playground) editor now completes as you type. In a tag it lists every prop that component takes — its own first, then the 235 style props, the nesting keys and `props` — filtered as you type (`bgC` is **b**ack**g**round-**C**olor's humps), and typing the CSS name finds the prop: `padding` offers `p`. Taking a prop writes the value form it needs, with the caret inside: `=""` for a string, `={}` for a number, `={{  }}` for a nested object. The value list then opens on its own.
+
+What the value list shows depends on what the prop takes:
+
+- **A list of names** shows every one, each with the CSS the engine writes for it.
+- **A colour** shows the palette with a swatch per token, and carries an opacity modifier (`sky-500/40`) along as you type.
+- **A number** gets a type card instead of a list. It shows the value you are typing, measured live (`lineHeight={24}` → `line-height: 24px`), plus a short scale that makes the divider readable without anybody writing it down.
+
+Inside a nested object (`hover={{ … }}`, `theme={{ dark: { … } }}`, `cq={{ md: { … } }}`) the same thing happens one level down. The popup never takes focus, and the textarea stays a textarea. <kbd>Ctrl</kbd>+<kbd>Space</kbd> asks for suggestions anywhere. Tab still indents, and <kbd>Esc</kbd> then <kbd>Tab</kbd> leaves the editor.
+
+The highlighting is VS Code's Dark+ now, read off a [Lezer](https://lezer.codemirror.net/) tree. Lezer parses the snippet while it is half typed and invalid, which is most of the time. It adds bracket-pair colouring, line numbers and the current line, and it colours each name the way the library reads it: a style prop, a nesting key and a component's own prop are three different colours. **A prop the component does not take gets a red squiggle**. That matters because Box drops such a prop without a word (`<Link href>` typechecks, and the `href` then goes nowhere). A test runs the highlighter over every snippet the docs compile and fails on any squiggle there. The parser and the vocabulary load after the page has painted, so the editor's first paint is unchanged.
+
 ## Every component on one page, in both themes
 
 [**box-kite.dev/showcase**](https://www.box-kite.dev/showcase) is all 38 components the library ships, on one page, each drawn **twice** — a light theme and a dark one side by side, whatever theme you are reading the page in. It is the page to open when you want to see what this looks like before installing anything, and the one to screenshot when you want to know whether a change moved something it should not have.

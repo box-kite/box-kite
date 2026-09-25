@@ -389,6 +389,8 @@
     "@iconify/react": "^6.0.2",
     "@json-render/core": "^0.20.0",
     "@json-render/react": "^0.20.0",
+    "@lezer/highlight": "^1.2.4",
+    "@lezer/javascript": "^1.5.5",
     "@modelcontextprotocol/sdk": "^1.30.0",
     "@mui/material": "^9.4.0",
     "@mui/x-data-grid": "^9.14.0",

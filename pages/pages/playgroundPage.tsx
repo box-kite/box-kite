@@ -16,6 +16,7 @@ import { UsedRule } from '../site/playgroundCss';
 import { stackblitzForm, STACKBLITZ_URL } from '../site/playgroundProject';
 import loadPlaygroundScope, { PlaygroundScope } from '../site/playgroundScope';
 import { compileSnippet, CompiledSnippet } from '../site/playgroundSource';
+import type { PlaygroundCompletions } from '../site/playgroundVocabulary';
 
 /** What the page opens on when the URL carries nothing — small enough to read, and every line is a prop. */
 const STARTER = `<Flex d="column" gap={4} p={6} borderRadius={3} b={1} borderColor="slate-200" theme={{ dark: { borderColor: 'slate-700' } }}>
@@ -72,6 +73,24 @@ export default function PlaygroundPage() {
   );
 }
 
+/**
+ * What the completion popup offers, fetched beside the compiler rather than before it: the editor works
+ * without it, and the catalog is the heavier half of the two.
+ */
+function useCompletions(): PlaygroundCompletions | null {
+  const [completions, setCompletions] = useState<PlaygroundCompletions | null>(null);
+
+  useEffect(() => {
+    let live = true;
+
+    import('../site/playgroundVocabulary').then((module) => live && setCompletions(module.default()));
+
+    return () => void (live = false);
+  }, []);
+
+  return completions;
+}
+
 /** The compiler and every component the library ships, fetched once and only on this route. */
 function usePlaygroundScope(): PlaygroundScope | null {
   const [scope, setScope] = useState<PlaygroundScope | null>(null);
@@ -98,6 +117,7 @@ interface WorkbenchProps {
 function Workbench({ scope, source, settled, onChange, onShare }: WorkbenchProps) {
   const compiled = useMemo(() => compileSnippet(settled, scope), [settled, scope]);
   const [readRules, rules] = usePreviewRules();
+  const completions = useCompletions();
 
   // The address is the share, so it follows the snippet rather than waiting for a button. `replace`, or
   // every pause while typing would be a place the back button stops at.
@@ -125,7 +145,12 @@ function Workbench({ scope, source, settled, onChange, onShare }: WorkbenchProps
             b={1}
             theme={{ dark: { borderColor: 'slate-700' }, light: { borderColor: 'slate-200' } }}
           >
-            <PlaygroundEditor value={source} onChange={onChange} label="Snippet to run, as JSX" />
+            <PlaygroundEditor value={source} onChange={onChange} label="Snippet to run, as JSX" completions={completions} />
+          </Box>
+
+          <Box fontSize={12} color="slate-500">
+            Suggestions open as you type a prop or a value — <Key>Ctrl</Key> <Key>Space</Key> asks for them anywhere. Tab indents, so{' '}
+            <Key>Esc</Key> then <Key>Tab</Key> is the way out of the editor.
           </Box>
         </Flex>
 
@@ -264,5 +289,22 @@ function ActionButton({ onClick, label, children }: { onClick: () => void; label
         </Box>
       </Flex>
     </Button>
+  );
+}
+
+function Key({ children }: { children: ReactNode }) {
+  return (
+    <Box
+      tag="kbd"
+      display="inline"
+      px={1.5}
+      py={0.5}
+      borderRadius={1}
+      fontSize={11}
+      b={1}
+      theme={{ dark: { borderColor: 'slate-700', bgColor: 'slate-800' }, light: { borderColor: 'slate-200', bgColor: 'slate-50' } }}
+    >
+      {children}
+    </Box>
   );
 }
