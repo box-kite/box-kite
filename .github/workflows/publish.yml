@@ -76,6 +76,19 @@ jobs:
             npm publish ./dist --access public --provenance
           fi
 
+      # Last, so a refused MCP publish never holds back the library. `build:mcp` also runs the built
+      # server over stdio with only its declared dependencies, so a broken bundle stops here.
+      - run: npm run build:mcp
+
+      - name: Publish @box-kite/mcp
+        run: |
+          version=$(node -p "require('./dist-mcp/package.json').version")
+          if npm view "@box-kite/mcp@$version" version > /dev/null 2>&1; then
+            echo "@box-kite/mcp@$version is already on the registry — skipping"
+          else
+            npm publish ./dist-mcp --access public --provenance
+          fi
+
       # `403 ... OIDC permission denied` is the registry saying the trusted publisher does not match,
       # and it names none of the four things that have to. A config created after 3 September 2026
       # allows `npm stage publish` and nothing else until `npm publish` is ticked as well, so the
@@ -84,11 +97,13 @@ jobs:
         if: failure()
         run: |
           cat <<'EOF'
-          ::error::npm refused the publish. Check the trusted publisher on npmjs.com for BOTH
-          @box-kite/core and @box-kite/react (Package → Settings → Trusted Publisher):
+          ::error::npm refused the publish. Check the trusted publisher on npmjs.com for ALL THREE of
+          @box-kite/core, @box-kite/react and @box-kite/mcp (Package → Settings → Trusted Publisher):
             organisation/user  box-kite
             repository         box-kite
             workflow filename  publish.yml
             environment        (empty — this job declares none)
             allowed actions    "npm publish" ticked, not "npm stage publish" alone
+          A package that is not on the registry yet has no Settings page to configure, so its first
+          version is published by hand — see .claude/skills/release/SKILL.md, "Owner setup".
           EOF
