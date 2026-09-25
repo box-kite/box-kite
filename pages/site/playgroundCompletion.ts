@@ -12,8 +12,8 @@ import type { BoxCatalog, CatalogSchema } from '../../src/core/catalog/catalogTy
 import Containers from '../../src/core/containers';
 import type { StyleEngine } from '../../src/core/engine/styleEngine';
 import type { PropEntry } from '../pages/box';
+import type { Classifier, NameKind } from './codeTokens';
 import { CompletionContext, Span } from './playgroundContext';
-import type { Classifier, NameKind } from './playgroundTokens';
 
 /** The editor's font, which the popup's names and values are set in too. */
 export const MONO_FONT = "'JetBrains Mono', 'Fira Code', 'SF Mono', Consolas, 'Liberation Mono', Menlo, monospace";
@@ -106,6 +106,11 @@ export function schemaOfType(type: string): CatalogSchema | undefined {
   return members.length === 1 ? members[0] : { anyOf: members };
 }
 
+/** Components whose reference entry is empty on purpose, because their props are another's. */
+const SHARED_PROPS: Record<string, { from: string; without: string[] }> = {
+  AlertDialog: { from: 'Dialog', without: ['modal', 'dismissible', 'lockScroll'] },
+};
+
 /** The props every Box takes beside its styles: the `Box.components()` trio, and the id. */
 const SYSTEM_PROPS: Record<string, string> = {
   component: 'Which `Box.components()` style tree to draw this element from — `component="button"`.',
@@ -151,6 +156,14 @@ export function buildVocabulary({ catalog, props, scope, components = [], catego
       const name = part.name.startsWith(`${component.name} (`) ? component.name : part.name;
       api.set(name, [...(api.get(name) ?? []), ...(part.props ?? [])]);
     }
+  }
+  // The reference lists a shared prop set once (scripts/componentsApi.mjs says why), so borrow it back.
+  for (const [name, { from, without }] of Object.entries(SHARED_PROPS)) {
+    if (!api.get(name)?.length)
+      api.set(
+        name,
+        (api.get(from) ?? []).filter((prop) => !without.includes(prop.name)),
+      );
   }
 
   const styleEntries = [...style, ...nesting];
@@ -207,12 +220,13 @@ export function buildVocabulary({ catalog, props, scope, components = [], catego
     entries,
     styleEntries,
     entry: (tag, name) => entries(tag).find((entry) => entry.name === name),
-    // A component its reference lists, or an element that takes nothing but style props (`Link`, `H1`). An
-    // empty reference entry (`AlertDialog` documents itself as `Dialog`'s) describes nothing to flag against.
+    // A component its reference lists, or an element that takes nothing but style props (`Link`, `Flex`) —
+    // no events, no named slots.
     describes: (tag) =>
       !!api.get(tag)?.length ||
-      (!api.has(tag) &&
-        tag in catalog.components &&
+      (tag in catalog.components &&
+        !catalog.components[tag].events.length &&
+        catalog.components[tag].slots.every((slot) => slot === 'default') &&
         Object.keys(catalog.components[tag].props.properties ?? {}).every((name) => styleNames.has(name))),
   };
 }
@@ -717,7 +731,7 @@ export function opensOn(inserted: string, context: CompletionContext | null): bo
 const RECORD_KINDS = new Set<NestingKey['kind']>(['theme', 'container', 'variant', 'group']);
 
 /** React's own props, which no component declares and every one of them takes. */
-const REACT_PROPS = new Set(['key', 'ref', 'children', 'style']);
+const REACT_PROPS = new Set(['key', 'ref', 'children', 'style', 'className']);
 
 /**
  * What the highlighter needs to colour a name the way this library reads it. An unknown name is only

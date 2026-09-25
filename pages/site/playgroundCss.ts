@@ -95,3 +95,27 @@ export function classesOf(root: Element): Set<string> {
 
   return classes;
 }
+
+/**
+ * A rule as the CSS text the pane shows: every wrapping at-rule a level of indent, one declaration a line.
+ * A `@keyframes` body carries blocks of its own, so it is shown as the browser reported it.
+ */
+export function ruleText(rule: UsedRule): string {
+  const indent = (level: number) => '  '.repeat(level);
+  const depth = rule.context.length;
+  const body = rule.declarations.includes('{')
+    ? [`${indent(depth + 1)}${rule.declarations.trim()}`]
+    : rule.declarations
+        .split(';')
+        .map((declaration) => declaration.trim())
+        .filter(Boolean)
+        .map((declaration) => `${indent(depth + 1)}${declaration};`);
+
+  return [
+    ...rule.context.map((prelude, level) => `${indent(level)}${prelude} {`),
+    `${indent(depth)}${rule.selector} {`,
+    ...body,
+    `${indent(depth)}}`,
+    ...rule.context.map((_, level) => `${indent(depth - level - 1)}}`),
+  ].join('\n');
+}

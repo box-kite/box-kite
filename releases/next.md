@@ -85,7 +85,19 @@ What the value list shows depends on what the prop takes:
 
 Inside a nested object (`hover={{ … }}`, `theme={{ dark: { … } }}`, `cq={{ md: { … } }}`) the same thing happens one level down. The popup never takes focus, and the textarea stays a textarea. <kbd>Ctrl</kbd>+<kbd>Space</kbd> asks for suggestions anywhere. Tab still indents, and <kbd>Esc</kbd> then <kbd>Tab</kbd> leaves the editor.
 
-The highlighting is VS Code's Dark+ now, read off a [Lezer](https://lezer.codemirror.net/) tree. Lezer parses the snippet while it is half typed and invalid, which is most of the time. It adds bracket-pair colouring, line numbers and the current line, and it colours each name the way the library reads it: a style prop, a nesting key and a component's own prop are three different colours. **A prop the component does not take gets a red squiggle**. That matters because Box drops such a prop without a word (`<Link href>` typechecks, and the `href` then goes nowhere). A test runs the highlighter over every snippet the docs compile and fails on any squiggle there. The parser and the vocabulary load after the page has painted, so the editor's first paint is unchanged.
+The editor has line numbers, a highlighted current line and bracket pairs coloured by depth, and it colours each name the way the library reads it: a style prop, a nesting key and a component's own prop are three different colours. **A prop the component does not take gets a red squiggle**. That matters because Box drops such a prop without a word (`<Link href>` typechecks, and the `href` then goes nowhere). A test runs the highlighter over every snippet the docs compile and fails on any squiggle there. The vocabulary loads after the page has painted, so the editor's first paint is unchanged.
+
+## Every code block on the site is themed, and styled by Box
+
+Code blocks, the playground's editor and its generated-CSS pane now share **one highlighter**, and every colour in them is a part of one `Box.components()` tree ([`pages/extends.ts`](https://github.com/box-kite/box-kite/blob/main/pages/extends.ts)), set per theme with the `theme` key like any other style. The tree covers:
+
+- the background, the header and its buttons;
+- the gutter, the current line, the caret and the selection;
+- one part per kind of token: tags and components, `<` and `>`, attributes and their values, text, comments, strings, numbers, keywords, brackets, and the rest.
+
+So code follows the site's theme: VS Code's Light+ palette in light mode, Dark+ in dark mode. Restyling one colour is one line, for example `code.token.attributeValue` or `code.token.comment`.
+
+Prism is gone. The highlighter is a small lexer written for this site (JSX/TS, JSON, CSS and shell), because it runs on every page, and Lezer, the obvious alternative, is 46 KB gzipped for the JSX grammar alone. Lezer still checks it: a test holds the lexer to Lezer's tree on every string, number, comment, tag and attribute in every snippet the docs compile. Swapping Prism's script and stylesheet for the lexer and the theme tree leaves a page's download the same (+70 bytes gzipped on `/button`). The tokens are rendered as React elements rather than injected HTML, so a prerendered page and the page that hydrates it are the same tree.
 
 ## Every component on one page, in both themes
 
@@ -120,6 +132,7 @@ None.
 
 ## Fixes
 
+- **Copy on a docs demo whose snippet had an event handler copied minified code.** A demo's snippet is printed from the demo itself, and a handler was printed with its own source, which the browser's bundle had minified: `/button`'s counter copied `onClick={()=>t(e=>e+1)}`. The prerendered page showed the readable version, so nothing looked wrong. A handler is now printed as `() => {}`, and the one demo whose handler is the point writes its snippet out.
 - **`anchorName="none"` wrote `anchor-name: --none`, and `positionAnchor="auto"` wrote `--auto`.** The definition that accepts a name is tried before the one that lists the keywords, and it accepted those two as names — so the keyword definitions were unreachable. A name no longer swallows a keyword the prop takes on its own.
 - **A layer that is open in server-rendered HTML rendered nothing on the server and the layer in the browser** — one React #418 per load, with nothing anywhere saying so. `Overlay` (and so `Tooltip`, the `Dropdown` popup and the DataGrid column menu) picks between two _shapes_, in place in the top layer or inside a portal, by asking the browser whether it has the Popover API — and a server has no browser to ask, so it took the portal branch, which renders nothing without a document. What a server emits is the top-layer shape now: the layer is in the HTML, it hydrates as it stands, and only a browser with no Popover API moves it into a portal, on the render after. A layer a browser mounts itself — every one this library ships opens that way — reads the real answer on its first render and never moves, which is what kept focus inside an open menu. `Toaster` and `Popover`, which had their own copies of this decision, share it.
 

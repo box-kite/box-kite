@@ -127,8 +127,25 @@ Two build-level traps it exposed, both fixed and both worth remembering:
   built site, while the dev server (which does not tree-shake) showed them working. The field now names
   `pages/**` as the one place in this repo with side effects.
 - **CSS imported by an async chunk is not linked in the prerendered HTML** — the chunk's loader writes
-  that `<link>`, so code blocks painted unstyled until the JavaScript arrived. Site-wide CSS (the Prism
-  theme) is imported from `main.tsx`, which puts it in the entry stylesheet.
+  that `<link>`, so code blocks painted unstyled until the JavaScript arrived. Site-wide CSS is imported
+  from `main.tsx`, which puts it in the entry stylesheet. (Code highlighting is no longer CSS at all; see
+  "Code highlighting" below.)
+
+## Code highlighting
+
+Every code block and the playground's editor share one highlighter. [pages/site/codeTokens.ts](pages/site/codeTokens.ts) is a lexer for JSX/TS, JSON, CSS and shell, and [pages/components/codeHighlight.tsx](pages/components/codeHighlight.tsx) renders its output as one span per token.
+
+**Every colour is a part of the `code` style tree in [pages/extends.ts](pages/extends.ts)**, per theme:
+
+- the surface, the header and its buttons;
+- the gutter, the current line, the caret and the selection;
+- one `code.token.<kind>` for each kind of token (VS Code's Dark+ and Light+ palettes).
+
+Restyling a colour is one line in that tree. Adding a token kind is a type error until the tree has a part for it.
+
+It is a lexer rather than a parser, and hand-written rather than a dependency, because it ships on every page and Lezer's JSX grammar is 46 KB gzipped. Lezer is still the referee: `codeTokens.test.ts` holds the lexer to Lezer's tree on every string, number, comment, tag and attribute in every snippet the docs compile.
+
+Names are coloured by what the library makes of them. A code block reads the live prop registry (`codeClassifier.ts`). The playground passes in its heavier vocabulary instead, which also knows each component's own props and puts a squiggle under anything else.
 
 ## The markdown mirror, and llms.txt
 
@@ -156,7 +173,7 @@ Where the markup alone does not say what the markdown should be, the component s
 | -------- | ---------------------------------------------------------- | --------------------------------------------------------------- |
 | `skip`   | a control, or a rendered demo whose snippet is the content | `Code`'s demo area and toolbar, the `NEW` badge, `/box`'s cards |
 | `label`  | a line titling the block under it, emitted bold            | `Code`'s label                                                  |
-| `inline` | children that belong on one line, joined with `·`          | the colour families, the homepage's stat and signal cards      |
+| `inline` | children that belong on one line, joined with `·`          | the colour families, the homepage's stat and signal cards       |
 
 `inline` is the one worth remembering: a row of chips laid out with a `gap` carries no whitespace
 between the elements, so concatenating them gives `` `display``inline` `` — a whole table of

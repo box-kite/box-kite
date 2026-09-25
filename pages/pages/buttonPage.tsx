@@ -44,7 +44,7 @@ export default function ButtonPage() {
             </Flex>
           </Code>
 
-          <Code id="counter" label="With Counter" language="jsx">
+          <Code id="counter" label="With Counter" language="jsx" code={COUNTER}>
             <Flex gap={4} ai="center">
               <Button onClick={() => setCounter((c) => c + 1)}>Clicked {counter} times</Button>
               <Button variant="secondary" onClick={() => setCounter(0)}>
@@ -90,6 +90,16 @@ export default function ButtonPage() {
     </Box>
   );
 }
+
+/** Written out: a handler's source is the bundler's to rewrite, so the demo cannot print its own. */
+const COUNTER = `const [counter, setCounter] = useState(0);
+
+<Flex gap={4} ai="center">
+  <Button onClick={() => setCounter((c) => c + 1)}>Clicked {counter} times</Button>
+  <Button variant="secondary" onClick={() => setCounter(0)}>
+    Reset
+  </Button>
+</Flex>`;
 
 const sidebarLinks = [
   { id: 'basic', label: 'Basic Button' },
