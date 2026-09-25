@@ -116,17 +116,9 @@ function formatProp(key: string, value: unknown): string {
   // Number
   if (typeof value === 'number') return `${key}={${value}}`;
 
-  // Function
-  if (typeof value === 'function') {
-    const fnStr = value.toString();
-    // Check if it's an arrow function or named function
-    if (fnStr.startsWith('function') || fnStr.includes('=>')) {
-      // Simplify to just show it's a function
-      const simplified = fnStr.length > 50 ? '() => { ... }' : fnStr;
-      return `${key}={${simplified}}`;
-    }
-    return `${key}={${value.name || '() => {}'}}`;
-  }
+  // A function's source is whatever the bundler made of it — readable in the prerender, minified in the
+  // browser — so printing it put two different snippets on one page and Copy handed over the minified one.
+  if (typeof value === 'function') return `${key}={() => {}}`;
 
   // Array
   if (Array.isArray(value)) {

@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { NavLink } from 'react-router-dom';
 import { BoxClassNameProps, useClassNames } from '../../src/box';
+import type { ComponentsAndVariants } from '../../src/types';
 import { prefetchPage } from '../app/routePages';
 
 /**
@@ -9,12 +10,12 @@ import { prefetchPage } from '../app/routePages';
  * when the pointer arrives, the way the sidebar's entries do. `label` names a link whose own text does
  * not — a version number, an arrow.
  */
-export default function SiteLink({
+export default function SiteLink<TKey extends keyof ComponentsAndVariants = never>({
   to,
   label,
   children,
   ...props
-}: { to: string; label?: string; children: ReactNode } & BoxClassNameProps) {
+}: { to: string; label?: string; children: ReactNode } & BoxClassNameProps<TKey>) {
   const { className, styles } = useClassNames(props);
   const prefetch = () => prefetchPage(to);
 

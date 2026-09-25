@@ -203,7 +203,16 @@ function Panes({ compiled, rules, children }: { compiled: CompiledSnippet; rules
       </Tabs.Panel>
 
       <Tabs.Panel value="css">
-        <Box minHeight={80} maxHeight={140} overflow="auto" p={4} borderRadius={3} bgColor="code-bg" b={1} borderColor="slate-700">
+        <Box
+          component="code"
+          minHeight={80}
+          maxHeight={140}
+          overflow="auto"
+          p={4}
+          borderRadius={3}
+          b={1}
+          theme={{ dark: { borderColor: 'slate-700' }, light: { borderColor: 'slate-200' } }}
+        >
           {rules.length ? (
             <Flex d="column" gap={3}>
               {rules.map((rule) => (

@@ -99,6 +99,14 @@ describe('props', () => {
     expect(labels("<Box dataAttr={{ 'state=open': { op| } }} />")[0]).toBe('opacity');
   });
 
+  it('offers a component the props it shares with another, less the ones it does not get to choose', () => {
+    const names = labels('<AlertDialog |', 400);
+
+    expect(names).toContain('initialFocus');
+    expect(names).toContain('trigger');
+    expect(names).not.toContain('dismissible');
+  });
+
   it('offers the components in scope after a `<`', () => {
     expect(labels('<Fle|')[0]).toBe('Flex');
     expect(labels('<Tabs.T|')).toContain('Tabs.Tab');

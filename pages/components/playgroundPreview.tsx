@@ -7,7 +7,8 @@ import { Component, ErrorInfo, ReactNode, useCallback, useState } from 'react';
 import Box from '../../src/box';
 import Flex from '../../src/components/flex';
 import { StylesContext } from '../../src/react/useStyles';
-import usedRules, { classesOf, UsedRule } from '../site/playgroundCss';
+import usedRules, { classesOf, ruleText, UsedRule } from '../site/playgroundCss';
+import CodeHighlight from './codeHighlight';
 
 interface BoundaryProps {
   /** A new snippet resets the boundary: the next thing a reader typed deserves its own chance to render. */
@@ -86,24 +87,8 @@ export function usePreviewRules(): [(element: HTMLElement | null) => void, UsedR
 /** One rule, printed the way the sheet holds it — the at-rules it sits in first, outermost first. */
 export function PlaygroundRule({ rule }: { rule: UsedRule }) {
   return (
-    <Box tag="pre" m={0} fontSize={12} lineHeight={20} whiteSpace="pre-wrap" color="slate-300">
-      {rule.context.map((prelude) => (
-        <Box key={prelude} color="violet-400">
-          {prelude} &#123;
-        </Box>
-      ))}
-      <Flex d="column" ps={rule.context.length ? 4 : 0}>
-        <Box color="sky-400">{rule.selector} &#123;</Box>
-        <Box ps={4} color="slate-300">
-          {rule.declarations}
-        </Box>
-        <Box color="sky-400">&#125;</Box>
-      </Flex>
-      {rule.context.map((prelude) => (
-        <Box key={prelude} color="violet-400">
-          &#125;
-        </Box>
-      ))}
+    <Box tag="pre" component="code.content" p={0} maxHeight="max-content" fontSize={12} lineHeight={20} overflow="visible">
+      <CodeHighlight source={ruleText(rule)} language="css" />
     </Box>
   );
 }

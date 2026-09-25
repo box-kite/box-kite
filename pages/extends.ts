@@ -1,5 +1,6 @@
 import Box from '../src/box';
 import Variables from '../src/core/variables';
+import type { BoxComponentStyles } from '../src/types';
 
 // preload variable
 Box.getVariableValue('violet-300');
@@ -94,6 +95,20 @@ export const { extendedProps, extendedPropTypes } = Box.extend(
   },
 );
 
+/** One token's colour, per theme. Inline, because every Box class carries the base `display: block`. */
+function token(dark: string, light: string, { theme, ...rest }: BoxComponentStyles = {}) {
+  return {
+    styles: {
+      display: 'inline',
+      ...rest,
+      theme: {
+        dark: { ...theme?.dark, css: { ...theme?.dark?.css, color: dark } },
+        light: { ...theme?.light, css: { ...theme?.light?.css, color: light } },
+      },
+    } satisfies BoxComponentStyles,
+  };
+}
+
 export const components = Box.components({
   button: {
     children: {
@@ -171,13 +186,17 @@ export const components = Box.components({
     },
   },
 
-  // Code block
-  codeBlock: {
+  /**
+   * Every code surface on the site — the docs' code blocks, the playground's editor and its CSS pane —
+   * and every part of the code inside them. One tree, per theme: VS Code's Dark+ and Light+. A token is
+   * `code.token.<kind>` (`pages/site/codeTokens.ts` names the kinds), so restyling one colour is one line.
+   */
+  code: {
+    // The surface and the plain colour. The frame around it — border, radius — is whatever holds it.
     styles: {
       bgColor: 'code-bg',
-      borderRadius: 3,
-      overflow: 'hidden',
-      shadow: 'large',
+      css: { color: '#D4D4D4' },
+      theme: { light: { bgColor: 'white', css: { color: '#1F1F1F' } } },
     },
     children: {
       header: {
@@ -188,15 +207,118 @@ export const components = Box.components({
           px: 4,
           py: 3,
           bb: 1,
-          borderColor: 'slate-700',
-          bgColor: 'code-bg-light',
+          theme: {
+            dark: { bgColor: 'code-bg-light', borderColor: 'slate-700' },
+            light: { bgColor: 'slate-50', borderColor: 'slate-200' },
+          },
         },
       },
+      label: {
+        styles: {
+          display: 'flex',
+          ai: 'center',
+          gap: 2,
+          fontSize: 12,
+          theme: { dark: { color: 'slate-400' }, light: { color: 'slate-500' } },
+        },
+      },
+      action: {
+        styles: {
+          display: 'flex',
+          ai: 'center',
+          gap: 2,
+          p: 2,
+          px: 3,
+          b: 0,
+          borderRadius: 2,
+          fontSize: 12,
+          cursor: 'pointer',
+          textDecoration: 'none',
+          transitionDuration: 150,
+          theme: {
+            dark: { bgColor: 'slate-700', color: 'slate-300', hover: { bgColor: 'slate-600' } },
+            light: { bgColor: 'slate-200', color: 'slate-600', hover: { bgColor: 'slate-300' } },
+          },
+        },
+        variants: {
+          done: {
+            bgColor: 'emerald-500',
+            color: 'white',
+            cursor: 'default',
+            theme: { dark: { hover: { bgColor: 'emerald-500' } }, light: { hover: { bgColor: 'emerald-500' } } },
+          },
+        },
+      },
+      /** The `<pre>` of a code block: the one place its font, size and line height are set. */
       content: {
         styles: {
+          m: 0,
           p: 4,
-          overflow: 'auto',
           maxHeight: 100,
+          overflow: 'auto',
+          fontSize: 13,
+          lineHeight: 24,
+          whiteSpace: 'pre',
+          css: { fontFamily: "'JetBrains Mono', 'Fira Code', 'SF Mono', Consolas, 'Liberation Mono', Menlo, monospace", tabSize: 2 },
+        },
+      },
+      gutter: {
+        styles: { theme: { dark: { color: 'slate-600' }, light: { css: { color: '#237893' } } } },
+      },
+      lineNumber: {
+        styles: {},
+        variants: {
+          current: { theme: { dark: { color: 'slate-300' }, light: { css: { color: '#0B216F' } } } },
+        },
+      },
+      currentLine: {
+        styles: {
+          by: 1,
+          theme: { dark: { bgColor: 'white/4', borderColor: 'white/5' }, light: { bgColor: 'black/4', borderColor: 'black/5' } },
+        },
+      },
+      /** The playground's textarea: only the caret and the selection show, the glyphs are the layer behind. */
+      field: {
+        styles: {
+          theme: {
+            dark: { caretColor: 'slate-100', selection: { css: { backgroundColor: '#264F78' } } },
+            light: { caretColor: 'black', selection: { css: { backgroundColor: '#ADD6FF' } } },
+          },
+        },
+      },
+      token: {
+        children: {
+          keyword: token('#569CD6', '#0000FF'),
+          control: token('#C586C0', '#AF00DB'),
+          string: token('#CE9178', '#A31515'),
+          number: token('#B5CEA8', '#098658'),
+          literal: token('#569CD6', '#0000FF'),
+          comment: token('#6A9955', '#008000', { fontStyle: 'italic' }),
+          regex: token('#D16969', '#811F3F'),
+          variable: token('#9CDCFE', '#001080'),
+          function: token('#DCDCAA', '#795E26'),
+          property: token('#9CDCFE', '#001080'),
+          type: token('#4EC9B0', '#267F99'),
+          operator: token('#D4D4D4', '#1F1F1F'),
+          punctuation: token('#D4D4D4', '#1F1F1F'),
+          bracket1: token('#FFD700', '#0431FA'),
+          bracket2: token('#DA70D6', '#319331'),
+          bracket3: token('#179FFF', '#7B3814'),
+          tagBracket: token('#808080', '#800000'),
+          tag: token('#569CD6', '#800000'),
+          component: token('#4EC9B0', '#267F99'),
+          text: token('#D4D4D4', '#1F1F1F'),
+          attribute: token('#9CDCFE', '#E50000'),
+          attributeValue: token('#CE9178', '#0000FF'),
+          nesting: token('#C586C0', '#AF00DB'),
+          componentProp: token('#4FC1FF', '#0070C1'),
+          event: token('#DCDCAA', '#795E26'),
+          reserved: token('#569CD6', '#0000FF', { fontStyle: 'italic' }),
+          // A name the tag does not take is dropped without a word, which is exactly what a squiggle is for.
+          unknown: token('#9CDCFE', '#E50000', {
+            css: { textDecorationLine: 'underline', textDecorationStyle: 'wavy', textUnderlineOffset: '3px' },
+            theme: { dark: { css: { textDecorationColor: '#F48771' } }, light: { css: { textDecorationColor: '#E51400' } } },
+          }),
         },
       },
     },

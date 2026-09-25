@@ -5,74 +5,22 @@
  *
  * The two layers have to share every metric that decides where a glyph lands, so the font, the size, the
  * line height and the padding are declared once and spread on both. The font is the one value with no prop
- * for it, which is what `css` is for. The colours behind are VS Code's Dark+, read off a Lezer tree
- * (`pages/site/playgroundTokens.ts`), and each one is a Box class rather than a stylesheet. Until that
- * parser has loaded, the site's own Prism highlighting stands in.
+ * for it, which is what `css` is for. The layer behind is the site's own highlighter, the one every code
+ * block uses, and every colour in the editor is a part of the `code` style tree in `pages/extends.ts`.
  */
 import { ChangeEvent, KeyboardEvent, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import Box, { BoxClassNameProps, BoxProps, useClassNames } from '../../src/box';
+import Box, { BoxProps } from '../../src/box';
 import Textarea from '../../src/components/textarea';
-import highlight from '../site/highlight';
 import { accept, complete, Completion, MONO_FONT, opensOn, optionId } from '../site/playgroundCompletion';
 import { completionContext } from '../site/playgroundContext';
-import type { TokenKind } from '../site/playgroundTokens';
 import { PlaygroundCompletions } from '../site/playgroundVocabulary';
+import CodeHighlight from './codeHighlight';
 import PlaygroundCompletion from './playgroundCompletion';
 
 /** One line, in px — the anchor under the caret is exactly this tall so the popup opens below the line. */
 const LINE = 22;
 /** The line-number column, on the ÷4 scale. */
 const GUTTER = 10;
-
-// Inline, because every Box class carries the base `display: block` and a token is a run of text.
-const hex = (color: string, rest: BoxClassNameProps = {}): BoxClassNameProps => ({
-  display: 'inline',
-  ...rest,
-  css: { color, ...rest.css },
-});
-
-/** VS Code's Dark+, by token. Hex through `css`, because these are VS Code's colours rather than the palette's. */
-const TOKEN_STYLES: Record<TokenKind, BoxClassNameProps> = {
-  keyword: hex('#569CD6'),
-  control: hex('#C586C0'),
-  string: hex('#CE9178'),
-  number: hex('#B5CEA8'),
-  literal: hex('#569CD6'),
-  comment: hex('#6A9955', { fontStyle: 'italic' }),
-  variable: hex('#9CDCFE'),
-  function: hex('#DCDCAA'),
-  property: hex('#9CDCFE'),
-  type: hex('#4EC9B0'),
-  operator: hex('#D4D4D4'),
-  bracket0: hex('#FFD700'),
-  bracket1: hex('#DA70D6'),
-  bracket2: hex('#179FFF'),
-  tagPunctuation: hex('#808080'),
-  tag: hex('#569CD6'),
-  component: hex('#4EC9B0'),
-  text: hex('#D4D4D4'),
-  styleProp: hex('#9CDCFE'),
-  nestingProp: hex('#C586C0'),
-  componentProp: hex('#4FC1FF'),
-  event: hex('#DCDCAA'),
-  reserved: hex('#569CD6', { fontStyle: 'italic' }),
-  // A name the tag does not take is dropped without a word, which is exactly what a squiggle is for.
-  unknownProp: hex('#9CDCFE', {
-    css: { textDecorationLine: 'underline', textDecorationStyle: 'wavy', textDecorationColor: '#F48771', textUnderlineOffset: '3px' },
-  }),
-};
-
-const TOKEN_KINDS = Object.keys(TOKEN_STYLES) as TokenKind[];
-
-/** One class per token kind: a hook per kind, in a fixed order, since the record above never changes shape. */
-function useTokenClasses(): Record<TokenKind, string> {
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const names = TOKEN_KINDS.map((kind) => useClassNames(TOKEN_STYLES[kind]).className ?? '');
-  const key = names.join(' ');
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  return useMemo(() => Object.fromEntries(TOKEN_KINDS.map((kind, index) => [kind, names[index]])) as Record<TokenKind, string>, [key]);
-}
 
 /**
  * Two elements, one glyph grid: anything that moves a character has to be set on both layers. `satisfies`
@@ -124,17 +72,9 @@ export default function PlaygroundEditor({ value, onChange, label, completions }
   const escaped = useRef(false);
   const glyph = useRef(0);
 
-  // A trailing newline keeps the highlighted layer as tall as the textarea while the caret sits on a blank
-  // last line, so the two never scroll apart by one row.
   const [scroll, setScroll] = useState({ top: 0, left: 0 });
   const [caretLine, setCaretLine] = useState<number | null>(null);
 
-  const classes = useTokenClasses();
-  const highlighted = useMemo(() => {
-    const source = `${value}\n`;
-
-    return completions ? completions.highlight(source, classes) : (highlight(source, 'jsx') ?? '');
-  }, [value, completions, classes]);
   const lines = useMemo(() => value.split('\n').length, [value]);
 
   function trackCaret(element: HTMLTextAreaElement) {
@@ -281,18 +221,15 @@ export default function PlaygroundEditor({ value, onChange, label, completions }
   const options = completion?.suggestions.length ? completion : null;
 
   return (
-    <Box position="relative" height="fit" overflow="hidden" bgColor="code-bg">
+    <Box component="code" position="relative" height="fit" overflow="hidden">
       {/* The line the caret is on, while the field has focus — offset by the scroll, so inline. */}
       {caretLine !== null ? (
         <Box
+          component="code.currentLine"
           position="absolute"
           left={0}
           right={0}
           height={LINE / 4}
-          bgColor="white/4"
-          bt={1}
-          bb={1}
-          borderColor="white/5"
           pointerEvents="none"
           style={{ top: 16 + caretLine * LINE - scroll.top }}
         />
@@ -308,9 +245,9 @@ export default function PlaygroundEditor({ value, onChange, label, completions }
         pointerEvents="none"
         props={{ 'aria-hidden': 'true' }}
       >
-        <Box {...metrics} p={0} pl={0} pr={3} textAlign="right" color="slate-600" style={{ translate: `0 ${16 - scroll.top}px` }}>
+        <Box component="code.gutter" {...metrics} p={0} pl={0} pr={3} textAlign="right" style={{ translate: `0 ${16 - scroll.top}px` }}>
           {Array.from({ length: lines }, (_, line) => (
-            <Box key={line} color={line === caretLine ? 'slate-300' : undefined}>
+            <Box key={line} component="code.lineNumber" variant={{ current: line === caretLine }}>
               {line + 1}
             </Box>
           ))}
@@ -318,12 +255,11 @@ export default function PlaygroundEditor({ value, onChange, label, completions }
       </Box>
 
       <Box tag="pre" ref={behind} {...metrics} position="absolute" inset={0} overflow="hidden" props={{ 'aria-hidden': 'true' }}>
-        <Box
-          tag="code"
-          className={completions ? undefined : 'language-jsx'}
-          css={{ color: '#D4D4D4' }}
-          props={{ dangerouslySetInnerHTML: { __html: highlighted } }}
-        />
+        {/* A trailing newline keeps this layer as tall as the textarea while the caret sits on a blank last
+            line, so the two never scroll apart by one row. */}
+        <Box tag="code" display="inline">
+          <CodeHighlight source={`${value}\n`} classifier={completions?.classifier} />
+        </Box>
       </Box>
 
       {/* Where the word being completed starts. Inline, like a slider thumb's offset: it moves with every keystroke. */}
@@ -331,6 +267,7 @@ export default function PlaygroundEditor({ value, onChange, label, completions }
 
       <Textarea
         {...metrics}
+        component="code.field"
         ref={field}
         value={value}
         onChange={changeHandler}
@@ -345,8 +282,6 @@ export default function PlaygroundEditor({ value, onChange, label, completions }
         bgColor="transparent"
         // The caret is what a reader follows; the glyphs it moves over are the coloured layer behind.
         color="transparent"
-        caretColor="slate-100"
-        selection={{ bgColor: 'sky-500/30' }}
         props={{
           'aria-label': label,
           'aria-autocomplete': completions ? 'list' : undefined,

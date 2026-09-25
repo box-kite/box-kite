@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import usedRules, { classesIn, CssRuleLike } from './playgroundCss';
+import usedRules, { classesIn, CssRuleLike, ruleText } from './playgroundCss';
 
 /**
  * A style rule as a browser reports it. The empty `cssRules` is the point: since nested CSS shipped, every
@@ -60,5 +60,19 @@ describe('usedRules', () => {
     );
 
     expect(rules.map((rule) => rule.selector)).toEqual(['._used', '@keyframes spin']);
+  });
+});
+
+describe('ruleText', () => {
+  it('indents each wrapping at-rule and puts one declaration on a line', () => {
+    expect(ruleText({ selector: '.p-4', context: ['@media (min-width: 48rem)'], declarations: 'padding: 1rem; margin: 0' })).toBe(
+      ['@media (min-width: 48rem) {', '  .p-4 {', '    padding: 1rem;', '    margin: 0;', '  }', '}'].join('\n'),
+    );
+  });
+
+  it('keeps a keyframes body as the browser reported it', () => {
+    expect(ruleText({ selector: '@keyframes spin', context: [], declarations: 'to { rotate: 1turn; }' })).toBe(
+      ['@keyframes spin {', '  to { rotate: 1turn; }', '}'].join('\n'),
+    );
   });
 });
