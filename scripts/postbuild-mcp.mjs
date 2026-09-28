@@ -8,8 +8,9 @@
 //
 // Run: npm run build:mcp
 import { spawn } from 'node:child_process';
-import { cpSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { dirname, join } from 'node:path';
 
 const root = join(import.meta.dirname, '..');
 const out = join(root, 'dist-mcp');
@@ -27,6 +28,8 @@ const manifest = {
   version: parent.version,
   type: 'module',
   description: 'The Box Kite MCP server: what an agent may write, what a component takes, and whether a value actually works.',
+  // What registry.modelcontextprotocol.io checks a `server.json` against, so listing there needs no second release.
+  mcpName: 'io.github.box-kite/mcp',
   bin: { 'box-kite-mcp': './mcp.mjs' },
   exports: { '.': './mcp.mjs' },
   files: ['mcp.mjs', 'README.md', 'LICENSE'],
@@ -36,7 +39,8 @@ const manifest = {
     '@modelcontextprotocol/sdk': parent.devDependencies['@modelcontextprotocol/sdk'],
     zod: parent.devDependencies.zod,
   },
-  engines: { node: '>=20' },
+  // The bundle is compiled for `node22` (vite.mcp.config.ts), so that is the floor it can promise.
+  engines: { node: '>=22' },
   keywords: ['box-kite', 'mcp', 'model-context-protocol', 'ai', 'agents', 'css-in-js', 'design-system', 'typescript'],
   repository: parent.repository,
   bugs: parent.bugs,
@@ -54,8 +58,21 @@ const request = (id, method, params) => `${JSON.stringify({ jsonrpc: '2.0', id, 
 
 const INITIALIZE = { protocolVersion: '2025-06-18', capabilities: {}, clientInfo: { name: 'postbuild', version: '0' } };
 
-async function speak() {
-  const child = spawn(process.execPath, [bundle], { stdio: ['pipe', 'pipe', 'pipe'] });
+/** The bundle alone, beside the declared dependencies only: in the repo every devDependency resolves, after `npx` none does. */
+function isolate() {
+  const dir = mkdtempSync(join(tmpdir(), 'box-kite-mcp-'));
+  cpSync(bundle, join(dir, 'mcp.mjs'));
+  for (const name of Object.keys(manifest.dependencies)) {
+    const link = join(dir, 'node_modules', name);
+    mkdirSync(dirname(link), { recursive: true });
+    // A junction needs no elevation on Windows; elsewhere the type is ignored.
+    symlinkSync(join(root, 'node_modules', name), link, 'junction');
+  }
+  return dir;
+}
+
+async function speak(server) {
+  const child = spawn(process.execPath, [server], { stdio: ['pipe', 'pipe', 'pipe'] });
   const lines = [];
   let buffer = '';
   let stderr = '';
@@ -75,6 +92,7 @@ async function speak() {
 
   const answers = await new Promise((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error(`the server did not answer in 20s.\n${stderr}`)), 20_000);
+    child.on('exit', (code) => lines.length < 3 && reject(new Error(`the server exited with code ${code}.\n${stderr}`)));
     const check = setInterval(() => {
       if (lines.length < 3) return;
       clearInterval(check);
@@ -86,7 +104,18 @@ async function speak() {
   return { answers, stderr };
 }
 
-const { answers, stderr } = await speak();
+const isolated = isolate();
+// `rmSync` unlinks a junction rather than following it, so the repo's own node_modules survive.
+const spoken = await speak(join(isolated, 'mcp.mjs'))
+  .catch((error) => ({ error }))
+  .finally(() => rmSync(isolated, { recursive: true, force: true }));
+
+if (spoken.error) {
+  console.error(`\n✖ @box-kite/mcp: ${spoken.error.message}\n`);
+  process.exit(1);
+}
+
+const { answers, stderr } = spoken;
 const fail = (message) => {
   console.error(`\n✖ @box-kite/mcp: ${message}\n${stderr}`);
   process.exit(1);
@@ -102,4 +131,4 @@ if (!checked.includes('font-size:0.875rem'))
   fail('`check_styles` did not measure the divider — the engine or the references did not make it into the bundle.');
 if (!checked.includes('no rule and no class name')) fail('`check_styles` accepted a value the engine rejects.');
 
-console.log(`✓ @box-kite/mcp ${manifest.version}: ${tools.length} tools, answering over stdio.`);
+console.log(`✓ @box-kite/mcp ${manifest.version}: ${tools.length} tools, answering over stdio, with nothing but its own dependencies.`);

@@ -9,7 +9,7 @@ npx @box-kite/mcp
 ```
 
 No key, no network, no state. Everything it answers with was built into it from the library's own
-repository at the version you install, including the styling engine itself.
+repository at the version you install, including the styling engine itself. Node 22 or newer.
 
 ## Install
 

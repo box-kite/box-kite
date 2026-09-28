@@ -212,7 +212,7 @@ CI runs the test suite against React 18 and React 19 — both are in the support
 - Vite library mode, dual ESM (.mjs) + CJS (.cjs) output
 - Components get individual chunks for tree-shaking
 - `react`, `react-dom` are external (peer dependencies)
-- Published from `dist/` and `dist-core/` by `publish.yml`, dispatched by `release.yml` when a merged release PR (`npm run release`) lands on a green main; the release body is `releases/<version>.md`
+- Published from `dist/`, `dist-core/` and `dist-mcp/` by `publish.yml` (a new package is seeded by hand once, since npm configures a trusted publisher only on a package that exists — `.claude/skills/release/SKILL.md`), dispatched by `release.yml` when a merged release PR (`npm run release`) lands on a green main; the release body is `releases/<version>.md`
 - `vite-plugin-dts` generates `.d.ts` files
 
 ## Reference Documents

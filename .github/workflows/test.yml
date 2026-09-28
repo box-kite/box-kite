@@ -60,6 +60,10 @@ jobs:
       # same sources. If the engine ever needs React again, this is what stops compiling.
       - name: Check the framework-free example builds 🔧
         run: npm run build:vanilla
+      # Builds the MCP server and speaks the protocol to it from a directory holding only its declared
+      # dependencies — the only place a broken `npx @box-kite/mcp` would otherwise surface is a release.
+      - name: Check the MCP server builds and answers 🔧
+        run: npm run build:mcp
       - name: Check package health (publint + attw) 🔧
         run: npm run check:package
       - name: Check size budgets 🔧
