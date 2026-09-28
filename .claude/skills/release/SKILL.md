@@ -74,6 +74,7 @@ tag, so its contents match a released version, then configure the publisher; eve
 the workflow's. For `@box-kite/mcp` (first seeded at 2.1.0):
 
 ```bash
+npm login && npm whoami   # a stale token makes the publish below answer 404, not 401
 git worktree add ../box-kite-seed v2.1.0 && cd ../box-kite-seed
 npm ci && npm run build:mcp
 npm publish ./dist-mcp --access public   # logged in as a box-kite org owner, with 2FA
