@@ -2048,7 +2048,7 @@
       "name": "color",
       "description": "The color CSS property sets the foreground color value of an element's text and text decorations, and sets the currentcolor value.",
       "properties": ["color"],
-      "example": { "value": "sky-500", "css": "color: var(--sky-500)" },
+      "example": { "value": "sky-500", "css": "color: var(--sky-500,oklch(68.5% .169 237.3))" },
       "numeric": false,
       "open": true,
       "valueCount": 304
@@ -2057,7 +2057,7 @@
       "name": "bgColor",
       "description": "The background-color CSS property sets the background color of an element.",
       "properties": ["background-color"],
-      "example": { "value": "sky-500", "css": "background-color: var(--sky-500)" },
+      "example": { "value": "sky-500", "css": "background-color: var(--sky-500,oklch(68.5% .169 237.3))" },
       "numeric": false,
       "open": true,
       "valueCount": 304
@@ -2066,7 +2066,7 @@
       "name": "borderColor",
       "description": "The border-color shorthand CSS property sets the color of an element's border.",
       "properties": ["border-color"],
-      "example": { "value": "sky-500", "css": "border-color: var(--sky-500)" },
+      "example": { "value": "sky-500", "css": "border-color: var(--sky-500,oklch(68.5% .169 237.3))" },
       "numeric": false,
       "open": true,
       "valueCount": 304
@@ -2075,7 +2075,7 @@
       "name": "outlineColor",
       "description": "The outline-color CSS property sets the color of an element's outline.",
       "properties": ["outline-color"],
-      "example": { "value": "sky-500", "css": "outline-color: var(--sky-500)" },
+      "example": { "value": "sky-500", "css": "outline-color: var(--sky-500,oklch(68.5% .169 237.3))" },
       "numeric": false,
       "open": true,
       "valueCount": 304
@@ -2084,7 +2084,7 @@
       "name": "accentColor",
       "description": "The accent-color CSS property tints the parts of a native control the page does not draw: a checkbox's tick, a radio's dot, a range track, a progress bar. The one way to brand them without `appearance=\"none\"` and a rebuild, and it inherits — set it once on a form.",
       "properties": ["accent-color"],
-      "example": { "value": "sky-500", "css": "accent-color: var(--sky-500)" },
+      "example": { "value": "sky-500", "css": "accent-color: var(--sky-500,oklch(68.5% .169 237.3))" },
       "numeric": false,
       "open": true,
       "valueCount": 304
@@ -2093,7 +2093,7 @@
       "name": "caretColor",
       "description": "The caret-color CSS property sets the colour of the insertion caret in a text field or any editable element.",
       "properties": ["caret-color"],
-      "example": { "value": "sky-500", "css": "caret-color: var(--sky-500)" },
+      "example": { "value": "sky-500", "css": "caret-color: var(--sky-500,oklch(68.5% .169 237.3))" },
       "numeric": false,
       "open": true,
       "valueCount": 304
@@ -2120,7 +2120,7 @@
       "name": "fill",
       "description": "The fill CSS property defines how SVG text content and the interior canvas of SVG shapes are filled or painted. If present, it overrides the element's fill attribute. Takes a colour token, a paint server the document defines (`fill=\"url(#sky)\"` — a `<LinearGradient>` or a pattern) or a variable somebody else declared (`fill=\"var(--chart-1)\"`).",
       "properties": ["fill"],
-      "example": { "value": "sky-500", "css": "fill: var(--sky-500)" },
+      "example": { "value": "sky-500", "css": "fill: var(--sky-500,oklch(68.5% .169 237.3))" },
       "numeric": false,
       "open": true,
       "valueCount": 304
@@ -2147,7 +2147,7 @@
       "name": "stroke",
       "description": "The stroke CSS property defines the color or SVG paint server used to draw an element's stroke. Takes a colour token, `stroke=\"url(#sky)\"` for a paint server the document defines, or `stroke=\"var(--chart-1)\"` for a variable somebody else declared.",
       "properties": ["stroke"],
-      "example": { "value": "sky-500", "css": "stroke: var(--sky-500)" },
+      "example": { "value": "sky-500", "css": "stroke: var(--sky-500,oklch(68.5% .169 237.3))" },
       "numeric": false,
       "open": true,
       "valueCount": 304
@@ -2327,7 +2327,10 @@
       "name": "bgImage",
       "description": "The background-image CSS property sets one or more background images on an element.",
       "properties": ["background-image"],
-      "example": { "value": "gradient-primary", "css": "background-image: var(--gradient-primary)" },
+      "example": {
+        "value": "gradient-primary",
+        "css": "background-image: var(--gradient-primary,linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%))"
+      },
       "numeric": false,
       "open": false,
       "values": [
@@ -2347,7 +2350,7 @@
       "properties": ["background-image"],
       "example": {
         "value": { "linear": "r", "colors": ["blue-500", "pink-500"] },
-        "css": "background-image: linear-gradient(to right,var(--blue-500),var(--pink-500))"
+        "css": "background-image: linear-gradient(to right,var(--blue-500,oklch(62.3% .214 259.8)),var(--pink-500,oklch(65.6% .241 354.3)))"
       },
       "numeric": false,
       "open": true,
@@ -2369,7 +2372,7 @@
       "name": "shadowColor",
       "description": "What colour `shadow` draws in — the scale's own translucent black otherwise. Shows nothing on its own.",
       "properties": ["--boxShadowColor"],
-      "example": { "value": "sky-500", "css": "--boxShadowColor: var(--sky-500)" },
+      "example": { "value": "sky-500", "css": "--boxShadowColor: var(--sky-500,oklch(68.5% .169 237.3))" },
       "numeric": false,
       "open": true,
       "valueCount": 304
@@ -2390,7 +2393,7 @@
       "name": "insetShadowColor",
       "description": "What colour `insetShadow` draws in. Shows nothing on its own.",
       "properties": ["--boxInsetShadowColor"],
-      "example": { "value": "sky-500", "css": "--boxInsetShadowColor: var(--sky-500)" },
+      "example": { "value": "sky-500", "css": "--boxInsetShadowColor: var(--sky-500,oklch(68.5% .169 237.3))" },
       "numeric": false,
       "open": true,
       "valueCount": 304
@@ -2411,7 +2414,7 @@
       "name": "ringColor",
       "description": "What colour `ring` draws in. `currentColor` otherwise.",
       "properties": ["--boxRingColor"],
-      "example": { "value": "sky-500", "css": "--boxRingColor: var(--sky-500)" },
+      "example": { "value": "sky-500", "css": "--boxRingColor: var(--sky-500,oklch(68.5% .169 237.3))" },
       "numeric": false,
       "open": true,
       "valueCount": 304
@@ -2432,7 +2435,7 @@
       "name": "insetRingColor",
       "description": "What colour `insetRing` draws in. `currentColor` otherwise.",
       "properties": ["--boxInsetRingColor"],
-      "example": { "value": "sky-500", "css": "--boxInsetRingColor: var(--sky-500)" },
+      "example": { "value": "sky-500", "css": "--boxInsetRingColor: var(--sky-500,oklch(68.5% .169 237.3))" },
       "numeric": false,
       "open": true,
       "valueCount": 304
@@ -2450,7 +2453,7 @@
       "name": "textShadowColor",
       "description": "What colour `textShadow` draws in. Shows nothing on its own.",
       "properties": ["--boxTextShadowColor"],
-      "example": { "value": "sky-500", "css": "--boxTextShadowColor: var(--sky-500)" },
+      "example": { "value": "sky-500", "css": "--boxTextShadowColor: var(--sky-500,oklch(68.5% .169 237.3))" },
       "numeric": false,
       "open": true,
       "valueCount": 304
@@ -2567,7 +2570,7 @@
       "name": "dropShadowColor",
       "description": "What colour `dropShadow` draws in. Shows nothing on its own.",
       "properties": ["--boxDropShadowColor"],
-      "example": { "value": "sky-500", "css": "--boxDropShadowColor: var(--sky-500)" },
+      "example": { "value": "sky-500", "css": "--boxDropShadowColor: var(--sky-500,oklch(68.5% .169 237.3))" },
       "numeric": false,
       "open": true,
       "valueCount": 304
@@ -2686,7 +2689,7 @@
       "properties": ["mask-image"],
       "example": {
         "value": { "linear": "b", "colors": ["black", "transparent"] },
-        "css": "mask-image: linear-gradient(to bottom,var(--black),var(--transparent))"
+        "css": "mask-image: linear-gradient(to bottom,var(--black,#000),var(--transparent,transparent))"
       },
       "numeric": false,
       "open": true,
@@ -2750,7 +2753,10 @@
       "name": "scrollbarColor",
       "description": "The scrollbar-color CSS property sets the color of the scrollbar thumb and track. The value pair is [thumbColor, trackColor].",
       "properties": ["scrollbar-color"],
-      "example": { "value": ["gray-400", "gray-100"], "css": "scrollbar-color: var(--gray-400) var(--gray-100)" },
+      "example": {
+        "value": ["gray-400", "gray-100"],
+        "css": "scrollbar-color: var(--gray-400,oklch(70.7% .022 261.3)) var(--gray-100,oklch(96.7% .003 264.5))"
+      },
       "numeric": false,
       "open": false,
       "values": [
@@ -3157,7 +3163,7 @@
       "name": "vars",
       "description": "CSS custom properties on this element, inherited by everything inside it: `vars={{ 'color-x': 'sky-500' }}` emits `--color-x: var(--sky-500)`. The one prop whose declaration *names* come from its value, which is what makes it the answer for markup this library does not render — a Recharts `<Line>`, a third-party widget. A colour token becomes the variable behind it, anything else is written out as it stands.",
       "properties": ["--color-revenue"],
-      "example": { "value": { "color-revenue": "sky-500" }, "css": "--color-revenue: var(--sky-500)" },
+      "example": { "value": { "color-revenue": "sky-500" }, "css": "--color-revenue: var(--sky-500,oklch(68.5% .169 237.3))" },
       "numeric": false,
       "open": true,
       "values": []

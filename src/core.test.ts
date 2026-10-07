@@ -39,7 +39,10 @@ describe('core entry', () => {
     const element = render(engine, { p: 4, bgColor: 'red-500' });
 
     expect(element.className).toBe('_b p-4 bgColor-red-500');
-    expect(ruleListIn(engine.getStyles())).toEqual(['.p-4{padding:1rem}', '.bgColor-red-500{background-color:var(--red-500)}']);
+    expect(ruleListIn(engine.getStyles())).toEqual([
+      '.p-4{padding:1rem}',
+      '.bgColor-red-500{background-color:var(--red-500,oklch(63.7% .237 25.3))}',
+    ]);
   });
 
   it('resolves pseudo-classes, breakpoints and themes through the same call', () => {
@@ -50,7 +53,7 @@ describe('core entry', () => {
     expect(element.className).toBe('_b hover-p-4 md-p-8 theme-dark-color-white');
     expect(ruleListIn(engine.getStyles())).toEqual([
       '.hover-p-4:hover{padding:1rem}',
-      '@scope (.dark) to ([data-theme]){:scope .theme-dark-color-white{color:var(--white)}}',
+      '@scope (.dark) to ([data-theme]){:scope .theme-dark-color-white{color:var(--white,#fff)}}',
       '@media (min-width: 768px){.md-p-8{padding:2rem}}',
     ]);
   });
@@ -143,10 +146,11 @@ describe('core entry', () => {
     const withVariable = makeEngine('core-root-vars');
     const without = makeEngine('core-root-bare');
 
-    render(withVariable, { bgColor: 'red-500' });
-    render(without, { p: 4 });
+    withVariable.extend({ brand: '#123456' }, {}, {});
+    render(withVariable, { bgColor: 'brand' } as never);
+    render(without, { p: 4, bgColor: 'red-500' });
 
-    expect(withVariable.getStyles()).toContain(':root{--red-500:');
+    expect(withVariable.getStyles()).toContain(':root{--brand:');
     expect(without.getStyles()).not.toContain(':root{}');
   });
 

@@ -207,7 +207,17 @@ namespace Variables {
   export function colorValue(entry: string, getVariableValue: (name: string) => string): string {
     if (entry in colors) return getVariableValue(entry);
 
-    return Palette.isAlpha(entry) ? Palette.mix(entry, getVariableValue) : entry;
+    return Palette.isAlpha(entry) ? Palette.mix(entry, getVariableValue) : withFallbacks(entry, getVariableValue);
+  }
+
+  /**
+   * A value written as CSS, with every `var(--token)` naming one of this library's variables resolved the way
+   * a token is — so a hand-written `var(--violet-300)` carries its value too, and needs no `:root` declaration.
+   */
+  export function withFallbacks(value: string, getVariableValue: (name: string) => string): string {
+    if (!value.includes('var(--')) return value;
+
+    return value.replace(/var\(--([\w-]+)\)/g, (written, name: string) => (name in internalVariables ? getVariableValue(name) : written));
   }
 
   /**
@@ -237,6 +247,12 @@ namespace Variables {
   export interface VariablesRegistry {
     /** Record `name` as used (so it reaches `:root`) and return the `var(--name)` reference. */
     getVariableValue(name: string): string;
+    /**
+     * What a rule writes for `name`: one of this library's own variables as `var(--name,value)`, declaring
+     * nothing — a `:root` insert after the first paint recalculates every element (bug #205) — and any other
+     * the way `getVariableValue` does.
+     */
+    reference(name: string): string;
     /** Every variable used so far, as `:root` declarations. */
     generateVariables(): string;
     /** Variables used since the last call — returns and clears them. */
@@ -265,23 +281,40 @@ namespace Variables {
     const _usedVariables: Record<string, string> = {};
     const _pendingVariables: Record<string, string> = {};
     let _userVariables: Record<string, string> = {};
+    // The user variables being resolved right now, so one whose value names itself cannot recurse.
+    const _resolving = new Set<string>();
 
     function valueOf(name: string): string {
-      if (name in _userVariables) return _userVariables[name];
+      if (name in _userVariables) {
+        _resolving.add(name);
+        const value = withFallbacks(_userVariables[name], (inner) => (_resolving.has(inner) ? `var(--${inner})` : reference(inner)));
+        _resolving.delete(name);
+
+        return value;
+      }
 
       return name in internalVariables ? internalVariables[name as keyof typeof internalVariables] : name;
     }
 
-    return {
-      getVariableValue(name: string) {
-        // Only track as pending if it's a new variable
-        if (!(name in _usedVariables)) {
-          _usedVariables[name] = valueOf(name);
-          _pendingVariables[name] = _usedVariables[name];
-        }
+    function getVariableValue(name: string) {
+      // Only track as pending if it's a new variable
+      if (!(name in _usedVariables)) {
+        _usedVariables[name] = valueOf(name);
+        _pendingVariables[name] = _usedVariables[name];
+      }
 
-        return `var(--${name})`;
-      },
+      return `var(--${name})`;
+    }
+
+    function reference(name: string) {
+      if (name in _userVariables || !(name in internalVariables)) return getVariableValue(name);
+
+      return `var(--${name},${internalVariables[name as keyof typeof internalVariables]})`;
+    }
+
+    return {
+      getVariableValue,
+      reference,
 
       declare(names) {
         for (const name of names) {

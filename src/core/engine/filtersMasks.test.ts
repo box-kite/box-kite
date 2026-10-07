@@ -116,7 +116,9 @@ describe('a drop shadow', () => {
 
     renderStyles(engine, { dropShadow: 'sm', dropShadowColor: 'indigo-500/40' });
 
-    expect(generatedRulesOf(engine)).toContain('--boxDropShadowColor:color-mix(in oklab, var(--indigo-500) 40%, transparent)');
+    expect(generatedRulesOf(engine)).toContain(
+      '--boxDropShadowColor:color-mix(in oklab, var(--indigo-500,oklch(58.5% .233 277.1)) 40%, transparent)',
+    );
   });
 
   it('composes with an elevation, which is a different property entirely', () => {
@@ -160,7 +162,7 @@ describe('a mask', () => {
     renderStyles(engine, { maskImage: { linear: 'b', colors: ['black', 'transparent'] } });
 
     expect(ruleList(engine)).toEqual([
-      '.maskImage-linear-b_colors-black\\,transparent{mask-image:linear-gradient(to bottom,var(--black),var(--transparent))}',
+      '.maskImage-linear-b_colors-black\\,transparent{mask-image:linear-gradient(to bottom,var(--black,#000),var(--transparent,transparent))}',
     ]);
   });
 

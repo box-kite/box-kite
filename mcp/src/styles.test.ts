@@ -31,7 +31,7 @@ describe('check_styles', () => {
 
   it('resolves a nesting key, and reports one whose block wrote nothing', () => {
     expect(verdict({ hover: { bgColor: 'blue-600' } }, 'hover')?.css).toBe(
-      '.hover-bgColor-blue-600:hover{background-color:var(--blue-600)}',
+      '.hover-bgColor-blue-600:hover{background-color:var(--blue-600,oklch(54.6% .245 262.9))}',
     );
     expect(verdict({ hover: { bgColor: 'bleu-600' } }, 'hover')?.verdict).toBe('rejected-value');
     expect(verdict({ md: { p: 8 } }, 'md')?.css).toContain('@media');

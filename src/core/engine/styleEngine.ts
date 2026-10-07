@@ -554,11 +554,11 @@ export function createStyleEngine(options: StyleEngineOptions = {}): StyleEngine
    * definition that declares its own `declarations` (`vars`) the property names come from the value.
    */
   function declarations(itemValue: BoxStyle, key: string, value: BoxStyleValue) {
-    if (itemValue.declarations) return itemValue.declarations(value, variables.getVariableValue);
+    if (itemValue.declarations) return itemValue.declarations(value, variables.reference);
 
     const styleName = Array.isArray(itemValue.styleName) ? itemValue.styleName : [itemValue.styleName ?? key];
 
-    return styleName.map((s) => `${s}:${(itemValue.valueFormat as any)?.(value, variables.getVariableValue, s) ?? value}`).join(';');
+    return styleName.map((s) => `${s}:${(itemValue.valueFormat as any)?.(value, variables.reference, s) ?? value}`).join(';');
   }
 
   /** The definition a prop's value matches, or null when nothing accepts it — no rule, and no class name. */

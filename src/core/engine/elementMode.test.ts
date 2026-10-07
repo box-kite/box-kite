@@ -107,12 +107,13 @@ describe('element mode', () => {
 
   it('re-versions the base element when a variable is resolved later', () => {
     const engine = makeEngine('elements-variables', { sink: 'element' });
+    engine.extend({ brand: '#123456' }, {}, {});
     const first = elementsOf(engine, { p: 4 });
-    const second = elementsOf(engine, { bgColor: 'red-500' });
+    const second = elementsOf(engine, { bgColor: 'brand' } as never);
 
     expect(second.base.href).not.toBe(first.base.href);
-    expect(second.base.css).toContain('--red-500');
-    expect(first.base.css).not.toContain('--red-500');
+    expect(second.base.css).toContain('--brand');
+    expect(first.base.css).not.toContain('--brand');
   });
 
   it('still returns the whole stylesheet as text, so server rendering keeps working', () => {

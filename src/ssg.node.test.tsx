@@ -28,8 +28,8 @@ describe('SSG without a DOM', () => {
 
     expect(result.html).toBe('<div class="_b p-4 bgColor-red-500">hello</div>');
     expect(result.styles).toContain('.p-4{padding:1rem}');
-    expect(result.styles).toContain('.bgColor-red-500{background-color:var(--red-500)}');
-    expect(result.styles).toContain('--red-500:');
+    expect(result.styles).toContain('.bgColor-red-500{background-color:var(--red-500,oklch(63.7% .237 25.3))}');
+    expect(result.styles).not.toContain('--red-500:');
     // The reset comes along, so the markup is not styled against a blank sheet.
     expect(result.styles).toContain('._b{display: block;');
   });
@@ -79,11 +79,12 @@ describe('SSG without a DOM', () => {
   });
 
   it('does not accumulate variables in :root across requests', () => {
-    renderToStaticMarkup(<Box bgColor="red-500">first</Box>, false);
-    const second = renderToStaticMarkup(<Box bgColor="blue-500">second</Box>, false);
+    Box.extend({ 'ssg-first': '#111111', 'ssg-second': '#222222' }, {}, {});
+    renderToStaticMarkup(<Box bgColor={'ssg-first' as never}>first</Box>, false);
+    const second = renderToStaticMarkup(<Box bgColor={'ssg-second' as never}>second</Box>, false);
 
-    expect(second.styles).toContain('--blue-500:');
-    expect(second.styles).not.toContain('--red-500:');
+    expect(second.styles).toContain('--ssg-second:');
+    expect(second.styles).not.toContain('--ssg-first:');
   });
 
   it('renders a component that needs a portal in the browser', () => {

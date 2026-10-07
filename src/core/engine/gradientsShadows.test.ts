@@ -17,17 +17,17 @@ describe('a gradient', () => {
 
     expect(classNames).toEqual(['_b', 'bgGradient-linear-r_colors-blue-500,pink-500']);
     expect(ruleList(engine)).toEqual([
-      '.bgGradient-linear-r_colors-blue-500\\,pink-500{background-image:linear-gradient(to right,var(--blue-500),var(--pink-500))}',
+      '.bgGradient-linear-r_colors-blue-500\\,pink-500{background-image:linear-gradient(to right,var(--blue-500,oklch(62.3% .214 259.8)),var(--pink-500,oklch(65.6% .241 354.3)))}',
     ]);
   });
 
-  it('declares the variable behind every stop, once', () => {
+  it('writes the variable behind every stop with its value, declaring none', () => {
     const engine = makeEngine('gradient-variables');
 
     renderStyles(engine, { bgGradient: { linear: 'b', colors: ['blue-500', 'blue-500/40'] } });
 
-    expect(rulesOf(engine)).toContain('--blue-500: oklch(62.3% .214 259.8);');
-    expect(rulesOf(engine).split('--blue-500:')).toHaveLength(2);
+    expect(rulesOf(engine).split('var(--blue-500,oklch(62.3% .214 259.8))')).toHaveLength(3);
+    expect(rulesOf(engine)).not.toContain('--blue-500:');
   });
 
   it('emits neither a rule nor a class name for a gradient the grammar rejects', () => {
@@ -43,7 +43,9 @@ describe('a gradient', () => {
 
     renderStyles(engine, { hover: { bgGradient: { linear: 'r', colors: ['blue-500', 'pink-500'] } } });
 
-    expect(generatedRulesOf(engine)).toContain(':hover{background-image:linear-gradient(to right,var(--blue-500),var(--pink-500))}');
+    expect(generatedRulesOf(engine)).toContain(
+      ':hover{background-image:linear-gradient(to right,var(--blue-500,oklch(62.3% .214 259.8)),var(--pink-500,oklch(65.6% .241 354.3)))}',
+    );
   });
 
   it('shares one class with another element asking for the same gradient', () => {
@@ -100,9 +102,9 @@ describe('the shadow layers', () => {
     renderStyles(engine, { shadowColor: 'blue-500/40', ringColor: 'indigo-500', insetShadowColor: 'Canvas' });
 
     expect(ruleList(engine)).toEqual([
-      '.shadowColor-blue-500\\/40{--boxShadowColor:color-mix(in oklab, var(--blue-500) 40%, transparent)}',
+      '.shadowColor-blue-500\\/40{--boxShadowColor:color-mix(in oklab, var(--blue-500,oklch(62.3% .214 259.8)) 40%, transparent)}',
       '.insetShadowColor-Canvas{--boxInsetShadowColor:Canvas}',
-      '.ringColor-indigo-500{--boxRingColor:var(--indigo-500)}',
+      '.ringColor-indigo-500{--boxRingColor:var(--indigo-500,oklch(58.5% .233 277.1))}',
     ]);
   });
 
@@ -111,7 +113,7 @@ describe('the shadow layers', () => {
 
     renderStyles(engine, { shadow: 'medium' });
 
-    expect(ruleList(engine)).toEqual([`.shadow-medium{--boxShadow:var(--medium);${composed}}`]);
+    expect(ruleList(engine)).toEqual([`.shadow-medium{--boxShadow:var(--medium,rgba(0, 0, 0, 0.24) 0px 3px 8px);${composed}}`]);
   });
 
   it('registers every layer, which is what stops a child inheriting the elevation above it', () => {
@@ -143,7 +145,7 @@ describe('a text shadow', () => {
 
     expect(ruleList(engine)).toEqual([
       '.textShadow-xs{text-shadow:0px 1px 1px var(--boxTextShadowColor, rgb(0 0 0 / .2))}',
-      '.textShadowColor-black\\/20{--boxTextShadowColor:color-mix(in oklab, var(--black) 20%, transparent)}',
+      '.textShadowColor-black\\/20{--boxTextShadowColor:color-mix(in oklab, var(--black,#000) 20%, transparent)}',
     ]);
   });
 

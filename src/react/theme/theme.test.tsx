@@ -638,7 +638,9 @@ describe('Theme', () => {
         </Theme>,
       );
 
-      expect(getStyleSheet().innerText).toContain('html{scrollbar-color:var(--violet-500) var(--transparent)}');
+      expect(getStyleSheet().innerText).toContain(
+        'html{scrollbar-color:var(--violet-500,oklch(60.6% .25 292.7)) var(--transparent,transparent)}',
+      );
     });
 
     it('emits a compound selector `html.<theme>` for theme-keyed values', () => {
@@ -648,7 +650,9 @@ describe('Theme', () => {
         </Theme>,
       );
 
-      expect(getStyleSheet().innerText).toContain('html.dark{scrollbar-color:var(--violet-700) var(--gray-900)}');
+      expect(getStyleSheet().innerText).toContain(
+        'html.dark{scrollbar-color:var(--violet-700,oklch(49.1% .27 292.6)) var(--gray-900,oklch(21% .034 264.7))}',
+      );
     });
 
     it('does NOT emit an `html` rule when use="local"', () => {
@@ -658,7 +662,7 @@ describe('Theme', () => {
         </Theme>,
       );
 
-      expect(getStyleSheet().innerText).not.toContain('html{scrollbar-color:var(--fuchsia-500)');
+      expect(getStyleSheet().innerText).not.toContain('html{scrollbar-color:var(--fuchsia-500,oklch(66.7% .295 322.2))');
     });
 
     it('emits multiple global props in a single Theme', () => {
@@ -669,7 +673,7 @@ describe('Theme', () => {
       );
 
       const sheet = getStyleSheet().innerText;
-      expect(sheet).toContain('html{scrollbar-color:var(--emerald-500) var(--transparent)}');
+      expect(sheet).toContain('html{scrollbar-color:var(--emerald-500,oklch(69.6% .17 162.5)) var(--transparent,transparent)}');
       expect(sheet).toContain('html{scrollbar-width:thin}');
     });
   });

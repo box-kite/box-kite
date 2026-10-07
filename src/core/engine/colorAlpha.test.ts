@@ -12,17 +12,19 @@ describe('a colour with an opacity modifier', () => {
     const classNames = renderStyles(engine, { bgColor: 'blue-500/40' });
 
     expect(classNames).toEqual(['_b', 'bgColor-blue-500/40']);
-    expect(ruleList(engine)).toEqual(['.bgColor-blue-500\\/40{background-color:color-mix(in oklab, var(--blue-500) 40%, transparent)}']);
+    expect(ruleList(engine)).toEqual([
+      '.bgColor-blue-500\\/40{background-color:color-mix(in oklab, var(--blue-500,oklch(62.3% .214 259.8)) 40%, transparent)}',
+    ]);
   });
 
-  it('shares one variable with the plain token, declared once', () => {
+  it('shares one variable with the plain token, and declares none', () => {
     const engine = makeEngine('alpha-variable');
 
     renderStyles(engine, { bgColor: 'red-500' });
     renderStyles(engine, { color: 'red-500/50' });
 
-    expect(rulesOf(engine).split('--red-500:')).toHaveLength(2);
-    expect(rulesOf(engine)).toContain('--red-500: oklch(63.7% .237 25.3);');
+    expect(rulesOf(engine).split('var(--red-500,oklch(63.7% .237 25.3))')).toHaveLength(3);
+    expect(rulesOf(engine)).not.toContain('--red-500:');
   });
 
   it('is a value, so every colour prop takes it', () => {
@@ -32,11 +34,11 @@ describe('a colour with an opacity modifier', () => {
     renderStyles(engine, { fill: 'sky-500/40', stroke: 'sky-500/50' }, true);
 
     expect(ruleList(engine)).toEqual([
-      '.color-sky-500\\/10{color:color-mix(in oklab, var(--sky-500) 10%, transparent)}',
-      '.borderColor-sky-500\\/20{border-color:color-mix(in oklab, var(--sky-500) 20%, transparent)}',
-      '.outlineColor-sky-500\\/30{outline-color:color-mix(in oklab, var(--sky-500) 30%, transparent)}',
-      '.fill-sky-500\\/40{fill:color-mix(in oklab, var(--sky-500) 40%, transparent)}',
-      '.stroke-sky-500\\/50{stroke:color-mix(in oklab, var(--sky-500) 50%, transparent)}',
+      '.color-sky-500\\/10{color:color-mix(in oklab, var(--sky-500,oklch(68.5% .169 237.3)) 10%, transparent)}',
+      '.borderColor-sky-500\\/20{border-color:color-mix(in oklab, var(--sky-500,oklch(68.5% .169 237.3)) 20%, transparent)}',
+      '.outlineColor-sky-500\\/30{outline-color:color-mix(in oklab, var(--sky-500,oklch(68.5% .169 237.3)) 30%, transparent)}',
+      '.fill-sky-500\\/40{fill:color-mix(in oklab, var(--sky-500,oklch(68.5% .169 237.3)) 40%, transparent)}',
+      '.stroke-sky-500\\/50{stroke:color-mix(in oklab, var(--sky-500,oklch(68.5% .169 237.3)) 50%, transparent)}',
     ]);
   });
 
@@ -46,8 +48,8 @@ describe('a colour with an opacity modifier', () => {
     renderStyles(engine, { md: { hover: { bgColor: 'black/60' } }, theme: { dark: { bgColor: 'white/10' } } });
 
     expect(ruleList(engine)).toEqual([
-      '@scope (.dark) to ([data-theme]){:scope .theme-dark-bgColor-white\\/10{background-color:color-mix(in oklab, var(--white) 10%, transparent)}}',
-      '@media (min-width: 768px){.md-hover-bgColor-black\\/60:hover{background-color:color-mix(in oklab, var(--black) 60%, transparent)}}',
+      '@scope (.dark) to ([data-theme]){:scope .theme-dark-bgColor-white\\/10{background-color:color-mix(in oklab, var(--white,#fff) 10%, transparent)}}',
+      '@media (min-width: 768px){.md-hover-bgColor-black\\/60:hover{background-color:color-mix(in oklab, var(--black,#000) 60%, transparent)}}',
     ]);
   });
 
@@ -75,7 +77,7 @@ describe('a colour with an opacity modifier', () => {
     renderStyles(engine, { vars: { 'color-revenue': 'violet-500/30' } });
 
     expect(ruleList(engine)).toEqual([
-      '.vars-color-revenue-violet-500\\/30{--color-revenue:color-mix(in oklab, var(--violet-500) 30%, transparent)}',
+      '.vars-color-revenue-violet-500\\/30{--color-revenue:color-mix(in oklab, var(--violet-500,oklch(60.6% .25 292.7)) 30%, transparent)}',
     ]);
   });
 });

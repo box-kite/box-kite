@@ -107,7 +107,7 @@ describe('SSR round-trip', () => {
     expect(client.html).toBe(server.html);
     expect(splitRules(client.styles)).toEqual(splitRules(server.styles));
     expect(client.styles).toContain(
-      '@scope (.dark) to ([data-theme]){:scope .theme-dark-bgColor-gray-900{background-color:var(--gray-900)}}',
+      '@scope (.dark) to ([data-theme]){:scope .theme-dark-bgColor-gray-900{background-color:var(--gray-900,oklch(21% .034 264.7))}}',
     );
   });
 
@@ -125,7 +125,7 @@ describe('SSR round-trip', () => {
     expect(server.html).toContain('class="_b light"');
   });
 
-  it('declares the same :root variables on both sides', () => {
+  it('declares the same :root blocks on both sides, and no token in them', () => {
     const { server, client } = roundTrip(
       <Box color="violet-500" bgColor="violet-50" shadow="medium">
         tokens
@@ -135,8 +135,8 @@ describe('SSR round-trip', () => {
     const rootBlocks = (css: string) => splitRules(css).filter((rule) => rule.startsWith(':root{'));
 
     expect(rootBlocks(client.styles)).toEqual(rootBlocks(server.styles));
-    expect(client.styles).toContain('--violet-500:');
-    expect(client.styles).toContain('--medium:');
+    expect(rootBlocks(client.styles).join('')).not.toContain('--violet-500:');
+    expect(client.styles).toContain('var(--medium,');
   });
 
   it('gives the browser the same cascade when the client writes to a real stylesheet', () => {

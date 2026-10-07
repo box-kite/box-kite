@@ -39,10 +39,10 @@ export default function ColorPage() {
       <Reveal delay={0.1}>
         <Flex d="column" gap={10}>
           <Section id="tokens" title="A colour is a variable">
-            Every token is a CSS variable, declared in <Mono>:root</Mono> the first time something on the page asks for it, and used through{' '}
-            <Mono>var()</Mono> everywhere after that. That is what makes a colour cheap to repeat and possible to override — and why the
-            values below are <Mono>oklch()</Mono> rather than hex: a perceptual space is what keeps a step even across the hues and a theme
-            legible at every one of them.
+            Every token is a CSS variable, written with its own value as the fallback, so it is declared nowhere: a <Mono>:root</Mono>{' '}
+            insert after the page has painted would recalculate every element on it. Declare <Mono>--blue-500</Mono> yourself and it wins.
+            That is what makes a colour cheap to repeat and possible to override — and why the values below are <Mono>oklch()</Mono> rather
+            than hex: a perceptual space is what keeps a step even across the hues and a theme legible at every one of them.
           </Section>
 
           <Code
@@ -51,13 +51,9 @@ export default function ColorPage() {
             language="css"
             codeOnly
             check={false}
-            code={`:root {
-  --blue-500: oklch(62.3% .214 259.8);   /* lightness, chroma, hue */
-}
-
-/* bgColor="blue-500" */
+            code={`/* bgColor="blue-500" — lightness, chroma, hue */
 .bgColor-blue-500 {
-  background-color: var(--blue-500);
+  background-color: var(--blue-500,oklch(62.3% .214 259.8));
 }`}
           />
 
@@ -148,7 +144,7 @@ export default function ColorPage() {
             check={false}
             code={`/* bgColor="blue-500/40" */
 .bgColor-blue-500\\/40 {
-  background-color: color-mix(in oklab, var(--blue-500) 40%, transparent);
+  background-color: color-mix(in oklab, var(--blue-500,oklch(62.3% .214 259.8)) 40%, transparent);
 }`}
           />
 

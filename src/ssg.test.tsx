@@ -54,7 +54,7 @@ describe('SSG', () => {
     const result = renderToStaticMarkup(el);
 
     // Check for required CSS rules (order may vary due to incremental generation)
-    expect(result.styles).includes(':root{--white: #fff;}');
+    expect(result.styles).not.includes('--white:');
     expect(result.styles).includes(':root{--borderColor: black;');
     expect(result.styles).includes('._b{display: block;');
     expect(result.styles).includes('._s{display: block;');
@@ -66,7 +66,7 @@ describe('SSG', () => {
     expect(result.styles).includes('.cursor-pointer{cursor:pointer}');
     expect(result.styles).includes('.pb-2{padding-bottom:0.5rem}');
     expect(result.styles).includes('.pl-2{padding-left:0.5rem}');
-    expect(result.styles).includes('.bgColor-white{background-color:var(--white)}');
+    expect(result.styles).includes('.bgColor-white{background-color:var(--white,#fff)}');
     expect(result.styles).includes('.parent:hover .hover-parent-display-block{display:block}');
 
     // Check HTML structure
@@ -120,7 +120,7 @@ describe('SSG', () => {
 
     const result = renderToStaticMarkup(el);
 
-    expect(result.styles).includes('.stroke-violet-500{stroke:var(--violet-500)}');
+    expect(result.styles).includes('.stroke-violet-500{stroke:var(--violet-500,oklch(60.6% .25 292.7))}');
     expect(result.styles).includes('.strokeWidth-2{stroke-width:2}');
     expect(result.styles).includes('.strokeLinecap-round{stroke-linecap:round}');
     expect(result.styles).includes('.strokeDasharray-8_4{stroke-dasharray:8 4}');

@@ -17,8 +17,8 @@ describe('a theme reaches exactly the subtree it owns', () => {
     // The class names are the ones an ancestor selector produced: what changed is where the rule reaches.
     expect(classNames).toEqual(['_b', 'theme-dark-bgColor-slate-950', 'theme-light-bgColor-white']);
     expect(ruleList(engine)).toEqual([
-      '@scope (.dark) to ([data-theme]){:scope .theme-dark-bgColor-slate-950{background-color:var(--slate-950)}}',
-      '@scope (.light) to ([data-theme]){:scope .theme-light-bgColor-white{background-color:var(--white)}}',
+      '@scope (.dark) to ([data-theme]){:scope .theme-dark-bgColor-slate-950{background-color:var(--slate-950,oklch(12.9% .042 264.7))}}',
+      '@scope (.light) to ([data-theme]){:scope .theme-light-bgColor-white{background-color:var(--white,#fff)}}',
     ]);
   });
 
@@ -39,7 +39,7 @@ describe('a theme reaches exactly the subtree it owns', () => {
     renderStyles(engine, { md: { theme: { dark: { color: 'white' } } }, theme: { dark: { startingStyle: { opacity: 0 } } } });
 
     expect(ruleList(engine)).toEqual([
-      '@media (min-width: 768px){@scope (.dark) to ([data-theme]){:scope .md-theme-dark-color-white{color:var(--white)}}}',
+      '@media (min-width: 768px){@scope (.dark) to ([data-theme]){:scope .md-theme-dark-color-white{color:var(--white,#fff)}}}',
       '@scope (.dark) to ([data-theme]){@starting-style{:scope .starting-theme-dark-opacity-0{opacity:0!important}}}',
     ]);
   });
@@ -52,6 +52,6 @@ describe('a theme reaches exactly the subtree it owns', () => {
     engine.addGlobalStyles({ theme: { dark: { bgColor: 'gray-900' } } }, 'html');
     engine.flushSync();
 
-    expect(ruleList(engine)).toEqual(['html.dark{background-color:var(--gray-900)}']);
+    expect(ruleList(engine)).toEqual(['html.dark{background-color:var(--gray-900,oklch(21% .034 264.7))}']);
   });
 });

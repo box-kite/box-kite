@@ -70,7 +70,9 @@ describe('container queries', () => {
     const classNames = renderStyles(engine, { cq: { 'sidebar/lg': { color: 'red-500' } } });
 
     expect(classNames).toEqual(['_b', 'cq-sidebar/lg-color-red-500']);
-    expect(ruleList(engine)).toEqual(['@container sidebar (min-width: 32rem){.cq-sidebar\\/lg-color-red-500{color:var(--red-500)}}']);
+    expect(ruleList(engine)).toEqual([
+      '@container sidebar (min-width: 32rem){.cq-sidebar\\/lg-color-red-500{color:var(--red-500,oklch(63.7% .237 25.3))}}',
+    ]);
   });
 
   it('drops a block whose key the grammar rejects', () => {
@@ -139,9 +141,9 @@ describe('container queries', () => {
 
     expect(ruleList(engine)).toEqual([
       '@container (min-width: 28rem){.cq-md-hover-opacity-1:hover{opacity:1}}',
-      '@container (min-width: 28rem){.cq-md-dataAttr-state\\=open-color-white[data-state="open"]{color:var(--white)}}',
-      '@container (min-width: 28rem){.card:hover .cq-md-hover-card-color-red-500{color:var(--red-500)}}',
-      '@container (min-width: 28rem){@scope (.dark) to ([data-theme]){:scope .cq-md-theme-dark-bgColor-black{background-color:var(--black)}}}',
+      '@container (min-width: 28rem){.cq-md-dataAttr-state\\=open-color-white[data-state="open"]{color:var(--white,#fff)}}',
+      '@container (min-width: 28rem){.card:hover .cq-md-hover-card-color-red-500{color:var(--red-500,oklch(63.7% .237 25.3))}}',
+      '@container (min-width: 28rem){@scope (.dark) to ([data-theme]){:scope .cq-md-theme-dark-bgColor-black{background-color:var(--black,#000)}}}',
       '@container (min-width: 28rem){.cq-md-before-content-New::before{content:"New"}}',
       '@container (min-width: 28rem){@starting-style{.cq-md-starting-opacity-0{opacity:0!important}}}',
     ]);

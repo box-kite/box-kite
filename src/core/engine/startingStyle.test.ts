@@ -74,7 +74,7 @@ describe('startingStyle', () => {
     renderStyles(engine, { theme: { dark: { startingStyle: { bgColor: 'gray-900' } } } });
 
     expect(ruleList(engine)).toEqual([
-      '@scope (.dark) to ([data-theme]){@starting-style{:scope .starting-theme-dark-bgColor-gray-900{background-color:var(--gray-900)!important}}}',
+      '@scope (.dark) to ([data-theme]){@starting-style{:scope .starting-theme-dark-bgColor-gray-900{background-color:var(--gray-900,oklch(21% .034 264.7))!important}}}',
     ]);
   });
 

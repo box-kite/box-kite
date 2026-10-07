@@ -92,8 +92,8 @@ describe('the native-control props', () => {
     renderStyles(engine, { caretColor: 'sky-500/60' });
 
     expect(ruleList(engine)).toEqual([
-      '.accentColor-violet-500{accent-color:var(--violet-500)}',
-      '.caretColor-sky-500\\/60{caret-color:color-mix(in oklab, var(--sky-500) 60%, transparent)}',
+      '.accentColor-violet-500{accent-color:var(--violet-500,oklch(60.6% .25 292.7))}',
+      '.caretColor-sky-500\\/60{caret-color:color-mix(in oklab, var(--sky-500,oklch(68.5% .169 237.3)) 60%, transparent)}',
     ]);
   });
 

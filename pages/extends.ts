@@ -2,10 +2,6 @@ import Box from '../src/box';
 import Variables from '../src/core/variables';
 import type { BoxComponentStyles } from '../src/types';
 
-// preload variable
-Box.getVariableValue('violet-300');
-Box.getVariableValue('slate-700');
-
 export const { extendedProps, extendedPropTypes } = Box.extend(
   {
     // Gradients

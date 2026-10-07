@@ -18,11 +18,12 @@ const opacityValues = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1] as con
 /**
  * `url(#id)` or `var(--name)` — a gradient, a pattern, a clip path: something the document defines
  * rather than a token this library knows. Declared after each prop's token list, which `find` gives
- * first refusal, and deliberately unformatted: someone else's variable is not ours to resolve.
+ * first refusal. Only a palette variable gains its fallback: someone else's variable is not ours to resolve.
  */
 const referenceValues = {
   values: Variables.reference,
   match: Variables.isReference,
+  valueFormat: (value: string, getVariableValue: (name: string) => string) => Variables.withFallbacks(value, getVariableValue),
 } satisfies BoxStyle;
 
 /**
@@ -2625,7 +2626,7 @@ export const cssStyles = {
   ],
   /**
    * The color CSS property sets the foreground color value of an element's text and text decorations, and sets the currentcolor value.
-   * @example color="sky-500" → color: var(--sky-500)
+   * @example color="sky-500" → color: var(--sky-500,oklch(68.5% .169 237.3))
    */
   color: [
     {
@@ -2641,7 +2642,7 @@ export const cssStyles = {
   ],
   /**
    * The background-color CSS property sets the background color of an element.
-   * @example bgColor="sky-500" → background-color: var(--sky-500)
+   * @example bgColor="sky-500" → background-color: var(--sky-500,oklch(68.5% .169 237.3))
    */
   bgColor: [
     {
@@ -2657,7 +2658,7 @@ export const cssStyles = {
   ],
   /**
    * The border-color shorthand CSS property sets the color of an element's border.
-   * @example borderColor="sky-500" → border-color: var(--sky-500)
+   * @example borderColor="sky-500" → border-color: var(--sky-500,oklch(68.5% .169 237.3))
    */
   borderColor: [
     {
@@ -2673,7 +2674,7 @@ export const cssStyles = {
   ],
   /**
    * The outline-color CSS property sets the color of an element's outline.
-   * @example outlineColor="sky-500" → outline-color: var(--sky-500)
+   * @example outlineColor="sky-500" → outline-color: var(--sky-500,oklch(68.5% .169 237.3))
    */
   outlineColor: [
     {
@@ -2691,7 +2692,7 @@ export const cssStyles = {
    * The accent-color CSS property tints the parts of a native control the page does not draw: a checkbox's
    * tick, a radio's dot, a range track, a progress bar. The one way to brand them without `appearance="none"`
    * and a rebuild, and it inherits — set it once on a form.
-   * @example accentColor="sky-500" → accent-color: var(--sky-500)
+   * @example accentColor="sky-500" → accent-color: var(--sky-500,oklch(68.5% .169 237.3))
    */
   accentColor: [
     {
@@ -2707,7 +2708,7 @@ export const cssStyles = {
   ],
   /**
    * The caret-color CSS property sets the colour of the insertion caret in a text field or any editable element.
-   * @example caretColor="sky-500" → caret-color: var(--sky-500)
+   * @example caretColor="sky-500" → caret-color: var(--sky-500,oklch(68.5% .169 237.3))
    */
   caretColor: [
     {
@@ -2745,7 +2746,7 @@ export const cssStyles = {
   ],
   /**
    * The fill CSS property defines how SVG text content and the interior canvas of SVG shapes are filled or painted. If present, it overrides the element's fill attribute. Takes a colour token, a paint server the document defines (`fill="url(#sky)"` — a `<LinearGradient>` or a pattern) or a variable somebody else declared (`fill="var(--chart-1)"`).
-   * @example fill="sky-500" → fill: var(--sky-500)
+   * @example fill="sky-500" → fill: var(--sky-500,oklch(68.5% .169 237.3))
    */
   fill: [
     {
@@ -2780,7 +2781,7 @@ export const cssStyles = {
   ],
   /**
    * The stroke CSS property defines the color or SVG paint server used to draw an element's stroke. Takes a colour token, `stroke="url(#sky)"` for a paint server the document defines, or `stroke="var(--chart-1)"` for a variable somebody else declared.
-   * @example stroke="sky-500" → stroke: var(--sky-500)
+   * @example stroke="sky-500" → stroke: var(--sky-500,oklch(68.5% .169 237.3))
    */
   stroke: [
     {
@@ -3025,7 +3026,7 @@ export const cssStyles = {
   ],
   /**
    * The background-image CSS property sets one or more background images on an element.
-   * @example bgImage="gradient-primary" → background-image: var(--gradient-primary)
+   * @example bgImage="gradient-primary" → background-image: var(--gradient-primary,linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 10…
    */
   bgImage: [
     {
@@ -3040,7 +3041,7 @@ export const cssStyles = {
    * palette token, one with an opacity modifier, or a `[colour, position]` pair. `interpolate="oklch"` is
    * what keeps a two-stop gradient out of the grey middle sRGB runs it through. Writes `background-image`,
    * so it and `bgImage` are the same property: use one.
-   * @example bgGradient={{ linear: 'r', colors: ['blue-500', 'pink-500'] }} → background-image: linear-gradient(to right,var(--blue-500),var(--pink-500))
+   * @example bgGradient={{ linear: 'r', colors: ['blue-500', 'pink-500'] }} → background-image: linear-gradient(to right,var(--blue-500,oklch(62.3% .214 259.8)),var(--pink-500,ok…
    */
   bgGradient: [
     {
@@ -3067,7 +3068,7 @@ export const cssStyles = {
   ],
   /**
    * What colour `shadow` draws in — the scale's own translucent black otherwise. Shows nothing on its own.
-   * @example shadowColor="sky-500" → --boxShadowColor: var(--sky-500)
+   * @example shadowColor="sky-500" → --boxShadowColor: var(--sky-500,oklch(68.5% .169 237.3))
    */
   shadowColor: shadowColor('Shadow'),
   /**
@@ -3082,7 +3083,7 @@ export const cssStyles = {
   ],
   /**
    * What colour `insetShadow` draws in. Shows nothing on its own.
-   * @example insetShadowColor="sky-500" → --boxInsetShadowColor: var(--sky-500)
+   * @example insetShadowColor="sky-500" → --boxInsetShadowColor: var(--sky-500,oklch(68.5% .169 237.3))
    */
   insetShadowColor: shadowColor('InsetShadow'),
   /**
@@ -3098,7 +3099,7 @@ export const cssStyles = {
   ],
   /**
    * What colour `ring` draws in. `currentColor` otherwise.
-   * @example ringColor="sky-500" → --boxRingColor: var(--sky-500)
+   * @example ringColor="sky-500" → --boxRingColor: var(--sky-500,oklch(68.5% .169 237.3))
    */
   ringColor: shadowColor('Ring'),
   /**
@@ -3113,7 +3114,7 @@ export const cssStyles = {
   ],
   /**
    * What colour `insetRing` draws in. `currentColor` otherwise.
-   * @example insetRingColor="sky-500" → --boxInsetRingColor: var(--sky-500)
+   * @example insetRingColor="sky-500" → --boxInsetRingColor: var(--sky-500,oklch(68.5% .169 237.3))
    */
   insetRingColor: shadowColor('InsetRing'),
   /**
@@ -3129,7 +3130,7 @@ export const cssStyles = {
   ],
   /**
    * What colour `textShadow` draws in. Shows nothing on its own.
-   * @example textShadowColor="sky-500" → --boxTextShadowColor: var(--sky-500)
+   * @example textShadowColor="sky-500" → --boxTextShadowColor: var(--sky-500,oklch(68.5% .169 237.3))
    */
   textShadowColor: shadowColor('TextShadow'),
   /**
@@ -3190,7 +3191,7 @@ export const cssStyles = {
   ],
   /**
    * What colour `dropShadow` draws in. Shows nothing on its own.
-   * @example dropShadowColor="sky-500" → --boxDropShadowColor: var(--sky-500)
+   * @example dropShadowColor="sky-500" → --boxDropShadowColor: var(--sky-500,oklch(68.5% .169 237.3))
    */
   dropShadowColor: shadowColor('DropShadow'),
   /**
@@ -3242,7 +3243,7 @@ export const cssStyles = {
    * What the element is masked by: the alpha channel of an image decides which of its pixels are painted.
    * Takes the same gradient record `bgGradient` does — so a fade to `transparent` is the whole edge-fade
    * recipe — or a `url(#id)`/`var(--name)` somebody else defined. One mask, not a stack.
-   * @example maskImage={{ linear: 'b', colors: ['black', 'transparent'] }} → mask-image: linear-gradient(to bottom,var(--black),var(--transparent))
+   * @example maskImage={{ linear: 'b', colors: ['black', 'transparent'] }} → mask-image: linear-gradient(to bottom,var(--black,#000),var(--transparent,transparent))
    */
   maskImage: [
     {
@@ -3358,7 +3359,7 @@ export const cssStyles = {
   ],
   /**
    * The scrollbar-color CSS property sets the color of the scrollbar thumb and track. The value pair is [thumbColor, trackColor].
-   * @example scrollbarColor={['gray-400', 'gray-100']} → scrollbar-color: var(--gray-400) var(--gray-100)
+   * @example scrollbarColor={['gray-400', 'gray-100']} → scrollbar-color: var(--gray-400,oklch(70.7% .022 261.3)) var(--gray-100,oklch(96.7% .003 264.5))
    */
   scrollbarColor: [
     {
@@ -3543,7 +3544,7 @@ export const cssStyles = {
    * emits `--color-x: var(--sky-500)`. The one prop whose declaration *names* come from its value, which is
    * what makes it the answer for markup this library does not render — a Recharts `<Line>`, a third-party
    * widget. A colour token becomes the variable behind it, anything else is written out as it stands.
-   * @example vars={{ 'color-revenue': 'sky-500' }} → --color-revenue: var(--sky-500)
+   * @example vars={{ 'color-revenue': 'sky-500' }} → --color-revenue: var(--sky-500,oklch(68.5% .169 237.3))
    */
   vars: [
     {

@@ -68,8 +68,10 @@ describe('useStyles', () => {
       hover: { bgColor: 'gray-100' },
       focus: { bgColor: 'gray-200' },
     });
-    expect(styleElement.innerText).toContain('.hover-bgColor-gray-100:hover{background-color:var(--gray-100)}');
-    expect(styleElement.innerText).toContain('.focus-bgColor-gray-200:focus-within{background-color:var(--gray-200)}');
+    expect(styleElement.innerText).toContain('.hover-bgColor-gray-100:hover{background-color:var(--gray-100,oklch(96.7% .003 264.5))}');
+    expect(styleElement.innerText).toContain(
+      '.focus-bgColor-gray-200:focus-within{background-color:var(--gray-200,oklch(92.8% .006 264.5))}',
+    );
     expect(element.classList).toContain('hover-bgColor-gray-100');
     expect(element.classList).toContain('focus-bgColor-gray-200');
   });
@@ -90,8 +92,12 @@ describe('useStyles', () => {
       selected: [true, { borderColor: 'blue-300' }],
       checked: [true, { bgColor: 'green-100' }],
     });
-    expect(styleElement.innerText).toContain('.selected-borderColor-blue-300[aria-selected="true"]{border-color:var(--blue-300)}');
-    expect(styleElement.innerText).toContain('.checked-bgColor-green-100:checked{background-color:var(--green-100)}');
+    expect(styleElement.innerText).toContain(
+      '.selected-borderColor-blue-300[aria-selected="true"]{border-color:var(--blue-300,oklch(80.9% .105 251.8))}',
+    );
+    expect(styleElement.innerText).toContain(
+      '.checked-bgColor-green-100:checked{background-color:var(--green-100,oklch(96.2% .044 156.7))}',
+    );
     expect(element.classList).toContain('selected-borderColor-blue-300');
     expect(element.classList).toContain('checked-bgColor-green-100');
   });
@@ -100,7 +106,7 @@ describe('useStyles', () => {
     const { element, styleElement } = act({
       required: [true, { borderColor: 'red-500' }],
     });
-    expect(styleElement.innerText).toContain('.required-borderColor-red-500:required{border-color:var(--red-500)}');
+    expect(styleElement.innerText).toContain('.required-borderColor-red-500:required{border-color:var(--red-500,oklch(63.7% .237 25.3))}');
     expect(element.classList).toContain('required-borderColor-red-500');
   });
 
@@ -108,7 +114,9 @@ describe('useStyles', () => {
     const { element, styleElement } = act({
       placeholderStyles: { color: 'gray-400' },
     });
-    expect(styleElement.innerText).toContain('.placeholderStyles-color-gray-400::placeholder{color:var(--gray-400)}');
+    expect(styleElement.innerText).toContain(
+      '.placeholderStyles-color-gray-400::placeholder{color:var(--gray-400,oklch(70.7% .022 261.3))}',
+    );
     expect(element.classList).toContain('placeholderStyles-color-gray-400');
   });
 
@@ -116,7 +124,9 @@ describe('useStyles', () => {
     const { element, styleElement } = act({
       hover: { placeholderStyles: { color: 'gray-500' } },
     });
-    expect(styleElement.innerText).toContain('.hover-placeholderStyles-color-gray-500:hover::placeholder{color:var(--gray-500)}');
+    expect(styleElement.innerText).toContain(
+      '.hover-placeholderStyles-color-gray-500:hover::placeholder{color:var(--gray-500,oklch(55.1% .027 264.4))}',
+    );
     expect(element.classList).toContain('hover-placeholderStyles-color-gray-500');
   });
 
@@ -151,12 +161,12 @@ describe('useStyles', () => {
       });
 
       expect(styleElement.innerText).toContain(
-        '.parent[aria-selected="true"] .selected-parent-bgColor-blue-100{background-color:var(--blue-100)}',
+        '.parent[aria-selected="true"] .selected-parent-bgColor-blue-100{background-color:var(--blue-100,oklch(93.2% .032 255.6))}',
       );
       // The nested `hover` is *this* element's, not the group's (bug #115): both states used to share
       // the pseudo-class mask, so the group came out `:hover[aria-selected="true"]` and the element bare.
       expect(styleElement.innerText).toContain(
-        '.parent[aria-selected="true"] .hover-selected-parent-bgColor-blue-200:hover{background-color:var(--blue-200)}',
+        '.parent[aria-selected="true"] .hover-selected-parent-bgColor-blue-200:hover{background-color:var(--blue-200,oklch(88.2% .059 254.1))}',
       );
 
       expect(element.classList).toContain('selected-parent-bgColor-blue-100');
@@ -295,13 +305,13 @@ describe('useStyles', () => {
   suite('color props with variable resolution', () => {
     it('applies color prop with CSS variable', () => {
       const { element, styleElement } = act({ color: 'red-500' });
-      expect(styleElement.innerText).toContain('.color-red-500{color:var(--red-500)}');
+      expect(styleElement.innerText).toContain('.color-red-500{color:var(--red-500,oklch(63.7% .237 25.3))}');
       expect(element.classList).toContain('color-red-500');
     });
 
     it('applies borderColor prop with CSS variable', () => {
       const { element, styleElement } = act({ borderColor: 'blue-500' });
-      expect(styleElement.innerText).toContain('.borderColor-blue-500{border-color:var(--blue-500)}');
+      expect(styleElement.innerText).toContain('.borderColor-blue-500{border-color:var(--blue-500,oklch(62.3% .214 259.8))}');
       expect(element.classList).toContain('borderColor-blue-500');
     });
   });
@@ -415,7 +425,7 @@ describe('useStyles', () => {
     it('applies breakpoint with hover pseudo class', () => {
       const { element, styleElement } = act({ sm: { hover: { bgColor: 'gray-100' } } });
       expect(styleElement.innerText).toContain(
-        '@media (min-width: 640px){.sm-hover-bgColor-gray-100:hover{background-color:var(--gray-100)}}',
+        '@media (min-width: 640px){.sm-hover-bgColor-gray-100:hover{background-color:var(--gray-100,oklch(96.7% .003 264.5))}}',
       );
       expect(element.classList).toContain('sm-hover-bgColor-gray-100');
     });
@@ -455,7 +465,9 @@ describe('useStyles', () => {
       const { element, styleElement } = act({
         hover: { focus: { bgColor: 'blue-100' } },
       });
-      expect(styleElement.innerText).toContain('.hover-focus-bgColor-blue-100:hover:focus-within{background-color:var(--blue-100)}');
+      expect(styleElement.innerText).toContain(
+        '.hover-focus-bgColor-blue-100:hover:focus-within{background-color:var(--blue-100,oklch(93.2% .032 255.6))}',
+      );
       expect(element.classList).toContain('hover-focus-bgColor-blue-100');
     });
   });
@@ -469,7 +481,9 @@ describe('useStyles', () => {
           },
         },
       });
-      expect(styleElement.innerText).toContain('.parent:hover .hover-parent-bgColor-green-100{background-color:var(--green-100)}');
+      expect(styleElement.innerText).toContain(
+        '.parent:hover .hover-parent-bgColor-green-100{background-color:var(--green-100,oklch(96.2% .044 156.7))}',
+      );
       expect(element.classList).toContain('hover-parent-bgColor-green-100');
     });
 
@@ -564,7 +578,7 @@ describe('useStyles', () => {
       // Two parents in nesting order, and no `|` to tell them apart any more: each compiles to its own
       // selector, so the class name is just the two segments.
       expect(styleElement.innerText).toContain(
-        '@scope (.dark) to ([data-theme]){:scope .parent:hover .theme-dark-hover-parent-bgColor-gray-100{background-color:var(--gray-100)}}',
+        '@scope (.dark) to ([data-theme]){:scope .parent:hover .theme-dark-hover-parent-bgColor-gray-100{background-color:var(--gray-100,oklch(96.7% .003 264.5))}}',
       );
       expect(element.classList).toContain('theme-dark-hover-parent-bgColor-gray-100');
     });
@@ -666,18 +680,18 @@ describe('useStyles', () => {
 
       // Base styles
       expect(styleElement.innerText).toContain('.p-1{padding:0.25rem}');
-      expect(styleElement.innerText).toContain('.bgColor-white{background-color:var(--white)}');
+      expect(styleElement.innerText).toContain('.bgColor-white{background-color:var(--white,#fff)}');
 
       // Dark theme base styles
       expect(styleElement.innerText).toContain('@scope (.dark) to ([data-theme]){:scope .theme-dark-p-2{padding:0.5rem}}');
       expect(styleElement.innerText).toContain(
-        '@scope (.dark) to ([data-theme]){:scope .theme-dark-bgColor-gray-900{background-color:var(--gray-900)}}',
+        '@scope (.dark) to ([data-theme]){:scope .theme-dark-bgColor-gray-900{background-color:var(--gray-900,oklch(21% .034 264.7))}}',
       );
 
       // Dark theme hover styles
       expect(styleElement.innerText).toContain('@scope (.dark) to ([data-theme]){:scope .hover-theme-dark-p-3:hover{padding:0.75rem}}');
       expect(styleElement.innerText).toContain(
-        '@scope (.dark) to ([data-theme]){:scope .hover-theme-dark-bgColor-gray-800:hover{background-color:var(--gray-800)}}',
+        '@scope (.dark) to ([data-theme]){:scope .hover-theme-dark-bgColor-gray-800:hover{background-color:var(--gray-800,oklch(27.8% .033 256.8))}}',
       );
 
       expect(element.classList).toContain('p-1');

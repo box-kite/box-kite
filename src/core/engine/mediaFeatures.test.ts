@@ -20,8 +20,8 @@ describe('device and accessibility media features', () => {
     expect(classNames).toEqual(['_b', 'motionReduce-transition-none', 'forcedColors-borderColor-gray-500', 'contrastMore-color-gray-900']);
     expect(ruleList(engine)).toEqual([
       '@media (prefers-reduced-motion: reduce){.motionReduce-transition-none{transition-property:none}}',
-      '@media (forced-colors: active){.forcedColors-borderColor-gray-500{border-color:var(--gray-500)}}',
-      '@media (prefers-contrast: more){.contrastMore-color-gray-900{color:var(--gray-900)}}',
+      '@media (forced-colors: active){.forcedColors-borderColor-gray-500{border-color:var(--gray-500,oklch(55.1% .027 264.4))}}',
+      '@media (prefers-contrast: more){.contrastMore-color-gray-900{color:var(--gray-900,oklch(21% .034 264.7))}}',
     ]);
   });
 
@@ -58,7 +58,7 @@ describe('device and accessibility media features', () => {
     renderStyles(engine, { forcedColors: { theme: { dark: { borderColor: 'white' } } } });
 
     expect(ruleList(engine)).toEqual([
-      '@media (forced-colors: active){@scope (.dark) to ([data-theme]){:scope .forcedColors-theme-dark-borderColor-white{border-color:var(--white)}}}',
+      '@media (forced-colors: active){@scope (.dark) to ([data-theme]){:scope .forcedColors-theme-dark-borderColor-white{border-color:var(--white,#fff)}}}',
     ]);
   });
 
@@ -68,7 +68,7 @@ describe('device and accessibility media features', () => {
     renderStyles(engine, { contrastMore: { hoverGroup: { card: { color: 'black' } } } });
 
     expect(ruleList(engine)).toEqual([
-      '@media (prefers-contrast: more){.card:hover .contrastMore-hover-card-color-black{color:var(--black)}}',
+      '@media (prefers-contrast: more){.card:hover .contrastMore-hover-card-color-black{color:var(--black,#000)}}',
     ]);
   });
 
