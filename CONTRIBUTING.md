@@ -622,6 +622,13 @@ flush it arrived in, so the
 CSS a server produces and the sheet a browser builds agree rule for rule — `styleSink.test.ts` and
 `ssr.roundtrip.test.tsx` pin that down.
 
+The `cssom` sink has one constraint the others do not: Chrome restyles the **whole document** when a
+top-level at-rule is added to a live sheet, and diffs a style rule added inside an existing block like
+any other (bugs #206, #207). So a late at-rule joins a block of its prelude chain, in key order, and the
+engine opens an inert block (`:not(*){}`) per `@media` prelude and one `@starting-style` among the base
+rules on its first write, so the block exists before the first paint. `@keyframes` go into a second
+element, `<id>-keyframes`, because a sheet holding only keyframes costs nothing to grow.
+
 ### Element mode and cascade layers (core/engine + src/rsc.ts)
 
 Element mode is the odd one out: it writes nowhere. `resolveClassNames()` returns a

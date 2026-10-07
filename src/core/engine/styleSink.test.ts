@@ -236,7 +236,7 @@ describe('style sinks', () => {
     engine.resolveClassNames({ p: 4 }, false);
     expect(hasSelector(engine.getStyles(), '.p-4')).toBe(true);
   });
-  describe('at-rule blocks (bug #206)', () => {
+  describe('at-rule blocks (bugs #206, #207)', () => {
     /** A cssom sink over a fresh element, plus the sheet's top-level rules as text with whitespace collapsed. */
     function blockSink(id: string, css = '', adopted?: { baseRulesCount: number; sortKeys: number[] }) {
       const element = document.createElement('style');
@@ -249,15 +249,18 @@ describe('style sinks', () => {
       return { sink, topLevel };
     }
 
-    it('adds a late at-rule to the block its sort key and prelude already have', () => {
+    it('adds a late at-rule to a block its prelude chain already has, whatever its sort key', () => {
       // A new top-level at-rule makes Chrome restyle every element on the page; a style rule inside an
-      // existing block is diffed like any other.
+      // existing block is diffed like any other. Five starting-style props on one page load were five blocks.
       const { sink, topLevel } = blockSink('blocks-join');
 
       sink.writeRules([{ sortKey: 5, rule: '@scope (.dark) to ([data-theme]){:scope .a{color:red}}' }]);
       sink.writeRules([{ sortKey: 5, rule: '@scope (.dark) to ([data-theme]){:scope .b{color:blue}}' }]);
+      sink.writeRules([{ sortKey: 9, rule: '@scope (.dark) to ([data-theme]){:scope .c{margin:0}}' }]);
 
-      expect(topLevel()).toEqual(['@scope (.dark) to ([data-theme]) { :scope .a { color: red; } :scope .b { color: blue; } }']);
+      expect(topLevel()).toEqual([
+        '@scope (.dark) to ([data-theme]) { :scope .a { color: red; } :scope .b { color: blue; } :scope .c { margin: 0px; } }',
+      ]);
     });
 
     it('joins the innermost block of a nested chain', () => {
@@ -270,7 +273,7 @@ describe('style sinks', () => {
       expect(topLevel()[0]).toContain(':scope .a { color: red; } :scope .b { color: blue; }');
     });
 
-    it('starts a new block for another sort key or another prelude, placed by its key', () => {
+    it('keeps a chain in key order inside its block, and starts a new block for another chain', () => {
       const { sink, topLevel } = blockSink('blocks-apart');
 
       sink.writeRules([
@@ -283,7 +286,93 @@ describe('style sinks', () => {
         { sortKey: 5, rule: '@media (min-width: 60rem){.e{color:red}}' },
       ]);
 
-      expect(topLevel().map((rule) => rule.match(/\.[a-e](?![a-z])/g)!.join(''))).toEqual(['.a', '.d', '.e', '.b', '.c']);
+      expect(topLevel().map((rule) => rule.match(/\.[a-e](?![a-z])/g)!.join(''))).toEqual(['.a.b.c', '.d', '.e']);
+    });
+
+    it('puts a key below every block of its chain at the front of the first one', () => {
+      const { sink, topLevel } = blockSink('blocks-front');
+
+      sink.writeRules([{ sortKey: 7, rule: '@media (min-width: 40rem){.b{color:red}}' }]);
+      sink.writeRules([{ sortKey: 3, rule: '@media (min-width: 40rem){.a{padding:0}}' }]);
+
+      expect(topLevel()).toEqual(['@media (min-width: 40rem) { .a { padding: 0px; } .b { color: red; } }']);
+    });
+
+    it('joins the last block of its chain that starts at or before its key', () => {
+      // A server-rendered sheet holds one block per rule, so a chain has many; the chain's own order is kept.
+      const { sink, topLevel } = blockSink(
+        'blocks-many',
+        '._b{display:block}@media (min-width: 40rem){.a{color:red}}.p{color:red}@media (min-width: 40rem){.c{color:red}}',
+        { baseRulesCount: 1, sortKeys: [5, 6, 8] },
+      );
+
+      sink.writeRules([
+        { sortKey: 7, rule: '@media (min-width: 40rem){.b{color:red}}' },
+        { sortKey: 9, rule: '@media (min-width: 40rem){.d{color:red}}' },
+      ]);
+
+      expect(topLevel().map((rule) => rule.match(/\.[_a-p]+/g)!.join(''))).toEqual(['._b', '.a.b', '.p', '.c.d']);
+    });
+
+    it('writes a sequence into a keyframes-only sheet after its own, and removes it on reset', () => {
+      // A late @keyframes in the engine's sheet restyled the whole page; in a sheet with nothing else in it, nothing.
+      const { sink, topLevel } = blockSink('blocks-keyframes');
+
+      sink.writeRules([{ sortKey: 5, rule: '.a{color:red}' }]);
+      sink.writeKeyframes!(['@keyframes spin{to{rotate:360deg}}']);
+      const keyframes = document.getElementById('blocks-keyframes-keyframes') as HTMLStyleElement;
+
+      expect(topLevel()).toEqual(['.a { color: red; }']);
+      expect(keyframes.previousElementSibling?.id).toBe('blocks-keyframes');
+      expect(keyframes.sheet!.cssRules).toHaveLength(1);
+      expect(sink.getStyles()).toMatch(/@keyframes spin/);
+
+      sink.reset();
+
+      expect(document.getElementById('blocks-keyframes-keyframes')).toBeNull();
+    });
+
+    it('opens one inert block per media prelude with the first rules, and a starting block among the base', () => {
+      const engine = createStyleEngine({ classNames: 'readable', sink: 'string' });
+      engine.resolveClassNames({ p: 4 }, false);
+      const css = engine.getStyles();
+
+      expect(css).toContain('@media (min-width: 640px){:not(*){}}');
+      expect(css).toContain('@media (prefers-reduced-motion: reduce){:not(*){}}');
+      expect(css).not.toMatch(/@container[^{]*\{:not/);
+      expect(css.indexOf('@starting-style{:not(*){}}')).toBeLessThan(css.indexOf('._b{'));
+
+      const layered = createStyleEngine({ classNames: 'readable', sink: 'element' });
+      layered.resolveClassNames({ p: 4 }, false);
+
+      expect(layered.getStyles()).not.toContain(':not(*)');
+    });
+
+    it('adds a breakpoint the page never used to the block opened for it', () => {
+      const engine = makeEngine('cssom', 'blocks-late-breakpoint');
+      const sheet = () => (document.getElementById('blocks-late-breakpoint') as HTMLStyleElement).sheet!;
+
+      engine.resolveClassNames({ p: 4 }, false);
+      engine.flushSync();
+      const before = sheet().cssRules.length;
+      engine.resolveClassNames({ xl: { m: 8 } }, false);
+      engine.flushSync();
+
+      expect(sheet().cssRules).toHaveLength(before);
+      expect(hasSelector(engine.getStyles(), '@media (min-width: 1280px)')).toBe(true);
+    });
+
+    it('keeps a sequence first named after the first flush out of the engine sheet', () => {
+      const engine = makeEngine('cssom', 'blocks-late-spin');
+
+      engine.resolveClassNames({ p: 4 }, false);
+      engine.flushSync();
+      engine.resolveClassNames({ animation: 'spin' }, false);
+      engine.flushSync();
+      const textOf = (id: string) => [...(document.getElementById(id) as HTMLStyleElement).sheet!.cssRules].map((rule) => rule.cssText);
+
+      expect(textOf('blocks-late-spin').join('')).not.toMatch(/@keyframes/);
+      expect(textOf('blocks-late-spin-keyframes').join('')).toMatch(/^@keyframes spin/);
     });
 
     it('never folds a plain rule into a block', () => {

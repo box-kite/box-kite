@@ -205,7 +205,19 @@ A rule inside `theme`, a breakpoint, `cq` or `startingStyle` is an at-rule (`@sc
 }
 ```
 
-Typing the first query into this site's docs search on the DataGrid page used to recalculate all 6,500 elements, because the highlighted match is the first element on the page to use its `theme={{ dark: { color: 'violet-300' } }}` colour. With a CPU slowed to a mid-range phone's, that took 160–200 ms. Now only the 121 elements of the dialog are recalculated. The cascade is the same, because rules that share a sort key had no order between them. Only the browser's stylesheet is grouped: what `getStyles()` and `getStyleTag()` write on a server is unchanged. A `@keyframes` sequence first used after the page has painted still costs one full recalculation. The engine grows by about 230 bytes gzipped.
+Typing the first query into this site's docs search on the DataGrid page used to recalculate all 6,500 elements, because the highlighted match is the first element on the page to use its `theme={{ dark: { color: 'violet-300' } }}` colour. With a CPU slowed to a mid-range phone's, that took 160–200 ms. Now only the 121 elements of the dialog are recalculated. Only the browser's stylesheet is grouped: a server still writes one block per rule. The engine grows by about 230 bytes gzipped.
+
+## An animation, an entrance or a breakpoint new to the page no longer restyles it either
+
+The section above left two cases. A rule whose block did not exist yet still started a new one, and a `@keyframes` sequence first named after the page had painted went into the stylesheet as a new at-rule. Both are now cheap:
+
+- **A late rule joins any block with the same prelude**, not only one at its own place in the cascade, and is inserted in order inside it. Five `startingStyle` props arriving together used to open five `@starting-style` blocks; they now share one.
+- **The engine opens an empty block for each `@media` prelude, and one for `@starting-style`, when it first writes the stylesheet**, so a breakpoint, a preference or an entrance that nothing on the server used still has a block to join. Each is an inert `:not(*){}` rule, about 120 bytes gzipped per server-rendered page in all. Container queries and themes are not covered, because their preludes carry names.
+- **`@keyframes` go into a second `<style>` element** (`box-kite-styles-keyframes`, after the engine's own). Adding a rule to a sheet that holds only keyframes restyles nothing. A sequence in a server-rendered sheet stays where it is.
+
+On this site, with a CPU slowed to a mid-range phone's, every page load used to add 4–6 new blocks after first paint (the theme switch's icon entrance and a wide-screen breakpoint, both rendered only in the browser), which cost one or two full-page recalculations. Opening the docs search added one more, and moving from the home page to `/animation` wrote seven `@keyframes` and recalculated the whole page twice. All of these are gone, measured on four routes. What remains is the search dialog's own recalculation, which is `showModal()`'s.
+
+The cascade is unchanged. Within one prelude the rules stay in cascade order. Two different preludes at the same place in the cascade never decide a property by order alone: a theme's `@scope` outranks an unscoped rule, and two themes never apply to one element. One exception applies only to the browser's stylesheet: two container queries of the same size, one named and one not, that both match one element and set overlapping properties may resolve in a different order than the server's. `getStyles()` and `getStyleTag()` now include the empty blocks. In the browser, `getStyles()` also includes the keyframes element. The engine grows by about 270 bytes gzipped.
 
 ## Breaking changes
 

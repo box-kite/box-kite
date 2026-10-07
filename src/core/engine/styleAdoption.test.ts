@@ -132,6 +132,22 @@ describe('adopting a server-rendered stylesheet', () => {
     expect(inserted[0]).toMatch(/\{background-color:var\(--violet-300,oklch\(81\.1% \.111 293\.6\)\)\}$/);
   });
 
+  it('adds a breakpoint the server never wrote to the block the server opened for it', () => {
+    // A new top-level at-rule after the first paint restyles the whole page (bug #207).
+    const element = hydrateHead(serverRender([card]).tag);
+    const insertRule = vi.spyOn(CSSStyleSheet.prototype, 'insertRule');
+
+    const engine = client();
+    engine.classNames(card);
+    engine.classNames({ xl: { m: 2 } });
+    engine.flushSync();
+
+    expect(insertRule).not.toHaveBeenCalled();
+    expect([...element.sheet!.cssRules].map((rule) => rule.cssText).join('')).toMatch(
+      /@media \(min-width: 1280px\) \{[^@]*margin: 0\.5rem/,
+    );
+  });
+
   it('does not re-emit a sequence the sheet holds when the client registers it after adopting', () => {
     const sequence: Keyframes = { 'card-in': { from: { opacity: 0 } } };
     const server = createStyleEngine({ classNames: 'stable', sink: 'string', styleElementId: ID });
@@ -188,7 +204,13 @@ describe('adopting a server-rendered stylesheet', () => {
     engine.flushSync();
 
     expect(document.getElementById(ID)).toBe(element);
-    expect(selectors(element).filter((selector) => selector.startsWith('@media (min-width'))).toHaveLength(1);
+    // `md={{ p: 8 }}`, written once — inside the block the engine opened for its breakpoint.
+    expect(
+      [...element.sheet!.cssRules]
+        .map((rule) => rule.cssText)
+        .join('')
+        .match(/padding: 2rem/g),
+    ).toHaveLength(1);
   });
 });
 

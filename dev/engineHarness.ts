@@ -25,14 +25,17 @@ export function rulesOf(engine: StyleEngine): string {
   return element?.innerText ?? '';
 }
 
-/** Only the rules generated from props — the base reset and `:root` blocks are dropped. */
+/** The inert rule the engine opens one block per static prelude with (bug #207), in any sink's formatting. */
+const PLACEHOLDER = /:not\(\*\)\s*\{\s*\}/g;
+
+/** Only the rules generated from props — the base reset, `:root` blocks and the placeholder blocks are dropped. */
 export function generatedRulesIn(css: string): string {
   const index = css.indexOf(LAST_BASE_SELECTOR);
-  if (index === -1) return css;
+  const end = index === -1 ? -1 : css.indexOf('}', index + LAST_BASE_SELECTOR.length);
+  const generated = index === -1 || end === -1 ? css : css.slice(end + 1);
 
-  const end = css.indexOf('}', index + LAST_BASE_SELECTOR.length);
-
-  return end === -1 ? css : css.slice(end + 1);
+  // A placeholder block nothing joined is left empty, and goes with it.
+  return generated.replace(PLACEHOLDER, '').replace(/\s*@[^{}]*\{\s*\}/g, '');
 }
 
 /** Only the rules generated from props, read out of the engine's style element. */

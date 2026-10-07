@@ -154,14 +154,29 @@ describe('SSR round-trip', () => {
     try {
       render(element);
       const sheet = (document.getElementById(DEFAULT_STYLE_ELEMENT_ID) as unknown as HTMLStyleElement | null)?.sheet;
-      // A stylesheet re-serializes what it is given, so the comparison is selector by selector,
-      // in order — the part that decides which declaration wins. `@property` is dropped from both
-      // sides: it registers a custom property rather than competing for one, and happy-dom's parser
-      // rejects it outright, so a live sheet never holds it.
-      const selectorsIn = (rules: string[]) =>
-        rules.filter((rule) => !rule.startsWith('@property')).map((rule) => rule.slice(0, rule.indexOf('{')).replace(/\s+/g, ' ').trim());
+      const parsed = document.createElement('style');
+      parsed.textContent = server.styles;
+      document.head.append(parsed);
+      // A stylesheet re-serializes what it is given, so the comparison is selector by selector, in order — the
+      // part that decides which declaration wins — with each at-rule chain in front. Both sides go through the same
+      // parser (happy-dom's rejects `@property` and `@starting-style`), and flattened, since a live sheet adds a
+      // late at-rule to a block its chain already has (bug #207) where the server writes one block per rule.
+      const flatten = (rules: CSSRule[], chain = ''): string[] =>
+        rules.flatMap((rule) => {
+          if (rule instanceof CSSStyleRule) return rule.selectorText === ':not(*)' ? [] : [`${chain}${rule.selectorText}`];
+          if (!(rule instanceof CSSGroupingRule)) return [];
 
-      expect(selectorsIn([...(sheet?.cssRules ?? [])].map((rule) => rule.cssText))).toEqual(selectorsIn(splitRules(server.styles)));
+          return flatten([...rule.cssRules], `${chain}${rule.cssText.slice(0, rule.cssText.indexOf('{')).trim()} `);
+        });
+
+      try {
+        const live = flatten([...(sheet?.cssRules ?? [])]);
+
+        expect(live).toEqual(flatten([...parsed.sheet!.cssRules]));
+        expect(live.filter((selector) => selector.startsWith('@media (min-width: 640px) '))).toHaveLength(1);
+      } finally {
+        parsed.remove();
+      }
     } finally {
       StylesContext.configure({ sink: 'textContent' });
     }
