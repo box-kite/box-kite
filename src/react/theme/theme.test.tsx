@@ -1,4 +1,7 @@
 import { act, cleanup, render } from '@testing-library/react';
+import React from 'react';
+import { hydrateRoot } from 'react-dom/client';
+import { renderToString } from 'react-dom/server';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ignoreLogs } from '../../../dev/tests';
 import Box from '../../box';
@@ -800,6 +803,131 @@ describe('Theme', () => {
       });
 
       expect(content.textContent).toBe('dark');
+    });
+  });
+
+  /** Bug #204: a shell that themed `<html>` before hydration must not see it flip through the default. */
+  describe('hydrating a global theme', () => {
+    const root = document.documentElement;
+    const unmounts: (() => Promise<void>)[] = [];
+
+    async function hydrateWatchingRoot(tree: React.ReactElement) {
+      const container = document.createElement('div');
+      document.body.appendChild(container);
+      container.innerHTML = renderToString(tree);
+
+      const mutations: string[] = [];
+      const record = (records: MutationRecord[]) =>
+        records.forEach((r) => mutations.push(`${r.attributeName}: ${r.oldValue} -> ${root.getAttribute(r.attributeName!)}`));
+      const observer = new MutationObserver(record);
+      observer.observe(root, { attributes: true, attributeOldValue: true });
+      let hydrated: ReturnType<typeof hydrateRoot>;
+      await act(async () => {
+        hydrated = hydrateRoot(container, tree);
+      });
+      record(observer.takeRecords());
+      observer.disconnect();
+
+      unmounts.push(async () => {
+        await act(async () => hydrated.unmount());
+        container.remove();
+      });
+
+      return mutations;
+    }
+
+    function themeRoot(theme: string) {
+      root.className = theme;
+      root.setAttribute('data-theme', theme);
+    }
+
+    afterEach(async () => {
+      // A failed expectation must not leave a provider mounted to theme the next test.
+      for (const unmount of unmounts.splice(0)) await unmount();
+      root.removeAttribute('class');
+      root.removeAttribute('data-theme');
+      localStorage.clear();
+    });
+
+    it('leaves an `<html>` already carrying the system theme untouched', async () => {
+      window.matchMedia = mockMatchMedia(true);
+      themeRoot('dark');
+
+      const mutations = await hydrateWatchingRoot(
+        <Theme use="global">
+          <Box id={testId}>Content</Box>
+        </Theme>,
+      );
+
+      expect(mutations).toEqual([]);
+      expect(root.className).toBe('dark');
+    });
+
+    it('leaves an `<html>` already carrying the stored theme untouched', async () => {
+      localStorage.setItem('theme-key', 'dark');
+      themeRoot('dark');
+
+      const mutations = await hydrateWatchingRoot(
+        <Theme use="global" storageKey="theme-key">
+          <Box id={testId}>Content</Box>
+        </Theme>,
+      );
+
+      expect(mutations).toEqual([]);
+      expect(root.className).toBe('dark');
+    });
+
+    it('never writes the default onto an unthemed `<html>` on a dark system', () => {
+      window.matchMedia = mockMatchMedia(true);
+      const classes: string[] = [];
+      const observer = new MutationObserver((records) => records.forEach((r) => classes.push(r.oldValue ?? '')));
+      observer.observe(root, { attributeFilter: ['class'], attributeOldValue: true });
+
+      render(
+        <Theme use="global">
+          <Box id={testId}>Content</Box>
+        </Theme>,
+      );
+
+      observer.takeRecords().forEach((r) => classes.push(r.oldValue ?? ''));
+      observer.disconnect();
+      // Every value the class held before the last write, so a transient `light` shows up here.
+      expect(classes).toEqual(['']);
+      expect(root.className).toBe('dark');
+    });
+    it('applies a choice made after resetting to a system theme that was already showing', () => {
+      window.matchMedia = mockMatchMedia(true);
+      let setTheme: (theme: string | null) => void = () => {};
+      function Capture() {
+        setTheme = Theme.useTheme()[1];
+
+        return null;
+      }
+
+      render(
+        <Theme use="global">
+          <Capture />
+        </Theme>,
+      );
+      act(() => setTheme('dark'));
+      act(() => setTheme(null));
+      act(() => setTheme('light'));
+
+      expect(root.className).toBe('light');
+      expect(root.getAttribute('data-theme')).toBe('light');
+    });
+
+    it('leaves a light `<html>` untouched when the system matches the default', async () => {
+      themeRoot('light');
+
+      const mutations = await hydrateWatchingRoot(
+        <Theme use="global">
+          <Box id={testId}>Content</Box>
+        </Theme>,
+      );
+
+      expect(mutations).toEqual([]);
+      expect(root.className).toBe('light');
     });
   });
 

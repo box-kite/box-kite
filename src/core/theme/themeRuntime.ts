@@ -47,8 +47,9 @@ export function watchSystemTheme(onChange: (theme: string) => void): () => void 
  * consumers' own CSS. Returns the cleanup that removes exactly what was added.
  */
 export function applyThemeToElement(element: Element, themeName: string): () => void {
-  element.classList.add(themeName);
-  element.setAttribute('data-theme', themeName);
+  // Both writes are mutations even when nothing changes, so an element the shell already themed is left alone.
+  if (!element.classList.contains(themeName)) element.classList.add(themeName);
+  if (element.getAttribute('data-theme') !== themeName) element.setAttribute('data-theme', themeName);
 
   return () => {
     element.classList.remove(themeName);
