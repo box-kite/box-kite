@@ -318,8 +318,8 @@ describe('every declared prop value produces a rule', () => {
  */
 describe('SVG paint and stroke props', () => {
   it.each([
-    ['fill', 'red-500', 'fill:var(--red-500)'],
-    ['stroke', 'blue-600', 'stroke:var(--blue-600)'],
+    ['fill', 'red-500', 'fill:var(--red-500,oklch(63.7% .237 25.3))'],
+    ['stroke', 'blue-600', 'stroke:var(--blue-600,oklch(54.6% .245 262.9))'],
     ['fillOpacity', 0.5, 'fill-opacity:0.5'],
     ['strokeOpacity', 0.8, 'stroke-opacity:0.8'],
     ['fillRule', 'evenodd', 'fill-rule:evenodd'],
@@ -389,7 +389,7 @@ describe('SVG paint and stroke props', () => {
     });
 
     it('keeps the token lists working — they are matched first', () => {
-      expect(generatedRulesFor({ fill: 'red-500' }, 'svg-paint-token')).toContain('{fill:var(--red-500)}');
+      expect(generatedRulesFor({ fill: 'red-500' }, 'svg-paint-token')).toContain('{fill:var(--red-500,oklch(63.7% .237 25.3))}');
       expect(generatedRulesFor({ clipPath: 'inset(50%)' }, 'svg-clip-inset')).toContain('{clip-path:inset(50%)}');
     });
 
@@ -441,10 +441,10 @@ describe('SVG paint and stroke props', () => {
 
   it('nests under a theme, a pseudo-class and a breakpoint like any other prop', () => {
     expect(generatedRulesFor({ theme: { dark: { fill: 'slate-100' } } }, 'svg-theme')).toContain(
-      '@scope (.dark) to ([data-theme]){:scope .theme-dark-fill-slate-100{fill:var(--slate-100)}}',
+      '@scope (.dark) to ([data-theme]){:scope .theme-dark-fill-slate-100{fill:var(--slate-100,oklch(96.8% .007 247.9))}}',
     );
     expect(generatedRulesFor({ hover: { stroke: 'red-500' } }, 'svg-hover')).toContain(
-      '.hover-stroke-red-500:hover{stroke:var(--red-500)}',
+      '.hover-stroke-red-500:hover{stroke:var(--red-500,oklch(63.7% .237 25.3))}',
     );
     expect(generatedRulesFor({ md: { strokeWidth: 3 } }, 'svg-breakpoint')).toContain('.md-strokeWidth-3{stroke-width:3}');
   });
@@ -531,7 +531,7 @@ describe('vars — a CSS variable is a Box prop', () => {
     const classNames = renderStyles(engine, { vars: { 'color-revenue': 'sky-500' } });
 
     expect(classNames).toContain('vars-color-revenue-sky-500');
-    expect(generatedRulesOf(engine)).toContain('.vars-color-revenue-sky-500{--color-revenue:var(--sky-500)}');
+    expect(generatedRulesOf(engine)).toContain('.vars-color-revenue-sky-500{--color-revenue:var(--sky-500,oklch(68.5% .169 237.3))}');
   });
 
   it('writes any other value out as it stands, and takes several at once', () => {
@@ -541,14 +541,16 @@ describe('vars — a CSS variable is a Box prop', () => {
   });
 
   it('accepts a name spelled with its leading --', () => {
-    expect(generatedRulesFor({ vars: { '--color-x': 'emerald-500' } }, 'vars-prefixed')).toContain('{--color-x:var(--emerald-500)}');
+    expect(generatedRulesFor({ vars: { '--color-x': 'emerald-500' } }, 'vars-prefixed')).toContain(
+      '{--color-x:var(--emerald-500,oklch(69.6% .17 162.5))}',
+    );
   });
 
   // The reason the whole step needs no second styling system: the variables a chart reads flip with
   // the theme through the same ancestor-scoped selector every other prop uses.
   it('flips with the theme and with a breakpoint', () => {
     expect(generatedRulesFor({ theme: { dark: { vars: { 'color-x': 'sky-400' } } } }, 'vars-theme')).toContain(
-      '@scope (.dark) to ([data-theme]){:scope .theme-dark-vars-color-x-sky-400{--color-x:var(--sky-400)}}',
+      '@scope (.dark) to ([data-theme]){:scope .theme-dark-vars-color-x-sky-400{--color-x:var(--sky-400,oklch(74.6% .16 232.7))}}',
     );
     expect(generatedRulesFor({ md: { vars: { 'chart-gap': '8px' } } }, 'vars-breakpoint')).toContain(
       '.md-vars-chart-gap-8px{--chart-gap:8px}',

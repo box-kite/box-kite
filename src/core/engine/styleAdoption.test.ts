@@ -14,8 +14,9 @@ const ID = 'adopted-styles';
 const card: BoxStyleProps = { p: 4, md: { p: 8 }, hover: { color: 'blue-500' }, animation: 'spin' };
 const rootStyles: BoxStyleProps = { colorScheme: 'light dark' };
 
-function serverRender(props: BoxStyleProps[]): { tag: string; classes: string[] } {
+function serverRender(props: BoxStyleProps[], variables: string[] = []): { tag: string; classes: string[] } {
   const server = createStyleEngine({ classNames: 'stable', sink: 'string', styleElementId: ID });
+  variables.forEach((name) => server.getVariableValue(name));
   const classes = props.map((p) => server.classNames(p));
   server.addGlobalStyles(rootStyles, 'html');
 
@@ -103,7 +104,7 @@ describe('adopting a server-rendered stylesheet', () => {
   });
 
   it('writes no variable read before the first render when the sheet declares it', () => {
-    hydrateHead(serverRender([card]).tag);
+    hydrateHead(serverRender([card], ['blue-500']).tag);
     const insertRule = vi.spyOn(CSSStyleSheet.prototype, 'insertRule');
 
     // What an app's module scope does (`Box.getVariableValue` in an extends file), ahead of any Box.
@@ -114,6 +115,21 @@ describe('adopting a server-rendered stylesheet', () => {
     engine.flushSync();
 
     expect(insertRule).not.toHaveBeenCalled();
+  });
+
+  // Bug #205: a `:root` insert after the first paint recalculates every element on the page.
+  it('inserts the rule for a token the sheet never used, and no :root block for it', () => {
+    hydrateHead(serverRender([card]).tag);
+    const insertRule = vi.spyOn(CSSStyleSheet.prototype, 'insertRule');
+
+    const engine = client();
+    engine.classNames(card);
+    engine.classNames({ bgColor: 'violet-300' });
+    engine.flushSync();
+
+    const inserted = insertRule.mock.calls.map(([rule]) => rule);
+    expect(inserted).toHaveLength(1);
+    expect(inserted[0]).toMatch(/\{background-color:var\(--violet-300,oklch\(81\.1% \.111 293\.6\)\)\}$/);
   });
 
   it('does not re-emit a sequence the sheet holds when the client registers it after adopting', () => {

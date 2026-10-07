@@ -208,7 +208,7 @@ function sampleValue(name, definitions) {
 
 /**
  * The body of the rule one class selector carries. Isolating by *selector* rather than by what the base
- * stylesheet does not contain, because a colour prop also declares its token in `:root` — a rule of the
+ * stylesheet does not contain, because a variable from `Box.extend()` is declared in `:root` — a rule of the
  * engine's own, in the middle of the base.
  */
 function ruleFor(css, className) {

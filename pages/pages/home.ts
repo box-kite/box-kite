@@ -85,7 +85,12 @@ export const completions: readonly Completion[] = [
   { prop: 'borderRadius', written: '{4}', css: 'border-radius: 1rem', note: 'the spacing scale again' },
   { prop: 'b', written: '{4}', css: 'border-width: 4px', note: 'a border is measured in pixels' },
   { prop: 'lineHeight', written: '{24}', css: 'line-height: 24px', note: 'so is a line box' },
-  { prop: 'bgColor', written: '"sky-500"', css: 'background-color: var(--sky-500)', note: 'a token, so a theme can move it' },
+  {
+    prop: 'bgColor',
+    written: '"sky-500"',
+    css: 'background-color: var(--sky-500,oklch(68.5% .169 237.3))',
+    note: 'a token, so a theme can move it',
+  },
 ];
 
 /**

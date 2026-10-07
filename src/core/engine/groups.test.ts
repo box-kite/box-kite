@@ -17,7 +17,7 @@ describe('group and peer', () => {
     expect(classNames).toEqual(['_b', 'hover-group-opacity-1', 'focusVisible-card-bgColor-sky-500']);
     expect(ruleList(engine)).toEqual([
       '.group:hover .hover-group-opacity-1{opacity:1}',
-      '.card:focus-visible .focusVisible-card-bgColor-sky-500{background-color:var(--sky-500)}',
+      '.card:focus-visible .focusVisible-card-bgColor-sky-500{background-color:var(--sky-500,oklch(68.5% .169 237.3))}',
     ]);
   });
 
@@ -27,8 +27,8 @@ describe('group and peer', () => {
     renderStyles(engine, { peer: { checked: { color: 'sky-500' }, 'agree/invalid': { color: 'red-500' } } });
 
     expect(ruleList(engine)).toEqual([
-      '.peer:checked~.peer-checked-peer-color-sky-500{color:var(--sky-500)}',
-      '.agree:user-invalid~.peer-invalid-agree-color-red-500{color:var(--red-500)}',
+      '.peer:checked~.peer-checked-peer-color-sky-500{color:var(--sky-500,oklch(68.5% .169 237.3))}',
+      '.agree:user-invalid~.peer-invalid-agree-color-red-500{color:var(--red-500,oklch(63.7% .237 25.3))}',
     ]);
   });
 
@@ -39,7 +39,7 @@ describe('group and peer', () => {
 
     expect(ruleList(engine)).toEqual([
       '.row[data-state="open"] .data-state\\=open-row-rotate-90{rotate:90deg}',
-      '.row[aria-selected="true"] .aria-selected-row-bgColor-sky-100{background-color:var(--sky-100)}',
+      '.row[aria-selected="true"] .aria-selected-row-bgColor-sky-100{background-color:var(--sky-100,oklch(95.1% .026 236.8))}',
     ]);
   });
 
@@ -73,8 +73,8 @@ describe('group and peer', () => {
     renderStyles(engine, { theme: { dark: { group: { 'card/hover': { color: 'white' } }, peer: { checked: { color: 'black' } } } } });
 
     expect(ruleList(engine)).toEqual([
-      '@scope (.dark) to ([data-theme]){:scope .card:hover .theme-dark-hover-card-color-white{color:var(--white)}}',
-      '@scope (.dark) to ([data-theme]){:scope .peer:checked~.theme-dark-peer-checked-peer-color-black{color:var(--black)}}',
+      '@scope (.dark) to ([data-theme]){:scope .card:hover .theme-dark-hover-card-color-white{color:var(--white,#fff)}}',
+      '@scope (.dark) to ([data-theme]){:scope .peer:checked~.theme-dark-peer-checked-peer-color-black{color:var(--black,#000)}}',
     ]);
   });
 
@@ -113,6 +113,6 @@ describe('group and peer', () => {
     engine.addGlobalStyles({ theme: { dark: { bgColor: 'gray-900' } }, group: { 'card/hover': { bgColor: 'red-500' } } }, 'html');
     engine.flushSync();
 
-    expect(ruleList(engine)).toEqual(['html.dark{background-color:var(--gray-900)}']);
+    expect(ruleList(engine)).toEqual(['html.dark{background-color:var(--gray-900,oklch(21% .034 264.7))}']);
   });
 });

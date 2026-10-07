@@ -266,7 +266,7 @@ describe('ChartContainer', () => {
 
     expect(element).not.toHaveAttribute('style');
     expect(styles()).toContain(
-      '--chart-1:var(--sky-500);--chart-2:var(--emerald-500);--chart-3:var(--amber-500);--chart-4:var(--violet-500);--chart-5:var(--rose-500);--chart-6:var(--cyan-500);--color-revenue:var(--chart-1);--color-cost:var(--chart-2)',
+      '--chart-1:var(--sky-500,oklch(68.5% .169 237.3));--chart-2:var(--emerald-500,oklch(69.6% .17 162.5));--chart-3:var(--amber-500,oklch(76.9% .188 70.1));--chart-4:var(--violet-500,oklch(60.6% .25 292.7));--chart-5:var(--rose-500,oklch(64.5% .246 16.4));--chart-6:var(--cyan-500,oklch(71.5% .143 215.2));--color-revenue:var(--chart-1);--color-cost:var(--chart-2)',
     );
   });
 
@@ -275,7 +275,7 @@ describe('ChartContainer', () => {
     render(<ChartContainer />);
 
     expect(styles()).toContain('@scope (.dark) to ([data-theme]){:scope .theme-dark-vars-chart-1-sky-400');
-    expect(styles()).toContain('--chart-1:var(--sky-400)');
+    expect(styles()).toContain('--chart-1:var(--sky-400,oklch(74.6% .16 232.7))');
   });
 
   it('shares one rule between two containers with the same series', () => {
@@ -291,14 +291,14 @@ describe('ChartContainer', () => {
   it('lets a caller replace one slot without a prop for it', () => {
     render(<ChartContainer series={['revenue']} vars={{ 'chart-1': 'teal-600' }} />);
 
-    expect(styles()).toContain('--chart-1:var(--teal-600)');
+    expect(styles()).toContain('--chart-1:var(--teal-600,oklch(60% .118 184.7))');
   });
 
   it('keeps the dark palette when the caller brings a theme of their own', () => {
     render(<ChartContainer theme={{ dark: { bgColor: 'slate-900' } }} />);
 
-    expect(styles()).toContain('--chart-1:var(--sky-400)');
-    expect(styles()).toContain('background-color:var(--slate-900)');
+    expect(styles()).toContain('--chart-1:var(--sky-400,oklch(74.6% .16 232.7))');
+    expect(styles()).toContain('background-color:var(--slate-900,oklch(20.8% .042 265.8))');
   });
 
   it('paints a chart drawn with the variables and nothing else', () => {

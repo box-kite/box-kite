@@ -50,7 +50,7 @@ describe('Icon', () => {
 
       expect(svg.tagName).toBe('svg');
       expect(svg.getAttribute('class')).toContain('color-amber-400');
-      expect(styles()).toContain('color:var(--amber-400)');
+      expect(styles()).toContain('color:var(--amber-400,oklch(82.8% .189 84.4))');
     });
 
     it('styles any component that spreads its props onto an svg', () => {
@@ -178,7 +178,9 @@ describe('Icon', () => {
         </Icon>,
       );
 
-      expect(styles()).toContain('@scope (.dark) to ([data-theme]){:scope .theme-dark-color-gray-300{color:var(--gray-300)}}');
+      expect(styles()).toContain(
+        '@scope (.dark) to ([data-theme]){:scope .theme-dark-color-gray-300{color:var(--gray-300,oklch(87.2% .01 258.3))}}',
+      );
     });
 
     it('forwards props to the element and a ref to it', () => {

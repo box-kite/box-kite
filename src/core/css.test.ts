@@ -41,7 +41,7 @@ describe('css — the typed escape hatch', () => {
   // The value grammar is `vars`': one rule to learn, and the hatch stays themed.
   it('resolves a colour token, and a token with an opacity modifier, the way vars does', () => {
     expect(generatedRulesFor({ css: { outlineColor: 'sky-500', textDecorationColor: 'rose-400/60' } }, 'css-token')).toContain(
-      '{outline-color:var(--sky-500);text-decoration-color:color-mix(in oklab, var(--rose-400) 60%, transparent)}',
+      '{outline-color:var(--sky-500,oklch(68.5% .169 237.3));text-decoration-color:color-mix(in oklab, var(--rose-400,oklch(71.2% .194 13.4)) 60%, transparent)}',
     );
   });
 

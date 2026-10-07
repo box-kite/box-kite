@@ -35,11 +35,11 @@ describe('keyframes', () => {
     renderStyles(engine, { animationName: 'slide' });
 
     expect(rulesOf(engine)).toContain(
-      `@keyframes slide{from{--boxTranslateX:-1rem;${composedTranslate};background-color:var(--sky-500)}` +
+      `@keyframes slide{from{--boxTranslateX:-1rem;${composedTranslate};background-color:var(--sky-500,oklch(68.5% .169 237.3))}` +
         `50%{--boxTranslateY:50%;${composedTranslate}}to{--boxTranslateX:0rem;${composedTranslate}}}`,
     );
-    // The token behind the step is a variable like any other, so it reaches `:root` too.
-    expect(rulesOf(engine)).toContain('--sky-500:');
+    // The token behind the step carries its value like any other, so nothing reaches `:root`.
+    expect(rulesOf(engine)).not.toContain('--sky-500:');
   });
 
   it('runs a preset with nothing registered by hand', () => {

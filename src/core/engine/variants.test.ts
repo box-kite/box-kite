@@ -16,7 +16,7 @@ describe('attribute and relational variants', () => {
     expect(classNames).toEqual(['_b', 'dataAttr-state=open-color-red-500', 'dataAttr-loading-opacity-0.5']);
     expect(ruleList(engine)).toEqual([
       '.dataAttr-loading-opacity-0\\.5[data-loading]{opacity:0.5}',
-      '.dataAttr-state\\=open-color-red-500[data-state="open"]{color:var(--red-500)}',
+      '.dataAttr-state\\=open-color-red-500[data-state="open"]{color:var(--red-500,oklch(63.7% .237 25.3))}',
     ]);
   });
 
@@ -28,7 +28,7 @@ describe('attribute and relational variants', () => {
     expect(ruleList(engine)).toEqual([
       '.has-\\:checked-b-1:has(:checked){border-width:1px}',
       '.not-hover-opacity-1:not(:hover){opacity:1}',
-      '.ariaAttr-selected-bgColor-sky-500[aria-selected="true"]{background-color:var(--sky-500)}',
+      '.ariaAttr-selected-bgColor-sky-500[aria-selected="true"]{background-color:var(--sky-500,oklch(68.5% .169 237.3))}',
     ]);
   });
 
@@ -40,8 +40,8 @@ describe('attribute and relational variants', () => {
     renderStyles(engine, { color: 'slate-500', dataAttr: { 'state=open': { color: 'red-500' } } });
 
     expect(ruleList(engine)).toEqual([
-      '.color-slate-500{color:var(--slate-500)}',
-      '.dataAttr-state\\=open-color-red-500[data-state="open"]{color:var(--red-500)}',
+      '.color-slate-500{color:var(--slate-500,oklch(55.4% .046 257.4))}',
+      '.dataAttr-state\\=open-color-red-500[data-state="open"]{color:var(--red-500,oklch(63.7% .237 25.3))}',
     ]);
   });
 
@@ -54,8 +54,8 @@ describe('attribute and relational variants', () => {
     // The media query wraps, the pseudo-class and the attribute join the compound selector, and the
     // class name is built from the set rather than the order the props were written in.
     expect(ruleList(engine)).toEqual([
-      '@media (min-width: 768px){.md-hover-dataAttr-state\\=open-color-red-500[data-state="open"]:hover{color:var(--red-500)}}',
-      '@media (min-width: 768px){.md-hover-dataAttr-state\\=open-bgColor-red-500[data-state="open"]:hover{background-color:var(--red-500)}}',
+      '@media (min-width: 768px){.md-hover-dataAttr-state\\=open-color-red-500[data-state="open"]:hover{color:var(--red-500,oklch(63.7% .237 25.3))}}',
+      '@media (min-width: 768px){.md-hover-dataAttr-state\\=open-bgColor-red-500[data-state="open"]:hover{background-color:var(--red-500,oklch(63.7% .237 25.3))}}',
     ]);
   });
 
@@ -89,7 +89,7 @@ describe('attribute and relational variants', () => {
 
     expect(ruleList(engine)).toEqual([
       '.card:hover .dataAttr-on-hover-card-opacity-1[data-on]{opacity:1}',
-      '@scope (.dark) to ([data-theme]){:scope .dataAttr-state\\=open-theme-dark-color-red-500[data-state="open"]{color:var(--red-500)}}',
+      '@scope (.dark) to ([data-theme]){:scope .dataAttr-state\\=open-theme-dark-color-red-500[data-state="open"]{color:var(--red-500,oklch(63.7% .237 25.3))}}',
     ]);
   });
 

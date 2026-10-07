@@ -25,12 +25,12 @@ describe('the extended pseudo-classes', () => {
     expect(ruleList(engine)).toEqual([
       '.inert-opacity-0\\.5:is([inert],[inert] *){opacity:0.5}',
       '.open-rotate-180:is([open],:popover-open,:open){rotate:180deg}',
-      '.visited-color-purple-500:visited{color:var(--purple-500)}',
-      '.placeholderShown-color-gray-400:placeholder-shown{color:var(--gray-400)}',
-      '.target-bgColor-amber-100:target{background-color:var(--amber-100)}',
-      '.autofill-bgColor-yellow-100:autofill{background-color:var(--yellow-100)}',
-      '.inRange-borderColor-green-500:in-range{border-color:var(--green-500)}',
-      '.outOfRange-borderColor-red-500:out-of-range{border-color:var(--red-500)}',
+      '.visited-color-purple-500:visited{color:var(--purple-500,oklch(62.7% .265 303.9))}',
+      '.placeholderShown-color-gray-400:placeholder-shown{color:var(--gray-400,oklch(70.7% .022 261.3))}',
+      '.target-bgColor-amber-100:target{background-color:var(--amber-100,oklch(96.2% .059 95.6))}',
+      '.autofill-bgColor-yellow-100:autofill{background-color:var(--yellow-100,oklch(97.3% .071 103.2))}',
+      '.inRange-borderColor-green-500:in-range{border-color:var(--green-500,oklch(72.3% .219 149.6))}',
+      '.outOfRange-borderColor-red-500:out-of-range{border-color:var(--red-500,oklch(63.7% .237 25.3))}',
     ]);
   });
 
@@ -41,7 +41,7 @@ describe('the extended pseudo-classes', () => {
 
     expect(ruleList(engine)).toEqual([
       '.not-open-opacity-0\\.5:not(:is([open],:popover-open,:open)){opacity:0.5}',
-      '.not-inRange-borderColor-red-500:not(:in-range){border-color:var(--red-500)}',
+      '.not-inRange-borderColor-red-500:not(:in-range){border-color:var(--red-500,oklch(63.7% .237 25.3))}',
     ]);
   });
 
@@ -66,7 +66,7 @@ describe('nth', () => {
     expect(ruleList(engine)).toEqual([
       '.nth-first-pt-0:first-child{padding-top:0rem}',
       '.nth-last_1-pb-0:nth-last-child(1){padding-bottom:0rem}',
-      '.nth-odd-bgColor-gray-50:nth-child(odd){background-color:var(--gray-50)}',
+      '.nth-odd-bgColor-gray-50:nth-child(odd){background-color:var(--gray-50,oklch(98.5% .002 247.8))}',
     ]);
   });
 

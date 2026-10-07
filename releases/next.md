@@ -157,6 +157,27 @@ resetStyles();
 
 On this site's home page, at a CPU slowed to a mid-range phone's, hydration now inserts 8 rules instead of 422 and runs one full-page recalculation after first paint instead of two (45 ms of style work instead of 104). Adoption needs content-hashed class names on both sides, which is what lets the browser recognise the server's rules; with any other naming, or where the browser dropped a rule it could not parse, the server's sheet stays in place and the engine writes its own after it. `renderToStaticMarkup()` writes the same tag and returns it as `styleTag`, and `engine.getStyleTag()` is the `@box-kite/core` equivalent. The manifest costs about 200 bytes gzipped per page. If you removed the server's `<style>` after hydrating, stop: it is the engine's own sheet now.
 
+## A colour used for the first time no longer restyles the whole page
+
+A palette token used to be declared in `:root` the first time something asked for it. On a page rendered on a server, any token the server had not used — a colour in a dialog, a menu or a hover state that only appears in the browser — wrote `:root{--violet-300: …}` after the page had painted. A custom property changing on the root reaches every element through inheritance, so the browser recalculated the style of the whole page for one colour. A token now carries its own value as the fallback, and nothing is declared:
+
+```css
+/* bgColor="violet-300" */
+.bgColor-violet-300 {
+  background-color: var(--violet-300, oklch(81.1% 0.111 293.6));
+}
+```
+
+It is still a variable, so declaring `--violet-300` yourself (in a theme, a stylesheet, or `Box.extend({ variables })`) still overrides it, and an opacity modifier still mixes the variable rather than the value. On this site's DataGrid page, with a CPU slowed to a mid-range phone's, every load now runs one full-page recalculation after first paint instead of two, about 150 ms of style work instead of 330–410 ms. Opening the docs search no longer inserts a `:root` rule. Pages weigh the same: the fallbacks cost about as much as the `:root` declarations they replace (±70 bytes gzipped per page). The engine grows by about 160 bytes gzipped.
+
+A `var(--token)` you write yourself inside a value Box writes gets the same fallback: a `fill="var(--sky-500)"` reference, a `vars` or `css` entry, or a gradient inside a `Box.extend({ variables })` value. Somebody else's variable, such as `var(--chart-1)`, is left as it is. `Box.getVariableValue()` is unchanged: it still declares the token in `:root` and returns `var(--token)`.
+
+**If your own stylesheet reads a palette token** (`.foo { color: var(--violet-500) }` in a `.css` file), it used to work only when some Box on the page happened to use that token too. Now it never does. Give your CSS a variable of its own instead, declared on an ancestor:
+
+```jsx
+<Box vars={{ brand: 'violet-500' }}>…</Box> // .foo { color: var(--brand) }
+```
+
 ## Breaking changes
 
 None.

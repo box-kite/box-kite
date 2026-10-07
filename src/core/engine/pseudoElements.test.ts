@@ -144,7 +144,7 @@ describe('a pseudo-element in a compound selector', () => {
 
     renderStyles(engine, { [key]: { color: 'red-500' } } as BoxStyleProps);
 
-    expect(generatedRulesOf(engine)).toContain(`${expected}{color:var(--red-500)}`);
+    expect(generatedRulesOf(engine)).toContain(`${expected}{color:var(--red-500,oklch(63.7% .237 25.3))}`);
   });
 
   /**
@@ -160,7 +160,9 @@ describe('a pseudo-element in a compound selector', () => {
 
     renderStyles(engine, { [key]: { color: 'red-500' } } as BoxStyleProps);
 
-    expect(generatedRulesOf(engine)).toContain(`.${key}-color-red-500 *${element},.${key}-color-red-500${element}{color:var(--red-500)}`);
+    expect(generatedRulesOf(engine)).toContain(
+      `.${key}-color-red-500 *${element},.${key}-color-red-500${element}{color:var(--red-500,oklch(63.7% .237 25.3))}`,
+    );
   });
 
   it('keeps the ancestor out of the descendant form, so a group still means the group', () => {
@@ -169,7 +171,7 @@ describe('a pseudo-element in a compound selector', () => {
     renderStyles(engine, { hoverGroup: { card: { marker: { color: 'red-500' } } } });
 
     expect(generatedRulesOf(engine)).toContain(
-      '.card:hover .marker-hover-card-color-red-500 *::marker,.card:hover .marker-hover-card-color-red-500::marker{color:var(--red-500)}',
+      '.card:hover .marker-hover-card-color-red-500 *::marker,.card:hover .marker-hover-card-color-red-500::marker{color:var(--red-500,oklch(63.7% .237 25.3))}',
     );
   });
 
@@ -217,7 +219,7 @@ describe('a pseudo-element in a compound selector', () => {
     const css = engine.getStyles();
 
     expect(css).toContain('::before{content:"New"}');
-    expect(css).toContain('::before{color:var(--red-500)}');
+    expect(css).toContain('::before{color:var(--red-500,oklch(63.7% .237 25.3))}');
   });
 });
 

@@ -115,15 +115,16 @@ describe('style sinks', () => {
   it('declares a variable used after initialization without repeating the first :root block', () => {
     for (const mode of sinkModes) {
       const engine = makeEngine(mode, `sink-vars-${mode}`);
+      engine.extend({ brand: '#123456', accent: '#654321' }, {}, {});
 
-      engine.resolveClassNames({ bgColor: 'red-500' }, false);
+      engine.resolveClassNames({ bgColor: 'brand' } as never, false);
       engine.flushSync();
-      engine.resolveClassNames({ color: 'blue-500' }, false);
+      engine.resolveClassNames({ color: 'accent' } as never, false);
 
       const css = engine.getStyles();
 
-      expect(css.match(/--red-500:/g), mode).toHaveLength(1);
-      expect(css.match(/--blue-500:/g), mode).toHaveLength(1);
+      expect(css.match(/--brand:/g), mode).toHaveLength(1);
+      expect(css.match(/--accent:/g), mode).toHaveLength(1);
     }
   });
 

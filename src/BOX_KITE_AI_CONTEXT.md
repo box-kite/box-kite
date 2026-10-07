@@ -282,9 +282,13 @@ const { css, anchorProps, layerProps } = useAnchorPosition({ side: 'bottom', ali
 The palette is **Tailwind 4.3's, in OKLCH**: twenty-six families of eleven steps (`50`–`950`) — the five
 neutrals (`slate`, `gray`, `zinc`, `neutral`, `stone`), the four Tailwind 4.3 added (`mauve`, `mist`,
 `olive`, `taupe`) and seventeen hues (`red`, `orange`, `amber`, `yellow`, `lime`, `green`, `emerald`,
-`teal`, `cyan`, `sky`, `blue`, `indigo`, `violet`, `purple`, `fuchsia`, `pink`, `rose`). Each token is a
-CSS variable declared in `:root` the first time something uses it, so a colour you never write costs
-nothing.
+`teal`, `cyan`, `sky`, `blue`, `indigo`, `violet`, `purple`, `fuchsia`, `pink`, `rose`). A token is a
+CSS variable written **with its own value as the fallback** — `bgColor="sky-500"` is
+`background-color: var(--sky-500,oklch(68.5% .169 237.3))` — so nothing is declared in `:root` (a late
+`:root` insert recalculates every element on the page) and declaring `--sky-500` yourself still overrides
+it. `var(--sky-500)` elsewhere in this file is that, shortened. Your own CSS cannot count on `--sky-500`
+existing: hand it a variable of yours with `vars={{ brand: 'violet-500' }}` on an ancestor. A hand-written
+`var(--sky-500)` _inside_ a Box value — `fill`, `vars`, `css`, a `Box.extend()` variable — gets the fallback too.
 
 Any colour value takes a slash and a percentage:
 

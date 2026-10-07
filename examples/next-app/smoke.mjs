@@ -195,13 +195,17 @@ check(
 // 7. Streaming: the fallback and the resolved section are in one response, and so is the CSS the
 //    resolved section introduced (`emerald-500`, which the shell never uses).
 const streamed =
-  html.includes('Streaming the slow section') && html.includes('Streamed after a 700ms await') && css.includes('var(--emerald-500)');
+  html.includes('Streaming the slow section') && html.includes('Streamed after a 700ms await') && css.includes('var(--emerald-500,');
 
 check('a Suspense boundary streams its markup and its CSS', streamed, 'the fallback, the late markup and the late rule are all present');
 
-// A colour first used in the streamed chunk needs its `:root` declaration as well, which means the
-// base element has to reach the document again carrying the variable the late rule refers to.
-check('a variable first used in the streamed chunk reaches :root', css.includes('--emerald-500:'), '--emerald-500 is declared');
+// A token first used in the streamed chunk carries its value as the fallback, so it needs no `:root`
+// declaration — a late one would recalculate every element on the page (bug #205).
+check(
+  'a token first used in the streamed chunk declares nothing in :root',
+  css.includes('var(--emerald-500,oklch(') && !css.includes('--emerald-500:'),
+  'the late rule carries its own value',
+);
 
 // 8. A client island in the middle of it all, its CSS in the HTML because it uses the same sink.
 const button = html.match(/<button[^>]*class="([^"]*)"/);

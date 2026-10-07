@@ -46,7 +46,9 @@ function valueLine(name: string): string {
   else if (values.length) parts.push(values.map((value) => `\`${value}\``).join(', '));
   if (!parts.length) parts.push('a value its own grammar defines — `check_styles` is the way to test one');
   if (takesAlpha(name))
-    parts.push('and any of them with an opacity: `sky-500/40` → `color-mix(in oklab, var(--sky-500) 40%, transparent)`');
+    parts.push(
+      'and any of them with an opacity: `sky-500/40` → `color-mix(in oklab, var(--sky-500,oklch(68.5% .169 237.3)) 40%, transparent)`',
+    );
 
   return parts.join(' · ');
 }

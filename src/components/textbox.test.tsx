@@ -24,7 +24,7 @@ describe('the placeholder prop', () => {
   it('is the ::placeholder styles when it is an object, and writes no attribute', () => {
     render(<Textbox placeholder={{ color: 'red-500' }} props={{ 'aria-label': 'Query' }} />);
 
-    expect(css()).toContain('::placeholder{color:var(--red-500)}');
+    expect(css()).toContain('::placeholder{color:var(--red-500,oklch(63.7% .237 25.3))}');
     expect(screen.getByLabelText('Query').getAttribute('placeholder')).toBe(null);
   });
 

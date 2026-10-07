@@ -163,24 +163,64 @@ describe('rule ordering', () => {
 describe('variables', () => {
   it('declares each used variable once in :root', () => {
     const engine = makeEngine('vars-once');
+    engine.extend({ brand: '#123456', accent: '#654321' }, {}, {});
 
-    renderStyles(engine, { bgColor: 'red-500' });
-    renderStyles(engine, { color: 'red-500', borderColor: 'blue-500' });
+    renderStyles(engine, { bgColor: 'brand' } as never);
+    renderStyles(engine, { color: 'brand', borderColor: 'accent' } as never);
 
     const all = rulesOf(engine);
-    expect(all.split('--red-500:')).toHaveLength(2);
-    expect(all).toContain('--blue-500: oklch(62.3% .214 259.8);');
-    expect(generatedRulesOf(engine)).toContain('.bgColor-red-500{background-color:var(--red-500)}');
+    expect(all.split('--brand:')).toHaveLength(2);
+    expect(all).toContain('--accent: #654321;');
+    expect(generatedRulesOf(engine)).toContain('.bgColor-brand{background-color:var(--brand)}');
   });
 
   it('adds variables discovered after the first flush', () => {
     const engine = makeEngine('vars-late');
+    engine.extend({ brand: '#123456' }, {}, {});
 
     renderStyles(engine, { p: 4 });
-    expect(rulesOf(engine)).not.toContain('--red-500');
+    expect(rulesOf(engine)).not.toContain('--brand');
 
-    renderStyles(engine, { bgColor: 'red-500' });
-    expect(rulesOf(engine)).toContain('--red-500: oklch(63.7% .237 25.3);');
+    renderStyles(engine, { bgColor: 'brand' } as never);
+    expect(rulesOf(engine)).toContain('--brand: #123456;');
+  });
+
+  // A `:root` insert after the first paint recalculates every element (bug #205), so a palette token
+  // carries its value as the fallback instead.
+  it('declares no palette token at all', () => {
+    const engine = makeEngine('vars-palette');
+
+    renderStyles(engine, { p: 4 });
+    renderStyles(engine, { bgColor: 'red-500', color: 'blue-500/40' });
+
+    expect(rulesOf(engine)).not.toContain('--red-500:');
+    expect(rulesOf(engine)).not.toContain('--blue-500:');
+    expect(generatedRulesOf(engine)).toContain('.bgColor-red-500{background-color:var(--red-500,oklch(63.7% .237 25.3))}');
+  });
+
+  it('gives a hand-written palette reference its value, and leaves anybody else’s alone', () => {
+    const engine = makeEngine('vars-references');
+    engine.extend({ stripes: 'linear-gradient(var(--violet-300) 10%,var(--chart-1) 0)' }, {}, {});
+
+    renderStyles(engine, { fill: 'var(--sky-500)', stroke: 'var(--chart-1)', vars: { x: 'var(--rose-400)' } });
+    engine.getVariableValue('stripes');
+    engine.flushSync();
+
+    expect(generatedRulesOf(engine)).toContain('{fill:var(--sky-500,oklch(68.5% .169 237.3))}');
+    expect(generatedRulesOf(engine)).toContain('{stroke:var(--chart-1)}');
+    expect(generatedRulesOf(engine)).toContain('{--x:var(--rose-400,oklch(71.2% .194 13.4))}');
+    expect(rulesOf(engine)).toContain('--stripes: linear-gradient(var(--violet-300,oklch(81.1% .111 293.6)) 10%,var(--chart-1) 0);');
+  });
+
+  it('declares a palette token a user variable overrides, and resolves a self-reference without recursing', () => {
+    const engine = makeEngine('vars-override');
+    engine.extend({ 'red-500': '#f00', 'blue-500': 'var(--blue-500)' }, {}, {});
+
+    renderStyles(engine, { bgColor: 'red-500', color: 'blue-500' });
+
+    expect(generatedRulesOf(engine)).toContain('.bgColor-red-500{background-color:var(--red-500)}');
+    expect(rulesOf(engine)).toContain('--red-500: #f00;');
+    expect(rulesOf(engine)).toContain('--blue-500: var(--blue-500);');
   });
 });
 
