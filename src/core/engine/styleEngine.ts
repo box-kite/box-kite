@@ -138,9 +138,35 @@ const variableBackedValues: ReadonlySet<unknown> = new Set([Variables.colorValue
 // An id sequence for engines the caller did not name, not engine state.
 let engineSequence = 0;
 
+// The keys that nest props rather than name one — the other half of what `addClassNames` walks.
+const nestingKeys = [
+  pseudo1,
+  pseudo2,
+  pseudoElements,
+  breakpoints,
+  mediaFeatures,
+  Containers.containerQueryKey,
+  Groups.groupKeys,
+  pseudoGroupClasses,
+  themeGroupClass,
+  startingStyleKey,
+  Variants.variantKeys,
+].flatMap((keys) => Object.keys(keys));
+
 // Characters a CSS identifier cannot hold. A readable name for `1/2` or `50%` would otherwise build a
 // selector the parser rejects; hashed names are alphanumeric, so this is a no-op there.
 const invalidInCssIdentifier = /[^\w\u00A0-\uFFFF-]/g;
+
+/**
+ * A prop value in a style signature. A string is length-prefixed rather than JSON-quoted, which keeps
+ * `p={4}` and `p="4"` apart and lets no string forge the next key; anything else goes through JSON.
+ */
+function encodeValue(value: unknown): string {
+  if (typeof value === 'string') return `${value.length}"${value}`;
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+
+  return JSON.stringify(value);
+}
 
 /** A class name escaped for use inside a CSS selector: `width-1/2` becomes `width-1\/2`. */
 function escapeClassName(className: string): string {
@@ -286,12 +312,15 @@ export function createStyleEngine(options: StyleEngineOptions = {}): StyleEngine
   const cssStyles = { ...defaultCssStyles };
   // Rule sort order, from prop declaration order. Rebuilt by `extend()` so new props sort after the built-ins.
   let cssStylesIndex: Record<string, number> = {};
+  // Every prop key that can affect a class list — what `addClassNames` walks. Rebuilt with the index.
+  let styleKeys = new Set<string>();
 
   function rebuildCssStylesIndex() {
     cssStylesIndex = Object.keys(cssStyles).reduce<Record<string, number>>((acc, key, index) => {
       acc[key] = index;
       return acc;
     }, {});
+    styleKeys = new Set([...Object.keys(cssStyles), ...nestingKeys]);
   }
 
   rebuildCssStylesIndex();
@@ -320,28 +349,9 @@ export function createStyleEngine(options: StyleEngineOptions = {}): StyleEngine
   const boxClassName = '_b';
   const svgClassName = '_s';
 
-  // Whether a prop key affects the class list. Checked live rather than snapshotted, because `extend()`
-  // adds keys at runtime; mirrors `addClassNames` exactly.
-  function isStyleKey(key: string): boolean {
-    return (
-      ObjectUtils.isKeyOf(key, cssStyles) ||
-      ObjectUtils.isKeyOf(key, pseudo1) ||
-      ObjectUtils.isKeyOf(key, pseudo2) ||
-      ObjectUtils.isKeyOf(key, pseudoElements) ||
-      ObjectUtils.isKeyOf(key, breakpoints) ||
-      ObjectUtils.isKeyOf(key, mediaFeatures) ||
-      ObjectUtils.isKeyOf(key, Containers.containerQueryKey) ||
-      ObjectUtils.isKeyOf(key, Groups.groupKeys) ||
-      ObjectUtils.isKeyOf(key, pseudoGroupClasses) ||
-      ObjectUtils.isKeyOf(key, themeGroupClass) ||
-      ObjectUtils.isKeyOf(key, startingStyleKey) ||
-      ObjectUtils.isKeyOf(key, Variants.variantKeys)
-    );
-  }
-
   /**
-   * A stable cache key for the inputs that decide a class list. Values go through JSON so `p={4}` and
-   * `p="4"` cannot collide; null when something will not serialize, and the caller falls back.
+   * A stable cache key for the inputs that decide a class list, built on every render, so a hit has to be
+   * cheap. Null when a record will not serialize, and the caller falls back.
    */
   function computeSignature(props: BoxStyleProps<any>, isSvg: boolean): string | null {
     try {
@@ -354,8 +364,8 @@ export function createStyleEngine(options: StyleEngineOptions = {}): StyleEngine
         const value = (props as Record<string, unknown>)[key];
         // Mirror addClassName's early return on null/undefined so they don't affect the key.
         if (value === undefined || value === null) continue;
-        if (isStyleKey(key)) {
-          sig += `${key}:${JSON.stringify(value)};`;
+        if (styleKeys.has(key)) {
+          sig += `${key}:${encodeValue(value)};`;
         }
       }
 

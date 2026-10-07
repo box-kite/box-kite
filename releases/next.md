@@ -136,6 +136,10 @@ claude mcp add box-kite -- npx -y @box-kite/mcp
 
 Six tools, no key and no network. The one worth installing it for is `check_styles`, which hands a prop bag to the real engine and reports the CSS each prop wrote — or that it wrote none, which is the answer to a value this library does not accept, since that value fails silently by design. It needs Node 22 or newer.
 
+## A Box that re-renders costs less
+
+Every render of every Box builds a cache key from its style props before it can look its class list up, and building that key was most of what a cache hit cost: twelve registry lookups for each prop, style or not, and a `JSON.stringify` for each value. The key test is one `Set` now, rebuilt when `Box.extend()` adds a prop, and a string, number or boolean is written into the key directly. A cache hit takes a third of the time it did (1.57 µs to 0.53 µs, Node, desktop), and re-rendering a page of 2,000 Boxes with a CPU slowed to a mid-range phone's takes 17 ms rather than 20.5. Nothing about which classes a Box gets has changed. `p={4}` and `p="4"` still resolve separately, and a string prop such as `content` still cannot be mistaken for another prop's value.
+
 ## Breaking changes
 
 None.

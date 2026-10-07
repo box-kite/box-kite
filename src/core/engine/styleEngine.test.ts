@@ -137,6 +137,48 @@ describe('createStyleEngine', () => {
     expect(renderStyles(b, { p: 9 })).toContain('p-9');
   });
 
+  // The cache key every render builds before it can look anything up; a collision serves the wrong class list.
+  describe('the style signature', () => {
+    const signatureOf = (engine: StyleEngine, props: object) => engine.resolveClassNames(props as never, false).signature;
+
+    it('keeps a number and the same digits as a string apart', () => {
+      const engine = makeEngine('signature-types');
+
+      expect(signatureOf(engine, { p: 4 })).not.toBe(signatureOf(engine, { p: '4' }));
+      expect(signatureOf(engine, { flex1: true })).not.toBe(signatureOf(engine, { flex1: 'true' }));
+    });
+
+    it('lets no string value forge the key after it', () => {
+      const engine = makeEngine('signature-forgery');
+      expect(renderStyles(engine, { content: 'a', color: 'red-500' })).toContain('color-red-500');
+
+      // Each spelling of what a naive encoding would write for `color` after `content`.
+      for (const content of ['a";color:"red-500', 'a;color:7"red-500', 'a;color:red-500']) {
+        expect(renderStyles(engine, { content })).not.toContain('color-red-500');
+      }
+    });
+
+    it('ignores what is not a style prop', () => {
+      const engine = makeEngine('signature-non-style');
+
+      expect(signatureOf(engine, { p: 4, children: 'one', props: { id: 'a' }, className: 'x' })).toBe(
+        signatureOf(engine, { p: 4, children: 'two', props: { id: 'b' }, className: 'y' }),
+      );
+    });
+
+    it('takes in a prop extend() adds, and every nesting key', () => {
+      const engine = makeEngine('signature-extend');
+      expect(signatureOf(engine, { signatureProp: 1 })).toBe(signatureOf(engine, { signatureProp: 2 }));
+
+      engine.extend({}, { signatureProp: [{ values: 0, styleName: 'order' }] }, {});
+
+      expect(signatureOf(engine, { signatureProp: 1 })).not.toBe(signatureOf(engine, { signatureProp: 2 }));
+      for (const key of ['hover', 'before', 'md', 'motionReduce', 'cq', 'group', 'hoverGroup', 'theme', 'startingStyle', 'dataAttr']) {
+        expect(signatureOf(engine, { [key]: { p: 1 } }), key).not.toBe(signatureOf(engine, { [key]: { p: 2 } }));
+      }
+    });
+  });
+
   /**
    * `transition: all` on every Box is a default, not a law: an engine can name a narrower group or
    * declare nothing at all, which is what a consumer that owns its own transitions wants.
