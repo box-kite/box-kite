@@ -178,6 +178,35 @@ A `var(--token)` you write yourself inside a value Box writes gets the same fall
 <Box vars={{ brand: 'violet-500' }}>…</Box> // .foo { color: var(--brand) }
 ```
 
+## A theme or breakpoint style used for the first time no longer restyles the whole page
+
+A rule inside `theme`, a breakpoint, `cq` or `startingStyle` is an at-rule (`@scope`, `@media`, `@container`, `@starting-style`). When Chrome sees a new at-rule added to a live stylesheet, it stops working out which elements the change affects and recalculates the style of every element on the page. A new plain rule is handled cheaply, and so is a rule added _inside_ an existing at-rule block. The engine now adds a late themed or responsive rule to the block that already holds rules with the same prelude at the same place in the cascade, and starts a new block only for the first rule of its kind:
+
+```css
+/* before: two top-level @scope rules */
+@scope (.dark) to ([data-theme]) {
+  :scope .a {
+    color: …;
+  }
+}
+@scope (.dark) to ([data-theme]) {
+  :scope .b {
+    color: …;
+  }
+}
+/* after: one block, so the second rule is a cheap insert */
+@scope (.dark) to ([data-theme]) {
+  :scope .a {
+    color: …;
+  }
+  :scope .b {
+    color: …;
+  }
+}
+```
+
+Typing the first query into this site's docs search on the DataGrid page used to recalculate all 6,500 elements, because the highlighted match is the first element on the page to use its `theme={{ dark: { color: 'violet-300' } }}` colour. With a CPU slowed to a mid-range phone's, that took 160–200 ms. Now only the 121 elements of the dialog are recalculated. The cascade is the same, because rules that share a sort key had no order between them. Only the browser's stylesheet is grouped: what `getStyles()` and `getStyleTag()` write on a server is unchanged. A `@keyframes` sequence first used after the page has painted still costs one full recalculation. The engine grows by about 230 bytes gzipped.
+
 ## Breaking changes
 
 None.

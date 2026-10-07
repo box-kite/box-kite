@@ -80,6 +80,22 @@ function upperBound(keys: readonly number[], key: number): number {
 }
 
 /**
+ * A chain of at-rules holding one style rule (`@media{@scope{.x{…}}}`): the innermost block, keyed by the chain's
+ * text without that rule — serialized by the browser, so a rule parsed apart and one in the sheet compare equal.
+ */
+function blockOf(rule: CSSRule | undefined): [key: string, block: CSSGroupingRule] | null {
+  let block: CSSRule | undefined;
+  let inner = rule;
+
+  while (inner && !('selectorText' in inner)) {
+    block = inner;
+    inner = (inner as CSSGroupingRule).cssRules?.[0];
+  }
+
+  return rule && inner && block ? [rule.cssText.replace(inner.cssText, ''), block as CSSGroupingRule] : null;
+}
+
+/**
  * The ordered rule model the string and textContent sinks share, mirroring what the CSSOM sink does to a
  * real stylesheet: base rules first, late `:root` blocks in front of them, generated rules sorted.
  */
@@ -212,10 +228,42 @@ export function createCssomSink(getElement: () => HTMLStyleElement, adopted?: Ad
   // Sort keys of the generated rules already in the sheet, ascending — the index of a key here is
   // the index of its rule in the sheet (offset by baseRulesCount).
   let sortKeys: number[] = adopted?.sortKeys ?? [];
+  // A top-level at-rule inserted late makes Blink restyle the whole document (bug #206), while a style rule
+  // added inside an existing block is diffed like any other — so an at-rule joins the block its sort key and
+  // preludes already have. Order within one sort key carries no meaning (element mode layers it away).
+  const blocks = new Map<string, CSSGroupingRule>();
+  let blocksIndexed = !adopted;
+  let scratch: CSSStyleSheet | undefined;
 
   // Re-resolved per write: the element can be recreated (or first gain a sheet) between flushes.
   function sheetOf(): CSSStyleSheet | null {
     return (getElement().sheet as CSSStyleSheet | null) ?? null;
+  }
+
+  function remember(sortKey: number, rule: CSSRule | undefined) {
+    const [key, block] = blockOf(rule) ?? [];
+    if (block && !blocks.has(sortKey + key!)) blocks.set(sortKey + key!, block);
+  }
+
+  function joinBlock(sheet: CSSStyleSheet, sortKey: number, rule: string): boolean {
+    if (!blocksIndexed) {
+      blocksIndexed = true;
+      sortKeys.forEach((key, index) => remember(key, sheet.cssRules[baseRulesCount + index]));
+    }
+
+    try {
+      // Parsed in a detached sheet first, which is what tells which block (if any) it belongs to.
+      (scratch ??= new CSSStyleSheet()).replaceSync(rule);
+      const [key, parsed] = blockOf(scratch.cssRules[0]) ?? [];
+      const block = parsed && blocks.get(sortKey + key!);
+      if (!block || block.parentStyleSheet !== sheet) return false;
+
+      block.insertRule(parsed.cssRules[0].cssText, block.cssRules.length);
+
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   return {
@@ -249,11 +297,14 @@ export function createCssomSink(getElement: () => HTMLStyleElement, adopted?: Ad
       if (!sheet) return;
 
       for (const { sortKey, rule } of rules) {
+        if (rule.startsWith('@') && joinBlock(sheet, sortKey, rule)) continue;
+
         const index = upperBound(sortKeys, sortKey);
 
         try {
           sheet.insertRule(rule, baseRulesCount + index);
           sortKeys.splice(index, 0, sortKey);
+          remember(sortKey, sheet.cssRules[baseRulesCount + index]);
         } catch {
           try {
             // Fallback: append. Wrapped as well, so one rule the parser rejects cannot abort the
@@ -275,6 +326,8 @@ export function createCssomSink(getElement: () => HTMLStyleElement, adopted?: Ad
       const sheet = sheetOf();
       baseRulesCount = 0;
       sortKeys = [];
+      blocks.clear();
+      blocksIndexed = true;
       if (!sheet) return;
 
       while (sheet.cssRules.length > 0) {
