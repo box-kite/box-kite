@@ -242,6 +242,8 @@ namespace Variables {
     /** Variables used since the last call — returns and clears them. */
     getPendingVariables(): Record<string, string>;
     hasPendingVariables(): boolean;
+    /** Record variables an adopted stylesheet already declares, so using one writes no second `:root` block. */
+    declare(names: readonly string[]): void;
     /** Whether `name` was declared through `Box.extend({ variables })`. */
     isUserVariable(name: string): boolean;
     /** All of them, for a catalog that has to say which tokens a colour prop accepts beside the palette. */
@@ -264,23 +266,28 @@ namespace Variables {
     const _pendingVariables: Record<string, string> = {};
     let _userVariables: Record<string, string> = {};
 
+    function valueOf(name: string): string {
+      if (name in _userVariables) return _userVariables[name];
+
+      return name in internalVariables ? internalVariables[name as keyof typeof internalVariables] : name;
+    }
+
     return {
       getVariableValue(name: string) {
         // Only track as pending if it's a new variable
         if (!(name in _usedVariables)) {
-          if (name in _userVariables) {
-            _pendingVariables[name] = _userVariables[name];
-            _usedVariables[name] = _userVariables[name];
-          } else if (name in internalVariables) {
-            _pendingVariables[name] = internalVariables[name as keyof typeof internalVariables];
-            _usedVariables[name] = internalVariables[name as keyof typeof internalVariables];
-          } else {
-            _pendingVariables[name] = name;
-            _usedVariables[name] = name;
-          }
+          _usedVariables[name] = valueOf(name);
+          _pendingVariables[name] = _usedVariables[name];
         }
 
         return `var(--${name})`;
+      },
+
+      declare(names) {
+        for (const name of names) {
+          _usedVariables[name] = valueOf(name);
+          delete _pendingVariables[name];
+        }
       },
 
       generateVariables() {

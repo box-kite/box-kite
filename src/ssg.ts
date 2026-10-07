@@ -9,10 +9,18 @@ import { StylesContext } from './react/useStyles';
 
 /**
  * The CSS for everything rendered since the last reset. Flushes first, so it is safe straight after
- * `renderToString` — no effects have run at that point. Goes in a `<style id="box-kite-styles">` in the head.
+ * `renderToString` — no effects have run at that point. `getStyleTag()` is the same CSS ready for the head.
  */
 export function getStyles(): string {
   return StylesContext.getStyles();
+}
+
+/**
+ * The CSS as `<style id="box-kite-styles" data-box-kite="…">`, for the head. The attribute is what lets the
+ * browser adopt the sheet on hydration instead of generating and inserting every rule in it a second time.
+ */
+export function getStyleTag(): string {
+  return StylesContext.getStyleTag();
 }
 
 /**
@@ -25,12 +33,13 @@ export function resetStyles(): void {
 
 /**
  * Render `element` to static HTML together with its CSS. With `addStylesToHead` (the default) and a
- * `<head>` in the tree the styles go there; otherwise use the returned `styles`. The engine is reset
+ * `<head>` in the tree the style tag goes there; otherwise use the returned `styleTag`. The engine is reset
  * before returning, so sequential calls are independent.
  */
 export function renderToStaticMarkup(element: React.ReactElement, addStylesToHead = true) {
   let html = ReactDOMServer.renderToStaticMarkup(element);
   const styles = getStyles();
+  const styleTag = getStyleTag();
 
   if (addStylesToHead) {
     const head = '<head>';
@@ -39,10 +48,7 @@ export function renderToStaticMarkup(element: React.ReactElement, addStylesToHea
     if (headIndex > -1) {
       const stylesLocationIndex = headIndex + head.length;
 
-      html =
-        html.substring(0, stylesLocationIndex) +
-        `<style id="${StylesContext.styleElementId()}">${styles}</style>` +
-        html.substring(stylesLocationIndex);
+      html = html.substring(0, stylesLocationIndex) + styleTag + html.substring(stylesLocationIndex);
     }
   }
 
@@ -51,5 +57,6 @@ export function renderToStaticMarkup(element: React.ReactElement, addStylesToHea
   return {
     html,
     styles,
+    styleTag,
   };
 }

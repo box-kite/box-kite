@@ -40,7 +40,17 @@ import Variables from '../variables';
 import Variants from '../variants';
 import { createFlushCoordinator, FlushScheduler, microtaskScheduler } from './flushScheduler';
 import createKeyframesRegistry, { KeyframeStops, Keyframes } from './keyframes';
-import { createSink, RULE_PRECEDENCE, SinkMode, SortedRule, StyleElementDescriptor, StyleSink } from './styleSink';
+import { ADOPTION_ATTRIBUTE, adoptionManifest, adoptStyleElement, rootIdentity } from './styleAdoption';
+import {
+  createCssomSink,
+  createSink,
+  resolveStyleElement,
+  RULE_PRECEDENCE,
+  SinkMode,
+  SortedRule,
+  StyleElementDescriptor,
+  StyleSink,
+} from './styleSink';
 
 /** Explicit engine configuration — replaces the previous NODE_ENV-based sniffing. */
 export interface StylesConfiguration {
@@ -101,6 +111,11 @@ export interface StyleEngine {
   scheduleFlush(): void;
   /** The CSS emitted so far, as text. Flushes first, so a server render — where no effect runs — is complete. */
   getStyles(): string;
+  /**
+   * The CSS as the `<style>` element to put in a server-rendered `<head>`. With stable class names it carries
+   * the manifest the browser engine needs to adopt that sheet rather than build every rule in it again.
+   */
+  getStyleTag(): string;
   /**
    * Drop everything emitted: rules, cached class lists, the name counter, resolved variables, the sink.
    * Registration (extended props, components, declared variables) survives. Call it between SSR requests.
@@ -291,6 +306,7 @@ export function createStyleEngine(options: StyleEngineOptions = {}): StyleEngine
   let sink: StyleSink | undefined;
 
   function getSink(): StyleSink {
+    adoptRenderedStyles();
     if (!sink) sink = createSink(styleElementId, sinkMode);
 
     return sink;
@@ -345,6 +361,11 @@ export function createStyleEngine(options: StyleEngineOptions = {}): StyleEngine
   const pendingKeyframes: string[] = [];
   let requireFlush = true;
   let isInitialized = false;
+  // The rules a server-rendered sheet already held, by `rootIdentity` or class name. Null unless one was adopted.
+  let adopted: ReadonlySet<string> | null = null;
+  let adoptionChecked = false;
+  // Root-selector rules emitted so far: their class is on no element, so the manifest has to name them.
+  const rootRules = new Set<string>();
 
   const boxClassName = '_b';
   const svgClassName = '_s';
@@ -490,22 +511,15 @@ export function createStyleEngine(options: StyleEngineOptions = {}): StyleEngine
     if (!generatedRules.has(ruleKey)) {
       generatedRules.add(ruleKey);
 
-      const result = generateRule(key, value as BoxStyleValue, weight, context, startingStyle);
-      if (result) {
-        pendingRules.push([result.sortIndex, result.mediaOrder, result.rule]);
-        requireFlush = true;
-        if (isElementMode()) {
-          ruleElements.set(ruleKey, {
-            href: `${RULE_PRECEDENCE}-${stableHash(result.rule)}`,
-            css: result.rule,
-            precedence: RULE_PRECEDENCE,
-            sortKey: sortKeyOf(result.sortIndex, result.mediaOrder),
-          });
-        }
-        // The engine owns "something is pending", so an adapter that never flushes still gets its CSS.
-        scheduleFlush();
-      } else {
+      const identity = rootSelector ? rootIdentity(rootSelector, className) : className;
+      // A rule the adopted sheet holds is generated already: no text to build, nothing to insert.
+      const result = adopted?.has(identity) || generateRule(key, value as BoxStyleValue, weight, context, startingStyle);
+
+      if (!result) {
         unsupportedRules.add(ruleKey);
+      } else {
+        if (rootSelector) rootRules.add(identity);
+        if (result !== true) queueRule(ruleKey, result);
       }
     }
 
@@ -518,6 +532,21 @@ export function createStyleEngine(options: StyleEngineOptions = {}): StyleEngine
     }
 
     classNames.push(className);
+  }
+
+  function queueRule(ruleKey: string, result: { rule: string; sortIndex: number; mediaOrder: number }) {
+    pendingRules.push([result.sortIndex, result.mediaOrder, result.rule]);
+    requireFlush = true;
+    if (isElementMode()) {
+      ruleElements.set(ruleKey, {
+        href: `${RULE_PRECEDENCE}-${stableHash(result.rule)}`,
+        css: result.rule,
+        precedence: RULE_PRECEDENCE,
+        sortKey: sortKeyOf(result.sortIndex, result.mediaOrder),
+      });
+    }
+    // The engine owns "something is pending", so an adapter that never flushes still gets its CSS.
+    scheduleFlush();
   }
 
   /**
@@ -849,6 +878,8 @@ export function createStyleEngine(options: StyleEngineOptions = {}): StyleEngine
   }
 
   function flush() {
+    // Adoption declares the sheet's variables, so it has to come before anything counts as pending.
+    adoptRenderedStyles();
     const hasPendingVars = variables.hasPendingVariables();
     if (!requireFlush && !hasPendingVars && pendingKeyframes.length === 0) return;
 
@@ -927,9 +958,30 @@ export function createStyleEngine(options: StyleEngineOptions = {}): StyleEngine
     return base ? [base, ...elements] : elements;
   }
 
+  /**
+   * Take over a server-rendered stylesheet carrying this engine's id, once, before the first rule is resolved —
+   * the class names are checked against it from then on.
+   */
+  function adoptRenderedStyles() {
+    if (adoptionChecked) return;
+    adoptionChecked = true;
+    if (sink || sinkMode === 'string' || isElementMode()) return;
+
+    const sheet = adoptStyleElement(styleElementId, namingMode() === 'stable' && sinkMode !== 'textContent');
+    if (!sheet) return;
+
+    sink = createCssomSink(() => resolveStyleElement(styleElementId), sheet);
+    adopted = sheet.identities;
+    variables.declare(sheet.variables);
+    keyframesRegistry.adopt(sheet.keyframes);
+    isInitialized = true;
+  }
+
   /** Forget everything emitted so far, in the sink and in the engine's own bookkeeping. */
   function clear() {
     generatedRules.clear();
+    rootRules.clear();
+    adopted = null;
     unsupportedRules.clear();
     ruleElements.clear();
     pendingRules.length = 0;
@@ -949,6 +1001,7 @@ export function createStyleEngine(options: StyleEngineOptions = {}): StyleEngine
   }
 
   function resolveClassNames(props: BoxStyleProps<any>, isSvg: boolean) {
+    adoptRenderedStyles();
     const signature = computeSignature(props, isSvg);
 
     let resolved = signature !== null ? styleCache.get(signature) : undefined;
@@ -984,6 +1037,7 @@ export function createStyleEngine(options: StyleEngineOptions = {}): StyleEngine
     },
 
     addGlobalStyles(props: BoxStyleProps<any>, selector: string) {
+      adoptRenderedStyles();
       const throwawayClassNames: string[] = [];
       const elements = collect(() => addClassNames(props, throwawayClassNames, { ...rootContext(), rootSelector: selector }));
 
@@ -999,6 +1053,14 @@ export function createStyleEngine(options: StyleEngineOptions = {}): StyleEngine
       flush();
 
       return getSink().getStyles();
+    },
+
+    getStyleTag() {
+      flush();
+      const generated = namingMode() === 'stable' ? getSink().generatedRules?.() : undefined;
+      const manifest = generated ? ` ${ADOPTION_ATTRIBUTE}="${adoptionManifest(generated.rules, generated.sortKeys, rootRules)}"` : '';
+
+      return `<style id="${styleElementId}"${manifest}>${getSink().getStyles()}</style>`;
     },
 
     clear,

@@ -19,6 +19,8 @@ export interface KeyframesRegistry {
   hasPending(): boolean;
   /** The sequences waiting to be written, as `[name, stops]`, and they are no longer waiting after. */
   drainPending(): [string, KeyframeStops][];
+  /** Record sequences an adopted stylesheet already holds, so naming one writes it no second time. */
+  adopt(names: readonly string[]): void;
   /** Forget what has been emitted — the registrations themselves are configuration and survive. */
   reset(): void;
 }
@@ -63,10 +65,11 @@ export default function createKeyframesRegistry(): KeyframesRegistry {
           continue;
         }
 
+        // A name redefined after something already used it has to be written again, or the page keeps animating
+        // on the old sequence. A first registration of a name an adopted sheet holds is no redefinition.
+        const redefined = registered.has(name);
         registered.set(name, stops);
-        // A name redefined after something already used it has to be written again, or the page keeps
-        // animating on the old sequence.
-        if (emitted.delete(name)) pending.set(name, stops);
+        if (redefined && emitted.delete(name)) pending.set(name, stops);
       }
     },
 
@@ -94,6 +97,10 @@ export default function createKeyframesRegistry(): KeyframesRegistry {
       drained.forEach(([name]) => emitted.add(name));
 
       return drained;
+    },
+
+    adopt(names) {
+      names.forEach((name) => emitted.add(name));
     },
 
     reset() {

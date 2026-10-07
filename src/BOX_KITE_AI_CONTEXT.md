@@ -1244,24 +1244,41 @@ second argument for an element inside an `<svg>`. `<Icon>` is this hook plus tha
 ### Server-Side Rendering
 
 ```tsx
-import { getStyles, resetStyles } from '@box-kite/react/ssg';
+import Box from '@box-kite/react';
+import { getStyleTag, resetStyles } from '@box-kite/react/ssg';
+
+Box.configure({ classNames: 'stable' }); // in the server AND in the browser entry
 
 const html = renderToString(<App />); // any React server renderer
-const cssString = getStyles(); // the CSS for what was just rendered
-// <style id="box-kite-styles">{cssString}</style> in the document head
+const styleTag = getStyleTag(); // <style id="box-kite-styles" data-box-kite="…">…</style>, for the head
 resetStyles(); // reset before the next request
 ```
 
-Or in one call, which injects the styles into the rendered `<head>` and resets afterwards:
+Or in one call, which injects the tag into the rendered `<head>` and resets afterwards:
 
 ```tsx
 import { renderToStaticMarkup } from '@box-kite/react/ssg';
 
-const { html, styles } = renderToStaticMarkup(<App />);
+const { html, styles, styleTag } = renderToStaticMarkup(<App />);
 ```
 
 No DOM is needed: with no `document` in the process the engine collects CSS in memory. Sequential
-requests are independent and identical markup gets identical class names.
+requests are independent and identical markup gets identical class names. `getStyles()` is the bare CSS.
+
+**Adoption.** The `data-box-kite` attribute is a manifest — each rule's cascade position and a checksum
+of the classes it styles. On the first render the browser engine checks it against the sheet it parsed
+and takes the sheet over: every rule in it counts as generated, so hydration builds and inserts nothing
+for what the HTML already styled, and only rules the client adds afterwards are inserted, each in its
+cascade position. Two conditions:
+
+| Condition                               | Why                                                                        | If it does not hold                                                           |
+| --------------------------------------- | -------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `classNames: 'stable'` on both sides    | the content-hashed names are how the browser recognises the server's rules | the sheet is left in place under no id and the engine writes its own after it |
+| the browser parsed every generated rule | an index is only trustworthy if nothing in between was dropped             | same fallback                                                                 |
+
+Do **not** remove the server's `<style>` after hydration — it is the engine's own sheet now. Register
+the same `Box.extend()` props and `Box.keyframes()` sequences on both sides. `engine.getStyleTag()` is
+the same thing for `@box-kite/core`.
 
 ---
 

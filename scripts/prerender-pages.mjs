@@ -90,7 +90,7 @@ async function serverBundle() {
 }
 
 const bundle = await serverBundle();
-const { renderRoute, prerenderPaths, NOT_FOUND_PATH, PRERENDERED_STYLE_ID, routes, routeFor, markdownPath, SEARCH_INDEX_PATH } = bundle;
+const { renderRoute, prerenderPaths, NOT_FOUND_PATH, routes, routeFor, markdownPath, SEARCH_INDEX_PATH } = bundle;
 
 // The same builder the dev server serves from, so the two can only ever produce the same files.
 const mirror = siteMarkdown(bundle);
@@ -125,7 +125,7 @@ const searchPages = [];
 
 for (const { path, file } of targets) {
   const shell = await readFile(file, 'utf8');
-  const { html, styles } = await renderRoute(path);
+  const { html, styles, styleTag } = await renderRoute(path);
 
   // Each of these has been silently true at some point in this file's life: a shell whose root div
   // was named differently, a page that rendered its frame and no content, a route whose CSS never
@@ -136,14 +136,15 @@ for (const { path, file } of targets) {
   if (islands !== expected) failures.push(`${path}: ${islands} client-only boundaries, expected ${expected} — see CLIENT_ISLANDS`);
   if (html.length < MIN_HTML) failures.push(`${path}: ${html.length} bytes of HTML, expected at least ${MIN_HTML}`);
   if (styles.length < MIN_STYLES) failures.push(`${path}: ${styles.length} bytes of CSS, expected at least ${MIN_STYLES}`);
+  // Without the manifest the browser rebuilds every rule during hydration (bug #203), and nothing else would say so.
+  if (!styleTag.includes(' data-box-kite="')) failures.push(`${path}: the style tag carries no adoption manifest`);
 
   const filled = shell
     // Function replacements: `$&` and `$'` are replacement patterns, and a docs page full of shell
     // snippets and CSS is exactly where those two characters turn up.
     .replace(ROOT_DIV, () => `<div id="root">${html}</div>`)
-    // At the top of the head, which is where the engine puts its own element in the browser — so the
-    // rules the first paint uses sit in the same place in the cascade as the ones that replace them.
-    .replace('<head>', () => `<head><style id="${PRERENDERED_STYLE_ID}">${styles}</style>`);
+    // At the top of the head, which is where the engine puts its own element — the browser adopts this one.
+    .replace('<head>', () => `<head>${styleTag}`);
 
   await writeFile(file, filled);
 

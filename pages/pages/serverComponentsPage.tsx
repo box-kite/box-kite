@@ -149,6 +149,45 @@ export default function ThemeToggle() {
             </Flex>
           </Section>
 
+          <Section id="ssr" title="Server rendering without Server Components">
+            <Box>
+              With <Mono>renderToString</Mono> (or a static build) the default sink collects the CSS in memory, and{' '}
+              <Mono>getStyleTag()</Mono> hands it back as the <Mono>&lt;style&gt;</Mono> element for the head. That element carries a short
+              manifest in <Mono>data-box-kite</Mono>, and the browser <em>adopts</em> the sheet on hydration: every rule in it counts as
+              already generated, so nothing is rebuilt or inserted again and the sheet is never swapped out. Only the rules the client adds
+              afterwards are inserted, each into its place in the cascade.
+            </Box>
+            <Flex d="column" gap={3} mt={5}>
+              <Note icon={Zap} title="Name classes the same way on both sides">
+                Adoption needs <Mono>Box.configure({"{ classNames: 'stable' }"})</Mono> in the server and in the browser — the
+                content-hashed names are what lets the browser recognise the server's rules. Register the same <Mono>Box.extend()</Mono>{' '}
+                props on both.
+              </Note>
+              <Note icon={CircleAlert} title="A sheet that cannot be adopted still works">
+                If the browser dropped a rule it could not parse, the manifest no longer matches. The sheet stays in place to style the
+                page, and the engine writes its own after it.
+              </Note>
+            </Flex>
+          </Section>
+
+          <Code
+            label="One request"
+            language="jsx"
+            code={`import { renderToString } from 'react-dom/server';
+import Box from '@box-kite/react';
+import { getStyleTag, resetStyles } from '@box-kite/react/ssg';
+
+Box.configure({ classNames: 'stable' });
+
+export function render(app: React.ReactElement): string {
+  const html = renderToString(app);
+  const styleTag = getStyleTag(); // <style id="box-kite-styles" data-box-kite="…">…</style>
+  resetStyles();
+
+  return \`<!doctype html><html><head>\${styleTag}</head><body><div id="root">\${html}</div></body></html>\`;
+}`}
+          />
+
           <Section id="example" title="The example app">
             <Box>
               <Mono>examples/next-app</Mono> in the repository is a Next.js App Router app whose pages are Server Components, with a
@@ -179,6 +218,7 @@ const sidebarLinks = [
   { id: 'theming', label: 'Theming without a provider' },
   { id: 'cascade', label: 'The cascade comes from @layer' },
   { id: 'limits', label: 'What stays on the client' },
+  { id: 'ssr', label: 'Without Server Components' },
   { id: 'example', label: 'The example app' },
 ] as const;
 

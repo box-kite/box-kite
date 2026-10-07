@@ -52,6 +52,14 @@ export interface StyleSink {
    * than a silently-dropped duplicate.
    */
   baseElement?(): StyleElementDescriptor | null;
+  /** The in-memory sinks only: the generated rules in cascade order with their sort keys, for an adoption manifest. */
+  generatedRules?(): { rules: readonly string[]; sortKeys: readonly number[] };
+}
+
+/** Where an adopted sheet's generated rules start, and the sort key of each one after that. */
+export interface AdoptedRules {
+  baseRulesCount: number;
+  sortKeys: number[];
 }
 
 /** First index whose key is strictly greater than `key` — so equal keys keep insertion order. */
@@ -94,6 +102,9 @@ function createRuleBuffer() {
         sortKeys.splice(index, 0, sortKey);
         rules.splice(index, 0, rule);
       }
+    },
+    generatedRules() {
+      return { rules, sortKeys };
     },
     /** The base rules only: the reset, the `:root` blocks, and in element mode the layer order. */
     getBaseStyles() {
@@ -191,13 +202,16 @@ export function createTextContentSink(getElement: () => HTMLStyleElement): Style
   };
 }
 
-/** Inserts into the element's live `CSSStyleSheet` — what a browser uses. */
-export function createCssomSink(getElement: () => HTMLStyleElement): StyleSink {
+/**
+ * Inserts into the element's live `CSSStyleSheet` — what a browser uses. `adopted` is a server-rendered
+ * sheet already in the element, so the rules added after it are placed among its own.
+ */
+export function createCssomSink(getElement: () => HTMLStyleElement, adopted?: AdoptedRules): StyleSink {
   // Number of base rules at the front of the sheet; generated rules are inserted after them.
-  let baseRulesCount = 0;
+  let baseRulesCount = adopted?.baseRulesCount ?? 0;
   // Sort keys of the generated rules already in the sheet, ascending — the index of a key here is
   // the index of its rule in the sheet (offset by baseRulesCount).
-  let sortKeys: number[] = [];
+  let sortKeys: number[] = adopted?.sortKeys ?? [];
 
   // Re-resolved per write: the element can be recreated (or first gain a sheet) between flushes.
   function sheetOf(): CSSStyleSheet | null {
