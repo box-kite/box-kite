@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useLayoutEffect, useState } from 'react';
+import React, { useCallback, useContext, useLayoutEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import Box from '../../box';
 import {
@@ -55,6 +55,10 @@ function Theme(props: ThemeProps) {
   // Initialize with the default for SSR consistency - actual system theme is set in useLayoutEffect
   const [themeName, setThemeName] = useState(theme ?? defaultThemeName);
   const [isUserOverride, setIsUserOverride] = useState(theme !== undefined);
+  // The theme detection just queued a re-render to. Applying the default first flips an `<html>` the shell
+  // already themed through `class="dark light"`, a full-page recalc (bug #204).
+  const resolvingRef = useRef<string | null>(null);
+  const committedRef = useRef(themeName);
 
   const handleSetTheme = useCallback(
     (value: string | null) => {
@@ -98,20 +102,24 @@ function Theme(props: ThemeProps) {
 
     // Restore persisted theme from localStorage before falling back to system detection
     const stored = storageKey ? readStoredTheme(storageKey) : null;
+    const resolved = stored ?? getSystemTheme();
+    // Only a change queues the re-render that consumes it; one left behind would skip the next apply.
+    if (resolved !== committedRef.current) resolvingRef.current = resolved;
+    setThemeName(resolved);
     if (stored) {
-      setThemeName(stored);
       setIsUserOverride(true);
       return;
     }
-
-    // Set actual system theme after hydration, then follow it
-    setThemeName(getSystemTheme());
 
     return watchSystemTheme(setThemeName);
   }, [isUserOverride, storageKey]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
   useLayoutEffect(() => {
+    committedRef.current = themeName;
+    // The re-render the detection effect just queued applies the resolved theme, before the browser paints.
+    if (resolvingRef.current !== null && resolvingRef.current !== themeName) return;
+    resolvingRef.current = null;
     if (use === 'local') return;
 
     const root = documentRoot();
