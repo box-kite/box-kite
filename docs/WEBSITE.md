@@ -92,8 +92,10 @@ takes over navigation. The shells carry the metadata; the prerender pass below p
 it builds [pages/entry-server.tsx](pages/entry-server.tsx) through this same config (`build.ssr`, into
 `dist-pages-ssr/`), renders every route in Node, and writes the HTML into that route's shell together
 with its CSS. `view-source` on any address shows the page, and the page paints with no JavaScript at
-all. The CSS comes from the library's own SSG API — `getStyles()` over the string sink — so the docs
-site is the reference implementation for it.
+all. The CSS comes from the library's own SSG API — `getStyleTag()` over the string sink — so the docs
+site is the reference implementation for it. The browser **adopts** that sheet on hydration (D10): the
+tag carries a manifest, the engine takes the sheet over instead of regenerating it, and nothing removes it
+afterwards. The prerender fails a route whose tag has no manifest, since nothing else would notice.
 
 Four things keep hydration matching the HTML, and each is a trap if you touch it:
 

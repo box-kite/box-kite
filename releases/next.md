@@ -140,6 +140,23 @@ Six tools, no key and no network. The one worth installing it for is `check_styl
 
 Every render of every Box builds a cache key from its style props before it can look its class list up, and building that key was most of what a cache hit cost: twelve registry lookups for each prop, style or not, and a `JSON.stringify` for each value. The key test is one `Set` now, rebuilt when `Box.extend()` adds a prop, and a string, number or boolean is written into the key directly. A cache hit takes a third of the time it did (1.57 µs to 0.53 µs, Node, desktop), and re-rendering a page of 2,000 Boxes with a CPU slowed to a mid-range phone's takes 17 ms rather than 20.5. Nothing about which classes a Box gets has changed. `p={4}` and `p="4"` still resolve separately, and a string prop such as `content` still cannot be mistaken for another prop's value.
 
+## A server-rendered page keeps its stylesheet
+
+A page rendered on a server already carries every rule it needs, and hydrating it used to build all of them again — the rule text, an `insertRule` each, and two full-page style recalculations while the main thread was busiest. `getStyleTag()` from `@box-kite/react/ssg` writes the CSS as the engine's own `<style>` element with a short manifest beside it, and the browser now **adopts** that sheet: every rule in it counts as already generated, so nothing is rebuilt, inserted or swapped out, and the rules the client adds later go into their place in the cascade.
+
+```tsx
+import Box from '@box-kite/react';
+import { getStyleTag, resetStyles } from '@box-kite/react/ssg';
+
+Box.configure({ classNames: 'stable' }); // in the server and in the browser entry
+
+const html = renderToString(<App />);
+const head = getStyleTag(); // <style id="box-kite-styles" data-box-kite="…">…</style>
+resetStyles();
+```
+
+On this site's home page, at a CPU slowed to a mid-range phone's, hydration now inserts 8 rules instead of 422 and runs one full-page recalculation after first paint instead of two (45 ms of style work instead of 104). Adoption needs content-hashed class names on both sides, which is what lets the browser recognise the server's rules; with any other naming, or where the browser dropped a rule it could not parse, the server's sheet stays in place and the engine writes its own after it. `renderToStaticMarkup()` writes the same tag and returns it as `styleTag`, and `engine.getStyleTag()` is the `@box-kite/core` equivalent. The manifest costs about 200 bytes gzipped per page. If you removed the server's `<style>` after hydrating, stop: it is the engine's own sheet now.
+
 ## Breaking changes
 
 None.

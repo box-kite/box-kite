@@ -56,6 +56,11 @@ export namespace StylesContext {
     return getDefaultEngine().getStyles();
   }
 
+  /** The CSS as a `<style>` element the browser can adopt — see `StyleEngine.getStyleTag`. */
+  export function getStyleTag() {
+    return getDefaultEngine().getStyleTag();
+  }
+
   /** The id of the `<style>` element the default engine writes to. */
   export function styleElementId() {
     return getDefaultEngine().styleElementId;

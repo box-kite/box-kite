@@ -2,11 +2,10 @@ import { StrictMode } from 'react';
 import { renderToString } from 'react-dom/server';
 import { StaticRouter } from 'react-router-dom';
 import Box from '../src/box';
-import { getStyles, resetStyles } from '../src/ssg';
+import { getStyles, getStyleTag, resetStyles } from '../src/ssg';
 import AfterHydration from './app/afterHydration';
 import Root from './app/root';
 import { preloadPage } from './app/routePages';
-import { PRERENDERED_STYLE_ID } from './site/prerender';
 import { releases, routes } from './site/routes';
 import './extends';
 
@@ -25,7 +24,7 @@ export const NOT_FOUND_PATH = '/404';
 
 export const prerenderPaths = routes.map((route) => route.path);
 
-export { PRERENDERED_STYLE_ID, releases, routes };
+export { releases, routes };
 // The markdown mirror is written from the same render, so its builders come through this entry too:
 // `scripts/prerender-pages.mjs` is a plain script and these are TypeScript.
 export { elementMarkdown, markdownPath, pageMarkdown } from './site/pageMarkdown';
@@ -38,7 +37,7 @@ export { routeFor } from './site/siteMeta';
 export { buildRegistryIndex, buildRegistryItem, CATALOG_PATH, itemPath, registryItems, REGISTRY_PATH } from './site/registry';
 export { missingSources, registrySources } from './site/registrySources';
 
-export async function renderRoute(path: string): Promise<{ html: string; styles: string }> {
+export async function renderRoute(path: string): Promise<{ html: string; styles: string; styleTag: string }> {
   // React.lazy suspends on its first render and `renderToString` cannot wait for it, so the route's
   // page module is resolved before rendering starts.
   await preloadPage(path);
@@ -56,9 +55,11 @@ export async function renderRoute(path: string): Promise<{ html: string; styles:
     </StrictMode>,
   );
   const styles = getStyles();
+  // The engine's own element with its adoption manifest, so the browser takes the sheet over rather than rebuilding it.
+  const styleTag = getStyleTag();
 
   // Each shell ships its own route's CSS and nothing else.
   resetStyles();
 
-  return { html, styles };
+  return { html, styles, styleTag };
 }
