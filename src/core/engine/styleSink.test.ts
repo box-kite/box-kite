@@ -236,4 +236,84 @@ describe('style sinks', () => {
     engine.resolveClassNames({ p: 4 }, false);
     expect(hasSelector(engine.getStyles(), '.p-4')).toBe(true);
   });
+  describe('at-rule blocks (bug #206)', () => {
+    /** A cssom sink over a fresh element, plus the sheet's top-level rules as text with whitespace collapsed. */
+    function blockSink(id: string, css = '', adopted?: { baseRulesCount: number; sortKeys: number[] }) {
+      const element = document.createElement('style');
+      element.id = id;
+      element.textContent = css;
+      document.head.append(element);
+      const sink = createCssomSink(() => element, adopted);
+      const topLevel = () => [...element.sheet!.cssRules].map((rule) => rule.cssText.replace(/\s+/g, ' '));
+
+      return { sink, topLevel };
+    }
+
+    it('adds a late at-rule to the block its sort key and prelude already have', () => {
+      // A new top-level at-rule makes Chrome restyle every element on the page; a style rule inside an
+      // existing block is diffed like any other.
+      const { sink, topLevel } = blockSink('blocks-join');
+
+      sink.writeRules([{ sortKey: 5, rule: '@scope (.dark) to ([data-theme]){:scope .a{color:red}}' }]);
+      sink.writeRules([{ sortKey: 5, rule: '@scope (.dark) to ([data-theme]){:scope .b{color:blue}}' }]);
+
+      expect(topLevel()).toEqual(['@scope (.dark) to ([data-theme]) { :scope .a { color: red; } :scope .b { color: blue; } }']);
+    });
+
+    it('joins the innermost block of a nested chain', () => {
+      const { sink, topLevel } = blockSink('blocks-nested');
+
+      sink.writeRules([{ sortKey: 5, rule: '@media (min-width: 40rem){@scope (.dark) to ([data-theme]){:scope .a{color:red}}}' }]);
+      sink.writeRules([{ sortKey: 5, rule: '@media (min-width: 40rem){@scope (.dark) to ([data-theme]){:scope .b{color:blue}}}' }]);
+
+      expect(topLevel()).toHaveLength(1);
+      expect(topLevel()[0]).toContain(':scope .a { color: red; } :scope .b { color: blue; }');
+    });
+
+    it('starts a new block for another sort key or another prelude, placed by its key', () => {
+      const { sink, topLevel } = blockSink('blocks-apart');
+
+      sink.writeRules([
+        { sortKey: 5, rule: '@media (min-width: 40rem){.a{color:red}}' },
+        { sortKey: 7, rule: '@media (min-width: 40rem){.c{color:red}}' },
+      ]);
+      sink.writeRules([
+        { sortKey: 6, rule: '@media (min-width: 40rem){.b{color:red}}' },
+        { sortKey: 5, rule: '@scope (.dark) to ([data-theme]){:scope .d{color:red}}' },
+        { sortKey: 5, rule: '@media (min-width: 60rem){.e{color:red}}' },
+      ]);
+
+      expect(topLevel().map((rule) => rule.match(/\.[a-e](?![a-z])/g)!.join(''))).toEqual(['.a', '.d', '.e', '.b', '.c']);
+    });
+
+    it('never folds a plain rule into a block', () => {
+      const { sink, topLevel } = blockSink('blocks-plain');
+
+      sink.writeRules([{ sortKey: 5, rule: '@media (min-width: 40rem){.a{color:red}}' }]);
+      sink.writeRules([{ sortKey: 5, rule: '.b{color:red}' }]);
+
+      expect(topLevel()).toEqual(['@media (min-width: 40rem) { .a { color: red; } }', '.b { color: red; }']);
+    });
+
+    it('joins a block the server rendered into an adopted sheet', () => {
+      const { sink, topLevel } = blockSink('blocks-adopted', '._b{display:block}@media (min-width: 40rem){.a{color:red}}', {
+        baseRulesCount: 1,
+        sortKeys: [5],
+      });
+
+      sink.writeRules([{ sortKey: 5, rule: '@media (min-width: 40rem){.b{color:blue}}' }]);
+
+      expect(topLevel()).toEqual(['._b { display: block; }', '@media (min-width: 40rem) { .a { color: red; } .b { color: blue; } }']);
+    });
+
+    it('forgets its blocks on reset', () => {
+      const { sink, topLevel } = blockSink('blocks-reset');
+
+      sink.writeRules([{ sortKey: 5, rule: '@media (min-width: 40rem){.a{color:red}}' }]);
+      sink.reset();
+      sink.writeRules([{ sortKey: 5, rule: '@media (min-width: 40rem){.b{color:blue}}' }]);
+
+      expect(topLevel()).toEqual(['@media (min-width: 40rem) { .b { color: blue; } }']);
+    });
+  });
 });
