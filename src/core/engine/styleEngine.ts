@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { BoxStyleProps, BoxStyles, PseudoClassesType } from '../../types';
+import { isDevelopment } from '../../utils/environment/environmentUtils';
 import ObjectUtils from '../../utils/object/objectUtils';
 import Animations from '../animations';
 import {
@@ -27,6 +28,7 @@ import {
 import { CatalogSource } from '../catalog/boxCatalog';
 import Containers from '../containers';
 import { BoxStyle, BoxStyleValue } from '../coreTypes';
+import type DiagnosticsModule from '../diagnostics';
 import defaultBoxComponents, { BoxComponent, Components } from '../extends/boxComponents';
 import { resolveComponentStyles } from '../extends/useComponents';
 import Filters from '../filters';
@@ -71,6 +73,11 @@ export interface StylesConfiguration {
    * first render re-emits every rule, since the base block is written once.
    */
   transition?: string | false;
+  /**
+   * Whether a value that wrote nothing, a number in a unit it almost certainly did not mean, or an HTML
+   * attribute outside `props` says so in a `console.warn`, once each. Defaults to on outside production.
+   */
+  warnings?: boolean;
 }
 
 export interface StyleEngineOptions extends StylesConfiguration {
@@ -312,6 +319,21 @@ export function createStyleEngine(options: StyleEngineOptions = {}): StyleEngine
   // Undefined means "follow the environment", resolved when first needed so importing touches no DOM.
   let sinkMode: SinkMode | undefined = options.sink;
   let sink: StyleSink | undefined;
+  let warnings = options.warnings;
+  const warned = new Set<string>();
+
+  /** Each id is judged once. The prose is imported on demand, so a production bundle never loads it. */
+  function warn(id: string, message: (diagnostics: typeof DiagnosticsModule) => string | null) {
+    if (warned.has(id) || !(warnings ?? isDevelopment())) return;
+
+    warned.add(id);
+    import('../diagnostics')
+      .then(({ default: diagnostics }) => {
+        const text = message(diagnostics);
+        if (text) console.warn(`[box-kite] ${text}`);
+      })
+      .catch(() => {});
+  }
 
   function getSink(): StyleSink {
     adoptRenderedStyles();
@@ -494,6 +516,8 @@ export function createStyleEngine(options: StyleEngineOptions = {}): StyleEngine
           // the two come out in nesting order — `.dark .card:hover .className`.
           addClassNames(themeProps, classNames, { ...context, parents: [...context.parents, parent] });
         });
+      } else {
+        warn(key, (diagnostics) => diagnostics.attribute(key));
       }
     });
   }
@@ -525,9 +549,18 @@ export function createStyleEngine(options: StyleEngineOptions = {}): StyleEngine
 
       if (!result) {
         unsupportedRules.add(ruleKey);
+        // A group in a global rule is dropped too, with a value that is fine.
+        if (!findDefinition(key, value as BoxStyleValue)) {
+          const definitions = (cssStyles as Record<string, BoxStyle[] | undefined>)[key];
+          warn(`${key}=${serializedValue}`, (diagnostics) => diagnostics.rejected(key, value, definitions));
+        }
       } else {
         if (rootSelector) rootRules.add(identity);
         if (result !== true) queueRule(ruleKey, result);
+        // Every `misread` threshold is below 10, so nothing else is worth the import.
+        if (typeof value === 'number' && value > 0 && value < 10) {
+          warn(`${key}=${serializedValue}`, (diagnostics) => diagnostics.misread(key, value));
+        }
       }
     }
 
@@ -1080,6 +1113,7 @@ export function createStyleEngine(options: StyleEngineOptions = {}): StyleEngine
 
     configure(config: StylesConfiguration) {
       if (config.classNames) classNamesMode = config.classNames;
+      if (config.warnings !== undefined) warnings = config.warnings;
 
       if (config.transition !== undefined && config.transition !== baseTransition) {
         baseTransition = config.transition;

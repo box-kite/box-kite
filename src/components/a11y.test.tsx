@@ -1,8 +1,8 @@
 import { cleanup, render } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { formatViolations, runAxe } from '../../dev/a11y/axe';
 import { fixtures } from '../../dev/a11y/fixtures';
-import { ignoreLogs } from '../../dev/tests';
+import { ignoreLogs, warningsSettled } from '../../dev/tests';
 
 /**
  * Every component, rendered the way its docs show it, put through axe. The gate is two-sided: an
@@ -20,12 +20,19 @@ describe('Component accessibility (axe)', () => {
   it.each(fixtures)(
     '$name',
     async (fixture) => {
+      const warn = vi.spyOn(console, 'warn');
       render(fixture.render());
       fixture.setup?.();
 
       // document.body, not the render container: Tooltip and the Dropdown popup render through a
       // portal, and a container-scoped scan would quietly skip exactly the markup under test.
       const violations = await runAxe(document.body);
+
+      // A development warning from the engine means a component handed Box a prop Box dropped.
+      await warningsSettled();
+      const dropped = warn.mock.calls.map(([message]) => String(message)).filter((message) => message.startsWith('[box-kite]'));
+      warn.mockRestore();
+      expect(dropped, `${fixture.name}: the engine warned while rendering it`).toEqual([]);
       const known = fixture.knownViolations ?? {};
 
       const unexpected = violations.filter((violation) => !(violation.id in known));

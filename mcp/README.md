@@ -43,16 +43,17 @@ claude mcp add box-kite -- npx -y @box-kite/mcp
 ## Why `check_styles` exists
 
 Box Kite accepts a closed set of values per prop, and **a value it does not accept produces no rule
-and no class name** — silently, by design, because a typo must not emit a broken declaration. That is
-the right behaviour and it is invisible, so the only honest way to answer "does `bgColor="blue-550"`
-work" is to hand it to the engine:
+and no class name**, by design, because a typo must not emit a broken declaration. A development
+build warns in the console once the page renders; a production one says nothing at all. The way to
+answer "does `bgColor="blue-550"` work" before anything renders is to hand it to the engine:
 
 ```
-check_styles { "props": { "p": 4, "bgColor": "blue-550", "fontSize": 14, "href": "/about" } }
+check_styles { "props": { "p": 4, "bgColor": "blue-550", "fontSize": 14, "lineHeight": 1.5, "href": "/about" } }
 
 ✅ `p` → `.p-4{padding:1rem}`
 ❌ `bgColor` does not accept "blue-550" — no rule and no class name were written.
 ✅ `fontSize` → `.fontSize-14{font-size:0.875rem}`
+⚠️ `lineHeight` → `.lineHeight-1\.5{line-height:1.5px}` — lineHeight={1.5} is a 1.5px line: lineHeight is direct pixels, …
 ⚠️ `href` an HTML attribute, not a style prop. It goes in `props={{ "href": … }}`.
 ```
 

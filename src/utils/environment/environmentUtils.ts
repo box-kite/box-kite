@@ -10,6 +10,18 @@ export function isBrowser(): boolean {
   return typeof window !== 'undefined' && typeof window.document !== 'undefined';
 }
 
+/**
+ * Development, unless the bundler or the process says production. Spelled out so a bundler replaces it;
+ * a page with no bundler has no `process` at all and counts as production.
+ */
+export function isDevelopment(): boolean {
+  try {
+    return process.env.NODE_ENV !== 'production';
+  } catch {
+    return false;
+  }
+}
+
 /** Whether there is a document at all — false during a server render. */
 export function hasDocument(): boolean {
   return typeof document !== 'undefined';

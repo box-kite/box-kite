@@ -112,27 +112,30 @@
       "path": "dist/box.mjs",
       "ignore": [
         "react",
-        "react-dom"
+        "react-dom",
+        "./diagnostics-*"
       ],
       "gzip": true,
-      "limit": "36.01 KB"
+      "limit": "36.28 KB"
     },
     {
       "name": "Box in a Server Component (react-server entry)",
       "path": "dist/rsc.mjs",
       "ignore": [
         "react",
-        "react-dom"
+        "react-dom",
+        "./diagnostics-*"
       ],
       "gzip": true,
-      "limit": "34.45 KB"
+      "limit": "34.69 KB"
     },
     {
       "name": "Behavior primitives (a11y entry)",
       "path": "dist/a11y.mjs",
       "ignore": [
         "react",
-        "react-dom"
+        "react-dom",
+        "./diagnostics-*"
       ],
       "gzip": true,
       "limit": "3.2 KB"
@@ -142,7 +145,8 @@
       "path": "dist/anchor.mjs",
       "ignore": [
         "react",
-        "react-dom"
+        "react-dom",
+        "./diagnostics-*"
       ],
       "gzip": true,
       "limit": "2.25 KB"
@@ -152,17 +156,19 @@
       "path": "dist/catalog.mjs",
       "ignore": [
         "react",
-        "react-dom"
+        "react-dom",
+        "./diagnostics-*"
       ],
       "gzip": true,
-      "limit": "54.20 KB"
+      "limit": "54.73 KB"
     },
     {
       "name": "Spec renderer (spec entry)",
       "path": "dist/spec.mjs",
       "ignore": [
         "react",
-        "react-dom"
+        "react-dom",
+        "./diagnostics-*"
       ],
       "gzip": true,
       "limit": "4.7 KB"
@@ -172,7 +178,8 @@
       "path": "dist/interop.mjs",
       "ignore": [
         "react",
-        "react-dom"
+        "react-dom",
+        "./diagnostics-*"
       ],
       "gzip": true,
       "limit": "4 KB"
@@ -181,154 +188,172 @@
       "name": "Core engine (@box-kite/core, no React)",
       "path": "dist-core/core.mjs",
       "gzip": true,
-      "limit": "35.15 KB"
+      "limit": "35.73 KB",
+      "ignore": [
+        "./diagnostics-*"
+      ]
     },
     {
       "name": "Dialog",
       "path": "dist/components/dialog.mjs",
       "ignore": [
         "react",
-        "react-dom"
+        "react-dom",
+        "./diagnostics-*"
       ],
       "gzip": true,
-      "limit": "38.13 KB"
+      "limit": "38.35 KB"
     },
     {
       "name": "Popover",
       "path": "dist/components/popover.mjs",
       "ignore": [
         "react",
-        "react-dom"
+        "react-dom",
+        "./diagnostics-*"
       ],
       "gzip": true,
-      "limit": "39.62 KB"
+      "limit": "39.88 KB"
     },
     {
       "name": "Menu",
       "path": "dist/components/menu.mjs",
       "ignore": [
         "react",
-        "react-dom"
+        "react-dom",
+        "./diagnostics-*"
       ],
       "gzip": true,
-      "limit": "41.90 KB"
+      "limit": "42.15 KB"
     },
     {
       "name": "Accordion",
       "path": "dist/components/accordion.mjs",
       "ignore": [
         "react",
-        "react-dom"
+        "react-dom",
+        "./diagnostics-*"
       ],
       "gzip": true,
-      "limit": "37.36 KB"
+      "limit": "37.60 KB"
     },
     {
       "name": "Agent",
       "path": "dist/components/agent.mjs",
       "ignore": [
         "react",
-        "react-dom"
+        "react-dom",
+        "./diagnostics-*"
       ],
       "gzip": true,
-      "limit": "38.10 KB"
+      "limit": "38.34 KB"
     },
     {
       "name": "Markdown",
       "path": "dist/components/markdown.mjs",
       "ignore": [
         "react",
-        "react-dom"
+        "react-dom",
+        "./diagnostics-*"
       ],
       "gzip": true,
-      "limit": "36.59 KB"
+      "limit": "36.84 KB"
     },
     {
       "name": "Skeleton",
       "path": "dist/components/skeleton.mjs",
       "ignore": [
         "react",
-        "react-dom"
+        "react-dom",
+        "./diagnostics-*"
       ],
       "gzip": true,
-      "limit": "35.92 KB"
+      "limit": "36.17 KB"
     },
     {
       "name": "Tabs",
       "path": "dist/components/tabs.mjs",
       "ignore": [
         "react",
-        "react-dom"
+        "react-dom",
+        "./diagnostics-*"
       ],
       "gzip": true,
-      "limit": "38.56 KB"
+      "limit": "38.80 KB"
     },
     {
       "name": "Slider",
       "path": "dist/components/slider.mjs",
       "ignore": [
         "react",
-        "react-dom"
+        "react-dom",
+        "./diagnostics-*"
       ],
       "gzip": true,
-      "limit": "37.73 KB"
+      "limit": "37.95 KB"
     },
     {
       "name": "Progress",
       "path": "dist/components/progress.mjs",
       "ignore": [
         "react",
-        "react-dom"
+        "react-dom",
+        "./diagnostics-*"
       ],
       "gzip": true,
-      "limit": "35.89 KB"
+      "limit": "36.15 KB"
     },
     {
       "name": "Toaster",
       "path": "dist/components/toaster.mjs",
       "ignore": [
         "react",
-        "react-dom"
+        "react-dom",
+        "./diagnostics-*"
       ],
       "gzip": true,
-      "limit": "39.36 KB"
+      "limit": "39.62 KB"
     },
     {
       "name": "Combobox",
       "path": "dist/components/combobox.mjs",
       "ignore": [
         "react",
-        "react-dom"
+        "react-dom",
+        "./diagnostics-*"
       ],
       "gzip": true,
-      "limit": "45.18 KB"
+      "limit": "45.41 KB"
     },
     {
       "name": "Dashboard",
       "path": "dist/components/dashboard.mjs",
       "ignore": [
         "react",
-        "react-dom"
+        "react-dom",
+        "./diagnostics-*"
       ],
       "gzip": true,
-      "limit": "41.56 KB"
+      "limit": "41.80 KB"
     },
     {
       "name": "DataGrid",
       "path": "dist/components/dataGrid.mjs",
       "ignore": [
         "react",
-        "react-dom"
+        "react-dom",
+        "./diagnostics-*"
       ],
       "gzip": true,
-      "limit": "83.05 KB"
+      "limit": "83.18 KB"
     },
     {
       "name": "DataGrid export, the chunk fetched on the first press",
       "path": "dist/gridExport.mjs",
       "ignore": [
         "react",
-        "react-dom"
+        "react-dom",
+        "./diagnostics-*"
       ],
       "gzip": true,
       "limit": "3.8 KB"
@@ -338,10 +363,11 @@
       "path": "dev/size-full.mjs",
       "ignore": [
         "react",
-        "react-dom"
+        "react-dom",
+        "./diagnostics-*"
       ],
       "gzip": true,
-      "limit": "114.59 KB"
+      "limit": "114.74 KB"
     }
   ],
   "repository": {

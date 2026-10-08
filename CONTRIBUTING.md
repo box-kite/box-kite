@@ -385,15 +385,20 @@ export namespace BoxStylesFormatters {
 
 **Important**: Most numeric props use specific formatters that transform the value. Understanding these transformations is critical for choosing correct values.
 
-| Prop Type                       | Formatter | Divider | Example            | CSS Output                    |
-| ------------------------------- | --------- | ------- | ------------------ | ----------------------------- |
-| Spacing (`p`, `m`, `gap`, etc.) | rem       | 4       | `p={4}`            | `padding: 1rem` (16px)        |
-| Font size (`fontSize`)          | rem       | **16**  | `fontSize={14}`    | `font-size: 0.875rem` (≈14px) |
-| Border width (`b`, `bx`, `by`)  | px        | -       | `b={1}`            | `border-width: 1px`           |
-| Width/Height (numeric)          | rem       | 4       | `width={20}`       | `width: 5rem` (80px)          |
-| Border radius (`borderRadius`)  | px        | -       | `borderRadius={8}` | `border-radius: 8px`          |
+| Prop Type                       | Formatter | Divider | Example                    | CSS Output                    |
+| ------------------------------- | --------- | ------- | -------------------------- | ----------------------------- |
+| Spacing (`p`, `m`, `gap`, etc.) | rem       | 4       | `p={4}`                    | `padding: 1rem` (16px)        |
+| Font size (`fontSize`)          | rem       | **16**  | `fontSize={14}`            | `font-size: 0.875rem` (≈14px) |
+| Border width (`b`, `bx`, `by`)  | px        | -       | `b={1}`                    | `border-width: 1px`           |
+| Width/Height (numeric)          | rem       | 4       | `width={20}`               | `width: 5rem` (80px)          |
+| Border radius (`borderRadius`)  | rem       | 4       | `borderRadius={2}`         | `border-radius: 0.5rem` (8px) |
+| Line height (`lineHeight`)      | px        | -       | `lineHeight={24}`          | `line-height: 24px`           |
+| Times (`transitionDuration`, …) | ms        | -       | `transitionDuration={150}` | `transition-duration: 150ms`  |
 
 **Common mistake**: Using small values for `fontSize` like `fontSize={3}` results in `3/16 = 0.1875rem ≈ 3px` - nearly invisible text!
+In development the engine says so (`fontSize={3} is 3px text … For 12px write fontSize={12}`), and the same goes for a
+`lineHeight` written as a multiple, a time in seconds and a filter written as a multiplier — `Diagnostics.misread` in
+`src/core/diagnostics.ts` holds the thresholds.
 
 **Practical fontSize values**:
 
@@ -1116,6 +1121,33 @@ A break the contract genuinely does not cover goes in the `SANCTIONED` ledger in
 next reviewer weighs the one after it against. A break that is simply not fixed yet goes in `OWED`,
 named after the step that clears it. Neither ledger tolerates a stale entry: the check fails on an
 exception that has stopped being true, so paying a debt means deleting its line in the same commit.
+
+### API design for agents
+
+Most code written against this library is written by an agent, which learns the API from three places:
+the types it sees in-loop, the console it reads after a run, and the agent files it is handed. Walk this
+beside the API review for anything a consumer writes — a prop, a component, an option, an error:
+
+- [ ] **An error is a prompt.** Every `throw` and `console.warn` names the value, says what it did and gives
+      the line to write instead — `fontSize={4} is 4px text … For 16px write fontSize={16}`, never
+      `invalid fontSize` — prefixed `[box-kite]`. A mistake that would write nothing goes through the
+      engine's `warn` in development (`src/core/diagnostics.ts`) rather than being dropped in silence.
+- [ ] **One way to do each thing.** A second spelling is a deprecated alias, not a peer; one import path
+      per concept; a name that greps, shares nothing with another export (`Menu` and `MenuList` were one
+      import away from each other) and needs no abbreviation guessed.
+- [ ] **Types are the guardrail.** An agent with an LSP sees a type error before it runs anything, so an
+      invalid state is unrepresentable where the types can say so (a second pseudo-element, a value with
+      no `match`), and a development warning where they cannot.
+- [ ] **A number states its unit.** A numeric prop off the spacing scale gets a row in the table under
+      "Understanding Numeric Prop Values" and, if a plausible number in another unit is valid CSS, a
+      `Diagnostics.misread` threshold — that is the one mistake neither the types nor the engine refuse.
+- [ ] **Progressive disclosure.** A new fact goes in one place in the agent files — a rule, a skill
+      reference or `BOX_KITE_AI_CONTEXT.md` (the `sync-docs` skill says which) — and `SKILL.md` stays a
+      table of contents. Nothing asks an agent to load the whole reference: a full dump costs context and
+      buys nothing measurable.
+- [ ] **A break ships its migration as agent context.** The rules file and the skill change in the same
+      PR, and the `releases/next.md` bullet is the old line, the new line and why — written to be pasted
+      into an agent's context with nothing else beside it.
 
 ---
 

@@ -142,3 +142,9 @@ export function installDialogPlatform(): () => void {
     document.removeEventListener('pointerdown', onPointerDown);
   };
 }
+
+/** The engine's development warnings import their messages on demand; this waits until any already earned are printed. */
+export async function warningsSettled() {
+  await import('../src/core/diagnostics');
+  await new Promise((resolve) => setTimeout(resolve, 0));
+}

@@ -19,6 +19,15 @@ describe('check_styles', () => {
     expect(check?.note).toContain('no rule and no class name');
   });
 
+  it('flags a number that wrote CSS in a unit it almost certainly did not mean', () => {
+    const result = checkStyles({ fontSize: 4, p: 4 });
+
+    expect(result.ok).toBe(false);
+    expect(result.checks[0]).toMatchObject({ verdict: 'misread', css: '.fontSize-4{font-size:0.25rem}' });
+    expect(result.checks[0].note).toContain('For 16px write fontSize={16}.');
+    expect(result.checks[1].verdict).toBe('ok');
+  });
+
   it('names the prop a Tailwind habit meant', () => {
     expect(verdict({ padding: 4 }, 'padding')).toMatchObject({ verdict: 'unknown-prop', suggestions: expect.arrayContaining(['p']) });
   });

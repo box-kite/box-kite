@@ -241,6 +241,20 @@ On this site, with a CPU slowed to a mid-range phone's, every page load used to 
 
 The cascade is unchanged. Within one prelude the rules stay in cascade order. Two different preludes at the same place in the cascade never decide a property by order alone: a theme's `@scope` outranks an unscoped rule, and two themes never apply to one element. One exception applies only to the browser's stylesheet: two container queries of the same size, one named and one not, that both match one element and set overlapping properties may resolve in a different order than the server's. `getStyles()` and `getStyleTag()` now include the empty blocks. In the browser, `getStyles()` also includes the keyframes element. The engine grows by about 270 bytes gzipped.
 
+## Development tells you when a prop did nothing
+
+Three mistakes used to be silent. In development each now prints one `[box-kite]` warning naming what rendered and the line to write instead — written for whoever reads the console, the agent that ran your tests included:
+
+```
+[box-kite] bgColor="bleu-500" wrote no CSS: bgColor does not take that value, so the prop was dropped along with its class. Did you mean "blue-500"?
+[box-kite] href is an HTML attribute, not a style prop, so at the top level it was dropped: write props={{ href: ... }}.
+[box-kite] fontSize={4} is 4px text: fontSize's divider is 16, not the spacing scale's 4, so the number is the pixel size. For 16px write fontSize={16}.
+```
+
+The third kind is the one nothing else could catch, because the value is valid CSS: a `fontSize` on the spacing scale, a `lineHeight` written as a multiple (`lineHeight={1.5}` is a 1.5px line), a time in seconds (`transitionDuration={0.3}` is 0.3ms) and a filter written as a multiplier (`brightness={1.1}` is 1.1%). The thresholds sit below anything rendered on purpose, so `fontSize={12}` and `lineHeight={24}` say nothing.
+
+Each warning prints once per value, wherever `process.env.NODE_ENV` is not `production` — a dev server, a test run — and never in a production build, where a rejected value is still dropped with nothing said. `Box.configure({ warnings: false })` turns them off. The messages are a chunk of their own that only a development build ever loads, so a production bundle carries 0.26 KB gzipped of gate and none of the prose. `check_styles` in `@box-kite/mcp` gives the same verdicts before anything renders, and flags a misread number as `misread` now rather than `ok`.
+
 ## Breaking changes
 
 None.
