@@ -1100,7 +1100,7 @@ const catalogManifest: CatalogManifest = {
     },
     Collapsible: {
       description: 'One disclosure: a trigger, and the content it reveals.',
-      import: "import Collapsible from '@box-kite/react/components/accordion';",
+      import: "import { Collapsible } from '@box-kite/react/components/accordion';",
       slots: ['default'],
       events: ['trigger', 'onOpenChange'],
       props: {
