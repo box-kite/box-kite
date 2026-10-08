@@ -64,6 +64,10 @@ jobs:
       # dependencies — the only place a broken `npx @box-kite/mcp` would otherwise surface is a release.
       - name: Check the MCP server builds and answers 🔧
         run: npm run build:mcp
+      # Builds the codemod and runs the binary over the shadcn corpus with only its declared dependency, held
+      # to the bar it was written to: 70% of the Radix elements converted without a TODO.
+      - name: Check the codemod builds and converts 🔧
+        run: npm run build:codemod
       - name: Check package health (publint + attw) 🔧
         run: npm run check:package
       - name: Check size budgets 🔧

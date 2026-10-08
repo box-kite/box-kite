@@ -64,7 +64,7 @@ Cut a release of `@box-kite/react`, `@box-kite/core` and `@box-kite/mcp`. One ve
 ## Owner setup, once per package
 
 npm trusted publishing is configured per package, and 1.0.0 was published by hand because it was
-missing: `@box-kite/react`, `@box-kite/core` **and** `@box-kite/mcp` each need a trusted publisher of
+missing: `@box-kite/react`, `@box-kite/core`, `@box-kite/mcp` **and** `@box-kite/codemod` each need a trusted publisher of
 owner `box-kite`, repository `box-kite`, workflow `publish.yml`, environment left blank, with
 `npm publish` ticked.
 

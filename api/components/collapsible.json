@@ -1,7 +1,7 @@
 {
   "name": "Collapsible",
   "route": "/accordion",
-  "import": "import Collapsible from '@box-kite/react/components/accordion';",
+  "import": "import { Collapsible } from '@box-kite/react/components/accordion';",
   "description": "One disclosure: a trigger, and the content it reveals.",
   "pattern": null,
   "props": [

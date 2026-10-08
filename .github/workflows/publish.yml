@@ -89,6 +89,18 @@ jobs:
             npm publish ./dist-mcp --access public --provenance
           fi
 
+      # After the MCP server for the same reason: a tool beside the library, never something it waits on.
+      - run: npm run build:codemod
+
+      - name: Publish @box-kite/codemod
+        run: |
+          version=$(node -p "require('./dist-codemod/package.json').version")
+          if npm view "@box-kite/codemod@$version" version > /dev/null 2>&1; then
+            echo "@box-kite/codemod@$version is already on the registry — skipping"
+          else
+            npm publish ./dist-codemod --access public --provenance
+          fi
+
       # `403 ... OIDC permission denied` is the registry saying the trusted publisher does not match,
       # and it names none of the four things that have to. A config created after 3 September 2026
       # allows `npm stage publish` and nothing else until `npm publish` is ticked as well, so the
@@ -97,8 +109,8 @@ jobs:
         if: failure()
         run: |
           cat <<'EOF'
-          ::error::npm refused the publish. Check the trusted publisher on npmjs.com for ALL THREE of
-          @box-kite/core, @box-kite/react and @box-kite/mcp (Package → Settings → Trusted Publisher):
+          ::error::npm refused the publish. Check the trusted publisher on npmjs.com for ALL FOUR of
+          @box-kite/core, @box-kite/react, @box-kite/mcp and @box-kite/codemod (Package → Settings → Trusted Publisher):
             organisation/user  box-kite
             repository         box-kite
             workflow filename  publish.yml

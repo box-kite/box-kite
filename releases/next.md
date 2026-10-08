@@ -8,6 +8,7 @@ Scroll position and view transitions become props: fourteen of them, so an anima
 
 - **[An animation can run off a scroll position](#an-animation-can-run-off-a-scroll-position)** — `animationTimeline="scroll()"` and `"view()"`, plus the named timelines and the range props, for reading-progress bars and reveal-on-scroll with no JavaScript at all.
 - **[A change the browser animates between](#a-change-the-browser-animates-between)** — `viewTransitionName`, `viewTransitionClass` and `Box.viewTransition()`, with the React `flushSync` trap handled for you.
+- **[A Radix or shadcn/ui app moves over with one command](#a-radix-or-shadcnui-app-moves-over-with-one-command)** — `npx @box-kite/codemod radix-to-box src`, with a report of what it left.
 - **[A theme switch can cross-fade](#a-theme-switch-can-cross-fade)** — one prop on `<Box.Theme>`.
 
 ## An animation can run off a scroll position
@@ -136,6 +137,33 @@ claude mcp add box-kite -- npx -y @box-kite/mcp
 
 Six tools, no key and no network. The one worth installing it for is `check_styles`, which hands a prop bag to the real engine and reports the CSS each prop wrote — or that it wrote none, which is the answer to a value this library does not accept, since that value fails silently by design. It needs Node 22 or newer.
 
+## A Radix or shadcn/ui app moves over with one command
+
+[`@box-kite/codemod`](https://www.npmjs.com/package/@box-kite/codemod) rewrites the call sites of fifteen Radix primitive families — imported from `@radix-ui/react-*`, from `radix-ui`, or through a shadcn `components/ui` folder — and sonner onto the Box Kite components that do the same job, then writes a `.migration/` report of what it did and what it left:
+
+```bash
+npx @box-kite/codemod radix-to-box src
+```
+
+The shape that changes most is the trigger: `asChild` becomes the render prop, with the trigger's ref and attributes spread onto your own element and any handler it already had composed rather than lost.
+
+```jsx
+// before
+<Tooltip>
+  <TooltipTrigger asChild>
+    <Button variant="outline">Hover</Button>
+  </TooltipTrigger>
+  <TooltipContent>Add to library</TooltipContent>
+</Tooltip>
+
+// after
+<Tooltip side="top" content="Add to library">
+  {(t) => <Button ref={t.ref} {...t.props} variant="outline">Hover</Button>}
+</Tooltip>
+```
+
+Placement maps across (`side="right"` is `"end"`, `sideOffset` in pixels is `offset` on the ÷4 scale), a dialog's close becomes a submit in `<form method="dialog">`, a menu label becomes its group's `label`, a single-thumb slider's `[n]` becomes `n` with its handlers, and a checkbox's `onCheckedChange` reads the input's own `checked`. Where the two libraries mean different things the element is left as it was, with a `TODO(radix-to-box)` comment in its tag saying why and its import kept, so the file still runs. On shadcn/ui's own examples it converts **168 of 178** Radix elements with no TODO, and every converted file without one type-checks against the library's real types — both checked in CI. It needs Node 22 or newer. The [README](https://github.com/box-kite/box-kite/tree/main/codemod#readme) has the whole mapping.
+
 ## A Box that re-renders costs less
 
 Every render of every Box builds a cache key from its style props before it can look its class list up, and building that key was most of what a cache hit cost: twelve registry lookups for each prop, style or not, and a `JSON.stringify` for each value. The key test is one `Set` now, rebuilt when `Box.extend()` adds a prop, and a string, number or boolean is written into the key directly. A cache hit takes a third of the time it did (1.57 µs to 0.53 µs, Node, desktop), and re-rendering a page of 2,000 Boxes with a CPU slowed to a mid-range phone's takes 17 ms rather than 20.5. Nothing about which classes a Box gets has changed. `p={4}` and `p="4"` still resolve separately, and a string prop such as `content` still cannot be mistaken for another prop's value.
@@ -247,6 +275,7 @@ None.
 
 ## Fixes
 
+- **The API reference told you to import `Collapsible` as the accordion module's default export**, which is `Accordion`. The line on the [Accordion page](https://www.box-kite.dev/accordion/), in the catalog and in what the MCP server's `get_component` answers was written from a hand-kept flag that had been missed; it is read off the module's own `export default` now, and says `import { Collapsible } from '@box-kite/react/components/accordion'`.
 - **A global `<Box.Theme>` hydrating on a dark system put `<html>` through `class="dark light"` for one commit.** The provider renders the default theme first, so its HTML matches the server's, and the effect that writes the theme onto `<html>` ran before the system preference had been read — adding `light` to a root the page's own script had already made dark, one re-render before taking it off again. Nothing painted in between, but the browser invalidates the whole document for a class change on its root, and on this site's 6,400-element DataGrid page, at a CPU slowed to a mid-range phone's, that was a second full-page style recalculation during hydration: 0.5–0.9 s of it. The provider now writes the theme it has resolved (stored, then the system's) on the first commit, and leaves a root that already carries it untouched, with no class or `data-theme` write at all. What the first render returns is unchanged.
 - **Copy on a docs demo whose snippet had an event handler copied minified code.** A demo's snippet is printed from the demo itself, and a handler was printed with its own source, which the browser's bundle had minified: `/button`'s counter copied `onClick={()=>t(e=>e+1)}`. The prerendered page showed the readable version, so nothing looked wrong. A handler is now printed as `() => {}`, and the one demo whose handler is the point writes its snippet out.
 - **`anchorName="none"` wrote `anchor-name: --none`, and `positionAnchor="auto"` wrote `--auto`.** The definition that accepts a name is tried before the one that lists the keywords, and it accepted those two as names — so the keyword definitions were unreachable. A name no longer swallows a keyword the prop takes on its own.

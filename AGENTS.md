@@ -26,6 +26,7 @@ Read `.claude/rules/box-kite-rules.md` — the shortest complete answer — befo
 | `npm run build`                            | Build library (ESM + CJS output to dist/)                                                                         |
 | `npm run build:dev`                        | Build library without minification                                                                                |
 | `npm run build:mcp`                        | Build `@box-kite/mcp` into `dist-mcp/`, then speak the protocol to it to prove it answers                         |
+| `npm run build:codemod`                    | Build `@box-kite/codemod` into `dist-codemod/`, then run it over the shadcn corpus and hold it to the 70% bar     |
 | `npm run compile`                          | TypeScript type check (no emit)                                                                                   |
 | `npm test`                                 | Run all tests (Vitest)                                                                                            |
 | `npm run test:coverage`                    | Run all tests and enforce the coverage budget on `src/core/`                                                      |
@@ -212,8 +213,9 @@ CI runs the test suite against React 18 and React 19 — both are in the support
 - Vite library mode, dual ESM (.mjs) + CJS (.cjs) output
 - Components get individual chunks for tree-shaking
 - `react`, `react-dom` are external (peer dependencies)
-- Published from `dist/`, `dist-core/` and `dist-mcp/` by `publish.yml` (a new package is seeded by hand once, since npm configures a trusted publisher only on a package that exists — `.claude/skills/release/SKILL.md`), dispatched by `release.yml` when a merged release PR (`npm run release`) lands on a green main; the release body is `releases/<version>.md`
+- Published from `dist/`, `dist-core/`, `dist-mcp/` and `dist-codemod/` by `publish.yml` (a new package is seeded by hand once, since npm configures a trusted publisher only on a package that exists — `.claude/skills/release/SKILL.md`), dispatched by `release.yml` when a merged release PR (`npm run release`) lands on a green main; the release body is `releases/<version>.md`
 - `vite-plugin-dts` generates `.d.ts` files
+- `codemod/` is **`@box-kite/codemod`** (`npx @box-kite/codemod radix-to-box src`), built by `vite.codemod.config.ts` into `dist-codemod/` with `typescript` as its one dependency. It rewrites text spans over the TypeScript AST rather than reprinting, so everything it does not convert stays byte-for-byte; `transform.ts` is the splice, `convert/*` one converter per family, `families.ts` the mapping table. Its corpus is shadcn/ui's own examples in `codemod/fixtures/shadcn` (MIT, licence beside them): `corpus.test.ts` holds the conversion rate to the figure `codemod/README.md` quotes and **type-checks every TODO-free output against `src/components`**, and `scripts/postbuild-codemod.mjs` runs the built binary over the same files with nothing but its declared dependency
 
 ## Reference Documents
 
