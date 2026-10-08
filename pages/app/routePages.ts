@@ -18,6 +18,7 @@ export const PAGES_DIRECTORY = 'pages/pages';
 
 const files: Record<SiteRoutePath, string> = {
   '/': 'homePage',
+  '/start': 'startPage',
   '/installation': 'installationPage',
   '/releases': 'releasesPage',
   '/theme-setup': 'themeSetupPage',

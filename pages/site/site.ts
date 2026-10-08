@@ -38,6 +38,13 @@ export const siteRoutes = [
       'A React library built to be written by an AI: the rules and the whole prop reference ship inside the package, and the compiler checks every value.',
   },
   {
+    path: '/start',
+    name: 'Start with AI',
+    title: 'Start with AI — a new app in three prompts',
+    description:
+      'Three prompts to paste into an AI coding agent: one sets up a React app with Box Kite and its MCP server, two more build a landing page and a product page.',
+  },
+  {
     path: '/installation',
     name: 'Installation',
     description: 'Install Box Kite and render your first Box: two dependencies, no bundler plugin, and no stylesheet to import.',

@@ -53,6 +53,7 @@ import {
   Workflow,
   Wrench,
   X,
+  Zap,
 } from 'lucide-react';
 import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
@@ -201,6 +202,9 @@ export default function Sidebar({ toggleTheme, onClose, onSearch }: SidebarProps
         <MenuSection label="Getting Started">
           <MenuItem to="/" icon={<BookOpen />}>
             Introduction
+          </MenuItem>
+          <MenuItem to="/start" icon={<Zap />}>
+            Start with AI
           </MenuItem>
           <MenuItem to="/installation" icon={<Download />}>
             Installation
