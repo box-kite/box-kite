@@ -1,3 +1,4 @@
+import Diagnostics from '../../src/core/diagnostics';
 import { acceptedValues, prop, props, styleEngine } from './data';
 import { measure, written } from './engine';
 import { attributeNames, nestingKey, reservedProps } from './vocabulary';
@@ -11,12 +12,12 @@ import { attributeNames, nestingKey, reservedProps } from './vocabulary';
  * accepted one in the same class list.
  */
 
-export type Verdict = 'ok' | 'rejected-value' | 'unknown-prop' | 'html-attribute' | 'reserved';
+export type Verdict = 'ok' | 'misread' | 'rejected-value' | 'unknown-prop' | 'html-attribute' | 'reserved';
 
 export interface PropCheck {
   name: string;
   verdict: Verdict;
-  /** The rules this prop wrote, at-rules included. Empty unless `ok`. */
+  /** The rules this prop wrote, at-rules included. Empty unless `ok` or `misread`. */
   css: string;
   /** What to do about it, when the verdict is not `ok`. */
   note?: string;
@@ -109,7 +110,12 @@ function checkOne(name: string, value: unknown): PropCheck {
   }
 
   const { css, classNames } = measure(name, value);
-  if (classNames.length && css) return { name, verdict: 'ok', css };
+  if (classNames.length && css) {
+    // Written, and almost certainly not what was meant: `fontSize={4}` is 4px text.
+    const misread = Diagnostics.misread(name, value);
+
+    return misread ? { name, verdict: 'misread', css, note: misread } : { name, verdict: 'ok', css };
+  }
 
   if (nesting) {
     return {

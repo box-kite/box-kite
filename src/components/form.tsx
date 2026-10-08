@@ -13,7 +13,7 @@ interface Props<T> extends Omit<BoxProps<'form'>, 'props' | 'tag'> {
 }
 
 export default function Form<T>(props: Props<T>) {
-  const { onSubmit, props: tagProps } = props;
+  const { onSubmit, props: tagProps, ...boxProps } = props;
   const formRef = useRef(null);
 
   const formSubmitHandler = useCallback(
@@ -31,7 +31,7 @@ export default function Form<T>(props: Props<T>) {
   // needs its own node to read entries from. A caller's own `ref` still reaches Box through `props`.
   const newTagProps = { ...tagProps, onSubmit: formSubmitHandler, ref: formRef } as unknown as BoxTagProps;
 
-  return <Box tag="form" {...props} props={newTagProps} />;
+  return <Box tag="form" {...boxProps} props={newTagProps} />;
 }
 
 (Form as React.FunctionComponent).displayName = 'Form';

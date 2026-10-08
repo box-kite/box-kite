@@ -174,7 +174,14 @@ export function getComponent(name: string, include?: ComponentSection[]): string
   );
 }
 
-const VERDICT_MARK = { ok: '✅', 'rejected-value': '❌', 'unknown-prop': '❌', 'html-attribute': '⚠️', reserved: 'ℹ️' } as const;
+const VERDICT_MARK = {
+  ok: '✅',
+  misread: '⚠️',
+  'rejected-value': '❌',
+  'unknown-prop': '❌',
+  'html-attribute': '⚠️',
+  reserved: 'ℹ️',
+} as const;
 
 /** `check_styles` — the engine's own answer, which is the only one that counts. */
 export function checkStylesTool(bag: Record<string, unknown>): string {
@@ -182,17 +189,18 @@ export function checkStylesTool(bag: Record<string, unknown>): string {
 
   const lines = result.checks.map((check) => {
     const head = `${VERDICT_MARK[check.verdict]} \`${check.name}\``;
-    const detail = check.verdict === 'ok' ? `→ \`${check.css.replace(/\n/g, ' ')}\`` : check.note;
+    const written = `→ \`${check.css.replace(/\n/g, ' ')}\``;
+    const detail = check.verdict === 'ok' ? written : check.verdict === 'misread' ? `${written} — ${check.note}` : check.note;
     const suggestions = check.suggestions?.length ? ` Try: ${check.suggestions.map((entry) => `\`${entry}\``).join(', ')}.` : '';
 
     return `- ${head} ${detail ?? ''}${suggestions}`;
   });
 
   return section(
-    result.ok ? 'Every prop writes CSS.' : 'Some of these write no CSS at all — a rejected value is silent, by design.',
+    result.ok ? 'Every prop writes CSS.' : 'Some of these write no CSS, or CSS they almost certainly did not mean.',
     lines.join('\n'),
     `Class attribute: \`${result.className}\``,
-    !result.ok && 'A prop that wrote nothing renders nothing: there is no fallback and no warning. Fix it before shipping.',
+    !result.ok && 'A prop that wrote nothing renders nothing, and outside development nothing warns about it. Fix it before shipping.',
   );
 }
 

@@ -30,9 +30,10 @@ export const propCount = propsApi.propCount;
 /**
  * An engine of this page's own: readable class names and an in-memory sink, so the scale table below can
  * ask what a prop really writes instead of repeating a divider that would then be free to drift. It is
- * never rendered — nothing reads its CSS but the string this module pulls out of it.
+ * never rendered — nothing reads its CSS but the string this module pulls out of it — and quiet, since writing
+ * `fontSize={4}` on purpose is the whole point of the table.
  */
-const probe = createStyleEngine({ classNames: 'readable', sink: 'string', styleElementId: 'box-page-probe' });
+const probe = createStyleEngine({ classNames: 'readable', sink: 'string', styleElementId: 'box-page-probe', warnings: false });
 
 /** What a Box with no props at all wears — the reset, which is not any prop's answer. */
 const baseClasses = probe.classNames({}).split(' ');

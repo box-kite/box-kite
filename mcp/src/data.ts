@@ -157,11 +157,11 @@ export const blocks: readonly RegistryItem[] = registryItems;
 export const blockInstall = (name: string): string => installCommand(name);
 
 /**
- * A fresh engine with readable class names and no DOM: what `check_styles` judges a value with. One
+ * A fresh engine with readable class names, no DOM and no console: what `check_styles` judges a value with. One
  * per call rather than one for the process, so a caller's `vars` or `css` cannot leak into the next
  * answer through the rule registry.
  */
-export const styleEngine = () => createStyleEngine({ classNames: 'readable', sink: 'string' });
+export const styleEngine = () => createStyleEngine({ classNames: 'readable', sink: 'string', warnings: false });
 
 /**
  * Every style prop's accepted values, live off the registry rather than out of `props.json`, which

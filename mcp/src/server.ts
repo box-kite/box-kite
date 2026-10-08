@@ -22,7 +22,7 @@ export const instructions = [
   `${packageName} ${packageVersion}. This library was renamed at 1.0.0 and its prop surface nearly doubled, so a plausible-looking memory of it is a memory of a different library. Four facts:`,
   ...priorFacts.map((fact) => `- ${fact}`),
   '',
-  `Before writing props, call \`search_docs\`; before believing a value, call \`check_styles\` — a value this library does not accept writes no CSS and no class name, silently. ${props.length} style props, ${components.length} components, ${rules.length} rules.`,
+  `Before writing props, call \`search_docs\`; before believing a value, call \`check_styles\` — a value this library does not accept writes no CSS and no class name, and a production build says nothing about it. ${props.length} style props, ${components.length} components, ${rules.length} rules.`,
 ].join('\n');
 
 /** The server, transport-free so a test can drive it over an in-memory pair. */

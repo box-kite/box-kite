@@ -3042,6 +3042,19 @@ Also accepts: `data` (TRow[]), `value`/`defaultValue`, `label`/`labelProps`, `mu
 3. **CSS variables**: In `:root` rules
 4. **Theme issues**: Ensure `<Box.Theme>` wraps your app
 5. **Layer theming**: a tooltip or dropdown popup stays where it was declared and inherits the theme; only the no-Popover-API fallback uses the `#box-kite-portal` container
+6. **Read the console first**: outside a production build the engine prints one `[box-kite]` warning per mistake that would otherwise be silent, each naming the fix:
+
+   | You wrote                  | The warning says                                                           |
+   | -------------------------- | -------------------------------------------------------------------------- |
+   | `bgColor="bleu-500"`       | wrote no CSS … Did you mean `"blue-500"`?                                  |
+   | `opacity={50}`             | wrote no CSS … It takes one of 0, 0.1, … 1                                 |
+   | `<Link href="/about">`     | `href` is an HTML attribute … write `props={{ href: ... }}`                |
+   | `fontSize={4}`             | is 4px text … For 16px write `fontSize={16}`                               |
+   | `lineHeight={1.5}`         | is a 1.5px line … `lineHeight="font-size"`, or `css={{ lineHeight: 1.5 }}` |
+   | `transitionDuration={0.3}` | is 0.3ms … For 0.3s write `transitionDuration={300}`                       |
+   | `brightness={1.1}`         | is 1.1% … For 110% write `brightness={110}`                                |
+
+   Once per value, and `Box.configure({ warnings: false })` silences them. In production a rejected value is dropped with nothing said, which is why `check_styles` (`@box-kite/mcp`) exists
 
 ---
 
