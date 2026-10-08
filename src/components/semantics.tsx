@@ -1,5 +1,6 @@
-import { forwardRef, Ref, RefAttributes } from 'react';
-import Box, { BoxProps } from '../box';
+import { Ref, RefAttributes } from 'react';
+import { BoxProps, useBoxElement } from '../box';
+import boxComponent from '../react/boxComponent';
 import { ExtractElementFromTag } from '../react/reactTypes';
 import { ComponentsAndVariants } from '../types';
 import StringUtils from '../utils/string/stringUtils';
@@ -11,13 +12,11 @@ type SemanticComponentType<TTag extends keyof React.JSX.IntrinsicElements, TKey 
 function semantic<TTag extends keyof React.JSX.IntrinsicElements, TKey extends keyof ComponentsAndVariants>(
   tagName: TTag,
 ): SemanticComponentType<TTag, TKey> {
-  const comp = forwardRef((props: Omit<BoxProps<TTag, TKey>, 'tag'>, ref: Ref<ExtractElementFromTag<TTag>>) => (
-    <Box tag={tagName} ref={ref} component={tagName as unknown as TKey} {...props} />
-  ));
-
-  comp.displayName = StringUtils.capitalize(tagName);
-
-  return comp;
+  return boxComponent(
+    (props: Omit<BoxProps<TTag, TKey>, 'tag'>, ref: Ref<ExtractElementFromTag<TTag>>) =>
+      useBoxElement({ tag: tagName, component: tagName as unknown as TKey, ...props } as BoxProps<TTag, TKey>, ref),
+    StringUtils.capitalize(tagName),
+  ) as unknown as SemanticComponentType<TTag, TKey>;
 }
 
 export const Label = semantic('label');

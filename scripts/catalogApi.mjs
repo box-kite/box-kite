@@ -37,7 +37,7 @@ const VOID_TAGS = ['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', '
 
 /** Whether this component renders one of them, and so cannot carry the default slot. */
 function isLeaf(source) {
-  return VOID_TAGS.some((tag) => (source ?? '').includes(`tag="${tag}"`));
+  return VOID_TAGS.some((tag) => [`tag="${tag}"`, `tag: '${tag}'`].some((spelling) => (source ?? '').includes(spelling)));
 }
 
 /** A name a spec can write: the component, or one of its dotted parts. */

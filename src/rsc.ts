@@ -18,8 +18,14 @@ import { ComponentsAndVariants } from './types';
 // earliest, most reliable moment: a Server Component has nowhere else to configure anything.
 getDefaultEngine().configure({ sink: 'element' });
 
-function Box<TTag extends keyof React.JSX.IntrinsicElements = 'div', TKey extends keyof ComponentsAndVariants = never>(
+/**
+ * The client entry's `useBoxElement` with no hook in it, so a component built on it renders on a server too —
+ * the export condition picks the half. The `use` prefix stays for the reason `useClassNames` keeps it.
+ */
+export function useBoxElement<TTag extends keyof React.JSX.IntrinsicElements = 'div', TKey extends keyof ComponentsAndVariants = never>(
   props: BoxCoreProps<TTag, TKey>,
+  // A Server Component has no instance to hand a ref; the parameter is here for the client signature.
+  _ref?: unknown,
 ): React.ReactNode {
   const { tag = 'div', children } = props;
 
@@ -37,6 +43,12 @@ function Box<TTag extends keyof React.JSX.IntrinsicElements = 'div', TKey extend
     styleElements,
     React.createElement(tag, buildTagProps(props, classNames) as React.ComponentProps<TTag>, children),
   );
+}
+
+function Box<TTag extends keyof React.JSX.IntrinsicElements = 'div', TKey extends keyof ComponentsAndVariants = never>(
+  props: BoxCoreProps<TTag, TKey>,
+): React.ReactNode {
+  return useBoxElement(props);
 }
 
 interface RscBoxType {

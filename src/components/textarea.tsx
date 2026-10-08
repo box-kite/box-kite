@@ -1,5 +1,6 @@
-import { forwardRef, Ref, RefAttributes } from 'react';
-import Box, { BoxProps, BoxTagProps } from '../box';
+import { Ref, RefAttributes } from 'react';
+import { BoxProps, BoxTagProps, useBoxElement } from '../box';
+import boxComponent from '../react/boxComponent';
 import { OmitTagProps } from '../react/boxProps';
 import splitPlaceholder, { PlaceholderProp } from '../react/forms/placeholderProp';
 import { ComponentsAndVariants } from '../types';
@@ -70,11 +71,13 @@ function TextareaImpl<TKey extends keyof ComponentsAndVariants>(props: Props<TKe
   const { text, styles } = splitPlaceholder(placeholder);
   const newProps = ObjectUtils.buildProps(rest, tagProps, text === undefined ? undefined : { placeholder: text });
 
-  return <Box ref={ref} tag="textarea" component={'textarea' as TKey} {...newProps} placeholder={styles} />;
+  return useBoxElement(
+    { tag: 'textarea', component: 'textarea' as TKey, ...newProps, placeholder: styles } as BoxProps<'textarea', TKey>,
+    ref,
+  );
 }
 
-const Textarea = forwardRef(TextareaImpl);
-Textarea.displayName = 'Textarea';
+const Textarea = boxComponent(TextareaImpl, 'Textarea');
 
 export default Textarea as <TKey extends keyof ComponentsAndVariants = 'textarea'>(
   props: Props<TKey> & RefAttributes<HTMLTextAreaElement>,

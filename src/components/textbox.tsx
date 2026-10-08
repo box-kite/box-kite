@@ -1,5 +1,6 @@
-import { forwardRef, Ref, RefAttributes } from 'react';
-import Box, { BoxProps, BoxTagProps } from '../box';
+import { Ref, RefAttributes } from 'react';
+import { BoxProps, BoxTagProps, useBoxElement } from '../box';
+import boxComponent from '../react/boxComponent';
 import { OmitTagProps } from '../react/boxProps';
 import splitPlaceholder, { PlaceholderProp } from '../react/forms/placeholderProp';
 import { ComponentsAndVariants } from '../types';
@@ -69,11 +70,10 @@ function TextboxImpl<TKey extends keyof ComponentsAndVariants>(props: Props<TKey
   const { text, styles } = splitPlaceholder(placeholder);
   const newProps = ObjectUtils.buildProps(rest, tagProps, text === undefined ? undefined : { placeholder: text });
 
-  return <Box ref={ref} tag="input" component={'textbox' as TKey} {...newProps} placeholder={styles} />;
+  return useBoxElement({ tag: 'input', component: 'textbox' as TKey, ...newProps, placeholder: styles } as BoxProps<'input', TKey>, ref);
 }
 
-const Textbox = forwardRef(TextboxImpl);
-Textbox.displayName = 'Textbox';
+const Textbox = boxComponent(TextboxImpl, 'Textbox');
 
 export default Textbox as <TKey extends keyof ComponentsAndVariants = 'textbox'>(
   props: Props<TKey> & RefAttributes<HTMLInputElement>,

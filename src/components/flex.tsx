@@ -1,5 +1,6 @@
-import { Ref, forwardRef, RefAttributes } from 'react';
-import Box, { BoxProps } from '../box';
+import { Ref, RefAttributes } from 'react';
+import { BoxProps, useBoxElement } from '../box';
+import boxComponent from '../react/boxComponent';
 import { ExtractElementFromTag } from '../react/reactTypes';
 import { ComponentsAndVariants } from '../types';
 
@@ -15,11 +16,10 @@ import { ComponentsAndVariants } from '../types';
 function FlexImpl<TTag extends keyof React.JSX.IntrinsicElements = 'div'>(props: BoxProps<TTag>, ref: Ref<ExtractElementFromTag<TTag>>) {
   const { inline, ...restProps } = props;
 
-  return <Box ref={ref} display={inline ? 'inline-flex' : 'flex'} {...restProps} />;
+  return useBoxElement({ display: inline ? 'inline-flex' : 'flex', ...restProps }, ref);
 }
 
-const Flex = forwardRef(FlexImpl);
-Flex.displayName = 'Flex';
+const Flex = boxComponent(FlexImpl, 'Flex');
 
 export default Flex as <TTag extends keyof React.JSX.IntrinsicElements = 'div', TKey extends keyof ComponentsAndVariants = never>(
   props: BoxProps<TTag, TKey> & RefAttributes<ExtractElementFromTag<TTag>>,

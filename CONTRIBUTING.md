@@ -26,7 +26,7 @@ Box Kite is a **runtime CSS generation library** that converts React component p
 - **No CSS files**: All styles are generated at runtime and injected into `<style id="box-kite-styles">` in `document.head` (`#box-kite-portal` is the portal container, a different element)
 - **Single class per value**: If the same prop value (e.g., `p={3}`) is used in multiple components, only ONE CSS class is generated
 - **TypeScript-first**: Deep type extraction provides full IDE autocomplete for all valid prop combinations
-- **Memoized rendering**: Box component uses `React.memo` and `forwardRef` for optimal performance
+- **One fiber per element**: Box and the thin components are built by `boxComponent()` — a `memo` over Box's render (`useBoxElement`), so a `<Flex>` is one component fiber on React 19 and two (`memo` + `forwardRef`) on React 18, rather than a wrapper around a second component
 
 ### Data Flow
 
@@ -1495,7 +1495,7 @@ The four in `src/core/variants.ts` (`dataAttr`, `ariaAttr`, `has`, `not`) are a 
 2. **Lazy generation**: CSS only generated when props are used
 3. **Incremental insertion**: CSS rules added via `insertRule()` not innerHTML replacement
 4. **Single flush**: Styles batched and flushed together, once per commit
-5. **Component memoization**: Box uses `React.memo` to prevent unnecessary renders
+5. **Memoized, one fiber, one hook**: a Box skips a re-render whose props are unchanged, is one fiber on React 19, and holds only the flush effect; hover state lives in a component rendered only for function children
 6. **Deep merge optimization**: Component styles merged efficiently
 7. **Pending variables**: New CSS variables added incrementally, not regenerating all
 

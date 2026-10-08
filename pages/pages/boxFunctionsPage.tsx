@@ -401,6 +401,32 @@ function Crumb({ to, children }: { to: string; children: React.ReactNode }) {
             </Callout>
           </Member>
 
+          <Member id="useboxelement">
+            <Box>
+              Box&rsquo;s own render, as a hook. A component that is a Box with some defaults calls it from its own <Mono>forwardRef</Mono>{' '}
+              instead of returning <Mono>&lt;Box&gt;</Mono>, so React sees one component rather than two — which is how <Mono>Flex</Mono>,{' '}
+              <Mono>H1</Mono> and <Mono>Button</Mono> are written. Defaults go first, so the caller&rsquo;s props win.
+            </Box>
+
+            <Code
+              label="A component that is a Box"
+              language="jsx"
+              code={`import { forwardRef } from 'react';
+import { BoxProps, useBoxElement } from '@box-kite/react';
+
+const Card = forwardRef<HTMLDivElement, BoxProps>((props, ref) =>
+  useBoxElement({ p: 4, borderRadius: 3, b: 1, borderColor: 'gray-200', ...props }, ref),
+);`}
+              codeOnly
+            />
+
+            <Callout title="Wrap it in memo if it is a leaf">
+              The pre-built components are each one memoized fiber, which is what lets a leaf whose props are all primitives skip a
+              parent&rsquo;s re-render entirely. A component of your own gets the same by wrapping the <Mono>forwardRef</Mono> in{' '}
+              <Mono>memo</Mono> — worth it for anything rendered many times with unchanging props.
+            </Callout>
+          </Member>
+
           <Member id="usevisibility">
             <Box>
               Open/closed state that closes itself: an outside press, Escape, and optionally a scroll or a resize. The ref goes on the
@@ -517,5 +543,6 @@ const sidebarLinks = [
   { id: 'getvariablevalue', label: 'Box.getVariableValue()' },
   { label: 'Hooks', section: true as const },
   { id: 'useclassnames', label: 'useClassNames()' },
+  { id: 'useboxelement', label: 'useBoxElement()' },
   { id: 'usevisibility', label: 'useVisibility()' },
 ];

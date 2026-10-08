@@ -1,5 +1,6 @@
-import { forwardRef, Ref, RefAttributes } from 'react';
-import Box, { BoxProps } from '../box';
+import { Ref, RefAttributes } from 'react';
+import { BoxProps, useBoxElement } from '../box';
+import boxComponent from '../react/boxComponent';
 import { ExtractElementFromTag } from '../react/reactTypes';
 import { ComponentsAndVariants } from '../types';
 
@@ -20,24 +21,23 @@ function VisuallyHiddenImpl<TTag extends keyof React.JSX.IntrinsicElements = 'di
   props: BoxProps<TTag>,
   ref: Ref<ExtractElementFromTag<TTag>>,
 ) {
-  return (
-    <Box
-      ref={ref}
-      position="absolute"
-      width={ONE_PIXEL}
-      height={ONE_PIXEL}
-      p={0}
-      b={0}
-      overflow="hidden"
-      whiteSpace="nowrap"
-      clipPath="inset(50%)"
-      {...props}
-    />
+  return useBoxElement(
+    {
+      position: 'absolute',
+      width: ONE_PIXEL,
+      height: ONE_PIXEL,
+      p: 0,
+      b: 0,
+      overflow: 'hidden',
+      whiteSpace: 'nowrap',
+      clipPath: 'inset(50%)',
+      ...props,
+    },
+    ref,
   );
 }
 
-const VisuallyHidden = forwardRef(VisuallyHiddenImpl);
-VisuallyHidden.displayName = 'VisuallyHidden';
+const VisuallyHidden = boxComponent(VisuallyHiddenImpl, 'VisuallyHidden');
 
 export default VisuallyHidden as <TTag extends keyof React.JSX.IntrinsicElements = 'div', TKey extends keyof ComponentsAndVariants = never>(
   props: BoxProps<TTag, TKey> & RefAttributes<ExtractElementFromTag<TTag>>,

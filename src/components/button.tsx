@@ -1,5 +1,6 @@
-import { forwardRef, Ref, RefAttributes } from 'react';
-import Box, { BoxProps, BoxTagProps } from '../box';
+import { Ref, RefAttributes } from 'react';
+import { BoxProps, BoxTagProps, useBoxElement } from '../box';
+import boxComponent from '../react/boxComponent';
 import { OmitTagProps } from '../react/boxProps';
 import { ComponentsAndVariants } from '../types';
 import ObjectUtils from '../utils/object/objectUtils';
@@ -36,11 +37,10 @@ interface Props<TKey extends keyof ComponentsAndVariants> extends ButtonProps<TK
 function ButtonImpl<TKey extends keyof ComponentsAndVariants>(props: Props<TKey>, ref: Ref<HTMLButtonElement>) {
   const newProps = ObjectUtils.buildProps(props, tagProps);
 
-  return <Box ref={ref} tag="button" component={'button' as TKey} {...newProps} />;
+  return useBoxElement({ tag: 'button', component: 'button' as TKey, ...newProps } as BoxProps<'button', TKey>, ref);
 }
 
-const Button = forwardRef(ButtonImpl);
-Button.displayName = 'Button';
+const Button = boxComponent(ButtonImpl, 'Button');
 
 export default Button as <TKey extends keyof ComponentsAndVariants = 'button'>(
   props: Props<TKey> & RefAttributes<HTMLButtonElement>,

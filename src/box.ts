@@ -1,6 +1,7 @@
-import React, { forwardRef, memo, Ref, RefAttributes, useMemo, useState } from 'react';
+import React, { Ref, RefAttributes, useState } from 'react';
 import { BoxExtends, getDefaultEngine, Springs, startViewTransition } from './core';
 import boxClassNames, { BoxClassNames } from './react/boxClassNames';
+import boxComponent from './react/boxComponent';
 import { BoxClassNameProps, BoxCoreProps } from './react/boxProps';
 import buildTagProps from './react/boxTagProps';
 import useVisibility from './react/hooks/useVisibility';
@@ -9,35 +10,48 @@ import Theme from './react/theme/theme';
 import useStyles, { StylesContext } from './react/useStyles';
 import { ComponentsAndVariants } from './types';
 
-function BoxComponent<TTag extends keyof React.JSX.IntrinsicElements = 'div', TKey extends keyof ComponentsAndVariants = never>(
-  props: BoxCoreProps<TTag, TKey>,
-  ref: Ref<ExtractElementFromTag<TTag>>,
-) {
-  const { tag = 'div', children } = props;
+interface HoverElementProps {
+  tag: string;
+  tagProps: Record<string, unknown>;
+  render: (state: { isHover: boolean }) => React.ReactNode;
+}
 
-  const { classNames: styleClasses, styleElements } = useStyles(props, tag === 'svg');
-
-  const finalTagProps = useMemo(() => {
-    const propsToUse = buildTagProps(props, styleClasses);
-    ref && (propsToUse.ref = ref as React.RefObject<HTMLElement>);
-
-    return propsToUse as React.ComponentProps<TTag>;
-    // Intentionally keyed on the whole props object — Box is memoized, so props is referentially
-    // stable unless something actually changed, and all derived values come from it.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [props]);
-
+// Hover-callback children need state, so they get a component of their own and every other Box holds none.
+function HoverElement({ tag, tagProps, render }: HoverElementProps) {
   const [isHover, setIsHover] = useState(false);
-  const needsHoverState = typeof children === 'function';
-  const elementProps = needsHoverState
-    ? { ...finalTagProps, onMouseEnter: () => setIsHover(true), onMouseLeave: () => setIsHover(false) }
-    : finalTagProps;
 
-  const element = React.createElement(tag, elementProps, needsHoverState ? children({ isHover }) : children);
+  return React.createElement(
+    tag,
+    { ...tagProps, onMouseEnter: () => setIsHover(true), onMouseLeave: () => setIsHover(false) },
+    render({ isHover }),
+  );
+}
+
+/**
+ * Box's render as a hook, for a component that is a Box with defaults: called from its own `forwardRef`, it
+ * makes that component one fiber rather than a wrapper around a second one. `Flex`, `H1` and `Button` are this.
+ *
+ * ```tsx
+ * const Card = forwardRef<HTMLDivElement, BoxProps>((props, ref) => useBoxElement({ p: 4, ...props }, ref));
+ * ```
+ */
+export function useBoxElement<TTag extends keyof React.JSX.IntrinsicElements = 'div', TKey extends keyof ComponentsAndVariants = never>(
+  props: BoxCoreProps<TTag, TKey>,
+  ref?: Ref<ExtractElementFromTag<TTag>>,
+): React.ReactNode {
+  const { tag = 'div', children } = props;
+  const { classNames, styleElements } = useStyles(props, tag === 'svg');
+  const tagProps = buildTagProps(props, classNames);
+
+  ref && (tagProps.ref = ref);
+
+  const element =
+    typeof children === 'function'
+      ? React.createElement(HoverElement, { tag, tagProps, render: children })
+      : React.createElement(tag, tagProps, children);
 
   // Element mode: the CSS travels with the markup. The style elements are siblings rather than
-  // children — a void tag (`input`, `img`) cannot have children — and React 19 hoists them out of
-  // the tree into `<head>` anyway, so nothing of them is left where they were rendered.
+  // children — a void tag (`input`, `img`) cannot have children — and React 19 hoists them into `<head>`.
   return styleElements ? React.createElement(React.Fragment, null, styleElements, element) : element;
 }
 
@@ -59,9 +73,8 @@ interface BoxType {
   viewTransition: typeof startViewTransition;
 }
 
-const Box = memo(forwardRef(BoxComponent)) as unknown as BoxType;
+const Box = boxComponent(useBoxElement, 'Box') as unknown as BoxType;
 
-(Box as React.FunctionComponent).displayName = 'Box';
 Box.extend = BoxExtends.extend;
 Box.components = BoxExtends.components;
 Box.keyframes = BoxExtends.keyframes;

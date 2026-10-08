@@ -1,5 +1,6 @@
-import { Ref, forwardRef, RefAttributes } from 'react';
-import Box, { BoxProps } from '../box';
+import { Ref, RefAttributes } from 'react';
+import { BoxProps, useBoxElement } from '../box';
+import boxComponent from '../react/boxComponent';
 import { ExtractElementFromTag } from '../react/reactTypes';
 import { ComponentsAndVariants } from '../types';
 
@@ -14,11 +15,10 @@ import { ComponentsAndVariants } from '../types';
 function GridImpl<TTag extends keyof React.JSX.IntrinsicElements = 'div'>(props: BoxProps<TTag>, ref: Ref<ExtractElementFromTag<TTag>>) {
   const { inline, ...restProps } = props;
 
-  return <Box ref={ref} display={inline ? 'inline-grid' : 'grid'} {...restProps} />;
+  return useBoxElement({ display: inline ? 'inline-grid' : 'grid', ...restProps }, ref);
 }
 
-const Grid = forwardRef(GridImpl);
-Grid.displayName = 'Grid';
+const Grid = boxComponent(GridImpl, 'Grid');
 
 export default Grid as <TTag extends keyof React.JSX.IntrinsicElements = 'div', TKey extends keyof ComponentsAndVariants = never>(
   props: BoxProps<TTag, TKey> & RefAttributes<ExtractElementFromTag<TTag>>,
