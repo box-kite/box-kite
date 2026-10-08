@@ -11,7 +11,8 @@ namespace Diagnostics {
     'backdropOpacity',
     ...['Brightness', 'Contrast', 'Grayscale', 'Invert', 'Saturate', 'Sepia'].flatMap((name) => [name.toLowerCase(), `backdrop${name}`]),
   ]);
-  const ATTRIBUTES = new Set(['href', 'src', 'alt', 'target', 'rel', 'htmlFor', 'role', 'tabIndex', 'download', 'srcSet']);
+  // Not `target`: on Box that is the `:target` pseudo-class key, so the engine never asks.
+  const ATTRIBUTES = new Set(['href', 'src', 'alt', 'rel', 'htmlFor', 'role', 'tabIndex', 'download', 'srcSet']);
   const LISTED = 12;
 
   /** The prop as JSX writes it: `fontSize={4}`, `bgColor="bleu-500"`. */
