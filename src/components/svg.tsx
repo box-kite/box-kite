@@ -1,5 +1,6 @@
-import { forwardRef, Ref, RefAttributes } from 'react';
-import Box, { BoxProps, BoxTagProps } from '../box';
+import { Ref, RefAttributes } from 'react';
+import { BoxProps, BoxTagProps, useBoxElement } from '../box';
+import boxComponent from '../react/boxComponent';
 import { ExtractElementFromTag } from '../react/reactTypes';
 import { withAttributesInProps } from '../react/svg/attributesInProps';
 import svgNaming from '../react/svg/svgNaming';
@@ -62,26 +63,20 @@ function svgElement<TTag extends keyof React.JSX.IntrinsicElements, TAttribute e
 
   // Typed loosely inside and asserted once on the way out: while the tag is still a type parameter,
   // an `Omit` of Box's props does not survive the `PropsWithoutRef` React wraps a forwardRef in.
-  const comp = forwardRef((props: object, ref: Ref<unknown>) => {
+  const SvgElement = (props: object, ref: Ref<unknown>) => {
     const { styleProps, tagProps } = liftAttributes(props, names);
 
-    return (
-      <Box
-        tag={tagName}
-        ref={ref as Ref<ExtractElementFromTag<TTag>>}
-        component={tagName as unknown as never}
-        {...(styleProps as BoxProps<TTag>)}
-        props={tagProps as BoxTagProps<TTag>}
-      />
+    return useBoxElement(
+      { tag: tagName, component: tagName as unknown as never, ...(styleProps as BoxProps<TTag>), props: tagProps as BoxTagProps<TTag> },
+      ref as Ref<ExtractElementFromTag<TTag>>,
     );
-  });
-
-  comp.displayName = displayName ?? StringUtils.capitalize(tagName);
+  };
 
   // These are Boxes, so their attributes live in `props` — `Icon` has to know before it clones one.
-  withAttributesInProps(comp);
-
-  return comp as unknown as SvgElementType<TTag, TAttribute>;
+  return withAttributesInProps(boxComponent(SvgElement, displayName ?? StringUtils.capitalize(tagName))) as unknown as SvgElementType<
+    TTag,
+    TAttribute
+  >;
 }
 
 const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
@@ -108,22 +103,23 @@ function SvgImpl(props: Props, ref: Ref<SVGSVGElement>) {
   const { label, ...withoutLabel } = props;
   const { styleProps, tagProps } = liftAttributes(withoutLabel, SVG_ATTRIBUTES);
 
-  return (
-    <Box
-      tag="svg"
-      ref={ref}
-      component={'svg' as never}
-      {...(styleProps as BoxProps<'svg'>)}
-      props={{ xmlns: SVG_NAMESPACE, ...svgNaming(label, tagProps), ...tagProps }}
-    />
+  return useBoxElement(
+    {
+      tag: 'svg',
+      component: 'svg' as never,
+      ...(styleProps as BoxProps<'svg'>),
+      props: { xmlns: SVG_NAMESPACE, ...svgNaming(label, tagProps), ...tagProps },
+    },
+    ref,
   );
 }
 
 /** The root `<svg>`: the coordinate system, the size, and whether a screen reader is told about it. */
-export const Svg = /* @__PURE__ */ withAttributesInProps(forwardRef(SvgImpl)) as (<TKey extends keyof ComponentsAndVariants = never>(
+export const Svg = /* @__PURE__ */ withAttributesInProps(boxComponent(SvgImpl, 'Svg')) as (<
+  TKey extends keyof ComponentsAndVariants = never,
+>(
   props: Props<TKey> & RefAttributes<SVGSVGElement>,
 ) => React.ReactNode) & { displayName?: string };
-Svg.displayName = 'Svg';
 
 export type SvgProps = Props & RefAttributes<SVGSVGElement>;
 

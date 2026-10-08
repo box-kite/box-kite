@@ -602,6 +602,13 @@ export const boxMembers: readonly BoxMember[] = [
       'Box props as a class attribute, for an element Box cannot render: a router’s NavLink, a motion.div, an icon from another library.',
   },
   {
+    id: 'useboxelement',
+    name: 'useBoxElement()',
+    signature: 'return useBoxElement({ p: 4, ...props }, ref)',
+    summary:
+      'Box’s render as a hook, for a component of your own that is a Box with defaults — one fiber rather than a wrapper around a second component.',
+  },
+  {
     id: 'usevisibility',
     name: 'useVisibility()',
     signature: 'const [visible, setVisible, ref] = useVisibility(options)',

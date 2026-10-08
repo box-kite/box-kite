@@ -140,6 +140,28 @@ Six tools, no key and no network. The one worth installing it for is `check_styl
 
 Every render of every Box builds a cache key from its style props before it can look its class list up, and building that key was most of what a cache hit cost: twelve registry lookups for each prop, style or not, and a `JSON.stringify` for each value. The key test is one `Set` now, rebuilt when `Box.extend()` adds a prop, and a string, number or boolean is written into the key directly. A cache hit takes a third of the time it did (1.57 µs to 0.53 µs, Node, desktop), and re-rendering a page of 2,000 Boxes with a CPU slowed to a mid-range phone's takes 17 ms rather than 20.5. Nothing about which classes a Box gets has changed. `p={4}` and `p="4"` still resolve separately, and a string prop such as `content` still cannot be mistaken for another prop's value.
 
+## A `<Flex>` is one component now, not three, and re-rendering a page of Boxes takes half as long
+
+Every thin component used to render a `<Box>` inside a component of its own, and Box was `memo(forwardRef(…))`, so a `<Flex>`, an `<H1>` or a `<Button>` cost React three component fibers and three hooks before it reached its one element — and only the inner Box was memoized, so the wrapper ran on every parent render whatever its props. Now each of them is Box's render inside one `memo`: **one fiber on React 19**, where a function component takes its `ref` as a prop, and two (`memo` over `forwardRef`) on React 18. Box keeps a single hook, the flush. Of the other two, the `useState` that only function children (`{({ isHover }) => …}`) read now lives in a component rendered for that case alone, and the `useMemo` was over a props object that is new on every render anyway.
+
+The `memo` stays because it was measured to pay. A leaf whose props are all primitives — `<P color="gray-600">Total</P>`, `<Button>Save</Button>` — is skipped outright when its parent re-renders, and most leaves in a real tree look like that; an element with an inline object such as `hover={{ … }}` is compared and rendered, as before. On a page of 2,000 Boxes in 200 cards, with a CPU slowed to a mid-range phone's and React 19:
+
+|                         | Before       | Now          |
+| ----------------------- | ------------ | ------------ |
+| Component fibers        | 5,804        | 2,202        |
+| Re-rendering every card | 22.5–23.1 ms | 11.0–11.7 ms |
+| First mount             | 140–143 ms   | 87–125 ms    |
+
+The same page with class resolution stubbed out entirely re-renders in 8.2–8.6 ms, so what is left is mostly React's own work. Dropping `memo` as well was tried: it gave the same fiber count and 21.2–21.7 ms.
+
+The render is exported as `useBoxElement`, for a component of your own that is a Box with defaults — called from your own `forwardRef`, it makes that component one fiber rather than a wrapper around a second one:
+
+```jsx
+const Card = forwardRef((props, ref) => useBoxElement({ p: 4, borderRadius: 3, ...props }, ref));
+```
+
+It has a hook-free twin under the `react-server` condition, so a component built on it renders in a Server Component as `Flex` does. No prop, type or class name has changed.
+
 ## A server-rendered page keeps its stylesheet
 
 A page rendered on a server already carries every rule it needs, and hydrating it used to build all of them again — the rule text, an `insertRule` each, and two full-page style recalculations while the main thread was busiest. `getStyleTag()` from `@box-kite/react/ssg` writes the CSS as the engine's own `<style>` element with a short manifest beside it, and the browser now **adopts** that sheet: every rule in it counts as already generated, so nothing is rebuilt, inserted or swapped out, and the rules the client adds later go into their place in the cascade.

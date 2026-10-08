@@ -2285,7 +2285,7 @@ function TrendCell({ cell }: { cell: CellModel<Row> }) {
 9. **Theme styles nest**: `theme={{ dark: { hover: { ... } } }}`
 10. **HTML attributes go in `props` prop**: `<Link props={{ href: '/about' }}>` not `<Link href>`. `data-*` and `aria-*` go there too — a `data-state` written at the top level typechecks and is then dropped
 11. **Size shortcuts**: `width="fit"` = 100%, `width="fit-screen"` = 100vw, `width="1/2"` = 50%
-12. **Box is memoized** with `React.memo`
+12. **Box is memoized** with `React.memo`, and so are `Flex`, `H1`, `Button` and the rest. A component of your own that is a Box with defaults calls `useBoxElement({ p: 4, ...props }, ref)` from its own `forwardRef` rather than returning `<Box>` — one fiber instead of two
 13. **`style` is top-level only** — never inside breakpoints (`sm={{ style: ... }}`), pseudo-classes, or theme objects. `css` is the one that nests: `sm={{ css: { objectPosition: 'top' } }}` is a rule
 14. **A CSS variable is a prop**: `vars={{ 'color-x': 'sky-500' }}` declares `--color-x` for everything inside — and a third-party chart goes in `<ChartContainer series={['revenue']}>` so it names no colour at all
 15. **All sizing props use divider 4** — `width`, `height`, `minWidth`, `maxWidth`, `minHeight`, `maxHeight` are NOT direct pixels. `height={10}` = 2.5rem = 40px
