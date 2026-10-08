@@ -42,6 +42,8 @@ export interface StyleSink {
   writeVariables(rule: string): void;
   /** Generated rules, each placed by its sort key. */
   writeRules(rules: readonly SortedRule[]): void;
+  /** `@keyframes` blocks, which need no cascade position. A sink without it writes them with the base rules. */
+  writeKeyframes?(rules: readonly string[]): void;
   /** Everything written so far, as CSS text. */
   getStyles(): string;
   /** Drop everything written so far. */
@@ -228,37 +230,58 @@ export function createCssomSink(getElement: () => HTMLStyleElement, adopted?: Ad
   // Sort keys of the generated rules already in the sheet, ascending — the index of a key here is
   // the index of its rule in the sheet (offset by baseRulesCount).
   let sortKeys: number[] = adopted?.sortKeys ?? [];
-  // A top-level at-rule inserted late makes Blink restyle the whole document (bug #206), while a style rule
-  // added inside an existing block is diffed like any other — so an at-rule joins the block its sort key and
-  // preludes already have. Order within one sort key carries no meaning (element mode layers it away).
-  const blocks = new Map<string, CSSGroupingRule>();
+  // A top-level at-rule inserted late makes Blink restyle the whole document (bugs #206, #207), while a style rule
+  // added inside an existing block is diffed like any other — so an at-rule joins a block of its prelude chain, in
+  // key order. A chain belongs to one rank, and inside a rank two chains never tie on source order: a theme's
+  // `:scope` outranks an unscoped rule by specificity or proximity, and two themes never share an element.
+  const blocks = new Map<string, [keys: number[], block: CSSGroupingRule][]>();
   let blocksIndexed = !adopted;
   let scratch: CSSStyleSheet | undefined;
+  // A late `@keyframes` costs the same full restyle in the engine's sheet and nothing in one holding only keyframes.
+  let keyframes: HTMLStyleElement | undefined;
 
   // Re-resolved per write: the element can be recreated (or first gain a sheet) between flushes.
   function sheetOf(): CSSStyleSheet | null {
     return (getElement().sheet as CSSStyleSheet | null) ?? null;
   }
 
+  /** A new block, in its chain's list by first key — the order the blocks have in the sheet. */
   function remember(sortKey: number, rule: CSSRule | undefined) {
-    const [key, block] = blockOf(rule) ?? [];
-    if (block && !blocks.has(sortKey + key!)) blocks.set(sortKey + key!, block);
+    const [chain, block] = blockOf(rule) ?? [];
+    // Stable, so a block opened at a key already taken goes after it, where `upperBound` put it in the sheet.
+    if (block)
+      blocks.set(
+        chain!,
+        [...(blocks.get(chain!) ?? []), [[sortKey], block] as [number[], CSSGroupingRule]].sort(([a], [b]) => a[0] - b[0]),
+      );
+  }
+
+  // The one base block a generated rule may join: a starting rule is `!important`, so it can sit ahead of its rank.
+  function rememberBase(rule: CSSRule | undefined) {
+    if (rule?.cssText.startsWith('@starting-style')) remember(-1, rule);
   }
 
   function joinBlock(sheet: CSSStyleSheet, sortKey: number, rule: string): boolean {
     if (!blocksIndexed) {
       blocksIndexed = true;
+      for (let index = 0; index < baseRulesCount; index++) rememberBase(sheet.cssRules[index]);
       sortKeys.forEach((key, index) => remember(key, sheet.cssRules[baseRulesCount + index]));
     }
 
     try {
-      // Parsed in a detached sheet first, which is what tells which block (if any) it belongs to.
+      // Parsed in a detached sheet first, which is what tells which chain (if any) it belongs to.
       (scratch ??= new CSSStyleSheet()).replaceSync(rule);
-      const [key, parsed] = blockOf(scratch.cssRules[0]) ?? [];
-      const block = parsed && blocks.get(sortKey + key!);
-      if (!block || block.parentStyleSheet !== sheet) return false;
+      const [chain, parsed] = blockOf(scratch.cssRules[0]) ?? [];
+      const list = parsed && blocks.get(chain!);
+      if (!list) return false;
 
-      block.insertRule(parsed.cssRules[0].cssText, block.cssRules.length);
+      // The last block starting at or before this key, or the first when none does, keeps the chain in key order.
+      const [keys, block] = list.findLast(([keys]) => keys[0] <= sortKey) ?? list[0];
+      if (block.parentStyleSheet !== sheet) return false;
+
+      const index = upperBound(keys, sortKey);
+      block.insertRule(parsed.cssRules[0].cssText, index);
+      keys.splice(index, 0, sortKey);
 
       return true;
     } catch {
@@ -275,7 +298,7 @@ export function createCssomSink(getElement: () => HTMLStyleElement, adopted?: Ad
       for (const rule of rules) {
         try {
           sheet.insertRule(rule, baseRulesCount);
-          baseRulesCount++;
+          rememberBase(sheet.cssRules[baseRulesCount++]);
         } catch {
           // Skip invalid rules.
         }
@@ -317,10 +340,28 @@ export function createCssomSink(getElement: () => HTMLStyleElement, adopted?: Ad
         }
       }
     },
+    writeKeyframes(rules) {
+      const element = getElement();
+      if (!element.sheet) return;
+
+      if (!keyframes?.isConnected) {
+        keyframes = document.createElement('style');
+        keyframes.id = `${element.id}-keyframes`;
+        element.after(keyframes);
+      }
+
+      for (const rule of rules) {
+        try {
+          keyframes.sheet!.insertRule(rule, keyframes.sheet!.cssRules.length);
+        } catch {
+          // Skip invalid rules.
+        }
+      }
+    },
     getStyles() {
       const sheet = sheetOf();
 
-      return sheet ? [...sheet.cssRules].map((rule) => rule.cssText).join('\n') : '';
+      return sheet ? [...sheet.cssRules, ...(keyframes?.sheet?.cssRules ?? [])].map((rule) => rule.cssText).join('\n') : '';
     },
     reset() {
       const sheet = sheetOf();
@@ -329,6 +370,9 @@ export function createCssomSink(getElement: () => HTMLStyleElement, adopted?: Ad
       blocks.clear();
       blocksIndexed = true;
       if (!sheet) return;
+
+      keyframes?.remove();
+      keyframes = undefined;
 
       while (sheet.cssRules.length > 0) {
         sheet.deleteRule(0);

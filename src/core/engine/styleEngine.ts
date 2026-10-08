@@ -211,6 +211,14 @@ function serializeValue(value: unknown): string {
  */
 const STARTING_RANK = queryKeys.length;
 
+/**
+ * An inert block per `@media` prelude, at the front of its rank, written with the first rules: a rule arriving after
+ * the first paint then joins one instead of opening a top-level at-rule, which restyles the whole page (bug #207).
+ */
+const placeholderBlocks = queryKeys
+  .map(mediaQuery)
+  .flatMap(({ rank, prelude }): [number, number, string][] => (prelude ? [[0, rank, `${prelude}{:not(*){}}`]] : []));
+
 /** The layer the base rules live in — the reset has to lose against every generated rule. */
 const BASE_LAYER = 'rb';
 
@@ -837,6 +845,9 @@ export function createStyleEngine(options: StyleEngineOptions = {}): StyleEngine
       // property is, so an unregistered `--boxBlur` would blur every descendant that names any filter of
       // its own a second time.
       ...Filters.properties,
+      // The block a late starting rule joins (bug #207). Here rather than at its rank, because a browser without
+      // `@starting-style` drops it, and only the base tolerates that. Its rules are `!important`, so position is moot.
+      ...(isElementMode() ? [] : ['@starting-style{:not(*){}}']),
       `#box-kite-portal {position: absolute;top: 0;left: 0;height: 0;z-index:99999;}`,
       `html{font-size: 16px;font-family: Arial, sans-serif;}`,
       `body{margin: 0;line-height: var(--lineHeight);font-size: var(--fontSize);}`,
@@ -887,6 +898,8 @@ export function createStyleEngine(options: StyleEngineOptions = {}): StyleEngine
 
     if (!isInitialized) {
       target.writeBase(baseRules());
+      // Element mode layers every rule apart and never joins a block.
+      if (!isElementMode()) pendingRules.push(...placeholderBlocks);
       // The base block already carries every variable used so far, so drop them from the pending queue.
       variables.getPendingVariables();
       isInitialized = true;
@@ -899,10 +912,10 @@ export function createStyleEngine(options: StyleEngineOptions = {}): StyleEngine
       );
     }
 
-    // With the base rules: a sequence belongs to no single class, and `@keyframes` needs no position in
-    // the cascade — a name resolves wherever the block sits.
+    // A sequence belongs to no single class, and `@keyframes` needs no position in the cascade — a name resolves
+    // wherever the block sits, which is what lets a live sheet keep them in a sheet of their own.
     if (pendingKeyframes.length > 0) {
-      target.writeBase(pendingKeyframes.splice(0, pendingKeyframes.length));
+      (target.writeKeyframes ?? target.writeBase)(pendingKeyframes.splice(0, pendingKeyframes.length));
     }
 
     const drained = drainPendingRules();
