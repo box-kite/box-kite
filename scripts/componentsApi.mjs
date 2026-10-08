@@ -68,7 +68,7 @@ const CONFIG = [
   },
   // No props of its own on purpose: `AlertDialogProps` is `DialogProps` minus the three an alert dialog
   // does not get to choose, so listing it a second time would be one table drifting from another.
-  { name: 'AlertDialog', route: '/dialog', file: 'src/components/dialog.tsx', doc: 'AlertDialogImpl', named: true },
+  { name: 'AlertDialog', route: '/dialog', file: 'src/components/dialog.tsx', doc: 'AlertDialogImpl' },
   {
     name: 'Menu',
     route: '/menu',
@@ -188,7 +188,6 @@ const CONFIG = [
     props: 'SparklineProps',
     doc: 'SparklineImpl',
     styles: 'sparkline',
-    named: true,
   },
   {
     name: 'ProgressRing',
@@ -197,7 +196,6 @@ const CONFIG = [
     props: 'ProgressRingProps',
     doc: 'ProgressRingImpl',
     styles: 'progressRing',
-    named: true,
   },
   {
     name: 'Gauge',
@@ -206,7 +204,6 @@ const CONFIG = [
     props: 'GaugeProps',
     doc: 'GaugeImpl',
     styles: 'gauge',
-    named: true,
   },
   {
     name: 'MiniDonut',
@@ -215,7 +212,6 @@ const CONFIG = [
     props: 'MiniDonutProps',
     doc: 'MiniDonutImpl',
     styles: 'miniDonut',
-    named: true,
   },
   {
     name: 'ChartContainer',
@@ -224,7 +220,6 @@ const CONFIG = [
     props: 'ChartContainerProps',
     doc: 'ChartContainerImpl',
     styles: 'chartContainer',
-    named: true,
   },
   {
     name: 'DashboardGrid',
@@ -241,7 +236,6 @@ const CONFIG = [
     props: 'WidgetProps',
     doc: 'WidgetImpl',
     styles: 'widget',
-    named: true,
   },
   {
     name: 'ToolCallCard',
@@ -250,7 +244,6 @@ const CONFIG = [
     props: 'ToolCallCardProps',
     doc: 'ToolCallCardImpl',
     styles: 'toolCall',
-    named: true,
   },
   {
     name: 'ApprovalCard',
@@ -259,7 +252,6 @@ const CONFIG = [
     props: 'ApprovalCardProps',
     doc: 'ApprovalCardImpl',
     styles: 'approval',
-    named: true,
   },
   {
     name: 'Reasoning',
@@ -268,7 +260,6 @@ const CONFIG = [
     props: 'ReasoningProps',
     doc: 'ReasoningImpl',
     styles: 'reasoning',
-    named: true,
   },
   {
     name: 'StreamingText',
@@ -277,7 +268,6 @@ const CONFIG = [
     props: 'StreamingTextProps',
     doc: 'StreamingTextImpl',
     styles: 'streamingText',
-    named: true,
   },
   {
     name: 'Skeleton',
@@ -289,15 +279,21 @@ const CONFIG = [
   },
 ];
 
+/** The component a file exports as its default — read off the source, since a hand-kept flag missed `Collapsible` (bug #208). */
+function defaultExportOf(file) {
+  return /^export default (?:function )?(\w+)/m.exec(readFileSync(join(ROOT, file), 'utf8'))?.[1];
+}
+
 /** The config with what can be derived filled in, so an entry states only what is not obvious. */
 export const COMPONENTS = CONFIG.map((entry) => ({
   ...entry,
   file: entry.file,
   propsFile: entry.propsFile ?? entry.file,
   slug: entry.name.replace(/\./g, '-').toLowerCase(),
-  import: entry.named
-    ? `import { ${entry.name} } from '${PACKAGE_NAME}/components/${basename(entry.file, '.tsx')}';`
-    : `import ${entry.name} from '${PACKAGE_NAME}/components/${basename(entry.file, '.tsx')}';`,
+  import:
+    defaultExportOf(entry.file) !== entry.name
+      ? `import { ${entry.name} } from '${PACKAGE_NAME}/components/${basename(entry.file, '.tsx')}';`
+      : `import ${entry.name} from '${PACKAGE_NAME}/components/${basename(entry.file, '.tsx')}';`,
 }));
 
 const sources = new Map();
