@@ -4,6 +4,7 @@ import Flex from '../../src/components/flex';
 import Code from '../components/code';
 import PageHeader from '../components/pageHeader';
 import Reveal from '../components/reveal';
+import SiteLink from '../components/siteLink';
 
 export default function InstallationPage() {
   return (
@@ -25,6 +26,19 @@ export default function InstallationPage() {
           <Box fontSize={14} lineHeight={22} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
             React 16.14 or newer is the peer range; 18 and 19 are the versions CI runs the whole test suite against. Nothing else is needed
             — no bundler plugin, no PostCSS step, no stylesheet to import.
+          </Box>
+
+          <Box fontSize={14} lineHeight={22} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
+            Starting from an empty folder with an AI agent?{' '}
+            <SiteLink
+              to="/start"
+              display="inline"
+              theme={{ dark: { color: 'violet-400' }, light: { color: 'violet-600' } }}
+              hover={{ textDecoration: 'underline' }}
+            >
+              Start with AI
+            </SiteLink>{' '}
+            has three prompts that set the project up and build its first pages.
           </Box>
         </Flex>
       </Reveal>

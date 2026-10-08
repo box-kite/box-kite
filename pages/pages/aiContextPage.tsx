@@ -57,7 +57,16 @@ export default function AiContextPage() {
           <Section id="setup" title="Setting it up">
             <Box mb={6}>
               Three routes in, and they compose — an <Mono>AGENTS.md</Mono> in the root for the rules, the MCP server for the questions that
-              come up mid-task. Pick the first one that fits your agent.
+              come up mid-task. Pick the first one that fits your agent — or, for a new project,{' '}
+              <SiteLink
+                to="/start"
+                display="inline"
+                theme={{ dark: { color: 'violet-400' }, light: { color: 'violet-600' } }}
+                hover={{ textDecoration: 'underline' }}
+              >
+                one prompt
+              </SiteLink>{' '}
+              that has the agent do all of it.
             </Box>
 
             <Flex d="column" gap={6}>
