@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from 'fs';
 import { resolve } from 'path';
 import { describe, expect, it } from 'vitest';
+import { SECTIONS } from './sections';
 import { SITE_URL, siteRoutes } from './site';
 import {
   buildHeadHtml,
@@ -35,9 +36,9 @@ describe('the route table', () => {
   // The sidebar is written by hand and the route table drives the prerender, so the two can disagree:
   // C5 added /gradients-shadows, which prerendered and was reachable by URL but had no menu entry at
   // all (bug #112). A route that opts out with `indexable: false` is the one exception.
-  it('gives every listed route a link in the sidebar', () => {
+  it('gives every listed route a link in the sidebar or the section bar', () => {
     const sidebar = readFileSync(resolve(process.cwd(), 'pages/app/sidebar.tsx'), 'utf8');
-    const linked = new Set([...sidebar.matchAll(/to="([^"]+)"/g)].map((match) => match[1]));
+    const linked = new Set([...[...sidebar.matchAll(/to="([^"]+)"/g)].map((match) => match[1]), ...SECTIONS.map((section) => section.to)]);
     const missing = indexableRoutes()
       .map((route) => route.path)
       .filter((path) => !linked.has(path));

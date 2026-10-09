@@ -45,6 +45,9 @@ Purpose: help AI contributors extend the docs/demo site under `pages/**`.
   that exist, no competitor named), `npm run check:docs` compiles each ` ```tsx ` block, and `/article` writes the next one.
 - Pages live in [pages/pages/](pages/pages/); sidebar nav and grouping are hand-written in
   [pages/app/sidebar.tsx](pages/app/sidebar.tsx).
+- The sidebar is the docs tree; the site's _sections_ — Docs, Start with AI, Blog — are the bar above every page
+  ([pages/app/sectionNav.tsx](pages/app/sectionNav.tsx), listed in [pages/site/sections.ts](pages/site/sections.ts)), which on a
+  phone moves to the top of the drawer. A route is linked from one or the other, and `siteMeta.test.ts` checks both.
 - Common page components: [pages/components/pageHeader.tsx](pages/components/pageHeader.tsx), [pages/components/code.tsx](pages/components/code.tsx).
 
 ## The site's address

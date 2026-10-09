@@ -13,6 +13,7 @@ import SearchTrigger, { useSearchShortcut } from '../components/searchTrigger';
 import TableOfContents from '../components/tableOfContents';
 import PageContext, { TocEntry } from '../pageContext';
 import DocumentHead from '../site/documentHead';
+import { SectionBar } from './sectionNav';
 import Sidebar from './sidebar';
 
 // The dialog is a chunk of its own, and nothing renders it until a reader asks for it — on a page
@@ -154,26 +155,32 @@ export default function Layout({ children }: LayoutProps) {
 
         {/* Main Content + Right Sidebar */}
         <PageContext.Provider value={{ tocEntries, setTocEntries }}>
-          <Box flex1 minWidth={0} minHeight="fit-screen">
-            {/* The landmark, and the root the markdown mirror converts: everything outside it is
+          <Box flex1 minWidth={0}>
+            <SectionBar />
+            <Flex>
+              <Box flex1 minWidth={0} minHeight="fit-screen">
+                {/* The landmark, and the root the markdown mirror converts: everything outside it is
                 chrome that repeats on every page (`scripts/prerender-pages.mjs`). */}
-            <Box tag="main" maxWidth={300} mx="auto" px={4} sm={{ px: 8 }} py={8} lg={{ py: 12 }}>
-              {/* Keyed on the route, so a navigation is a fresh mount and `Reveal` has something to
+                <Box tag="main" maxWidth={300} mx="auto" px={4} sm={{ px: 8 }} py={8} lg={{ py: 12 }}>
+                  {/* Keyed on the route, so a navigation is a fresh mount and `Reveal` has something to
                   reveal. The page under this is prerendered, which is why the entrance is gated on
                   hydration rather than running on the first paint. */}
-              <Reveal key={location.pathname} y={2.5}>
-                {children}
-              </Reveal>
-            </Box>
-            <PageFooter />
-          </Box>
-          {tocEntries.length > 0 && (
-            <Box width={50} flexShrink={0} display="none" xl={{ display: 'block' }}>
-              <Box position="sticky" top={0} maxHeight="fit-screen" overflow="auto" py={8} pr={4}>
-                <TableOfContents entries={tocEntries} />
+                  <Reveal key={location.pathname} y={2.5}>
+                    {children}
+                  </Reveal>
+                </Box>
+                <PageFooter />
               </Box>
-            </Box>
-          )}
+              {tocEntries.length > 0 && (
+                <Box width={50} flexShrink={0} display="none" xl={{ display: 'block' }}>
+                  {/* Below the section bar, which is sticky over this column too. */}
+                  <Box position="sticky" top={14} css={{ maxHeight: 'calc(100vh - 3.5rem)' }} overflow="auto" py={8} pr={4}>
+                    <TableOfContents entries={tocEntries} />
+                  </Box>
+                </Box>
+              )}
+            </Flex>
+          </Box>
         </PageContext.Provider>
       </Flex>
     </Box>
