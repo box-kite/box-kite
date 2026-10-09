@@ -1,6 +1,8 @@
 import Box from '../../../box';
+import Button from '../../button';
 import Flex from '../../flex';
 import GridModel from '../models/gridModel';
+import DataGridBottomBarSelection from './dataGridBottomBarSelection';
 import DataGridPagination from './dataGridPagination';
 
 interface Props<TRow> {
@@ -17,11 +19,9 @@ export default function DataGridBottomBar<TRow>(props: Props<TRow>) {
     return (
       <Flex component={`${grid.componentName}.bottomBar` as never}>
         <Box component={`${grid.componentName}.bottomBar.info` as never}>
-          Rows: {totalItems > 0 ? `${startItem}–${endItem} of ${totalItems}` : '0'}
+          {grid.localeText.pageRowRange(startItem, endItem, totalItems)}
         </Box>
-        {grid.props.def.rowSelection && (
-          <Box component={`${grid.componentName}.bottomBar.info` as never}>Selected: {grid.selectedRows.size}</Box>
-        )}
+        {grid.props.def.rowSelection && <DataGridBottomBarSelection grid={grid} />}
         <DataGridPagination grid={grid} />
       </Flex>
     );
@@ -31,21 +31,18 @@ export default function DataGridBottomBar<TRow>(props: Props<TRow>) {
 
   return (
     <Flex component={`${grid.componentName}.bottomBar` as never}>
-      <Box component={`${grid.componentName}.bottomBar.info` as never}>Rows: {filtered !== total ? `${filtered} / ${total}` : total}</Box>
-      {grid.props.def.rowSelection && (
-        <Box component={`${grid.componentName}.bottomBar.info` as never}>Selected: {grid.selectedRows.size}</Box>
-      )}
+      <Box component={`${grid.componentName}.bottomBar.info` as never}>{grid.localeText.rowCount(filtered, total)}</Box>
+      {/* Beside the count it resets, and a real button: it changes the view rather than going anywhere,
+          and a `div` was a control the keyboard could not reach. */}
       {filter.hasActiveFilters && (
-        <Box
-          component={`${grid.componentName}.bottomBar.clearFilters` as never}
-          color="blue-600"
-          cursor="pointer"
-          hover={{ textDecoration: 'underline' }}
-          props={{ onClick: filter.clearAllFilters }}
-        >
-          Clear filters
-        </Box>
+        <Button type="button" component={`${grid.componentName}.bottomBar.clearFilters` as never} onClick={filter.clearAllFilters}>
+          <Box tag="span" props={{ 'aria-hidden': true }}>
+            ✕
+          </Box>
+          {grid.localeText.clearFilters}
+        </Button>
       )}
+      {grid.props.def.rowSelection && <DataGridBottomBarSelection grid={grid} />}
     </Flex>
   );
 }

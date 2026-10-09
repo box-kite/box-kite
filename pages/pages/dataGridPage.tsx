@@ -1,5 +1,5 @@
-import { Filter, Table, X } from 'lucide-react';
-import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
+import { Filter, RotateCcw, Table } from 'lucide-react';
+import { ReactNode, createContext, useCallback, useContext, useDeferredValue, useEffect, useMemo, useState } from 'react';
 import dataGridApi from '../../api/components/datagrid.json';
 import Box from '../../src/box';
 import Button from '../../src/components/button';
@@ -10,11 +10,15 @@ import {
   DataGridPaste,
   DataSourceRequest,
   DataSourceResult,
+  GridDefinition,
   Key,
 } from '../../src/components/dataGrid/contracts/dataGridContract';
+import type { DataGridLocaleText } from '../../src/components/dataGrid/models/localeText';
 import Flex from '../../src/components/flex';
+import Grid from '../../src/components/grid';
 import RadioGroup from '../../src/components/radioGroup';
 import { H2 } from '../../src/components/semantics';
+import Switch from '../../src/components/switch';
 import ApiReference from '../components/apiReference';
 import Code from '../components/code';
 import Mono from '../components/mono';
@@ -115,155 +119,254 @@ const ordersData = [
   },
 ];
 
-// Filter chip component
-function FilterChip({ label, active, onClick, onClear }: { label: string; active: boolean; onClick: () => void; onClear?: () => void }) {
-  return (
-    <Button
-      ai="center"
-      gap={1}
-      px={3}
-      py={1}
-      borderRadius={16}
-      fontSize={13}
-      fontWeight={500}
-      cursor="pointer"
-      b={1}
-      bgColor={active ? 'blue-50' : 'transparent'}
-      borderColor={active ? 'blue-300' : 'gray-300'}
-      color={active ? 'blue-700' : 'gray-600'}
-      hover={{
-        bgColor: active ? 'blue-100' : 'gray-50',
-        borderColor: active ? 'blue-400' : 'gray-400',
-      }}
-      theme={{
-        dark: {
-          bgColor: active ? 'blue-900' : 'transparent',
-          borderColor: active ? 'blue-600' : 'gray-600',
-          color: active ? 'blue-300' : 'gray-400',
-          hover: {
-            bgColor: active ? 'blue-800' : 'gray-800',
-          },
-        },
-      }}
-      onClick={onClick}
-    >
-      {label}
-      {active && onClear && (
-        <Box
-          ml={1}
-          p={0.5}
-          borderRadius={10}
-          hover={{ bgColor: 'blue-200' }}
-          theme={{ dark: { hover: { bgColor: 'blue-700' } } }}
-          props={{
-            onClick: (e) => {
-              e.stopPropagation();
-              onClear();
-            },
-          }}
-        >
-          <X size={12} />
-        </Box>
-      )}
-    </Button>
-  );
+interface SegmentOption<T> {
+  value: T;
+  label: string;
 }
 
-// Custom TopBar Filter component
-function CustomTopBarFilter({
-  genderFilter,
-  setGenderFilter,
-  ageFilter,
-  setAgeFilter,
+/**
+ * A segmented control for a filter with one answer. The segments are equal widths, so the thumb's place is
+ * its index times its own width — a class rather than a measurement, which a prerendered page paints too.
+ */
+function SegmentedControl<T>({
+  label,
+  options,
+  value,
+  onChange,
 }: {
-  genderFilter: string | null;
-  setGenderFilter: (v: string | null) => void;
-  ageFilter: string | null;
-  setAgeFilter: (v: string | null) => void;
+  label: string;
+  options: SegmentOption<T>[];
+  value: T;
+  onChange: (value: T) => void;
 }) {
-  const hasFilters = genderFilter || ageFilter;
+  const index = Math.max(
+    0,
+    options.findIndex((option) => option.value === value),
+  );
 
   return (
-    <Flex gap={2} flexWrap="wrap" width="fit">
-      <Flex ai="center" gap={1} color="gray-500" theme={{ dark: { color: 'gray-400' } }}>
-        <Filter size={14} />
-        <Box fontSize={13}>Quick filters:</Box>
-      </Flex>
-
-      {/* Gender filters */}
-      <FilterChip
-        label="Male"
-        active={genderFilter === 'Male'}
-        onClick={() => setGenderFilter(genderFilter === 'Male' ? null : 'Male')}
-        onClear={() => setGenderFilter(null)}
-      />
-      <FilterChip
-        label="Female"
-        active={genderFilter === 'Female'}
-        onClick={() => setGenderFilter(genderFilter === 'Female' ? null : 'Female')}
-        onClear={() => setGenderFilter(null)}
-      />
-
-      <Box width={1} height={4} bgColor="gray-300" theme={{ dark: { bgColor: 'gray-600' } }} />
-
-      {/* Age filters */}
-      <FilterChip
-        label="Under 30"
-        active={ageFilter === 'under30'}
-        onClick={() => setAgeFilter(ageFilter === 'under30' ? null : 'under30')}
-        onClear={() => setAgeFilter(null)}
-      />
-      <FilterChip
-        label="30-50"
-        active={ageFilter === '30to50'}
-        onClick={() => setAgeFilter(ageFilter === '30to50' ? null : '30to50')}
-        onClear={() => setAgeFilter(null)}
-      />
-      <FilterChip
-        label="Over 200"
-        active={ageFilter === 'over200'}
-        onClick={() => setAgeFilter(ageFilter === 'over200' ? null : 'over200')}
-        onClear={() => setAgeFilter(null)}
-      />
-
-      {/* Clear all */}
-      {hasFilters && (
-        <Button
-          px={2}
-          py={1}
-          fontSize={12}
-          bgColor="transparent"
-          color="red-500"
-          hover={{ bgColor: 'red-50' }}
-          theme={{ dark: { hover: { bgColor: 'red-900' } } }}
-          onClick={() => {
-            setGenderFilter(null);
-            setAgeFilter(null);
-          }}
-        >
-          Clear all
-        </Button>
-      )}
+    <Flex ai="center" gap={2}>
+      <Box fontSize={12} fontWeight={500} color="gray-500" theme={{ dark: { color: 'gray-400' } }} props={{ 'aria-hidden': true }}>
+        {label}
+      </Box>
+      <Grid
+        position="relative"
+        gridTemplateColumns={options.length as never}
+        p={0.5}
+        borderRadius={2}
+        bgColor="gray-100"
+        theme={{ dark: { bgColor: 'gray-800' } }}
+        props={{ role: 'group', 'aria-label': label }}
+      >
+        <Box
+          position="absolute"
+          top={0.5}
+          bottom={0.5}
+          left={0.5}
+          borderRadius={1.5}
+          bgColor="white"
+          shadow="xs"
+          translateX={`${index * 100}%` as never}
+          transition="transform"
+          transitionTimingFunction="spring-snappy"
+          transitionDuration="spring-snappy"
+          css={{ width: `calc((100% - 4px) / ${options.length})` }}
+          theme={{ dark: { bgColor: 'gray-600' } }}
+          props={{ 'aria-hidden': true }}
+        />
+        {options.map((option, i) => (
+          <Button
+            key={option.label}
+            clean
+            position="relative"
+            px={3}
+            py={1.5}
+            fontSize={13}
+            fontWeight={500}
+            textWrap="nowrap"
+            cursor="pointer"
+            borderRadius={1.5}
+            bgColor="transparent"
+            color={i === index ? 'gray-900' : 'gray-500'}
+            transition="colors"
+            hover={{ color: 'gray-900' }}
+            focusVisible={{ outline: 2, outlineStyle: 'solid', outlineOffset: 0, outlineColor: 'indigo-500' }}
+            theme={{ dark: { color: i === index ? 'white' : 'gray-400', hover: { color: 'white' } } }}
+            props={{ 'aria-pressed': i === index }}
+            onClick={() => onChange(option.value)}
+          >
+            {option.label}
+          </Button>
+        ))}
+      </Grid>
     </Flex>
   );
 }
 
-export default function DataGridPage() {
-  useTableOfContents(sidebarLinks);
+const GENDER_OPTIONS: SegmentOption<string | null>[] = [
+  { value: null, label: 'All' },
+  { value: 'Male', label: 'Male' },
+  { value: 'Female', label: 'Female' },
+];
 
-  // Custom filter state for the first DataGrid
-  const [genderFilter, setGenderFilter] = useState<string | null>(null);
-  const [ageFilter, setAgeFilter] = useState<string | null>(null);
+const AGE_OPTIONS: SegmentOption<string | null>[] = [
+  { value: null, label: 'All' },
+  { value: 'under30', label: 'Under 30' },
+  { value: '30to50', label: '30–50' },
+  { value: 'over50', label: 'Over 50' },
+];
+
+interface QuickFilters {
+  gender: string | null;
+  age: string | null;
+  setGender: (value: string | null) => void;
+  setAge: (value: string | null) => void;
+  reset: () => void;
+}
+
+/**
+ * The quick filters' state, read from context rather than passed through `def`: a `def` that changes on
+ * every click makes the grid rebuild its columns and rows, where a stable one only re-filters.
+ */
+const QuickFiltersContext = createContext<QuickFilters | null>(null);
+
+function useQuickFilters(): QuickFilters {
+  const filters = useContext(QuickFiltersContext);
+  if (!filters) throw new Error('useQuickFilters needs a QuickFiltersContext provider');
+
+  return filters;
+}
+
+// Custom TopBar Filter component
+function CustomTopBarFilter() {
+  const { gender: genderFilter, age: ageFilter, setGender: setGenderFilter, setAge: setAgeFilter, reset } = useQuickFilters();
+  const hasFilters = genderFilter !== null || ageFilter !== null;
+
+  return (
+    <Flex ai="center" gap={5} flexWrap="wrap" width="fit">
+      <SegmentedControl label="Gender" options={GENDER_OPTIONS} value={genderFilter} onChange={setGenderFilter} />
+      <Flex ai="center" gap={3}>
+        <SegmentedControl label="Age" options={AGE_OPTIONS} value={ageFilter} onChange={setAgeFilter} />
+        {/* Always laid out, so appearing moves nothing; hidden rather than removed while there is nothing to reset. */}
+        <Button
+          clean
+          display="inline-flex"
+          ai="center"
+          gap={1.5}
+          px={2}
+          py={1.5}
+          fontSize={13}
+          fontWeight={500}
+          cursor="pointer"
+          borderRadius={1.5}
+          bgColor="transparent"
+          color="gray-500"
+          opacity={hasFilters ? 1 : 0}
+          visibility={hasFilters ? 'visible' : 'hidden'}
+          transition="all"
+          hover={{ color: 'gray-900', bgColor: 'gray-100' }}
+          focusVisible={{ outline: 2, outlineStyle: 'solid', outlineOffset: 0, outlineColor: 'indigo-500' }}
+          theme={{ dark: { color: 'gray-400', hover: { color: 'white', bgColor: 'gray-800' } } }}
+          onClick={reset}
+        >
+          <RotateCcw size={13} />
+          Reset
+        </Button>
+      </Flex>
+    </Flex>
+  );
+}
+
+function NoMatchingRows() {
+  const { reset } = useQuickFilters();
+
+  return (
+    <Flex d="column" ai="center" gap={3} p={8} color="gray-500" theme={{ dark: { color: 'gray-400' } }}>
+      <Filter size={32} />
+      <Box>No records match your filters</Box>
+      <Button px={3} py={1.5} fontSize={13} onClick={reset}>
+        Clear filters
+      </Button>
+    </Flex>
+  );
+}
+
+// Module scope, so it is one object for the life of the page: nothing in it depends on a click.
+const FULL_FEATURED_DEF: GridDefinition<(typeof allData)[0]> = {
+  title: 'All Features Demo',
+  topBar: true,
+  bottomBar: true,
+  globalFilter: true,
+  topBarContent: <CustomTopBarFilter />,
+  rowSelection: { pinned: true },
+  showRowNumber: { pinned: true },
+  rowHeight: 40,
+  visibleRowsCount: 8,
+  sortable: true,
+  resizable: true,
+  noDataComponent: <NoMatchingRows />,
+  columns: [
+    {
+      key: 'personal',
+      header: 'Personal Info',
+      columns: [
+        { key: 'first_name', header: 'First Name', filterable: true },
+        { key: 'last_name', header: 'Last Name', filterable: true },
+        { key: 'age', header: 'Age', width: 120, align: 'right', filterable: { type: 'number' } },
+      ],
+    },
+    {
+      key: 'contact',
+      header: 'Contact',
+      columns: [
+        { key: 'email', header: 'Email', width: 280, filterable: true },
+        { key: 'phone_number', header: 'Phone', width: 160 },
+      ],
+    },
+    { key: 'country', header: 'Country', filterable: { type: 'multiselect' } },
+    { key: 'gender', header: 'Gender', width: 120, filterable: { type: 'multiselect' } },
+    { key: 'city', header: 'City', pin: 'END' },
+  ],
+};
+
+function FullFeaturedDemo() {
+  const [gender, setGender] = useState<string | null>(null);
+  const [age, setAge] = useState<string | null>(null);
 
   // External predicate filters — DataGrid applies these internally and shows correct "filtered / total" in bottom bar
   const filters = useMemo(() => {
     const result: ((row: (typeof allData)[0]) => boolean)[] = [];
-    if (genderFilter) result.push((row) => row.gender === genderFilter);
-    if (ageFilter === 'under30') result.push((row) => row.age < 30);
-    if (ageFilter === '30to50') result.push((row) => row.age >= 30 && row.age <= 50);
-    if (ageFilter === 'over200') result.push((row) => row.age > 200);
+    if (gender) result.push((row) => row.gender === gender);
+    if (age === 'under30') result.push((row) => row.age < 30);
+    if (age === '30to50') result.push((row) => row.age >= 30 && row.age <= 50);
+    if (age === 'over50') result.push((row) => row.age > 50);
     return result;
-  }, [genderFilter, ageFilter]);
+  }, [gender, age]);
+  // The control answers on the click; the grid re-filters in a render React may interrupt.
+  const deferredFilters = useDeferredValue(filters);
+
+  const quickFilters = useMemo<QuickFilters>(
+    () => ({
+      gender,
+      age,
+      setGender,
+      setAge,
+      reset: () => {
+        setGender(null);
+        setAge(null);
+      },
+    }),
+    [gender, age],
+  );
+
+  // The urgent render — the one the click waits for — moves the thumb and leaves the grid alone.
+  const grid = useMemo(() => <DataGrid data={allData} filters={deferredFilters} def={FULL_FEATURED_DEF} />, [deferredFilters]);
+
+  return <QuickFiltersContext.Provider value={quickFilters}>{grid}</QuickFiltersContext.Provider>;
+}
+
+export default function DataGridPage() {
+  useTableOfContents(sidebarLinks);
 
   return (
     <Box>
@@ -318,97 +421,33 @@ export default function DataGridPage() {
             label="Full Featured DataGrid"
             language="jsx"
             check={false}
-            code={`const filters = useMemo(() => {
-  const result = [];
-  if (genderFilter) result.push((row) => row.gender === genderFilter);
-  if (ageFilter === 'under30') result.push((row) => row.age < 30);
-  return result;
-}, [genderFilter, ageFilter]);
+            code={`// A def that never changes: the quick filters read their state from context, not from def.
+const def = {
+  title: 'All Features Demo',
+  topBar: true,
+  bottomBar: true,
+  globalFilter: true,
+  topBarContent: <CustomTopBarFilter />,
+  rowSelection: { pinned: true },
+  showRowNumber: { pinned: true },
+  rowHeight: 40,
+  visibleRowsCount: 8,
+  columns: [...],
+};
 
-<DataGrid
-  data={allData}
-  filters={filters}
-  def={{
-    title: 'All Features Demo',
-    topBar: true,
-    bottomBar: true,
-    globalFilter: true,
-    topBarContent: <CustomTopBarFilter ... />,
-    rowSelection: { pinned: true },
-    showRowNumber: { pinned: true },
-    rowHeight: 40,
-    visibleRowsCount: 8,
-    columns: [...],
-  }}
-/>`}
+const filters = useMemo(() => {
+  const result = [];
+  if (gender) result.push((row) => row.gender === gender);
+  if (age === 'under30') result.push((row) => row.age < 30);
+  return result;
+}, [gender, age]);
+
+// The control answers on the click; the grid re-filters in a render React may interrupt.
+const deferredFilters = useDeferredValue(filters);
+
+<DataGrid data={allData} filters={deferredFilters} def={def} />`}
           >
-            <DataGrid
-              data={allData}
-              filters={filters}
-              def={{
-                title: 'All Features Demo',
-                topBar: true,
-                bottomBar: true,
-                globalFilter: true,
-                topBarContent: (
-                  <CustomTopBarFilter
-                    genderFilter={genderFilter}
-                    setGenderFilter={setGenderFilter}
-                    ageFilter={ageFilter}
-                    setAgeFilter={setAgeFilter}
-                  />
-                ),
-                rowSelection: { pinned: true },
-                showRowNumber: { pinned: true },
-                rowHeight: 40,
-                visibleRowsCount: 8,
-                sortable: true,
-                resizable: true,
-                noDataComponent: (
-                  <Flex d="column" ai="center" gap={3} p={8} color="gray-500" theme={{ dark: { color: 'gray-400' } }}>
-                    <Filter size={32} />
-                    <Box>No records match your filters</Box>
-                    <Button
-                      px={3}
-                      py={1}
-                      fontSize={13}
-                      bgColor="blue-500"
-                      color="white"
-                      borderRadius={6}
-                      hover={{ bgColor: 'blue-600' }}
-                      onClick={() => {
-                        setGenderFilter(null);
-                        setAgeFilter(null);
-                      }}
-                    >
-                      Clear filters
-                    </Button>
-                  </Flex>
-                ),
-                columns: [
-                  {
-                    key: 'personal',
-                    header: 'Personal Info',
-                    columns: [
-                      { key: 'first_name', header: 'First Name', filterable: true },
-                      { key: 'last_name', header: 'Last Name', filterable: true },
-                      { key: 'age', header: 'Age', width: 120, align: 'right', filterable: { type: 'number' } },
-                    ],
-                  },
-                  {
-                    key: 'contact',
-                    header: 'Contact',
-                    columns: [
-                      { key: 'email', header: 'Email', width: 280, filterable: true },
-                      { key: 'phone_number', header: 'Phone', width: 160 },
-                    ],
-                  },
-                  { key: 'country', header: 'Country', filterable: { type: 'multiselect' } },
-                  { key: 'gender', header: 'Gender', width: 120, filterable: { type: 'multiselect' } },
-                  { key: 'city', header: 'City', pin: 'END' },
-                ],
-              }}
-            />
+            <FullFeaturedDemo />
           </Code>
 
           <Code
@@ -1737,6 +1776,61 @@ const dataSource = useMemo(() => ({
           >
             <ResizeModeDemo />
           </Code>
+
+          <Code
+            id="header-hover"
+            defer
+            label="Header Hover"
+            language="jsx"
+            code={`// 'static' (default): each sortable header cell paints its own inset pill on hover.
+// 'sliding': one pill for the whole header that flows from cell to cell, the edge it
+// moves towards leading and the other catching up. Move along the headers to compare.
+<DataGrid
+  data={data}
+  def={{
+    columns: [
+      { key: 'first_name', header: 'First name' },
+      { key: 'last_name', header: 'Last name' },
+      { key: 'age', header: 'Age', width: 100 },
+      { key: 'email', header: 'Email', width: 300 },
+      { key: 'country' },
+      { key: 'city' },
+    ],
+    rowHeight: 40,
+    visibleRowsCount: 5,
+    headerHover: 'sliding', // or 'static'
+  }}
+/>`}
+          >
+            <HeaderHoverDemo />
+          </Code>
+
+          <Code
+            id="localization"
+            defer
+            label="Localization"
+            language="jsx"
+            check={false}
+            code={`// Every word the grid writes is in def.localeText — any subset, the rest stays English.
+// A value with a number or a name in it is a function, so a language can order its own words.
+const de: Partial<DataGridLocaleText> = {
+  searchPlaceholder: 'Suchen...',
+  filterPlaceholder: 'Filtern...',
+  clearFilters: 'Filter zurücksetzen',
+  rowCount: (filtered, total) => (filtered === total ? \`\${total} Zeilen\` : \`\${filtered} von \${total} Zeilen\`),
+  selectedCount: (selected) => \`Ausgewählt: \${selected}\`,
+  selectAllRows: 'Alle Zeilen auswählen',
+  selectRow: (row) => \`Zeile \${row} auswählen\`,
+  sortAscending: 'Aufsteigend sortieren',
+  sortDescending: 'Absteigend sortieren',
+  columnOptions: (column) => \`Spaltenoptionen für \${column}\`,
+  // …and the rest of DataGridLocaleText
+};
+
+<DataGrid data={data} def={{ columns, globalFilter: true, topBar: true, bottomBar: true, rowSelection: true, localeText: de }} />`}
+          >
+            <DataGrid data={allData} def={LOCALIZED_DEF} />
+          </Code>
           <ApiReference api={dataGridApi} />
         </Flex>
       </Reveal>
@@ -1744,18 +1838,63 @@ const dataSource = useMemo(() => ({
   );
 }
 
+const RESIZE_MODE_OPTIONS: SegmentOption<'smooth' | 'instant'>[] = [
+  { value: 'smooth', label: 'Smooth (rAF)' },
+  { value: 'instant', label: 'Instant' },
+];
+
+const HEADER_HOVER_OPTIONS: SegmentOption<'static' | 'sliding'>[] = [
+  { value: 'static', label: 'Static' },
+  { value: 'sliding', label: 'Sliding' },
+];
+
+const GERMAN: Partial<DataGridLocaleText> = {
+  searchPlaceholder: 'Suchen...',
+  filterPlaceholder: 'Filtern...',
+  clearFilters: 'Filter zurücksetzen',
+  rowCount: (filtered, total) => (filtered === total ? `${total} Zeilen` : `${filtered} von ${total} Zeilen`),
+  selectedCount: (selected, hidden) => (hidden > 0 ? `Ausgewählt: ${selected} (${hidden} ausgeblendet)` : `Ausgewählt: ${selected}`),
+  showSelected: 'Auswahl anzeigen',
+  clearSelection: 'Auswahl aufheben',
+  selectAllRows: 'Alle Zeilen auswählen',
+  selectRow: (row) => `Zeile ${row} auswählen`,
+  sortAscending: 'Aufsteigend sortieren',
+  sortDescending: 'Absteigend sortieren',
+  clearSort: 'Sortierung aufheben',
+  pinLeft: 'Links anheften',
+  pinRight: 'Rechts anheften',
+  unpin: 'Lösen',
+  groupBy: (column) => `Nach ${column} gruppieren`,
+  columnOptions: (column) => `Spaltenoptionen für ${column}`,
+  filterColumn: (column) => `${column} filtern`,
+  clearFilter: (column) => `Filter für ${column} zurücksetzen`,
+  columnsMenu: 'Spalten',
+  selectionAnnouncement: (selected, total) => (selected === 0 ? 'Keine Zeilen ausgewählt' : `${selected} von ${total} Zeilen ausgewählt`),
+};
+
+const LOCALIZED_DEF: GridDefinition<(typeof allData)[0]> = {
+  title: 'Personen',
+  topBar: true,
+  bottomBar: true,
+  globalFilter: true,
+  rowSelection: true,
+  rowHeight: 40,
+  visibleRowsCount: 5,
+  localeText: GERMAN,
+  columns: [
+    { key: 'first_name', header: 'Vorname', filterable: true },
+    { key: 'last_name', header: 'Nachname', filterable: true },
+    { key: 'age', header: 'Alter', width: 100, align: 'right' },
+    { key: 'country', header: 'Land' },
+  ],
+};
+
 function ResizeModeDemo() {
   const [resizeMode, setResizeMode] = useState<'smooth' | 'instant'>('smooth');
 
   return (
     <Flex d="column" gap={4}>
-      <Flex gap={2} ai="center">
-        <Box fontSize={13} fontWeight={500} color="gray-600" theme={{ dark: { color: 'gray-400' } }}>
-          Resize mode:
-        </Box>
-        <FilterChip label="Smooth (rAF)" active={resizeMode === 'smooth'} onClick={() => setResizeMode('smooth')} />
-        <FilterChip label="Instant" active={resizeMode === 'instant'} onClick={() => setResizeMode('instant')} />
-      </Flex>
+      <SegmentedControl label="Resize mode" options={RESIZE_MODE_OPTIONS} value={resizeMode} onChange={setResizeMode} />
 
       <DataGrid
         data={allData}
@@ -1771,6 +1910,33 @@ function ResizeModeDemo() {
           rowHeight: 40,
           visibleRowsCount: 5,
           resizeMode,
+        }}
+      />
+    </Flex>
+  );
+}
+
+function HeaderHoverDemo() {
+  const [headerHover, setHeaderHover] = useState<'static' | 'sliding'>('sliding');
+
+  return (
+    <Flex d="column" gap={4}>
+      <SegmentedControl label="Header hover" options={HEADER_HOVER_OPTIONS} value={headerHover} onChange={setHeaderHover} />
+
+      <DataGrid
+        data={allData}
+        def={{
+          columns: [
+            { key: 'first_name', header: 'First name', pin: 'START' },
+            { key: 'last_name', header: 'Last name' },
+            { key: 'age', header: 'Age', width: 100 },
+            { key: 'email', header: 'Email', width: 300 },
+            { key: 'country' },
+            { key: 'city' },
+          ],
+          rowHeight: 40,
+          visibleRowsCount: 5,
+          headerHover,
         }}
       />
     </Flex>
@@ -1982,7 +2148,7 @@ function MillionRowDemo() {
   return (
     <Flex d="column" gap={3}>
       <Flex gap={2} ai="center" flexWrap="wrap">
-        <FilterChip label="Fail the next request" active={failNext} onClick={() => setFailNext(!failNext)} />
+        <Switch label="Fail the next request" checked={failNext} onChange={(event) => setFailNext(event.target.checked)} />
         <Box fontSize={12} color="gray-500" theme={{ dark: { color: 'gray-400' } }}>
           Last asked for: {lastRequest}
         </Box>
@@ -2694,5 +2860,7 @@ const sidebarLinks = [
   { id: 'context-menu', label: 'Context Menu' },
   { id: 'resizer-style', label: 'Resizer Style' },
   { id: 'resize-mode', label: 'Resize Mode' },
+  { id: 'header-hover', label: 'Header Hover' },
+  { id: 'localization', label: 'Localization' },
   ...apiSections(dataGridApi),
 ];

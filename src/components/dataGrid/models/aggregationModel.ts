@@ -73,7 +73,7 @@ export default class AggregationModel<TRow> {
   public get footerLabel(): React.ReactNode {
     const { footer } = this.grid.props.def;
 
-    return typeof footer === 'object' ? footer.label : 'Total';
+    return typeof footer === 'object' ? footer.label : this.grid.localeText.footerTotal;
   }
 
   /**

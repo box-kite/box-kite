@@ -2,7 +2,7 @@ import { memo, useRef } from 'react';
 import Box from '../../../box';
 import { useIsomorphicLayoutEffect } from '../../../react/effects';
 import Flex from '../../flex';
-import { useGridNavigationContext } from '../gridNavigationContext';
+import { useGridCellProps, useGridNavigationContext } from '../gridNavigationContext';
 import DetailRowModel from '../models/detailRowModel';
 
 interface Props<TRow> {
@@ -10,10 +10,10 @@ interface Props<TRow> {
   /** Position in the whole row list, not in the rendered window. */
   index: number;
   /**
-   * The grid's store version. Not read: it is what tells the memo below that something the row draws
-   * from the model has moved, since every other prop it takes holds still while the window slides.
+   * This row's version (`GridModel.rowVersion`). Not read: it is what tells the memo below that something
+   * the row draws from the model has moved, since every other prop it takes holds still while the window slides.
    */
-  version: number;
+  version: string;
 }
 
 function DataGridDetailRowImpl<TRow>(props: Props<TRow>) {
@@ -22,7 +22,7 @@ function DataGridDetailRowImpl<TRow>(props: Props<TRow>) {
   const config = grid.props.def.rowDetail!;
   const navigation = useGridNavigationContext();
   const navRow = (navigation?.headerRowCount ?? 0) + index;
-  const { ref, tabIndex, onFocus } = navigation?.cellProps(navRow, 0) ?? {};
+  const { ref, tabIndex, onFocus } = useGridCellProps(navigation, navRow, 0);
 
   const isAutoHeight = row.isAutoHeight;
 

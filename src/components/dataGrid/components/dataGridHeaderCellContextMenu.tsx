@@ -36,14 +36,13 @@ interface Props<TRow> {
  * `:dir()` picks one — no measurement and no state. The name that loses is `display: none`, which
  * takes it out of the item's accessible name as well as out of the picture.
  */
-function PinLabel(props: { side: 'start' | 'end' }) {
-  const ltr = props.side === 'start' ? 'Left' : 'Right';
-  const rtl = props.side === 'start' ? 'Right' : 'Left';
+function PinLabel(props: { side: 'start' | 'end'; left: string; right: string }) {
+  const { side, left, right } = props;
 
   return (
     <>
-      <Span rtl={{ display: 'none' }}>Pin {ltr}</Span>
-      <Span ltr={{ display: 'none' }}>Pin {rtl}</Span>
+      <Span rtl={{ display: 'none' }}>{side === 'start' ? left : right}</Span>
+      <Span ltr={{ display: 'none' }}>{side === 'start' ? right : left}</Span>
     </>
   );
 }
@@ -57,7 +56,8 @@ export default function DataGridHeaderCellContextMenu<TRow>(props: Props<TRow>) 
   const { column } = props;
   const { grid, isEndAligned, header, key } = column;
   const hc = column.headerCell;
-  const columnName = header ?? key;
+  const columnName = String(header ?? key);
+  const text = grid.localeText;
 
   const identifier = useIdentifier('datagrid-column-menu');
   const [isOpen, setOpen] = useState(false);
@@ -65,8 +65,9 @@ export default function DataGridHeaderCellContextMenu<TRow>(props: Props<TRow>) 
   const popupRef = useRef<HTMLDivElement>(null);
   const pendingFocus = useRef(false);
 
-  const positionStart = isEndAligned ? 2 : undefined;
-  const positionEnd = isEndAligned ? undefined : column.pin === 'END' ? 2.5 : 4;
+  // 12px from the edge whichever side it is on, which is what centres it in a column at its 48px minimum.
+  const positionStart = isEndAligned ? 3 : undefined;
+  const positionEnd = isEndAligned ? undefined : 3;
 
   const items = useMemo(() => {
     const iconSlot = (children: React.ReactNode) => (
@@ -84,22 +85,22 @@ export default function DataGridHeaderCellContextMenu<TRow>(props: Props<TRow>) 
         hc.canSortAsc && {
           key: 'sort-asc',
           icon: sortIcon(),
-          label: 'Sort Ascending',
-          text: 'Sort Ascending',
+          label: text.sortAscending,
+          text: text.sortAscending,
           run: () => column.sortColumn('ASC'),
         },
         hc.canSortDesc && {
           key: 'sort-desc',
           icon: sortIcon(180),
-          label: 'Sort Descending',
-          text: 'Sort Descending',
+          label: text.sortDescending,
+          text: text.sortDescending,
           run: () => column.sortColumn('DESC'),
         },
         hc.canClearSort && {
           key: 'sort-clear',
           icon: noIcon,
-          label: 'Clear Sort',
-          text: 'Clear Sort',
+          label: text.clearSort,
+          text: text.clearSort,
           run: () => column.sortColumn(undefined),
         },
       ],
@@ -107,34 +108,34 @@ export default function DataGridHeaderCellContextMenu<TRow>(props: Props<TRow>) 
         hc.canPinStart && {
           key: 'pin-start',
           icon: pinIcon(0, -90),
-          label: <PinLabel side="start" />,
+          label: <PinLabel side="start" left={text.pinLeft} right={text.pinRight} />,
           // The typeahead needs one string, and the physical name of the start is the left in the
           // reading order most of these grids are in.
-          text: 'Pin Left',
+          text: text.pinLeft,
           run: () => column.pinColumn('START'),
         },
         hc.canPinEnd && {
           key: 'pin-end',
           icon: pinIcon(-90, 0),
-          label: <PinLabel side="end" />,
-          text: 'Pin Right',
+          label: <PinLabel side="end" left={text.pinLeft} right={text.pinRight} />,
+          text: text.pinRight,
           run: () => column.pinColumn('END'),
         },
-        hc.canUnpin && { key: 'unpin', icon: noIcon, label: 'Unpin', text: 'Unpin', run: () => column.pinColumn() },
+        hc.canUnpin && { key: 'unpin', icon: noIcon, label: text.unpin, text: text.unpin, run: () => column.pinColumn() },
       ],
       [
         hc.canGroupBy && {
           key: 'group',
           icon: groupIcon,
-          label: <Box textWrap="nowrap">Group by {columnName}</Box>,
-          text: `Group by ${columnName}`,
+          label: <Box textWrap="nowrap">{text.groupBy(columnName)}</Box>,
+          text: text.groupBy(columnName),
           run: column.toggleGrouping,
         },
         hc.canUnGroupAll && {
           key: 'ungroup',
           icon: groupIcon,
-          label: <Box textWrap="nowrap">Un-Group All</Box>,
-          text: 'Un-Group All',
+          label: <Box textWrap="nowrap">{text.ungroupAll}</Box>,
+          text: text.ungroupAll,
           run: grid.unGroupAll,
         },
       ],
@@ -144,7 +145,7 @@ export default function DataGridHeaderCellContextMenu<TRow>(props: Props<TRow>) 
       .map((section) => section.filter((item): item is MenuItem => item !== false))
       .filter((section) => section.length > 0)
       .flatMap((section, sectionIndex) => section.map((item, index) => ({ ...item, startsSection: sectionIndex > 0 && index === 0 })));
-  }, [column, columnName, grid, hc]);
+  }, [column, columnName, grid, hc, text]);
 
   const close = useCallback((restoreFocus = true) => {
     pendingFocus.current = false;
@@ -207,7 +208,7 @@ export default function DataGridHeaderCellContextMenu<TRow>(props: Props<TRow>) 
         props={{
           tabIndex: -1,
           // Three dots name nothing. The column does, and there is one of these per column.
-          'aria-label': `Column options for ${columnName}`,
+          'aria-label': text.columnOptions(columnName),
           'aria-haspopup': 'menu',
           'aria-expanded': isOpen,
           'aria-controls': isOpen ? identifier : undefined,
@@ -232,7 +233,7 @@ export default function DataGridHeaderCellContextMenu<TRow>(props: Props<TRow>) 
             align="end"
             matchWidth={false}
             id={identifier}
-            props={{ role: 'menu', 'aria-label': `Column options for ${columnName}`, onKeyDown: roving.onKeyDown, ...presence.props }}
+            props={{ role: 'menu', 'aria-label': text.columnOptions(columnName), onKeyDown: roving.onKeyDown, ...presence.props }}
           >
             {items.map((item, index) => {
               const { ref, tabIndex, onFocus } = roving.itemProps(index);

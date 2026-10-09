@@ -18,6 +18,38 @@ export type Components = Record<string, BoxComponent>;
  */
 const FONT_MONO = 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace';
 
+/**
+ * The DataGrid bottom bar's buttons. Quiet rather than links: they change the view, they do not go
+ * anywhere — grey until hovered, so they sit beside the counts without shouting over them.
+ */
+const BAR_BUTTON: BoxComponentStyles = {
+  display: 'inline-flex',
+  ai: 'center',
+  gap: 1.5,
+  ms: -2,
+  px: 2,
+  py: 1,
+  lineHeight: 20,
+  borderRadius: 1.5,
+  fontSize: 13,
+  fontWeight: 500,
+  color: 'gray-600',
+  bgColor: 'transparent',
+  cursor: 'pointer',
+  textWrap: 'nowrap',
+  transition: 'colors',
+  transitionDuration: 150,
+  hover: { bgColor: 'gray-100', color: 'gray-900' },
+  focusVisible: { outline: 2, outlineStyle: 'solid', outlineOffset: 0, outlineColor: 'indigo-500' },
+  theme: {
+    dark: {
+      color: 'gray-400',
+      hover: { bgColor: 'gray-800', color: 'gray-100' },
+      focusVisible: { outlineColor: 'indigo-400' },
+    },
+  },
+};
+
 const boxComponents = {
   h1: {
     styles: { fontSize: 14 * 2.5 },
@@ -1105,13 +1137,17 @@ const boxComponents = {
       borderRadius: 1,
       p: 2,
       cursor: 'pointer',
+      // Quick, and colours only. The ring wears its colour before it is drawn, or it fades in from black.
+      transition: 'colors',
+      transitionDuration: 100,
+      outlineColor: 'indigo-200',
       hover: {
         borderColor: 'indigo-400',
       },
-      focus: {
+      // The keyboard's ring only: drawn on every click it was noise, and in a DataGrid it flashed on each row selected.
+      focusVisible: {
         outline: 2,
         outlineOffset: 2,
-        outlineColor: 'indigo-200',
       },
       checked: {
         bgColor: 'indigo-500',
@@ -1138,9 +1174,7 @@ const boxComponents = {
           hover: {
             borderColor: 'indigo-400',
           },
-          focus: {
-            outlineColor: 'indigo-900',
-          },
+          outlineColor: 'indigo-900',
           checked: {
             bgColor: 'indigo-500',
             borderColor: 'indigo-500',
@@ -1172,13 +1206,17 @@ const boxComponents = {
       borderRadius: 3,
       p: 2,
       cursor: 'pointer',
+      // Quick, and colours only. The ring wears its colour before it is drawn, or it fades in from black.
+      transition: 'colors',
+      transitionDuration: 100,
+      outlineColor: 'indigo-200',
       hover: {
         borderColor: 'indigo-400',
       },
-      focus: {
+      // The keyboard's ring only: drawn on every click it was noise, and in a DataGrid it flashed on each row selected.
+      focusVisible: {
         outline: 2,
         outlineOffset: 2,
-        outlineColor: 'indigo-200',
       },
       checked: {
         bgColor: 'indigo-500',
@@ -1202,9 +1240,7 @@ const boxComponents = {
           hover: {
             borderColor: 'indigo-400',
           },
-          focus: {
-            outlineColor: 'indigo-900',
-          },
+          outlineColor: 'indigo-900',
           checked: {
             bgColor: 'indigo-500',
             borderColor: 'indigo-500',
@@ -2156,12 +2192,14 @@ const boxComponents = {
                   px: 2,
                   py: 1,
                   borderRadius: 1,
-                  bgColor: 'violet-100',
-                  color: 'violet-700',
+                  // Neutral: a count is information, and the grid's one accent is indigo.
+                  bgColor: 'gray-100',
+                  color: 'gray-600',
+                  css: { fontVariantNumeric: 'tabular-nums' },
                   theme: {
                     dark: {
-                      bgColor: 'violet-900',
-                      color: 'violet-300',
+                      bgColor: 'gray-800',
+                      color: 'gray-300',
                     },
                   },
                   textWrap: 'nowrap',
@@ -2413,6 +2451,47 @@ const boxComponents = {
           },
         },
         children: {
+          // `headerHover: 'sliding'`: one pill for the whole header, placed by inline px over the hovered cell.
+          // The edge it travels towards is the quick one and the other catches up, which is the water.
+          // Above the pinned cells so it reaches them, which is why it is a tint and takes no pointer.
+          hover: {
+            styles: {
+              position: 'absolute',
+              zIndex: 3,
+              pointerEvents: 'none',
+              opacity: 0,
+              css: {
+                transition:
+                  'opacity calc(var(--transitionTime) * .6) ease, ' +
+                  'right calc(var(--transitionTime) * 1.2) cubic-bezier(.25, 1, .5, 1), ' +
+                  'left calc(var(--transitionTime) * 2) cubic-bezier(.65, 0, .35, 1), ' +
+                  'top calc(var(--transitionTime) * 1.4) cubic-bezier(.25, 1, .5, 1), ' +
+                  'bottom calc(var(--transitionTime) * 1.4) cubic-bezier(.25, 1, .5, 1)',
+              },
+              before: {
+                position: 'absolute',
+                inset: 1,
+                borderRadius: 1,
+                bgColor: 'gray-900/5',
+              },
+              theme: { dark: { before: { bgColor: 'white/10' } } },
+            },
+            variants: {
+              visible: { opacity: 1 },
+              backward: {
+                css: {
+                  transition:
+                    'opacity calc(var(--transitionTime) * .6) ease, ' +
+                    'left calc(var(--transitionTime) * 1.2) cubic-bezier(.25, 1, .5, 1), ' +
+                    'right calc(var(--transitionTime) * 2) cubic-bezier(.65, 0, .35, 1), ' +
+                    'top calc(var(--transitionTime) * 1.4) cubic-bezier(.25, 1, .5, 1), ' +
+                    'bottom calc(var(--transitionTime) * 1.4) cubic-bezier(.25, 1, .5, 1)',
+                },
+              },
+              // Shown from nothing: it fades in where it is, since travelling from the last cell it left is noise.
+              entering: { css: { transition: 'opacity calc(var(--transitionTime) * .6) ease' } },
+            },
+          },
           cell: {
             styles: {
               borderColor: 'gray-200',
@@ -2480,21 +2559,34 @@ const boxComponents = {
               isLastEndPinned: {},
               isSortable: {
                 cursor: 'pointer',
-                hover: {
-                  bgColor: 'gray-100',
-                  color: 'gray-900',
-                },
-                theme: {
-                  dark: {
-                    hover: {
-                      // Not `gray-800`, which is the header's own background in this theme: a hover that
-                      // paints the colour already there is a hover nobody can see.
-                      bgColor: 'gray-700',
-                      color: 'gray-100',
-                    },
-                  },
-                },
+                hover: { color: 'gray-900' },
+                // The resizer is inside the cell, so the cell is `:hover` over it too — but a press there resizes.
+                // `:has()` outranks `:hover`, and the theme is restated because its scope adds a class of its own.
+                has: { '.resizer:hover': { color: 'gray-500' } },
+                theme: { dark: { hover: { color: 'gray-100' }, has: { '.resizer:hover': { color: 'gray-400' } } } },
               },
+              // An inset pill rather than the whole cell, and a tint, so it reads on a pinned cell's own fill too.
+              hasHoverPill: {
+                before: {
+                  position: 'absolute',
+                  // Longhands, so the resizer variants below replace one side rather than race a shorthand.
+                  insetY: 1,
+                  insetStart: 1,
+                  insetEnd: 1,
+                  borderRadius: 1,
+                  pointerEvents: 'none',
+                  opacity: 0,
+                  bgColor: 'gray-900/5',
+                  css: { transition: 'opacity calc(var(--transitionTime) * .6) ease' },
+                },
+                hover: { before: { opacity: 1 } },
+                has: { '.resizer:hover': { before: { opacity: 0 } } },
+                theme: { dark: { before: { bgColor: 'white/10' } } },
+              },
+              // One pixel more on the resizer's side: its line is this cell's last pixel, so the pill keeps
+              // the same 4px from it as the neighbour's pill does from the other side.
+              isPillBeforeResizer: { before: { insetEnd: 1.25 } },
+              isPillAfterResizer: { before: { insetStart: 1.25 } },
               isRowSelection: {},
               isRowNumber: { jc: 'center' },
               isFirstLeaf: {},
@@ -2518,11 +2610,13 @@ const boxComponents = {
                   // Quiet by default: one of these sits in every header cell. `gray-500` rather than the
                   // `gray-400` that looks right — a control owes 3:1 and `gray-400` on `gray-50` is 2.49.
                   color: 'gray-500',
-                  hover: { bgColor: 'gray-200', color: 'gray-700' },
+                  // A tint, so it stacks on the cell's hover pill instead of matching it: the pill is about the
+                  // grey a flat `gray-200` would be, and in the dark theme the same as `gray-700`.
+                  hover: { bgColor: 'gray-900/12', color: 'gray-800' },
                   theme: {
                     dark: {
                       color: 'gray-400',
-                      hover: { bgColor: 'gray-700', color: 'gray-200' },
+                      hover: { bgColor: 'white/15', color: 'gray-100' },
                     },
                   },
                 },
@@ -3069,7 +3163,10 @@ const boxComponents = {
           bgColor: 'white',
           bt: 1,
           borderColor: 'gray-200',
-          gap: 4,
+          // A narrow grid wraps the bar rather than pushing its last button out of reach.
+          flexWrap: 'wrap',
+          columnGap: 4,
+          rowGap: 0,
           ai: 'center',
           fontSize: 13,
           color: 'gray-500',
@@ -3083,10 +3180,30 @@ const boxComponents = {
         },
         children: {
           info: {
-            styles: {},
+            styles: { textWrap: 'nowrap' },
           },
           clearFilters: {
-            styles: {},
+            clean: true,
+            styles: BAR_BUTTON,
+          },
+          // The selection's count and its buttons, at the far end: the rows and the selection are two subjects.
+          selection: {
+            styles: { ai: 'center', flexWrap: 'wrap', columnGap: 4, rowGap: 0, ms: 'auto' },
+          },
+          action: {
+            clean: true,
+            styles: BAR_BUTTON,
+            variants: {
+              // "Show selected" while it is on: a toggle has to look pressed, not only say so to a screen reader.
+              pressed: {
+                bgColor: 'indigo-50',
+                color: 'indigo-700',
+                hover: { bgColor: 'indigo-100', color: 'indigo-800' },
+                theme: {
+                  dark: { bgColor: 'indigo-500/15', color: 'indigo-300', hover: { bgColor: 'indigo-500/25', color: 'indigo-200' } },
+                },
+              },
+            },
           },
           pagination: {
             styles: {},

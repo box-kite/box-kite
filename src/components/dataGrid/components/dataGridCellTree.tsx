@@ -34,7 +34,7 @@ export default function DataGridCellTree<TRow>(props: Props<TRow>) {
 
   // The row it opens, named by what the tree is read down. `aria-expanded` is deliberately *not* here:
   // in a treegrid the row carries the open state, and a second one on the button reads it out twice.
-  const name = cell.value == null || cell.value === '' ? `row ${row.rowIndex + 1}` : String(cell.value);
+  const name = cell.value == null || cell.value === '' ? cell.grid.localeText.unnamedRow(row.rowIndex + 1) : String(cell.value);
 
   return (
     <Flex component={`${componentName}.body.cell.tree` as never} ai="center" ps={level * row.grid.tree.indent}>
@@ -48,7 +48,10 @@ export default function DataGridCellTree<TRow>(props: Props<TRow>) {
           display="flex"
           ai="center"
           jc="center"
-          props={{ tabIndex: -1, 'aria-label': `${treeExpanded ? 'Collapse' : 'Expand'} ${name}` }}
+          props={{
+            tabIndex: -1,
+            'aria-label': (treeExpanded ? cell.grid.localeText.collapseTreeRow : cell.grid.localeText.expandTreeRow)(name),
+          }}
         >
           <ExpandIcon fill="currentColor" width="14px" height="14px" rotate={treeExpanded ? 0 : -90} />
         </Button>

@@ -136,7 +136,7 @@ export default function DataGridContent<TRow>(props: Props<TRow>) {
           onPaste: range.onPaste,
         }}
       >
-        <DataGridHeader grid={grid} />
+        <DataGridHeader grid={grid} version={grid.headerVersion} />
 
         {(grid.props.loading || source.isLoading) && <DataGridLoader grid={grid} />}
 

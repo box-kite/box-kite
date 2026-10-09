@@ -33,7 +33,7 @@ export default function DataGridColumnGroups<TRow>(props: Props<TRow>) {
                 onClick={() => grid.toggleGrouping(column.key)}
                 // "✕" is a character, not a name: the chip beside it says which grouping this
                 // removes and the button has to say so too.
-                props={{ 'aria-label': `Stop grouping by ${column.header ?? column.key}` }}
+                props={{ 'aria-label': grid.localeText.stopGrouping(String(column.header ?? column.key)) }}
               >
                 <Box fontSize={10} color="gray-400" hover={{ color: 'gray-600' }}>
                   ✕

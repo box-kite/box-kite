@@ -116,7 +116,7 @@
         "./diagnostics-*"
       ],
       "gzip": true,
-      "limit": "36.28 KB"
+      "limit": "36.74 KB"
     },
     {
       "name": "Box in a Server Component (react-server entry)",
@@ -127,7 +127,7 @@
         "./diagnostics-*"
       ],
       "gzip": true,
-      "limit": "34.69 KB"
+      "limit": "35.16 KB"
     },
     {
       "name": "Behavior primitives (a11y entry)",
@@ -160,7 +160,7 @@
         "./diagnostics-*"
       ],
       "gzip": true,
-      "limit": "54.73 KB"
+      "limit": "55.18 KB"
     },
     {
       "name": "Spec renderer (spec entry)",
@@ -188,7 +188,7 @@
       "name": "Core engine (@box-kite/core, no React)",
       "path": "dist-core/core.mjs",
       "gzip": true,
-      "limit": "35.73 KB",
+      "limit": "36.20 KB",
       "ignore": [
         "./diagnostics-*"
       ]
@@ -202,7 +202,7 @@
         "./diagnostics-*"
       ],
       "gzip": true,
-      "limit": "38.35 KB"
+      "limit": "38.83 KB"
     },
     {
       "name": "Popover",
@@ -213,7 +213,7 @@
         "./diagnostics-*"
       ],
       "gzip": true,
-      "limit": "39.88 KB"
+      "limit": "40.35 KB"
     },
     {
       "name": "Menu",
@@ -224,7 +224,7 @@
         "./diagnostics-*"
       ],
       "gzip": true,
-      "limit": "42.15 KB"
+      "limit": "42.63 KB"
     },
     {
       "name": "Accordion",
@@ -235,7 +235,7 @@
         "./diagnostics-*"
       ],
       "gzip": true,
-      "limit": "37.60 KB"
+      "limit": "38.07 KB"
     },
     {
       "name": "Agent",
@@ -246,7 +246,7 @@
         "./diagnostics-*"
       ],
       "gzip": true,
-      "limit": "38.34 KB"
+      "limit": "38.80 KB"
     },
     {
       "name": "Markdown",
@@ -257,7 +257,7 @@
         "./diagnostics-*"
       ],
       "gzip": true,
-      "limit": "36.84 KB"
+      "limit": "37.30 KB"
     },
     {
       "name": "Skeleton",
@@ -268,7 +268,7 @@
         "./diagnostics-*"
       ],
       "gzip": true,
-      "limit": "36.17 KB"
+      "limit": "36.64 KB"
     },
     {
       "name": "Tabs",
@@ -279,7 +279,7 @@
         "./diagnostics-*"
       ],
       "gzip": true,
-      "limit": "38.80 KB"
+      "limit": "39.26 KB"
     },
     {
       "name": "Slider",
@@ -290,7 +290,7 @@
         "./diagnostics-*"
       ],
       "gzip": true,
-      "limit": "37.95 KB"
+      "limit": "38.42 KB"
     },
     {
       "name": "Progress",
@@ -301,7 +301,7 @@
         "./diagnostics-*"
       ],
       "gzip": true,
-      "limit": "36.15 KB"
+      "limit": "36.62 KB"
     },
     {
       "name": "Toaster",
@@ -312,7 +312,7 @@
         "./diagnostics-*"
       ],
       "gzip": true,
-      "limit": "39.62 KB"
+      "limit": "40.08 KB"
     },
     {
       "name": "Combobox",
@@ -323,7 +323,7 @@
         "./diagnostics-*"
       ],
       "gzip": true,
-      "limit": "45.41 KB"
+      "limit": "45.88 KB"
     },
     {
       "name": "Dashboard",
@@ -334,7 +334,7 @@
         "./diagnostics-*"
       ],
       "gzip": true,
-      "limit": "41.80 KB"
+      "limit": "42.27 KB"
     },
     {
       "name": "DataGrid",
@@ -345,7 +345,7 @@
         "./diagnostics-*"
       ],
       "gzip": true,
-      "limit": "83.18 KB"
+      "limit": "87.02 KB"
     },
     {
       "name": "DataGrid export, the chunk fetched on the first press",
@@ -367,7 +367,7 @@
         "./diagnostics-*"
       ],
       "gzip": true,
-      "limit": "114.74 KB"
+      "limit": "118.64 KB"
     }
   ],
   "repository": {

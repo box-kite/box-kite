@@ -186,8 +186,11 @@ export default function DataGridHeaderCellResizer<TRow>(props: Props<TRow>) {
       height="fit"
       ai="center"
       position="absolute"
-      insetEnd={column.pin === 'END' ? undefined : 0}
-      insetStart={column.pin !== 'END' ? undefined : 0}
+      // Across the boundary, so the line is the cell's last pixel and a hover pill on either side of it can
+      // keep the same distance; above the neighbour, whose half of the handle it would otherwise take.
+      insetEnd={column.pin === 'END' ? undefined : -0.75}
+      insetStart={column.pin !== 'END' ? undefined : -0.75}
+      zIndex={1}
       py={3}
     >
       <Box
@@ -211,7 +214,7 @@ export default function DataGridHeaderCellResizer<TRow>(props: Props<TRow>) {
             'aria-valuenow': headerCell.width,
             'aria-valuemin': headerCell.minWidth,
             'aria-valuemax': headerCell.maxWidth,
-            'aria-valuetext': `${headerCell.width} pixels`,
+            'aria-valuetext': column.grid.localeText.columnWidth(headerCell.width),
             tabIndex: -1,
             onKeyDown: resizeByKey,
             // Where a key gesture ends, and so where the widths reach React and `aria-valuenow`

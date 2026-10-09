@@ -1,7 +1,7 @@
 import { BoxProps } from '../../../box';
 import { clearSelection } from '../../../utils/dom/domUtils';
 import Flex from '../../flex';
-import { useGridNavigationContext } from '../gridNavigationContext';
+import { useGridCellProps, useGridNavigationContext } from '../gridNavigationContext';
 import AggregateCellModel from '../models/aggregateCellModel';
 import CellModel from '../models/cellModel';
 import GroupRowCellModel from '../models/groupRowCellModel';
@@ -24,7 +24,7 @@ export default function DataGridCell<TRow>(props: Props<TRow>) {
   const { children, cell, row, columnIndex, ariaColIndex, ariaColSpan, style, ...restProps } = props;
   const { column } = cell;
   const navigation = useGridNavigationContext();
-  const { ref, tabIndex, onFocus } = navigation?.cellProps(row, columnIndex) ?? {};
+  const { ref, tabIndex, onFocus } = useGridCellProps(navigation, row, columnIndex);
   const { range } = column.grid;
 
   // The range's own coordinates: a body row, and a column ordinal that is a column index because a data

@@ -159,3 +159,5 @@ export default DataGrid;
 export type * from './dataGrid/contracts/dataGridContract';
 export type { default as AggregateCellModel } from './dataGrid/models/aggregateCellModel';
 export type { default as CellModel } from './dataGrid/models/cellModel';
+// The grid's own words, in English: the base a translation spreads over (`def.localeText`).
+export { DATA_GRID_LOCALE_TEXT, type DataGridLocaleText } from './dataGrid/models/localeText';

@@ -187,10 +187,10 @@ export default class ExportModel<TRow> {
     };
   }
 
-  /** The file's name, without an extension: what was asked for, else the grid's title, else `export`. */
+  /** The file's name, without an extension: what was asked for, else the grid's title, else `localeText.exportFileName`. */
   public fileName(options: DataGridExportOptions = {}): string {
     const { title } = this.grid.props.def;
-    const fallback = typeof title === 'string' && title.trim() ? title.trim() : 'export';
+    const fallback = typeof title === 'string' && title.trim() ? title.trim() : this.grid.localeText.exportFileName;
 
     return options.fileName?.trim() || fallback;
   }

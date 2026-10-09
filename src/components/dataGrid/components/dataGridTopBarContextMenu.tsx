@@ -27,11 +27,11 @@ export default function DataGridTopBarContextMenu<TRow>(props: Props<TRow>) {
       value={selectedIds}
       onChange={handleChange}
       isSearchable={entries.length > 6}
-      searchPlaceholder="Search columns..."
+      searchPlaceholder={grid.localeText.columnsMenuSearchPlaceholder}
       display="inline-flex"
       // A combobox is never named by what it contains, and this one contains an icon: without a
       // name it announces as nothing at all, which is bug #50's half that A5 and A6 left behind.
-      props={{ 'aria-label': 'Columns' }}
+      props={{ 'aria-label': grid.localeText.columnsMenu }}
     >
       <Dropdown.Display<string>>
         {(selected) => {
@@ -72,8 +72,8 @@ export default function DataGridTopBarContextMenu<TRow>(props: Props<TRow>) {
         }}
       </Dropdown.Display>
 
-      <Dropdown.SelectAll>Show All</Dropdown.SelectAll>
-      <Dropdown.Unselect>Hide All</Dropdown.Unselect>
+      <Dropdown.SelectAll>{grid.localeText.columnsMenuShowAll}</Dropdown.SelectAll>
+      <Dropdown.Unselect>{grid.localeText.columnsMenuHideAll}</Dropdown.Unselect>
 
       {entries.map((entry) => (
         <Dropdown.Item<string> key={entry.id} value={entry.id} textWrap="nowrap">

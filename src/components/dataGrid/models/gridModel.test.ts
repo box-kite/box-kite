@@ -283,6 +283,113 @@ describe('GridModel', () => {
     });
   });
 
+  suite('versions the memoized parts compare', () => {
+    it('moves only the selected row, and the header, on a selection', () => {
+      const grid = getGridModel({
+        gridDef: { rowSelection: true, columns: [{ key: 'firstName' }] },
+        data: [{ firstName: 'a' }, { firstName: 'b' }],
+      });
+      const [first, second] = grid.flatRows.value;
+      const before = [grid.rowVersion(first, 0), grid.rowVersion(second, 1), grid.headerVersion];
+
+      grid.toggleRowSelection(first.key);
+
+      expect(grid.rowVersion(first, 0)).not.toBe(before[0]);
+      expect(grid.rowVersion(second, 1)).toBe(before[1]);
+      expect(grid.headerVersion).not.toBe(before[2]);
+    });
+
+    it('moves everything on a prop the grid draws from, and nothing on a new handler', () => {
+      const grid = getGridModel({ gridDef: { columns: [{ key: 'firstName' }] } });
+      const before = grid.headerVersion;
+
+      grid.setProps({ ...grid.props, onSortingChange: () => {} });
+      expect(grid.headerVersion).toBe(before);
+
+      grid.setProps({ ...grid.props, def: { ...grid.props.def, title: 'People' } });
+      expect(grid.headerVersion).not.toBe(before);
+    });
+  });
+
+  suite('selection under filters', () => {
+    const people: Partial<Person>[] = [{ firstName: 'Ann' }, { firstName: 'Anna' }, { firstName: 'Bob' }, { firstName: 'Carl' }];
+
+    function filteredGrid() {
+      const grid = getGridModel({ gridDef: { rowSelection: true, globalFilter: true, columns: [{ key: 'firstName' }] }, data: people });
+      const key = (index: number) => grid.getRowKey(grid.data[index]);
+
+      return { grid, key };
+    }
+
+    it('selects and clears only the rows the filters leave on screen', () => {
+      const { grid, key } = filteredGrid();
+      grid.toggleRowsSelection([key(2)]);
+      grid.setGlobalFilter('Ann');
+
+      grid.toggleSelectAllRows();
+      expect([...grid.selectedRows]).toEqual([key(2), key(0), key(1)]);
+      expect(grid.allRowsSelected).toBe(true);
+
+      grid.toggleSelectAllRows();
+      expect([...grid.selectedRows]).toEqual([key(2)]);
+      expect(grid.someRowsSelected).toBe(false);
+    });
+
+    it('keeps a selection the filters hide, and counts it', () => {
+      const { grid, key } = filteredGrid();
+      grid.toggleRowsSelection([key(0), key(2)]);
+
+      grid.setGlobalFilter('Ann');
+
+      expect(grid.selectedRows.size).toBe(2);
+      expect(grid.hiddenSelectedCount).toBe(1);
+      expect(grid.someRowsSelected).toBe(true);
+      expect(grid.allRowsSelected).toBe(false);
+    });
+
+    it('shows the selected rows whatever the filters say, and keeps a row unticked in that view', () => {
+      const { grid, key } = filteredGrid();
+      grid.toggleRowsSelection([key(0), key(2)]);
+      grid.setGlobalFilter('Ann');
+
+      grid.toggleSelectionView();
+      expect(grid.filteredData.map((row) => row.firstName)).toEqual(['Ann', 'Bob']);
+      expect(grid.hiddenSelectedCount).toBe(0);
+
+      grid.toggleRowsSelection([key(2)]);
+      expect(grid.filteredData.map((row) => row.firstName)).toEqual(['Ann', 'Bob']);
+
+      grid.toggleSelectionView();
+      expect(grid.filteredData.map((row) => row.firstName)).toEqual(['Ann', 'Anna']);
+    });
+
+    it('gives the view up to a filter typed after it', () => {
+      const { grid, key } = filteredGrid();
+      grid.toggleRowsSelection([key(3)]);
+      grid.toggleSelectionView();
+
+      grid.setColumnFilter('firstName', { type: 'text', value: 'B' });
+
+      expect(grid.isSelectionView).toBe(false);
+      expect(grid.filteredData.map((row) => row.firstName)).toEqual(['Bob']);
+    });
+
+    it('clears every selected row, hidden ones included, as one change', () => {
+      const { grid, key } = filteredGrid();
+      const onSelectedRowKeysChange = vi.fn();
+      grid.props.onSelectedRowKeysChange = onSelectedRowKeysChange;
+      grid.toggleRowsSelection([key(0), key(2)]);
+      grid.setGlobalFilter('Ann');
+      grid.toggleSelectionView();
+
+      grid.clearSelection();
+
+      expect(grid.selectedRows.size).toBe(0);
+      expect(grid.isSelectionView).toBe(false);
+      expect(onSelectedRowKeysChange).toHaveBeenLastCalledWith([], { reason: 'clear' });
+    });
+  });
+
   suite('when sort column', () => {
     it('sets the sort column', () => {
       const grid = getGridModel();
@@ -429,6 +536,20 @@ describe('GridModel', () => {
     it('respects hidden setting', () => {
       const grid = getGridModel({ gridDef: { resizerStyle: 'hidden' } });
       expect(grid.resizerStyle).toBe('hidden');
+    });
+  });
+
+  suite('headerHover', () => {
+    it('defaults to a pill per cell', () => {
+      const grid = getGridModel();
+      expect(grid.headerHover).toBe('static');
+      expect(grid.columns.value.leafs[0].headerCell.variant.hasHoverPill).toBe(true);
+    });
+
+    it('hands the pill to the header when sliding', () => {
+      const grid = getGridModel({ gridDef: { headerHover: 'sliding' } });
+      expect(grid.headerHover).toBe('sliding');
+      expect(grid.columns.value.leafs[0].headerCell.variant.hasHoverPill).toBe(false);
     });
   });
 

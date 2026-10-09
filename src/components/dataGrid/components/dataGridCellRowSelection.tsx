@@ -22,7 +22,7 @@ export default function DataGridCellRowSelection<TRow>(props: Props<TRow>) {
       indeterminate={cell.indeterminate}
       onChange={rowSelectedHandler}
       // Reached through the cell — Space on any cell in the row toggles this, and Enter steps onto it.
-      props={{ tabIndex: -1, 'aria-label': `Select row ${cell.row.rowIndex + 1}` }}
+      props={{ tabIndex: -1, 'aria-label': cell.grid.localeText.selectRow(cell.row.rowIndex + 1) }}
     />
   );
 }

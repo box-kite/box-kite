@@ -12,14 +12,6 @@ import GridModel from './gridModel';
 import type { RangeBounds } from './rangeModel';
 import RowModel from './rowModel';
 
-/** What a rejection with no message of its own says. A silent refusal is one nobody can act on. */
-export const DEFAULT_EDIT_ERROR = 'Invalid value';
-
-/** A validator that threw is a refusal, and what it threw is the message. */
-function errorText(error: unknown): string {
-  return error instanceof Error ? error.message : DEFAULT_EDIT_ERROR;
-}
-
 /** One cell, as a map key. `JSON.stringify` because a key can hold the separator any join would use. */
 function cellId(rowKey: Key, columnKey: Key): string {
   return JSON.stringify([rowKey, columnKey]);
@@ -60,9 +52,6 @@ function seedFor(type: CellEditorType, initial: string): unknown {
 /** What a pasted field reads as on a checkbox column. A spreadsheet writes the first of each pair. */
 const TRUE_TEXT = new Set(['true', '1', 'yes']);
 const FALSE_TEXT = new Set(['false', '0', 'no', '']);
-
-/** What a pasted value is refused with when it is not the kind of value the cell holds at all. */
-export const WRONG_KIND_ERROR = 'Wrong kind of value';
 
 /**
  * The clipboard's text as the kind of value the cell already holds. A spreadsheet's clipboard carries no
@@ -112,6 +101,8 @@ interface ActiveEdit<TRow> {
   error?: string;
   /** Bumped per commit, so an async validator answering for an abandoned edit is dropped. */
   token: number;
+  /** Bumped per keystroke: a draft is any value, so this is what says it moved. */
+  drafts: number;
   pending: boolean;
 }
 
@@ -127,6 +118,14 @@ interface ActiveEdit<TRow> {
  */
 export default class EditModel<TRow> {
   constructor(public readonly grid: GridModel<TRow>) {}
+
+  /** What a rejection with no message of its own says. A silent refusal is one nobody can act on. */
+  private get invalidValue(): string {
+    return this.grid.localeText.invalidValue;
+  }
+
+  /** A validator that threw is a refusal, and what it threw is the message. */
+  private errorText = (error: unknown): string => (error instanceof Error ? error.message : this.invalidValue);
 
   /** The accepted values, keyed by cell. Cleared by `clearEdits()` and by a datasource refresh. */
   private readonly values = new Map<string, unknown>();
@@ -166,6 +165,14 @@ export default class EditModel<TRow> {
 
   public isEditing(rowKey: Key, columnKey: Key): boolean {
     return this._active?.rowKey === rowKey && this._active.columnKey === columnKey;
+  }
+
+  /** Everything about this row the editor draws: which cell is open, what is in it and what it was told. */
+  public rowDigest(rowKey: Key): string {
+    const active = this._active;
+    if (!active || active.rowKey !== rowKey) return '';
+
+    return `${String(active.columnKey)}:${active.token}:${active.drafts}:${+active.pending}:${active.error ?? ''}`;
   }
 
   /** Whether an editor is open anywhere. A Ctrl+V while one is belongs to the editor, not to the grid. */
@@ -210,6 +217,7 @@ export default class EditModel<TRow> {
       // `??`, not `||`: typing `0` on a number cell seeds a zero, and a falsy seed is still a seed.
       draft: seed ?? value,
       token: ++this._token,
+      drafts: 0,
       pending: false,
     };
     this.grid.notify();
@@ -232,8 +240,8 @@ export default class EditModel<TRow> {
     if (!this._active) return;
 
     // The message belongs to the value that was rejected, so typing is what clears it.
-    this._active = { ...this._active, draft: value, error: undefined };
-    this.grid.notify();
+    this._active = { ...this._active, draft: value, error: undefined, drafts: this._active.drafts + 1 };
+    this.grid.notifyRows();
   }
 
   /** Close the editor with nothing written. Also what an accepted commit does on its way out. */
@@ -270,7 +278,7 @@ export default class EditModel<TRow> {
       this.grid.notify();
       result.then(
         (answer) => this.settle(active.token, edit, answer),
-        (error: unknown) => this.settle(active.token, edit, errorText(error)),
+        (error: unknown) => this.settle(active.token, edit, this.errorText(error)),
       );
 
       return;
@@ -285,7 +293,7 @@ export default class EditModel<TRow> {
     if (!this._active || this._active.token !== token) return;
 
     if (typeof result === 'string' || result === false) {
-      this._active = { ...this._active, pending: false, error: typeof result === 'string' ? result : DEFAULT_EDIT_ERROR };
+      this._active = { ...this._active, pending: false, error: typeof result === 'string' ? result : this.invalidValue };
       this.grid.notify();
 
       return;
@@ -368,12 +376,12 @@ export default class EditModel<TRow> {
 
         asked.push(edit);
         // A value the cell cannot hold is refused here: `def.onCellEdit` judges values, not spellings.
-        answers.push(parsed ? judge?.(edit) : WRONG_KIND_ERROR);
+        answers.push(parsed ? judge?.(edit) : this.grid.localeText.wrongKindOfValue);
       }
     }
 
     if (answers.some((answer) => answer instanceof Promise)) {
-      void Promise.all(answers.map((answer) => Promise.resolve(answer).catch(errorText))).then((settled) =>
+      void Promise.all(answers.map((answer) => Promise.resolve(answer).catch(this.errorText))).then((settled) =>
         this.settlePaste(token, bounds, asked, settled, skipped),
       );
 
@@ -409,7 +417,7 @@ export default class EditModel<TRow> {
 
       if (typeof answer === 'string' || answer === false) {
         this.rejected.add(cellId(edit.rowKey, edit.columnKey));
-        rejected.push({ ...edit, error: typeof answer === 'string' ? answer : DEFAULT_EDIT_ERROR });
+        rejected.push({ ...edit, error: typeof answer === 'string' ? answer : this.invalidValue });
 
         return;
       }

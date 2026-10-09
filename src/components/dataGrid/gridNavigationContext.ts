@@ -1,6 +1,7 @@
-import { createContext, useContext } from 'react';
+import { createContext, useContext, useSyncExternalStore } from 'react';
 import { ChangeDetails } from '../../react/a11y/useControllableState';
 import { RovingFocusItemProps, RovingFocusReason } from '../../react/a11y/useRovingFocus';
+import ActiveCellStore from '../../utils/dataGrid/activeCellStore';
 
 /**
  * The grid's keyboard coordinates, shared with every cell. Rows are numbered as `aria-rowindex` is —
@@ -14,8 +15,10 @@ export interface GridNavigation {
   columnCount: number;
   /** How many rows sit above the body — the offset from a body row's index to its row number. */
   headerRowCount: number;
-  /** The roving tabindex and the ref for one cell, in the coordinates above. */
-  cellProps: (row: number, column: number) => RovingFocusItemProps;
+  /** The ref and the focus handler for one cell, in the coordinates above. Stable: the tabindex is `activeCell`. */
+  cellProps: (row: number, column: number) => Omit<RovingFocusItemProps, 'tabIndex'>;
+  /** Which cell holds the tab stop. Subscribed to per cell, so a move re-renders two cells rather than all of them. */
+  activeCell: ActiveCellStore;
   /**
    * Move the tab stop to a cell without a keystroke having done it — what Tab out of an editor and into
    * the next editable cell moves. `'programmatic'` rather than `'keyboard'` on purpose: a keyboard move
@@ -36,4 +39,19 @@ export default GridNavigationContext;
 /** The grid navigation a cell belongs to. */
 export function useGridNavigationContext(): GridNavigation | null {
   return useContext(GridNavigationContext);
+}
+
+const NO_SUBSCRIPTION = () => () => {};
+
+/** One cell's roving tabindex, ref and focus handler — re-rendering the cell only when its own tabindex changes. */
+export function useGridCellProps(navigation: GridNavigation | null, row: number, column: number): Partial<RovingFocusItemProps> {
+  const active = useSyncExternalStore(
+    navigation?.activeCell.subscribe ?? NO_SUBSCRIPTION,
+    () => !!navigation?.activeCell.isActive(row, column),
+    () => !!navigation?.activeCell.isActive(row, column),
+  );
+
+  if (!navigation) return {};
+
+  return { ...navigation.cellProps(row, column), tabIndex: active ? 0 : -1 };
 }

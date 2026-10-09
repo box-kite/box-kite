@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ignoreLogs } from '../../dev/tests';
 import DataGrid from './dataGrid';
@@ -122,5 +122,165 @@ describe('DataGrid interactions (component → model → re-render)', () => {
     // with it removed is not the model path; instead verify the empty-columns state wiring.
     rerender(<DataGrid data={data} def={{ ...baseDef, columns: [] }} />);
     expect(screen.getByText('No Columns Selected')).toBeTruthy();
+  });
+});
+
+describe('DataGrid filter inputs follow the filters they show', () => {
+  ignoreLogs();
+  afterEach(() => {
+    cleanup();
+    vi.useRealTimers();
+  });
+
+  const filterDef: Partial<GridDefinition<Person>> = {
+    bottomBar: true,
+    topBar: true,
+    globalFilter: true,
+    columns: [
+      { key: 'firstName', header: 'First Name', filterable: true },
+      { key: 'age', header: 'Age', filterable: { type: 'number' } },
+    ],
+  };
+
+  /** Types into an input and lets the debounce commit it. */
+  function type(input: HTMLElement, value: string) {
+    fireEvent.change(input, { target: { value } });
+    act(() => vi.advanceTimersByTime(300));
+  }
+
+  it('empties a text column filter when the footer clears the filters', () => {
+    vi.useFakeTimers();
+    renderGrid(filterDef);
+    const input = screen.getByRole('textbox', { name: 'Filter First Name' }) as HTMLInputElement;
+
+    type(input, 'Jo');
+    expect(screen.queryByText('Jane')).toBeNull();
+
+    fireEvent.click(screen.getByText('Clear filters'));
+
+    expect(screen.getByText('Jane')).toBeTruthy();
+    expect(input.value).toBe('');
+  });
+
+  it('empties a number filter and the global search the same way', () => {
+    vi.useFakeTimers();
+    renderGrid(filterDef);
+    const age = screen.getByRole('spinbutton', { name: 'Filter Age' }) as HTMLInputElement;
+    const search = screen.getByPlaceholderText('Search...') as HTMLInputElement;
+
+    type(age, '30');
+    type(search, 'j');
+    fireEvent.click(screen.getByText('Clear filters'));
+
+    expect(age.value).toBe('');
+    expect(search.value).toBe('');
+  });
+
+  it('shows a filter the owner sets through a controlled prop', () => {
+    const { rerender } = renderGrid(filterDef, { columnFilters: {} });
+    const input = screen.getByRole('textbox', { name: 'Filter First Name' }) as HTMLInputElement;
+
+    rerender(<DataGrid data={data} def={{ ...baseDef, ...filterDef }} columnFilters={{ firstName: { type: 'text', value: 'Bob' } }} />);
+
+    expect(input.value).toBe('Bob');
+  });
+
+  it('keeps a number range whole when its two halves settle at different moments', () => {
+    vi.useFakeTimers();
+    renderGrid(filterDef);
+    fireEvent.click(screen.getByRole('combobox', { name: 'Comparison for Age' }));
+    fireEvent.click(screen.getByRole('option', { name: '↔' }));
+    const from = screen.getByRole('spinbutton', { name: 'Filter Age from' }) as HTMLInputElement;
+    const to = screen.getByRole('spinbutton', { name: 'Filter Age to' }) as HTMLInputElement;
+
+    fireEvent.change(from, { target: { value: '26' } });
+    act(() => vi.advanceTimersByTime(200));
+    type(to, '40');
+
+    expect(from.value).toBe('26');
+    expect(to.value).toBe('40');
+    expect(screen.getByText('John')).toBeTruthy();
+    expect(screen.queryByText('Bob')).toBeNull();
+    expect(screen.queryByText('Jane')).toBeNull();
+  });
+});
+
+describe('DataGrid selection under filters', () => {
+  ignoreLogs();
+  afterEach(cleanup);
+
+  it('keeps what the filters hide, says so, and offers both ways out', () => {
+    const def = { ...baseDef, rowSelection: true, bottomBar: true, globalFilter: true };
+    const { rerender } = render(<DataGrid data={data} def={def} globalFilterValue="" />);
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Select row 1' }));
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Select row 3' }));
+
+    rerender(<DataGrid data={data} def={def} globalFilterValue="John" />);
+    const header = screen.getByRole('checkbox', { name: 'Select all rows' }) as HTMLInputElement;
+    expect(screen.getByText('Selected: 2 (1 hidden)')).toBeTruthy();
+    expect(header.checked).toBe(true);
+
+    const show = screen.getByRole('button', { name: 'Show selected' });
+    fireEvent.click(show);
+    expect(show.getAttribute('aria-pressed')).toBe('true');
+    expect(screen.getAllByRole('checkbox', { name: /^Select row/ })).toHaveLength(2);
+    fireEvent.click(show);
+    expect(screen.getAllByRole('checkbox', { name: /^Select row/ })).toHaveLength(1);
+
+    // The header clears the row on screen and leaves the hidden one alone.
+    fireEvent.click(header);
+    expect(screen.getByText('Selected: 1 (1 hidden)')).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Clear selection' }));
+    expect(screen.getByText('Selected: 0')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Clear selection' })).toBeNull();
+  });
+});
+
+describe('DataGrid redraws only the rows a change touched (bug #237)', () => {
+  ignoreLogs();
+  afterEach(cleanup);
+
+  /** Counts renders per row through a `Cell` of its own — which is how a consumer's cell would see it. */
+  function renderProbed(def?: Partial<GridDefinition<Person>>) {
+    const renders = new Map<number, number>();
+    const Probe = ({ cell }: { cell: { row: { data: Person } } }) => {
+      const { id, firstName } = cell.row.data;
+      renders.set(id, (renders.get(id) ?? 0) + 1);
+      return <>{firstName}</>;
+    };
+    const columns = [{ key: 'firstName' as const, header: 'First Name', Cell: Probe as never }, baseDef.columns[1]];
+    render(<DataGrid data={data} def={{ ...baseDef, rowSelection: true, ...def, columns }} />);
+    const counts = () => [1, 2, 3].map((id) => renders.get(id) ?? 0);
+
+    return { counts };
+  }
+
+  it('selecting a row redraws that row and leaves the others alone', () => {
+    const { counts } = renderProbed();
+    const before = counts();
+
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Select row 2' }));
+
+    expect(counts()).toEqual([before[0], before[1] + 1, before[2]]);
+  });
+
+  it('a press moving the current cell redraws the row it lands on, not the window', () => {
+    const { counts } = renderProbed();
+    const before = counts();
+
+    fireEvent.focus(screen.getByText('Bob').closest('[role="gridcell"]')!);
+
+    expect(counts()[0]).toBe(before[0]);
+    expect(counts()[1]).toBe(before[1]);
+  });
+
+  it('a sort redraws every row', () => {
+    const { counts } = renderProbed();
+    const before = counts();
+
+    fireEvent.click(screen.getByText('First Name'));
+
+    counts().forEach((count, index) => expect(count).toBeGreaterThan(before[index]));
   });
 });

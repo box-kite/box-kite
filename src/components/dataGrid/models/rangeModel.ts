@@ -166,6 +166,15 @@ export default class RangeModel<TRow> {
     return row >= bounds.startRow && row <= bounds.endRow && column >= bounds.startColumn && column <= bounds.endColumn;
   }
 
+  /** Everything about this body row the range draws: the current column, the block's columns, and a drag. */
+  public rowDigest(row: number): string {
+    const current = this._focus?.row === row ? this._focus.column : -1;
+    const bounds = this.hasSelection ? this.bounds : undefined;
+    const span = bounds && row >= bounds.startRow && row <= bounds.endRow ? `${bounds.startColumn}-${bounds.endColumn}` : '';
+
+    return `${current}:${span}:${+this._dragging}`;
+  }
+
   // ========== Moving ==========
 
   /**
@@ -180,7 +189,7 @@ export default class RangeModel<TRow> {
 
     this._anchor = anchor;
     this._focus = focus;
-    this.grid.notify();
+    this.grid.notifyRows();
     this.emit(extend ? 'extend' : 'select');
   }
 
@@ -202,7 +211,7 @@ export default class RangeModel<TRow> {
     this._anchor = undefined;
     this._focus = undefined;
     this._dragging = false;
-    this.grid.notify();
+    this.grid.notifyRows();
     this.emit('clear');
   }
 
@@ -230,7 +239,7 @@ export default class RangeModel<TRow> {
     if (!this._dragging) return;
 
     this._dragging = false;
-    this.grid.notify();
+    this.grid.notifyRows();
   };
 
   // ========== What is in it ==========

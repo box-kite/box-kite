@@ -4,6 +4,7 @@ import { ComponentsAndVariants } from '../../../types';
 import type { SortDirection } from '../../../utils/array/arrayUtils';
 import AggregateCellModel from '../models/aggregateCellModel';
 import CellModel from '../models/cellModel';
+import type { DataGridLocaleText } from '../models/localeText';
 
 export type { SortDirection };
 export type Key = string | number;
@@ -644,10 +645,22 @@ export interface GridDefinition<TRow> {
   resizerStyle?: 'visible' | 'hover' | 'hidden';
   /** How the column follows the pointer during a resize drag. 'smooth' (default): updates batched once per animation frame (~60fps, ~1 frame behind the cursor). 'instant': updates synchronously on every pointer move so the column tracks the cursor with no added latency. */
   resizeMode?: 'smooth' | 'instant';
+  /**
+   * How a sortable header cell answers the pointer. `'static'` (default): each cell paints its own inset
+   * pill. `'sliding'`: one pill for the whole header that flows from cell to cell, leading with the edge it
+   * moves towards — measured, so it needs JavaScript, and reduced motion makes it jump instead.
+   */
+  headerHover?: 'static' | 'sliding';
   /** Control the header context menu for all columns. false hides it entirely. Object controls individual sections. Default: true. Individual column settings take priority. */
   contextMenu?: boolean | ContextMenuConfig;
   /** Custom component to render when data is empty */
   noDataComponent?: React.ReactNode;
+  /**
+   * Every word the grid writes itself — labels, accessible names, announcements, messages — for a
+   * translation or a house style. Any subset: what is left out stays English (`DATA_GRID_LOCALE_TEXT`).
+   * A value with something in it is a function, so a language can put the words in its own order.
+   */
+  localeText?: Partial<DataGridLocaleText>;
   /**
    * A row of grand totals pinned under the rows, over every column carrying an `aggregate`. It covers the
    * rows the grid holds after filtering — which is the page, not the table, when the server is paginating.
