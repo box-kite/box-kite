@@ -70,6 +70,13 @@ export const siteRoutes = [
       'What changed in each version of Box Kite, written as it landed: new props and components, breaking changes with their migration notes, and fixes.',
   },
   {
+    path: '/blog',
+    name: 'Blog',
+    title: 'Blog — building with Box Kite',
+    description:
+      'Articles on building with Box Kite: step-by-step guides for a first web page, and real problems experienced React developers hit, solved.',
+  },
+  {
     path: '/theme-setup',
     name: 'Theme Setup',
     description: 'Declare light and dark variants next to the styles they override, and switch them at runtime with Box.Theme.',

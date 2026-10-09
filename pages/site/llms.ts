@@ -1,4 +1,5 @@
 import { markdownPath } from './pageMarkdown';
+import { POSTS_PATH } from './posts';
 import { RELEASES_PATH } from './releases';
 import { SITE_NAME, SITE_URL, SiteRoute } from './site';
 
@@ -31,6 +32,7 @@ export interface LlmsInput {
 }
 
 const isRelease = (route: SiteRoute) => route.path.startsWith(`${RELEASES_PATH}/`);
+const isPost = (route: SiteRoute) => route.path.startsWith(`${POSTS_PATH}/`);
 
 const link = (route: SiteRoute, siteUrl: string) => `- [${route.name}](${siteUrl}${markdownPath(route.path)}): ${route.description}`;
 
@@ -40,8 +42,9 @@ const link = (route: SiteRoute, siteUrl: string) => `- [${route.name}](${siteUrl
  * model's memory of a library with these prop names does not.
  */
 export function buildLlmsTxt({ packageName, version, routes, facts, deprecated, siteUrl = SITE_URL }: LlmsInput): string {
-  const pages = routes.filter((route) => !isRelease(route));
+  const pages = routes.filter((route) => !isRelease(route) && !isPost(route));
   const releases = routes.filter(isRelease);
+  const posts = routes.filter(isPost);
   const summary = pages[0]?.description ?? '';
 
   const sections = [
@@ -58,6 +61,7 @@ export function buildLlmsTxt({ packageName, version, routes, facts, deprecated, 
     deprecated.map(({ name, instead }) => `- \`${name}\` — ${instead}`).join('\n'),
     '## Docs',
     pages.map((route) => link(route, siteUrl)).join('\n'),
+    ...(posts.length ? ['## Articles', posts.map((route) => link(route, siteUrl)).join('\n')] : []),
     '## Reference',
     [
       `- [Every prop](${siteUrl}/props.md): all of them, the CSS each writes, and one example measured from the engine` +

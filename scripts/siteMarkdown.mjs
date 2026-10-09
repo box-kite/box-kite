@@ -35,13 +35,13 @@ export function siteMarkdown(entry) {
   }
 
   /**
-   * One page's file. A release page is rendered *from* `releases/<version>.md`, so its mirror is that
-   * file rather than a round trip back out of the HTML.
+   * One page's file. A release or an article is rendered *from* `releases/<version>.md` or `posts/<slug>.md`,
+   * so its mirror is that file rather than a round trip back out of the HTML.
    */
   function pageFrom(route, html) {
-    const release = entry.releases.find((entry) => entry.path === route.path);
+    const written = [...entry.releases, ...entry.posts].find((entry) => entry.path === route.path);
 
-    return entry.pageMarkdown({ route, body: release ? release.markdown : convert(html), version });
+    return entry.pageMarkdown({ route, body: written ? written.markdown : convert(html), version });
   }
 
   const page = async (route) => pageFrom(route, (await entry.renderRoute(route.path)).html);

@@ -7,7 +7,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import ts from 'typescript';
-import { collectDocsSnippets } from './docsSnippets.mjs';
+import { collectDocsSnippets, collectPostSnippets } from './docsSnippets.mjs';
 import { importStatement, SNIPPET_SCOPE } from './snippetScope.mjs';
 
 const root = join(import.meta.dirname, '..');
@@ -51,7 +51,7 @@ const NEEDS_FRAGMENT = 2657;
  * dead "Open in playground" link.
  */
 function collectSnippets() {
-  return collectDocsSnippets(root).map((snippet) => {
+  return [...collectDocsSnippets(root), ...collectPostSnippets(root)].map((snippet) => {
     const { path, line, codeLine, language, hasCode, code, check, context } = snippet;
 
     if (NOT_TYPESCRIPT.has(language)) return { path, line, skipped: language };
@@ -198,7 +198,7 @@ if (failures.length) {
     console.error(`    ${failure.source}\n`);
   }
 
-  console.error('Fix the snippet, or mark the block check={false} if it is deliberately not compilable code.\n');
+  console.error('Fix the snippet, or mark the block check={false} (```tsx nocheck in a post) if it is deliberately not compilable code.\n');
   process.exit(1);
 }
 

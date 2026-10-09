@@ -6,7 +6,7 @@ import { getStyles, getStyleTag, resetStyles } from '../src/ssg';
 import AfterHydration from './app/afterHydration';
 import Root from './app/root';
 import { preloadPage } from './app/routePages';
-import { releases, routes } from './site/routes';
+import { posts, releases, routes } from './site/routes';
 import './extends';
 
 /**
@@ -24,7 +24,7 @@ export const NOT_FOUND_PATH = '/404';
 
 export const prerenderPaths = routes.map((route) => route.path);
 
-export { releases, routes };
+export { posts, releases, routes };
 // The markdown mirror is written from the same render, so its builders come through this entry too:
 // `scripts/prerender-pages.mjs` is a plain script and these are TypeScript.
 export { elementMarkdown, markdownPath, pageMarkdown } from './site/pageMarkdown';

@@ -39,6 +39,10 @@ Purpose: help AI contributors extend the docs/demo site under `pages/**`.
   sitemap) — both through `parseReleases`/`releaseRoutes` in [pages/site/releases.ts](pages/site/releases.ts).
   `/releases` itself is an ordinary table entry. The markdown is rendered by
   [pages/components/markdown.tsx](pages/components/markdown.tsx) with Box components, code blocks through `Code`.
+- The blog works the same way: `posts/<slug>.md` becomes `/blog/<slug>` through `parsePosts`/`postRoutes` in
+  [pages/site/posts.ts](pages/site/posts.ts), with a `date · level` meta line under the H1. The site is the canonical copy of
+  every article; [pages/site/posts.test.ts](pages/site/posts.test.ts) holds the rules (no exact counts, absolute links to pages
+  that exist, no competitor named), `npm run check:docs` compiles each ` ```tsx ` block, and `/article` writes the next one.
 - Pages live in [pages/pages/](pages/pages/); sidebar nav and grouping are hand-written in
   [pages/app/sidebar.tsx](pages/app/sidebar.tsx).
 - Common page components: [pages/components/pageHeader.tsx](pages/components/pageHeader.tsx), [pages/components/code.tsx](pages/components/code.tsx).
@@ -165,8 +169,8 @@ worse than no mirror, because it is the one an agent trusts. Three consequences 
 - **What the page renders is what the mirror gets.** A page whose content is behind client state
   mirrors the server's view of it — `/box` shows the spacing category, because that is what its HTML
   has. The trailer on every file points at `/props.md` for what a page cannot show.
-- **A release page is not converted at all.** It is rendered _from_ `releases/<version>.md`, so its
-  mirror is that file: a round trip back out of HTML could only lose.
+- **A release page or an article is not converted at all.** It is rendered _from_ `releases/<version>.md` or
+  `posts/<slug>.md`, so its mirror is that file: a round trip back out of HTML could only lose.
 
 Where the markup alone does not say what the markdown should be, the component says so with a
 `data-md` hint — the vocabulary is `MarkdownHint`, and there are three:

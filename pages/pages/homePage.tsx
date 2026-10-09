@@ -12,6 +12,7 @@ import Mono from '../components/mono';
 import Reveal from '../components/reveal';
 import SiteLink from '../components/siteLink';
 import { Cell, HeadCell, Table, TableBody, TableHead, TableRow } from '../components/table';
+import { FIRST_POST } from '../site/posts';
 import { agentTools, APG_PATTERNS, completions, installs, patternRows, Pillar, pillars, shipped, totals, typeProof } from './home';
 import SiGithub from '~icons/simple-icons/github';
 
@@ -739,6 +740,18 @@ export default function App() {
   );
 }`}
           />
+          <P fontSize={15} textAlign="center" theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
+            New to web development? Build a whole page step by step in{' '}
+            <SiteLink
+              to={FIRST_POST}
+              display="inline"
+              textDecoration="underline"
+              theme={{ dark: { color: 'violet-400' }, light: { color: 'violet-600' } }}
+            >
+              Your first web page with Box Kite
+            </SiteLink>
+            .
+          </P>
         </Flex>
       </Box>
     </Reveal>

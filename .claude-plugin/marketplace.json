@@ -25,7 +25,13 @@
         "react-server-components",
         "rsc",
         "accessibility",
-        "typescript"
+        "typescript",
+        "components",
+        "ui-components",
+        "ai",
+        "mcp",
+        "agents",
+        "generative-ui"
       ],
       "category": "development",
       "skills": ["./.claude/skills/box-kite"],

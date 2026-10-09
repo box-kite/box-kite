@@ -27,6 +27,7 @@ import {
   MessageSquare,
   Moon,
   MousePointer2,
+  Newspaper,
   Package as PackageIcon,
   Paintbrush,
   Palette,
@@ -220,6 +221,9 @@ export default function Sidebar({ toggleTheme, onClose, onSearch }: SidebarProps
           </MenuItem>
           <MenuItem to="/releases" icon={<Rocket />}>
             Releases
+          </MenuItem>
+          <MenuItem to="/blog" icon={<Newspaper />}>
+            Blog
           </MenuItem>
           <MenuItem to="/theme-setup" icon={<Paintbrush />}>
             Theme Setup

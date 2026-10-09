@@ -1,4 +1,4 @@
-import { readFileSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
 import { resolve } from 'path';
 import { describe, expect, it } from 'vitest';
 import { SITE_URL, siteRoutes } from './site';
@@ -14,6 +14,7 @@ import {
   notFoundMeta,
   pageMeta,
   routeFor,
+  SOCIAL_IMAGE,
   withHeadHtml,
 } from './siteMeta';
 
@@ -122,6 +123,14 @@ describe('buildHeadHtml', () => {
     expect(head).toContain(`<link rel="canonical" href="${SITE_URL}/" />`);
     expect(head).toContain(`<meta property="og:url" content="${SITE_URL}/" />`);
     expect(head).not.toContain('robots');
+  });
+
+  it('gives every shared link a large card, and points it at an image that ships with the site', () => {
+    const head = buildHeadHtml(pageMeta(siteRoutes[0]));
+
+    expect(head).toContain(`<meta property="og:image" content="${SITE_URL}/og.png" />`);
+    expect(head).toContain('<meta name="twitter:card" content="summary_large_image" />');
+    expect(existsSync(resolve(process.cwd(), 'pages/public', SOCIAL_IMAGE.path.slice(1)))).toBe(true);
   });
 
   it('marks an unlisted route noindex, and leaves the not-found shell without a canonical', () => {
