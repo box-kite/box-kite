@@ -328,7 +328,8 @@ describe('Theme', () => {
       );
     }
 
-    it.each(['global', 'local'] as const)('are paused for the commit that changes the theme, use="%s"', (use) => {
+    it.each(['global', 'local'] as const)('are paused for the commit that changes the theme, use="%s"', async (use) => {
+      await vi.waitFor(() => expect(paused()).toBe(0));
       const seen: string[] = [];
       render(
         <Theme theme="light" use={use}>
@@ -339,10 +340,11 @@ describe('Theme', () => {
       act(() => document.getElementById(testId)?.click());
 
       expect(seen).toEqual(['light:0', 'dark:1']);
-      expect(paused()).toBe(0);
+      await vi.waitFor(() => expect(paused()).toBe(0));
     });
 
-    it('are paused when the system preference flips the theme', () => {
+    it('are paused when the system preference flips the theme', async () => {
+      await vi.waitFor(() => expect(paused()).toBe(0));
       const seen: string[] = [];
       render(
         <Theme use="global">
@@ -353,7 +355,7 @@ describe('Theme', () => {
       act(() => matchMediaListeners.forEach((listener) => listener({ matches: true } as MediaQueryListEvent)));
 
       expect(seen.at(-1)).toBe('dark:1');
-      expect(paused()).toBe(0);
+      await vi.waitFor(() => expect(paused()).toBe(0));
     });
   });
 
@@ -1041,6 +1043,37 @@ describe('Theme', () => {
       expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
     });
 
+    it('keeps transitions paused until the view transition has finished (bug #244)', async () => {
+      const paused = () =>
+        [...document.head.querySelectorAll('style')].filter((style) =>
+          /transition:\s*none\s*!important/.test(style.sheet?.cssRules[0]?.cssText ?? ''),
+        ).length;
+      await vi.waitFor(() => expect(paused()).toBe(0));
+      let finish = () => {};
+      const finished = new Promise<void>((resolve) => (finish = resolve));
+      (document as unknown as Doc).startViewTransition = (update: () => void) => {
+        // The browser runs the update after it has captured the old state, never inside the call.
+        queueMicrotask(update);
+
+        return { ready: finished, finished, updateCallbackDone: Promise.resolve(), skipTransition: vi.fn() };
+      };
+
+      render(
+        <Theme theme="light" use="global" viewTransition>
+          <Toggle />
+        </Theme>,
+      );
+      await act(async () => document.getElementById(testId)?.click());
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
+      expect(paused()).toBe(1);
+
+      finish();
+
+      await vi.waitFor(() => expect(paused()).toBe(0));
+    });
+
     it('reveals from the press that changed the theme', async () => {
       let finish = () => {};
       const finished = new Promise<void>((resolve) => (finish = resolve));
@@ -1071,7 +1104,7 @@ describe('Theme', () => {
       });
 
       expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
-      expect(animate.mock.calls[0][0].clipPath[0]).toBe('circle(0px at 40px 60px)');
+      expect(animate.mock.calls[1][0].clipPath[0]).toBe('circle(0px at 40px 60px)');
     });
 
     it('changes theme without a transition when the prop is off', () => {

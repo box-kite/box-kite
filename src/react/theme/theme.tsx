@@ -64,7 +64,9 @@ function Theme(props: ThemeProps) {
   // already themed through `class="dark light"`, a full-page recalc (bug #204).
   const resolvingRef = useRef<string | null>(null);
   const committedRef = useRef(themeName);
-  const resumeTransitionsRef = useRef<(() => void) | null>(null);
+  const resumeTransitionsRef = useRef<((after?: PromiseLike<unknown>) => void) | null>(null);
+  // The running view transition: transitions stay paused until it is over, so their resumption costs it no frame.
+  const transitionRef = useRef<PromiseLike<unknown> | undefined>(undefined);
 
   const handleSetTheme = useCallback(
     (value: string | null) => {
@@ -81,8 +83,14 @@ function Theme(props: ThemeProps) {
 
       // `flushSync` is the whole point of the prop: the transition screenshots the page when this callback
       // returns, so an unflushed `setState` is captured as the theme that was already there.
-      if (viewTransition) transitionTheme(() => flushSync(apply), viewTransition === 'reveal' ? 'reveal' : 'fade');
-      else apply();
+      if (viewTransition) {
+        const handle = transitionTheme(() => flushSync(apply), viewTransition === 'reveal' ? 'reveal' : 'fade');
+        transitionRef.current = handle.finished;
+        handle.finished.then(
+          () => (transitionRef.current = undefined),
+          () => (transitionRef.current = undefined),
+        );
+      } else apply();
     },
     [storageKey, viewTransition],
   );
@@ -139,7 +147,7 @@ function Theme(props: ThemeProps) {
     resumeTransitionsRef.current = null;
     const root = use === 'global' ? documentRoot() : null;
     const removeTheme = root ? applyThemeToElement(root, themeName) : undefined;
-    resumeTransitions?.();
+    resumeTransitions?.(transitionRef.current);
 
     return removeTheme;
   }, [themeName, use]);

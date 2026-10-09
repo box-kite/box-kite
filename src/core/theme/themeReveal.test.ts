@@ -18,8 +18,13 @@ function stubViewTransition() {
   return { start, settle: async () => (settle(), await done) };
 }
 
-// happy-dom cannot parse the view-transition pseudo-elements, so the sheet is counted rather than read.
-const revealSheets = () => document.head.querySelectorAll('style:not([id])').length;
+/** `element.animate` on the root, which happy-dom does not have. */
+function spyOnAnimate() {
+  const animate = vi.fn((_keyframes: Record<string, unknown[]>, _options: { pseudoElement?: string }) => undefined);
+  document.documentElement.animate = animate as unknown as Element['animate'];
+
+  return animate;
+}
 
 describe('themeReveal', () => {
   afterEach(() => {
@@ -52,31 +57,41 @@ describe('themeReveal', () => {
     button.remove();
   });
 
-  it('reveals with the cross-fade off for that transition only', async () => {
+  it('holds both screenshots over the browser cross-fade and grows the new one from the press', async () => {
     const transition = stubViewTransition();
-    const animate = vi.fn();
-    document.documentElement.animate = animate;
+    const animate = spyOnAnimate();
+
+    reveal(vi.fn());
+    await transition.settle();
+
+    const pseudoElements = animate.mock.calls.map(([, options]) => options.pseudoElement);
+    expect(pseudoElements).toEqual(['::view-transition-old(root)', '::view-transition-new(root)']);
+    expect(animate.mock.calls[0][0]).toEqual({ opacity: [1, 1], mixBlendMode: ['normal', 'normal'] });
+    expect(animate.mock.calls[1][0].clipPath).toEqual([
+      expect.stringMatching(/^circle\(0px at /),
+      expect.stringMatching(/^circle\(\d+px at /),
+    ]);
+  });
+
+  it('writes no stylesheet, which would restyle the whole page on the press (bug #244)', async () => {
+    const transition = stubViewTransition();
+    spyOnAnimate();
+    const sheets = document.head.querySelectorAll('style').length;
 
     reveal(vi.fn());
 
-    expect(revealSheets()).toBe(1);
-
+    expect(document.head.querySelectorAll('style').length).toBe(sheets);
     await transition.settle();
-
-    expect(animate).toHaveBeenCalledWith(
-      { clipPath: [expect.stringMatching(/^circle\(0px at /), expect.stringMatching(/^circle\(\d+px at /)] },
-      expect.objectContaining({ pseudoElement: '::view-transition-new(root)' }),
-    );
-    expect(revealSheets()).toBe(0);
   });
 
-  it('still applies the change where there are no view transitions, and leaves nothing behind', () => {
+  it('still applies the change where there are no view transitions', () => {
     const update = vi.fn();
+    const animate = spyOnAnimate();
 
     reveal(update);
 
     expect(update).toHaveBeenCalledOnce();
-    expect(revealSheets()).toBe(0);
+    expect(animate).not.toHaveBeenCalled();
   });
 });
 
@@ -86,31 +101,34 @@ describe('themeTransition', () => {
   });
 
   it('cross-fades until the reveal has been fetched, and reveals after', async () => {
-    const transition = stubViewTransition();
+    let transition = stubViewTransition();
+    const animate = spyOnAnimate();
 
     transitionTheme(vi.fn(), 'reveal');
+    await transition.settle();
 
-    expect(revealSheets()).toBe(0);
+    expect(animate).not.toHaveBeenCalled();
 
     const stop = prepareReveal();
     await vi.dynamicImportSettled();
+    transition = stubViewTransition();
     transitionTheme(vi.fn(), 'reveal');
-
-    expect(revealSheets()).toBe(1);
-
     await transition.settle();
+
+    expect(animate).toHaveBeenCalled();
     stop();
   });
 
   it('never reveals a fade', async () => {
     const transition = stubViewTransition();
+    const animate = spyOnAnimate();
     const stop = prepareReveal();
     await vi.dynamicImportSettled();
 
     transitionTheme(vi.fn(), 'fade');
-
-    expect(revealSheets()).toBe(0);
     await transition.settle();
+
+    expect(animate).not.toHaveBeenCalled();
     stop();
   });
 });

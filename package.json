@@ -117,7 +117,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "37.02 KB"
+      "limit": "37.07 KB"
     },
     {
       "name": "Box in a Server Component (react-server entry)",
@@ -195,7 +195,7 @@
       "name": "Core engine (@box-kite/core, no React)",
       "path": "dist-core/core.mjs",
       "gzip": true,
-      "limit": "36.42 KB",
+      "limit": "36.44 KB",
       "ignore": [
         "./diagnostics-*",
         "./themeReveal-*"
@@ -211,7 +211,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "39.09 KB"
+      "limit": "39.15 KB"
     },
     {
       "name": "Popover",
@@ -223,7 +223,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "40.60 KB"
+      "limit": "40.67 KB"
     },
     {
       "name": "Menu",
@@ -235,7 +235,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "42.85 KB"
+      "limit": "42.93 KB"
     },
     {
       "name": "Accordion",
@@ -247,7 +247,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "38.36 KB"
+      "limit": "38.42 KB"
     },
     {
       "name": "Agent",
@@ -259,7 +259,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "39.10 KB"
+      "limit": "39.16 KB"
     },
     {
       "name": "Markdown",
@@ -271,7 +271,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "37.57 KB"
+      "limit": "37.63 KB"
     },
     {
       "name": "Skeleton",
@@ -283,7 +283,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "36.91 KB"
+      "limit": "36.97 KB"
     },
     {
       "name": "Tabs",
@@ -295,7 +295,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "39.53 KB"
+      "limit": "39.59 KB"
     },
     {
       "name": "Slider",
@@ -307,7 +307,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "38.70 KB"
+      "limit": "38.75 KB"
     },
     {
       "name": "Progress",
@@ -319,7 +319,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "36.89 KB"
+      "limit": "36.95 KB"
     },
     {
       "name": "Toaster",
@@ -331,7 +331,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "40.32 KB"
+      "limit": "40.38 KB"
     },
     {
       "name": "Combobox",
@@ -343,7 +343,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "46.11 KB"
+      "limit": "46.19 KB"
     },
     {
       "name": "Dashboard",
@@ -355,7 +355,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "42.53 KB"
+      "limit": "42.60 KB"
     },
     {
       "name": "DataGrid",
@@ -367,7 +367,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "87.26 KB"
+      "limit": "87.34 KB"
     },
     {
       "name": "DataGrid export, the chunk fetched on the first press",
@@ -391,7 +391,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "118.89 KB"
+      "limit": "118.95 KB"
     }
   ],
   "repository": {

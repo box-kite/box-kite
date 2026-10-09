@@ -757,7 +757,7 @@ interface ViewTransitionHandle {
   callback returns, and a `setState` has not rendered by then — so a hand-rolled version captures the old
   state twice and nothing appears to move. `flushSync` inside the callback is the fix, and
   `<Box.Theme viewTransition>` is it already done for the one change every app has. A theme change also
-  pauses every CSS transition for the commit that makes it — `color` is inherited and every Box transitions
+  pauses every CSS transition until the new theme has painted (and the view transition has finished) — `color` is inherited and every Box transitions
   `all`, so each element would start one of its own — which leaves the view transition as the only animation.
 - **A name has to be unique in the document while the transition runs.** Two elements sharing one is how a
   transition silently does nothing. The prop is for the handful of names a layout has (`header`, `main`);

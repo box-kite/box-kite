@@ -65,10 +65,10 @@ export function applyThemeToElement(element: Element, themeName: string): () => 
 /**
  * Switch every CSS transition on the page off until the returned function runs. A theme flip changes
  * `color` and `scrollbar-color`, both inherited, so with transitions on, every element on the page starts
- * one of its own and each frame restyles the lot (bug #243). Resuming flushes the styles first, so the
- * values computed in between have nothing to transition from.
+ * one of its own and each frame restyles the lot (bug #243). Resuming waits for `after` (a running view
+ * transition's `finished`) and then a painted frame, since removing the sheet restyles every element again.
  */
-export function pauseTransitions(): () => void {
+export function pauseTransitions(): (after?: PromiseLike<unknown>) => void {
   const doc = documentOrNull();
   const head = documentHead();
   if (!doc || !head) return () => {};
@@ -78,9 +78,11 @@ export function pauseTransitions(): () => void {
   head.appendChild(style);
   style.sheet?.insertRule('*,*::before,*::after{transition:none!important}');
 
-  return () => {
-    void doc.defaultView?.getComputedStyle(doc.documentElement).transitionProperty;
-    style.remove();
+  return (after) => {
+    const view = doc.defaultView;
+    // Two frames: the first paints the new theme with nothing transitioning, so the removal has nothing left to start.
+    const remove = () => (view ? view.requestAnimationFrame(() => view.requestAnimationFrame(() => style.remove())) : style.remove());
+    Promise.resolve(after).then(remove, remove);
   };
 }
 

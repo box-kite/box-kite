@@ -1,4 +1,4 @@
-import { documentHead, documentOrNull } from '../../utils/environment/environmentUtils';
+import { documentOrNull } from '../../utils/environment/environmentUtils';
 import startViewTransition, { ViewTransitionHandle } from '../viewTransition';
 
 /**
@@ -57,37 +57,27 @@ export function revealRadius(origin: Point, width: number, height: number): numb
 /** Run `update` inside a view transition that reveals the new state from the press. */
 export default function reveal(update: () => void): ViewTransitionHandle {
   const doc = documentOrNull();
-  const head = documentHead();
   const origin = doc ? revealOrigin(doc) : null;
   const handle = startViewTransition(update);
-  if (!handle.transitioned || !doc || !head || !origin) return handle;
-
-  // The browser's cross-fade would run under the circle, so it is switched off for this transition only. In time,
-  // because the browser builds the pseudo-elements after the update, which it runs asynchronously.
-  const style = doc.createElement('style');
-  head.appendChild(style);
-  try {
-    style.sheet?.insertRule('::view-transition-old(root),::view-transition-new(root){animation:none;mix-blend-mode:normal}');
-  } catch {
-    // An engine that cannot parse the pseudo-elements keeps its cross-fade, under the circle.
-  }
+  if (!handle.transitioned || !doc || !origin) return handle;
 
   handle.ready.then(
     () => {
       const view = doc.defaultView;
       const radius = revealRadius(origin, view?.innerWidth ?? 0, view?.innerHeight ?? 0);
       const at = `at ${origin.x}px ${origin.y}px`;
+      // Script animations composite above CSS ones, so this holds both screenshots over the browser's cross-fade — a
+      // stylesheet switching it off would restyle the whole page on the click (bug #244).
+      const hold = { opacity: [1, 1], mixBlendMode: ['normal', 'normal'] };
+      const timing = { duration: DURATION, easing: 'cubic-bezier(0.4, 0, 0.2, 1)' };
 
+      doc.documentElement.animate(hold, { ...timing, pseudoElement: '::view-transition-old(root)' });
       doc.documentElement.animate(
-        { clipPath: [`circle(0px ${at})`, `circle(${radius}px ${at})`] },
-        { duration: DURATION, easing: 'cubic-bezier(0.4, 0, 0.2, 1)', pseudoElement: '::view-transition-new(root)' },
+        { ...hold, clipPath: [`circle(0px ${at})`, `circle(${radius}px ${at})`] },
+        { ...timing, pseudoElement: '::view-transition-new(root)' },
       );
     },
     () => {},
-  );
-  handle.finished.then(
-    () => style.remove(),
-    () => style.remove(),
   );
 
   return handle;

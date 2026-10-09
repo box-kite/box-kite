@@ -199,8 +199,8 @@ function Providers({ children }: { children: React.ReactNode }) {
 }
 
 // Every Box transitions its own colours, and color is inherited — so a theme switch would start a
-// transition on every element on the page at once. <Box.Theme> pauses them for the one commit that
-// changes the theme, which leaves the view transition as the only thing that moves.`}
+// transition on every element on the page at once. <Box.Theme> pauses them while the theme changes,
+// which leaves the view transition as the only thing that moves.`}
           />
 
           <Code
