@@ -53,6 +53,7 @@ export default function PostPage() {
           <Link
             props={{ href: `${REPO_URL}/blob/main/posts/${post.slug}.md`, target: '_blank', rel: 'noopener noreferrer' }}
             textDecoration="underline"
+            cursor="pointer"
             theme={linkTheme}
           >
             Edit this article

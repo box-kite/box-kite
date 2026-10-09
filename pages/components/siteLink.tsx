@@ -16,7 +16,8 @@ export default function SiteLink<TKey extends keyof ComponentsAndVariants = neve
   children,
   ...props
 }: { to: string; label?: string; children: ReactNode } & BoxClassNameProps<TKey>) {
-  const { className, styles } = useClassNames(props);
+  // The base reset unsets `<a>`, cursor included, so a link asks for the pointer back; a caller can still say otherwise.
+  const { className, styles } = useClassNames({ cursor: 'pointer', ...props });
   const prefetch = () => prefetchPage(to);
 
   return (

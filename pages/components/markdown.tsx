@@ -206,6 +206,7 @@ function inlineToken(token: Token): ReactNode {
           props={own ? { href } : { href, target: '_blank', rel: 'noopener noreferrer' }}
           display="inline"
           textDecoration="underline"
+          cursor="pointer"
           theme={{
             dark: { color: 'sky-400', hover: { color: 'sky-300' } },
             light: { color: 'indigo-600', hover: { color: 'indigo-500' } },

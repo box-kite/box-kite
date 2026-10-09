@@ -54,6 +54,8 @@ export default function SectionNav({ placement }: { placement: 'bar' | 'drawer' 
             whiteSpace="nowrap"
             fontWeight={active ? 600 : 500}
             textDecoration="none"
+            // The base reset unsets `<a>`, cursor included; the section you are in is not somewhere to go.
+            cursor={active ? 'default' : 'pointer'}
             transition="colors"
             theme={
               active
@@ -95,6 +97,7 @@ function External({ href, label, children }: { href: string; label: string; chil
       display="flex"
       p={2}
       borderRadius={2}
+      cursor="pointer"
       transition="colors"
       theme={muted}
     >
