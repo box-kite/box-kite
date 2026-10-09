@@ -31,7 +31,7 @@ export default class HeaderCellModel<TRow> {
         const col = ArrayUtils.findOrThrow(this.grid.columns.value.leafs, (l) => l.key === groupedKey);
         return col.header ?? col.key;
       }
-      return 'Group';
+      return this.grid.localeText.groupHeader;
     }
 
     return c.header ?? c.key;
@@ -43,8 +43,8 @@ export default class HeaderCellModel<TRow> {
    * the one thing a screen reader relies on when it reads a cell out.
    */
   public get hiddenLabel(): string | undefined {
-    if (this.column.isRowNumber) return 'Row number';
-    if (this.column.isRowDetail) return 'Row details';
+    if (this.column.isRowNumber) return this.grid.localeText.rowNumberHeader;
+    if (this.column.isRowDetail) return this.grid.localeText.rowDetailHeader;
 
     return undefined;
   }
@@ -52,6 +52,11 @@ export default class HeaderCellModel<TRow> {
   public get isSortable(): boolean {
     const c = this.column;
     return c.isLeaf && !c.isRowNumber && !c.isRowSelection && !c.isRowDetail && c.sortable;
+  }
+
+  /** Whether the cell paints its own hover pill: under `'sliding'` the header draws one for every cell. */
+  public get hasHoverPill(): boolean {
+    return this.isSortable && this.grid.headerHover === 'static';
   }
 
   public get isSorted(): boolean {
@@ -115,7 +120,7 @@ export default class HeaderCellModel<TRow> {
 
   /** What the resizer names itself. A separator carries no text, so it has nothing else to go on. */
   public get resizerLabel(): string {
-    return `Resize ${this.label ?? this.column.key}`;
+    return this.grid.localeText.resizeColumn(String(this.label ?? this.column.key));
   }
 
   /** `aria-valuenow`: how wide the column is right now, in px. */
@@ -158,6 +163,10 @@ export default class HeaderCellModel<TRow> {
       isFirstEndPinned,
       isLastEndPinned,
       isSortable: this.isSortable,
+      hasHoverPill: this.hasHoverPill,
+      // The resizer's line is the cell's last pixel on its side, so the pill keeps one more there.
+      isPillBeforeResizer: this.hasHoverPill && this.showResizer && this.column.pin !== 'END',
+      isPillAfterResizer: this.hasHoverPill && this.showResizer && this.column.pin === 'END',
       isRowNumber: this.column.isRowNumber,
       isFirstLeaf: this.column.isFirstLeaf,
       isLastLeaf: this.column.isLastLeaf,

@@ -205,7 +205,7 @@ export default class ColumnModel<TRow> {
     if (config?.type === 'multiselect' && config.options) return config.options;
 
     return this.grid.getColumnUniqueValues(this.key).map((value) => ({
-      label: value === null ? '(empty)' : String(value),
+      label: value === null ? this.grid.localeText.filterEmptyValue : String(value),
       value,
     }));
   }

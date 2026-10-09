@@ -27,22 +27,22 @@ export default function DataGridPagination<TRow>(props: Props<TRow>) {
   return (
     <Flex component={`${grid.componentName}.bottomBar.pagination` as never} gap={0.5} ai="center">
       <PageSizeSelector grid={grid} pageSize={state.pageSize} />
-      <PaginationButton componentName={grid.componentName} label="First page" onClick={goFirst} disabled={!canGoPrev}>
+      <PaginationButton componentName={grid.componentName} label={grid.localeText.firstPage} onClick={goFirst} disabled={!canGoPrev}>
         <ChevronDoubleLeft />
       </PaginationButton>
-      <PaginationButton componentName={grid.componentName} label="Previous page" onClick={goPrev} disabled={!canGoPrev}>
+      <PaginationButton componentName={grid.componentName} label={grid.localeText.previousPage} onClick={goPrev} disabled={!canGoPrev}>
         <ChevronLeft />
       </PaginationButton>
       <Flex ai="center" gap={1.5} px={2} userSelect="none">
         <PageJumpInput grid={grid} page={state.page} totalPages={totalPages} />
         <Box component={`${grid.componentName}.bottomBar.pagination.info` as never} fontSize={12} opacity={0.7}>
-          of {totalPages}
+          {grid.localeText.pageCount(totalPages)}
         </Box>
       </Flex>
-      <PaginationButton componentName={grid.componentName} label="Next page" onClick={goNext} disabled={!canGoNext}>
+      <PaginationButton componentName={grid.componentName} label={grid.localeText.nextPage} onClick={goNext} disabled={!canGoNext}>
         <ChevronRight />
       </PaginationButton>
-      <PaginationButton componentName={grid.componentName} label="Last page" onClick={goLast} disabled={!canGoNext}>
+      <PaginationButton componentName={grid.componentName} label={grid.localeText.lastPage} onClick={goLast} disabled={!canGoNext}>
         <ChevronDoubleRight />
       </PaginationButton>
     </Flex>
@@ -64,14 +64,14 @@ function PageSizeSelector<TRow>({ grid, pageSize }: { grid: GridModel<TRow>; pag
         borderRadius={4}
         cursor="pointer"
         props={{
-          'aria-label': 'Rows per page',
+          'aria-label': grid.localeText.rowsPerPage,
           value: pageSize,
           onChange: (e: React.ChangeEvent<HTMLSelectElement>) => grid.pagination.changePageSize(Number(e.target.value)),
         }}
       >
         {options.map((size) => (
           <option key={size} value={size}>
-            {size} / page
+            {grid.localeText.pageSizeOption(size)}
           </option>
         ))}
       </Box>
@@ -110,7 +110,7 @@ function PageJumpInput<TRow>({ grid, page, totalPages }: { grid: GridModel<TRow>
       onChange={(e) => setValue(e.target.value)}
       textAlign="center"
       fontSize={12}
-      props={{ 'aria-label': 'Page number', onKeyDown: handleKeyDown, onBlur: commit, min: 1, max: totalPages }}
+      props={{ 'aria-label': grid.localeText.pageNumber, onKeyDown: handleKeyDown, onBlur: commit, min: 1, max: totalPages }}
     />
   );
 }

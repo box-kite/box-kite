@@ -1,5 +1,5 @@
 import Flex from '../../flex';
-import { useGridNavigationContext } from '../gridNavigationContext';
+import { useGridCellProps, useGridNavigationContext } from '../gridNavigationContext';
 import ColumnModel from '../models/columnModel';
 import GridModel from '../models/gridModel';
 import DataGridColumnFilter from './dataGridColumnFilter';
@@ -18,7 +18,7 @@ export default function DataGridFilterCell<TRow>(props: Props<TRow>) {
   const { isStartPinned, isEndPinned, isPinned, isFirstStartPinned, isLastStartPinned, isFirstEndPinned, isLastEndPinned } =
     column.pinFlags.value;
   const navigation = useGridNavigationContext();
-  const { ref, tabIndex, onFocus } = navigation?.cellProps(row, columnIndex) ?? {};
+  const { ref, tabIndex, onFocus } = useGridCellProps(navigation, row, columnIndex);
 
   const isSpecialCell = column.isGrouping || column.isRowNumber || column.isRowSelection;
 

@@ -45,10 +45,10 @@ export default function DataGridEmptyColumns<TRow>(props: Props<TRow>) {
 
         <Flex d="column" ai="center" gap={1}>
           <Box fontSize={18} fontWeight={600} color="gray-900" theme={{ dark: { color: 'gray-50' } }}>
-            No Columns Selected
+            {grid.localeText.noColumnsTitle}
           </Box>
           <Box fontSize={14} color="gray-500" textAlign="center" theme={{ dark: { color: 'gray-400' } }}>
-            Select at least one column from the columns menu to display data
+            {grid.localeText.noColumnsDescription}
           </Box>
         </Flex>
       </Flex>

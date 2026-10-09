@@ -1,11 +1,12 @@
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 import Box from '../../../box';
 import SortIcon from '../../../icons/sortIcon';
 import useIdentifier from '../../../react/identity/useIdentifier';
+import HeaderCellUtils from '../../../utils/dataGrid/headerCellUtils';
 import Checkbox from '../../checkbox';
 import Flex from '../../flex';
 import VisuallyHidden from '../../visuallyHidden';
-import { useGridNavigationContext } from '../gridNavigationContext';
+import { useGridCellProps, useGridNavigationContext } from '../gridNavigationContext';
 import ColumnModel from '../models/columnModel';
 import DataGridHeaderCellContextMenu from './dataGridHeaderCellContextMenu';
 import DataGridHeaderCellResizer from './dataGridHeaderCellResizer';
@@ -24,9 +25,11 @@ export default function DataGridHeaderCell<TRow>(props: Props<TRow>) {
   const headerCell = column.headerCell;
   const { isSortable, showResizer, showContextMenu, paddingStart, paddingEnd } = headerCell;
   const navigation = useGridNavigationContext();
-  const { ref, tabIndex, onFocus } = navigation?.cellProps(row, columnIndex) ?? {};
+  const { ref, tabIndex, onFocus } = useGridCellProps(navigation, row, columnIndex);
   // The resizer is a separator, and a separator names the pane it resizes — which is this cell.
   const identifier = useIdentifier('datagrid-columnheader');
+
+  const pressedOn = useRef<EventTarget | null>(null);
 
   const toggleSelectAll = useCallback(() => {
     grid.toggleSelectAllRows();
@@ -41,7 +44,7 @@ export default function DataGridHeaderCell<TRow>(props: Props<TRow>) {
       checked={grid.allRowsSelected}
       onChange={toggleSelectAll}
       // The column it sits in has no header text, so the checkbox has nothing to be named by.
-      props={{ tabIndex: -1, 'aria-label': 'Select all rows' }}
+      props={{ tabIndex: -1, 'aria-label': grid.localeText.selectAllRows }}
     />
   ) : headerCell.hiddenLabel ? (
     <VisuallyHidden tag="span">{headerCell.hiddenLabel}</VisuallyHidden>
@@ -61,6 +64,14 @@ export default function DataGridHeaderCell<TRow>(props: Props<TRow>) {
         'aria-sort': headerCell.ariaSort,
         tabIndex,
         onFocus,
+        // The whole cell sorts, padding included; the menu trigger and the resizer keep their own presses.
+        onPointerDown: isSortable ? (event: React.PointerEvent) => (pressedOn.current = event.target) : undefined,
+        onClick: isSortable
+          ? (event: React.MouseEvent<HTMLElement>) => {
+              if (HeaderCellUtils.isSortPress(event.currentTarget, pressedOn.current ?? event.target)) column.sortColumn();
+              pressedOn.current = null;
+            }
+          : undefined,
       }}
       className="header-cell"
       component={`${grid.componentName}.header.cell` as never}
@@ -75,7 +86,7 @@ export default function DataGridHeaderCell<TRow>(props: Props<TRow>) {
     >
       {
         <>
-          <Flex width="fit" height="fit" jc={column.align} props={{ onClick: isSortable ? () => column.sortColumn() : undefined }}>
+          <Flex width="fit" height="fit" jc={column.align}>
             <Flex
               overflow="hidden"
               position={column.isLeaf ? undefined : 'sticky'}
@@ -92,7 +103,17 @@ export default function DataGridHeaderCell<TRow>(props: Props<TRow>) {
               </Box>
               {headerCell.isSorted && (
                 <Box ps={(column.inlineWidth ?? 0) < 58 ? 0 : 2}>
-                  <SortIcon width="16px" rotate={headerCell.sortDirection === 'ASC' ? 0 : 180} fill="currentColor" />
+                  {/* Front-loaded rather than the 300ms ease every SVG gets: most of the flip lands in the first
+                      frames, so the direction reads at once. A named duration, so reduced motion is said out loud. */}
+                  <SortIcon
+                    width="16px"
+                    rotate={headerCell.sortDirection === 'ASC' ? 0 : 180}
+                    transition="transform"
+                    transitionTimingFunction="cubic-bezier(0.16, 1, 0.3, 1)"
+                    transitionDuration={180}
+                    motionReduce={{ transition: 'none' }}
+                    fill="currentColor"
+                  />
                 </Box>
               )}
               {showContextMenu && <Box minWidth={column.isEndAligned ? 4 : 10} />}

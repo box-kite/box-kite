@@ -176,7 +176,11 @@ function EditorControl<TRow>(props: ControlProps<TRow>) {
   const { EditCell } = cell.column.def;
   const { type, placeholder, step, min, max } = cell.editor;
   const columnName = cell.column.header ?? cell.column.key;
-  const named = { 'aria-label': `Edit ${columnName}`, 'aria-invalid': errorId ? true : undefined, 'aria-describedby': errorId };
+  const named = {
+    'aria-label': cell.grid.localeText.editCell(String(columnName)),
+    'aria-invalid': errorId ? true : undefined,
+    'aria-describedby': errorId,
+  };
 
   if (EditCell) return <EditCell cell={cell} />;
 

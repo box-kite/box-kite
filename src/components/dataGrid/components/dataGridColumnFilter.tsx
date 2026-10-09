@@ -1,11 +1,13 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import Box from '../../../box';
+import FilterDraftUtils, { type NumberFilterDraft } from '../../../utils/dataGrid/filterDraftUtils';
 import Button from '../../button';
 import Dropdown from '../../dropdown';
 import Flex from '../../flex';
 import Textbox from '../../textbox';
 import { NumberFilterValue } from '../contracts/dataGridContract';
 import ColumnModel from '../models/columnModel';
+import useFilterDraft from '../useFilterDraft';
 
 interface Props<TRow> {
   column: ColumnModel<TRow>;
@@ -17,8 +19,8 @@ interface Props<TRow> {
  * A real `<button>` with a name, not a `<div onClick>`: it is the only way to clear the filter
  * without selecting the text and deleting it, so a keyboard has to be able to reach it.
  */
-function ClearFilterButton(props: { columnName: React.ReactNode; onClear: () => void }) {
-  const { columnName, onClear } = props;
+function ClearFilterButton(props: { label: string; onClear: () => void }) {
+  const { label, onClear } = props;
 
   return (
     <Button
@@ -32,7 +34,7 @@ function ClearFilterButton(props: { columnName: React.ReactNode; onClear: () => 
       display="flex"
       ai="center"
       onClick={onClear}
-      props={{ tabIndex: -1, 'aria-label': `Clear the ${columnName} filter` }}
+      props={{ tabIndex: -1, 'aria-label': label }}
     >
       <Box fontSize={10} color="gray-400" hover={{ color: 'gray-600' }}>
         ✕
@@ -48,52 +50,45 @@ function ClearFilterButton(props: { columnName: React.ReactNode; onClear: () => 
 function TextFilter<TRow>({ column }: Props<TRow>) {
   const { currentFilter } = column;
   const { componentName } = column.grid;
-  const columnName = column.header ?? column.key;
-  const initialValue = currentFilter?.type === 'text' ? currentFilter.value : '';
-  const [localValue, setLocalValue] = useState(initialValue);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    };
-  }, []);
+  const columnName = String(column.header ?? column.key);
+  const text = column.grid.localeText;
+  const [localValue, setLocalValue] = useState(currentFilter?.type === 'text' ? currentFilter.value : '');
+  const { debounce, cancel } = useFilterDraft(
+    currentFilter,
+    (filter) => FilterDraftUtils.textMatches(localValue, filter),
+    (filter) => setLocalValue(filter?.type === 'text' ? filter.value : ''),
+  );
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value;
       setLocalValue(value);
-
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-
-      timeoutRef.current = setTimeout(() => {
-        column.setTextFilter(value);
-        timeoutRef.current = null;
-      }, 300);
+      debounce('value', () => column.setTextFilter(value));
     },
-    [column],
+    [column, debounce],
   );
 
   const handleClear = useCallback(() => {
+    cancel();
     setLocalValue('');
     column.clearFilter();
-  }, [column]);
+  }, [column, cancel]);
 
   return (
     <Flex component={`${componentName}.filter.cell.input` as never}>
       <Textbox
         width="fit"
         variant="compact"
-        placeholder={column.filterConfig?.placeholder ?? 'Filter...'}
+        placeholder={column.filterConfig?.placeholder ?? text.filterPlaceholder}
         value={localValue}
         onChange={handleChange}
         b={0}
         bgColor="transparent"
         focus={{ outline: 0 }}
         // A placeholder is not a label, and "Filter..." is the same on every column anyway.
-        props={{ tabIndex: -1, 'aria-label': `Filter ${columnName}` }}
+        props={{ tabIndex: -1, 'aria-label': text.filterColumn(columnName) }}
       />
-      {localValue && <ClearFilterButton columnName={columnName} onClear={handleClear} />}
+      {localValue && <ClearFilterButton label={text.clearFilter(columnName)} onClear={handleClear} />}
     </Flex>
   );
 }
@@ -104,70 +99,52 @@ function TextFilter<TRow>({ column }: Props<TRow>) {
 function NumberFilter<TRow>({ column }: Props<TRow>) {
   const { currentFilter } = column;
   const { componentName } = column.grid;
-  const columnName = column.header ?? column.key;
-  const initialValue = currentFilter?.type === 'number' ? currentFilter.value : '';
-  const initialOperator = currentFilter?.type === 'number' ? currentFilter.operator : 'eq';
-  const initialValueTo = currentFilter?.type === 'number' ? currentFilter.valueTo : '';
-
-  const [localValue, setLocalValue] = useState<string | number>(initialValue);
-  const [operator, setOperator] = useState<NumberFilterValue['operator']>(initialOperator);
-  const [valueTo, setValueTo] = useState<string | number>(initialValueTo ?? '');
-  const valueTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const valueToTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (valueTimeoutRef.current) clearTimeout(valueTimeoutRef.current);
-      if (valueToTimeoutRef.current) clearTimeout(valueToTimeoutRef.current);
-    };
+  const columnName = String(column.header ?? column.key);
+  const text = column.grid.localeText;
+  const [draft, setDraft] = useState(() => FilterDraftUtils.numberDraft(currentFilter));
+  // What a commit sends: the draft as it is when typing settles, not as it was at the keystroke that
+  // scheduled it — otherwise "from" landing while "to" is still pending would commit a stale "to".
+  const latest = useRef(draft);
+  const replace = useCallback((next: NumberFilterDraft) => {
+    latest.current = next;
+    setDraft(next);
   }, []);
+  const { debounce, cancel } = useFilterDraft(
+    currentFilter,
+    (filter) => FilterDraftUtils.numberMatches(draft, filter),
+    (filter) => replace(FilterDraftUtils.numberDraft(filter)),
+  );
+  const { operator, value: localValue, valueTo } = draft;
 
   const config = column.filterConfig;
 
-  const handleValueChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const value = e.target.value;
-      setLocalValue(value);
+  const commit = useCallback(() => {
+    const { operator, value, valueTo } = latest.current;
+    column.setNumberFilter(operator, value, valueTo);
+  }, [column]);
 
-      if (valueTimeoutRef.current) clearTimeout(valueTimeoutRef.current);
-
-      valueTimeoutRef.current = setTimeout(() => {
-        column.setNumberFilter(operator, value, valueTo);
-        valueTimeoutRef.current = null;
-      }, 300);
+  const update = useCallback(
+    (change: Partial<NumberFilterDraft>, settle: boolean) => {
+      replace({ ...latest.current, ...change });
+      if (settle) debounce('value', commit);
+      else {
+        cancel();
+        commit();
+      }
     },
-    [column, operator, valueTo],
+    [replace, commit, debounce, cancel],
   );
 
-  const handleOperatorChange = useCallback(
-    (op: NumberFilterValue['operator']) => {
-      setOperator(op);
-      column.setNumberFilter(op, localValue, valueTo);
-    },
-    [column, localValue, valueTo],
-  );
-
-  const handleValueToChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const value = e.target.value;
-      setValueTo(value);
-
-      if (valueToTimeoutRef.current) clearTimeout(valueToTimeoutRef.current);
-
-      valueToTimeoutRef.current = setTimeout(() => {
-        column.setNumberFilter(operator, localValue, value);
-        valueToTimeoutRef.current = null;
-      }, 300);
-    },
-    [column, operator, localValue],
-  );
+  const handleValueChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => update({ value: e.target.value }, true), [update]);
+  const handleValueToChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => update({ valueTo: e.target.value }, true), [update]);
+  // A pick from a list is the whole gesture, so it commits at once.
+  const handleOperatorChange = useCallback((op: NumberFilterValue['operator']) => update({ operator: op }, false), [update]);
 
   const handleClear = useCallback(() => {
-    setLocalValue('');
-    setValueTo('');
-    setOperator('eq');
+    cancel();
+    replace(FilterDraftUtils.numberDraft(undefined));
     column.clearFilter();
-  }, [column]);
+  }, [column, cancel, replace]);
 
   return (
     <Flex component={`${componentName}.filter.cell.input` as never} ai={operator === 'between' ? 'start' : 'center'} gap={1}>
@@ -182,7 +159,7 @@ function NumberFilter<TRow>({ column }: Props<TRow>) {
         focus={{ outline: 0 }}
         // The trigger's content is a mathematical symbol, and a combobox is not named by its
         // content anyway — without this the control announces as nothing at all.
-        props={{ tabIndex: -1, 'aria-label': `Comparison for ${columnName}` }}
+        props={{ tabIndex: -1, 'aria-label': text.filterComparison(columnName) }}
       >
         <Dropdown.Item value="eq">=</Dropdown.Item>
         <Dropdown.Item value="ne">≠</Dropdown.Item>
@@ -198,7 +175,7 @@ function NumberFilter<TRow>({ column }: Props<TRow>) {
             <Textbox
               type="number"
               variant="compact"
-              placeholder={config?.placeholder ?? 'From'}
+              placeholder={config?.placeholder ?? text.filterFromPlaceholder}
               value={localValue}
               onChange={handleValueChange}
               width="fit"
@@ -206,15 +183,15 @@ function NumberFilter<TRow>({ column }: Props<TRow>) {
               b={0}
               bgColor="transparent"
               focus={{ outline: 0 }}
-              props={{ tabIndex: -1, 'aria-label': `Filter ${columnName} from` }}
+              props={{ tabIndex: -1, 'aria-label': text.filterFrom(columnName) }}
             />
-            {(localValue !== '' || valueTo !== '') && <ClearFilterButton columnName={columnName} onClear={handleClear} />}
+            {(localValue !== '' || valueTo !== '') && <ClearFilterButton label={text.clearFilter(columnName)} onClear={handleClear} />}
           </Flex>
           <Flex ai="center" flex1>
             <Textbox
               type="number"
               variant="compact"
-              placeholder="To"
+              placeholder={text.filterToPlaceholder}
               value={valueTo}
               onChange={handleValueToChange}
               width="fit"
@@ -222,7 +199,7 @@ function NumberFilter<TRow>({ column }: Props<TRow>) {
               b={0}
               bgColor="transparent"
               focus={{ outline: 0 }}
-              props={{ tabIndex: -1, 'aria-label': `Filter ${columnName} to` }}
+              props={{ tabIndex: -1, 'aria-label': text.filterTo(columnName) }}
             />
           </Flex>
         </Flex>
@@ -231,7 +208,7 @@ function NumberFilter<TRow>({ column }: Props<TRow>) {
           <Textbox
             type="number"
             variant="compact"
-            placeholder={config?.placeholder ?? 'Value'}
+            placeholder={config?.placeholder ?? text.filterValuePlaceholder}
             value={localValue}
             onChange={handleValueChange}
             width="fit"
@@ -239,9 +216,9 @@ function NumberFilter<TRow>({ column }: Props<TRow>) {
             b={0}
             bgColor="transparent"
             focus={{ outline: 0 }}
-            props={{ tabIndex: -1, 'aria-label': `Filter ${columnName}` }}
+            props={{ tabIndex: -1, 'aria-label': text.filterColumn(columnName) }}
           />
-          {localValue !== '' && <ClearFilterButton columnName={columnName} onClear={handleClear} />}
+          {localValue !== '' && <ClearFilterButton label={text.clearFilter(columnName)} onClear={handleClear} />}
         </Flex>
       )}
     </Flex>
@@ -254,7 +231,8 @@ function NumberFilter<TRow>({ column }: Props<TRow>) {
 function MultiselectFilter<TRow>({ column }: Props<TRow>) {
   const { currentFilter } = column;
   const { componentName } = column.grid;
-  const columnName = column.header ?? column.key;
+  const columnName = String(column.header ?? column.key);
+  const text = column.grid.localeText;
   const selectedValues = currentFilter?.type === 'multiselect' ? currentFilter.values : [];
   const options = column.filterOptions;
 
@@ -271,7 +249,7 @@ function MultiselectFilter<TRow>({ column }: Props<TRow>) {
         multiple
         showCheckbox
         isSearchable
-        searchPlaceholder="Search..."
+        searchPlaceholder={text.filterSelectSearchPlaceholder}
         value={selectedValues}
         width="fit"
         minWidth={0}
@@ -280,14 +258,14 @@ function MultiselectFilter<TRow>({ column }: Props<TRow>) {
         variant="compact"
         b={0}
         focus={{ outline: 0 }}
-        props={{ tabIndex: -1, 'aria-label': `Filter ${columnName}` }}
+        props={{ tabIndex: -1, 'aria-label': text.filterColumn(columnName) }}
       >
         <Dropdown.Display>
           {(vals: (string | number | boolean | null)[]) => {
             if (vals.length === 0)
               return (
                 <Box tag="span" color="gray-400">
-                  {column.filterConfig?.placeholder ?? 'Select...'}
+                  {column.filterConfig?.placeholder ?? text.filterSelectPlaceholder}
                 </Box>
               );
             if (vals.length === 1) {
@@ -297,8 +275,8 @@ function MultiselectFilter<TRow>({ column }: Props<TRow>) {
             return `${vals.length} selected`;
           }}
         </Dropdown.Display>
-        <Dropdown.Unselect>Clear</Dropdown.Unselect>
-        <Dropdown.SelectAll>Select All</Dropdown.SelectAll>
+        <Dropdown.Unselect>{text.filterSelectClear}</Dropdown.Unselect>
+        <Dropdown.SelectAll>{text.filterSelectAll}</Dropdown.SelectAll>
         {options.map((option) => (
           <Dropdown.Item<string | number | boolean | null> key={String(option.value)} value={option.value} ai="center" gap={2}>
             {option.label}

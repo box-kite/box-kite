@@ -15,10 +15,10 @@ interface Props<TRow> {
   /** Position in the whole row list, not in the rendered window. */
   index: number;
   /**
-   * The grid's store version. Not read: it is what tells the memo below that something the row draws
-   * from the model has moved, since every other prop it takes holds still while the window slides.
+   * This row's version (`GridModel.rowVersion`). Not read: it is what tells the memo below that something
+   * the row draws from the model has moved, since every other prop it takes holds still while the window slides.
    */
-  version: number;
+  version: string;
 }
 
 function DataGridGroupRowImpl<TRow>(props: Props<TRow>) {
@@ -97,7 +97,7 @@ function DataGridGroupRowImpl<TRow>(props: Props<TRow>) {
                   checked={selected}
                   indeterminate={indeterminate}
                   onChange={selectAllHandler}
-                  props={{ tabIndex: -1, 'aria-label': `Select all rows in ${row.groupValue}` }}
+                  props={{ tabIndex: -1, 'aria-label': row.grid.localeText.selectGroupRows(String(row.groupValue)) }}
                 />
               </DataGridCell>
             );

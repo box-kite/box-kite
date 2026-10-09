@@ -19,13 +19,13 @@ export default function DataGridDataSourceError<TRow>(props: Props<TRow>) {
 
   if (error === undefined) return null;
 
-  const message = error instanceof Error && error.message ? error.message : 'Could not load rows.';
+  const message = error instanceof Error && error.message ? error.message : grid.localeText.loadError;
 
   return (
     <Flex component={`${grid.componentName}.error` as never} props={{ role: 'alert' }}>
       <Box component={`${grid.componentName}.error.message` as never}>{message}</Box>
       <Button component={`${grid.componentName}.error.retry` as never} type="button" onClick={grid.source.retry}>
-        Retry
+        {grid.localeText.retry}
       </Button>
     </Flex>
   );

@@ -34,6 +34,7 @@ import EditModel from './editModel';
 import ExportModel from './exportModel';
 import FilterModel from './filterModel';
 import GroupRowModel from './groupRowModel';
+import { DATA_GRID_LOCALE_TEXT, type DataGridLocaleText } from './localeText';
 import PaginationModel from './paginationModel';
 import RangeModel from './rangeModel';
 import RowModel from './rowModel';
@@ -71,11 +72,57 @@ export default class GridModel<TRow> {
   /** Monotonic snapshot version — stable between changes, increments on notify(). */
   public getSnapshot = (): number => this._version;
 
-  /** Signal subscribers that state changed and a re-render is needed. */
+  private static drawnPropsChanged<TRow>(prev: DataGridProps<TRow>, next: DataGridProps<TRow>): boolean {
+    const keys = new Set([...Object.keys(prev), ...Object.keys(next)]) as Set<keyof DataGridProps<TRow>>;
+
+    for (const key of keys) {
+      if (prev[key] !== next[key] && typeof next[key] !== 'function') return true;
+    }
+
+    return false;
+  }
+
+  /** Bumped by a change every row draws from — a sort, a filter, the columns — and by nothing row-local. */
+  private _epoch = 0;
+
+  /** Signal subscribers that state changed and a re-render is needed. Every rendered row redraws. */
   public notify = (): void => {
+    this._epoch++;
+    this.notifyRows();
+  };
+
+  /**
+   * A change that `rowVersion` sees row by row — a selection, the current cell, a keystroke in an editor —
+   * so only the rows whose version moved redraw, rather than every row on screen (bug #237).
+   */
+  public notifyRows = (): void => {
     this._version++;
     this.listeners.forEach((listener) => listener());
   };
+
+  /**
+   * What a rendered row's memo compares: the grid-wide epoch plus the row's own state. A `Cell` of your own
+   * that reads something outside its row redraws on a grid-wide change, not on another row's selection.
+   */
+  public rowVersion(row: RowModel<TRow> | GroupRowModel<TRow> | DetailRowModel<TRow>, index: number): string {
+    const shared = `${this._epoch}|${this.range.rowDigest(index)}`;
+
+    if (row.kind === 'detail') return shared;
+
+    const state = `${+row.selected}${+row.indeterminate}${+row.expanded}`;
+
+    return row.kind === 'row' ? `${shared}|${state}|${this.edits.rowDigest(row.key)}` : `${shared}|${state}`;
+  }
+
+  private _selectionVersion = 0;
+
+  /**
+   * What the memoized header compares: a grid-wide change, or the selection its checkbox shows. A focus move
+   * re-renders the component holding the tab stop, and the header — filter row included — no longer with it.
+   */
+  public get headerVersion(): string {
+    return `${this._epoch}:${this._selectionVersion}`;
+  }
 
   /**
    * Sync incoming props. Called during render by the framework adapter — clears
@@ -85,6 +132,10 @@ export default class GridModel<TRow> {
   public setProps(props: DataGridProps<TRow>): void {
     const prev = this.props;
     if (prev === props) return;
+
+    // A prop the grid draws from is a grid-wide change for the memoized parts. Handlers are left out: an
+    // inline `onSelectedRowKeysChange` is a new function every render and draws nothing.
+    if (GridModel.drawnPropsChanged(prev, props)) this._epoch++;
 
     this.props = props;
 
@@ -110,6 +161,15 @@ export default class GridModel<TRow> {
       prev.pageSize !== props.pageSize
     ) {
       this.rows.clear();
+    }
+
+    // A filter the page changed is a new question too, the same as one typed into the grid.
+    if (
+      prev.globalFilterValue !== props.globalFilterValue ||
+      prev.columnFilters !== props.columnFilters ||
+      prev.filters !== props.filters
+    ) {
+      this.leaveSelectionView();
     }
 
     // The tree the data describes, which only the data and the filters over it can change: opening a row
@@ -177,6 +237,24 @@ export default class GridModel<TRow> {
 
   public get resizeMode(): 'smooth' | 'instant' {
     return this.props.def.resizeMode ?? 'smooth';
+  }
+
+  public get headerHover(): 'static' | 'sliding' {
+    return this.props.def.headerHover ?? 'static';
+  }
+
+  private _localeText?: { from: Partial<DataGridLocaleText> | undefined; text: DataGridLocaleText };
+
+  /** The grid's words: `def.localeText` over the English defaults, merged once per object it is given. */
+  public get localeText(): DataGridLocaleText {
+    const from = this.props.def.localeText;
+    const cached = this._localeText;
+    if (cached && cached.from === from) return cached.text;
+
+    const text = { ...DATA_GRID_LOCALE_TEXT, ...from };
+    this._localeText = { from, text };
+
+    return text;
   }
 
   public readonly sourceColumns = memo(() => {
@@ -418,6 +496,10 @@ export default class GridModel<TRow> {
     // The tree filtered itself as it was built — a match keeps its ancestors, which no pass over a flat
     // array can do — so what is left is every row of it.
     if (this.tree.isEager) return this.tree.allRows.value;
+    if (this._selectionView) {
+      const view = this._selectionView;
+      return this.data.filter((row) => view.has(this.getRowKey(row)));
+    }
     if (!this.hasRowFilters) return this.data;
 
     return this.data.filter((row) => this.rowMatchesFilters(row));
@@ -465,6 +547,7 @@ export default class GridModel<TRow> {
     // Written whether or not `globalFilterValue` is present — a handler is a listener, not ownership
     // (bug #154). The getter prefers the prop, so a controlled grid still shows what its owner asked for.
     this._globalFilterValue = value;
+    this.leaveSelectionView();
     this.props.onGlobalFilterChange?.(value, { reason });
 
     const nextPage = this.resetToFirstPage(reason);
@@ -491,6 +574,7 @@ export default class GridModel<TRow> {
     }
 
     this._columnFilters = newFilters;
+    this.leaveSelectionView();
     this.props.onColumnFiltersChange?.(newFilters, { reason });
 
     const nextPage = this.resetToFirstPage(reason);
@@ -508,6 +592,7 @@ export default class GridModel<TRow> {
    */
   public clearColumnFilters = (): void => {
     this._columnFilters = {};
+    this.leaveSelectionView();
     this.props.onColumnFiltersChange?.({}, { reason: 'clear' });
 
     this.fireServerStateChange('clear', { columnFilters: {} });
@@ -1029,14 +1114,85 @@ export default class GridModel<TRow> {
     return this.source.enabled ? this.flatRows.value.length === 0 : this.data.length === 0;
   }
 
-  /** Header select-all checkbox state. */
-  public get allRowsSelected(): boolean {
-    const rows = this.loadedRows.length;
+  /**
+   * The rows the header checkbox acts on: what the filters leave on screen. A select-all reaching rows
+   * nobody can see is a bulk action on rows nobody chose; with a datasource it is the blocks it holds.
+   */
+  public get selectableRows(): TRow[] {
+    return this.source.enabled ? this.loadedRows : this.filteredData;
+  }
 
-    return rows > 0 && this.selectedRows.size === rows;
+  /** The keys of `selectableRows`. A datasource's grow as blocks arrive, so only the client side is kept. */
+  private readonly _selectableKeys = memo(
+    () => {
+      // A clear only cascades from a computed node, so `rows` has to be computed for this one to be cleared.
+      void this.rows.value;
+      return new Set(this.selectableRows.map((row) => this.getRowKey(row)));
+    },
+    () => [this.rows],
+  );
+
+  private get selectableKeys(): Set<Key> {
+    return this.source.enabled ? new Set(this.loadedRows.map((row) => this.getRowKey(row))) : this._selectableKeys.value;
+  }
+
+  private _selectionCounts?: { keys: Set<Key>; selected: Set<Key>; shown: number };
+
+  /** How many selected rows are on screen — read by the header and the footer on every render, so kept. */
+  private get shownSelectedCount(): number {
+    const keys = this.selectableKeys;
+    const cached = this._selectionCounts;
+    if (cached && cached.keys === keys && cached.selected === this.selectedRows) return cached.shown;
+
+    let shown = 0;
+    for (const key of this.selectedRows) if (keys.has(key)) shown++;
+    this._selectionCounts = { keys, selected: this.selectedRows, shown };
+
+    return shown;
+  }
+
+  /** Header select-all checkbox state: every row on screen is selected, whatever the filters hide. */
+  public get allRowsSelected(): boolean {
+    const rows = this.selectableKeys.size;
+
+    return rows > 0 && this.shownSelectedCount === rows;
   }
   public get someRowsSelected(): boolean {
-    return this.selectedRows.size > 0;
+    return this.shownSelectedCount > 0;
+  }
+
+  /**
+   * Selected rows the filters hide. A filter never drops a selection, so the footer says what it is
+   * keeping out of sight; a server's rows are unknown until fetched, so there it is never counted.
+   */
+  public get hiddenSelectedCount(): number {
+    if (this.source.enabled || this.isPaginated) return 0;
+
+    return this.selectedRows.size - this.shownSelectedCount;
+  }
+
+  /** The keys "Show selected" froze when it was pressed, so a row unticked in that view stays put. */
+  private _selectionView: Set<Key> | null = null;
+
+  public get isSelectionView(): boolean {
+    return this._selectionView !== null;
+  }
+
+  /** Only the grid's own filtering can be set aside; a server's or a tree's cannot. */
+  public get canShowSelection(): boolean {
+    return !!this.props.def.rowSelection && !this.source.enabled && !this.isPaginated && !this.tree.isEager;
+  }
+
+  /** "Show selected" sets the filters aside rather than adding to them: the rows it is for are the hidden ones. */
+  public toggleSelectionView = (): void => {
+    this._selectionView = this._selectionView ? null : new Set(this.selectedRows);
+    this.rows.clear(); // cascades to flatRows/rowOffsets
+    this.notify();
+  };
+
+  /** A filter typed while viewing the selection is a new question, so the view gives way to it. */
+  private leaveSelectionView(): void {
+    this._selectionView = null;
   }
 
   private _selectionAnnounced = false;
@@ -1051,7 +1207,7 @@ export default class GridModel<TRow> {
 
     const selected = this.selectedRows.size;
 
-    return selected === 0 ? 'No rows selected' : `${selected} of ${this.totalRowCount} rows selected`;
+    return this.localeText.selectionAnnouncement(selected, this.totalRowCount);
   }
 
   /** The columns currently grouped, resolved from groupColumns keys (backs the top-bar group chips). */
@@ -1247,27 +1403,49 @@ export default class GridModel<TRow> {
       rowKeys.forEach((rowKey) => this.selectedRows.add(rowKey));
     }
 
-    this.flatRows.clear(); // cascades to rowOffsets
-    this.notify();
-
-    const selectedRowKeys = Array.from(this.selectedRows);
     const reason: DataGridSelectionReason = all ? (hasAllSelected ? 'clear' : 'select-all') : hasAllSelected ? 'deselect' : 'select';
 
-    this.props.onSelectedRowKeysChange?.(selectedRowKeys, { reason });
-    this.props.onSelectionChange?.({
-      action: hasAllSelected ? 'deselect' : 'select',
-      affectedRowKeys: rowKeys,
-      selectedRowKeys,
-      isAllSelected: this.selectedRows.size === this.loadedRows.length,
-    });
+    this.selectionChanged(rowKeys, hasAllSelected ? 'deselect' : 'select', reason);
   };
 
+  /** Ticks or clears the rows on screen only — selected rows the filters hide are left as they are. */
   public toggleSelectAllRows = () => {
     this.toggleRowsSelection(
-      this.loadedRows.map((x) => this.getRowKey(x)),
+      this.selectableRows.map((x) => this.getRowKey(x)),
       true,
     );
   };
+
+  /** Every row, hidden ones included: the footer's way out of a selection the filters keep half out of sight. */
+  public clearSelection = (): void => {
+    const affected = Array.from(this.selectedRows);
+
+    this.selectedRows = new Set();
+    this._selectionAnnounced = true;
+    // Nothing is left to view, and a view of unticked rows would be a filter nobody can name.
+    if (this._selectionView) {
+      this._selectionView = null;
+      this.rows.clear();
+    }
+
+    this.selectionChanged(affected, 'deselect', 'clear');
+  };
+
+  private selectionChanged(affectedRowKeys: Key[], action: 'select' | 'deselect', reason: DataGridSelectionReason): void {
+    this._selectionVersion++;
+    this.flatRows.clear(); // cascades to rowOffsets
+    this.notifyRows();
+
+    const selectedRowKeys = Array.from(this.selectedRows);
+
+    this.props.onSelectedRowKeysChange?.(selectedRowKeys, { reason });
+    this.props.onSelectionChange?.({
+      action,
+      affectedRowKeys,
+      selectedRowKeys,
+      isAllSelected: this.selectedRows.size === this.loadedRows.length,
+    });
+  }
 
   public toggleColumnVisibility = (columnKey: Key) => {
     this.hiddenColumns = new Set(this.hiddenColumns);

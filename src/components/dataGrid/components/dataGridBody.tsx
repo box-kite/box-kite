@@ -13,7 +13,7 @@ import DataGridFooter from './dataGridFooter';
 import DataGridGroupRow from './dataGridGroupRow';
 import DataGridRow from './dataGridRow';
 
-function renderRow<TRow>(row: RowModel<TRow> | GroupRowModel<TRow> | DetailRowModel<TRow>, index: number, version: number) {
+function renderRow<TRow>(row: RowModel<TRow> | GroupRowModel<TRow> | DetailRowModel<TRow>, index: number, version: string) {
   if (row instanceof DetailRowModel) {
     return <DataGridDetailRow key={row.key} row={row} index={index} version={version} />;
   } else if (row instanceof GroupRowModel) {
@@ -38,9 +38,8 @@ export default function DataGridBody<TRow>(props: Props<TRow>) {
   const flatRows = grid.flatRows.value;
 
   // A cell reads mutable model state as it renders — its range mark, its edit, its expansion — so the
-  // elements have to be rebuilt whenever the model moves, and the store version is what says it has. It is
-  // *not* in the list for a scroll, which is the point: the window holding still is a frame that costs
-  // nothing but the transform.
+  // elements are rebuilt whenever the model moves, and each row is handed its own version: a selection or
+  // a move of the current cell redraws the rows it touched, not the window. A scroll is not in the list.
   const version = grid.getSnapshot();
 
   const rows = useMemo(() => {
@@ -48,13 +47,16 @@ export default function DataGridBody<TRow>(props: Props<TRow>) {
 
     // The index a row is rendered with is its index in the *whole* list, not in the window: that
     // is what `aria-rowindex` means, and what the keyboard navigation counts in.
-    return ArrayUtils.take(flatRows, take, startIndex).map((row, offset) => renderRow(row, startIndex + offset, version));
-  }, [flatRows, isEmpty, take, startIndex, version]);
+    return ArrayUtils.take(flatRows, take, startIndex).map((row, offset) =>
+      renderRow(row, startIndex + offset, grid.rowVersion(row, startIndex + offset)),
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- not read: `version` is what says the model moved
+  }, [flatRows, grid, isEmpty, take, startIndex, version]);
 
   // Render empty state outside the CSS Grid to ensure full width
   if (isEmpty) {
     const { noDataComponent } = grid.props.def;
-    const defaultEmpty = grid.props.loading ? 'loading...' : 'empty';
+    const defaultEmpty = grid.props.loading ? grid.localeText.loadingRows : grid.localeText.noRows;
 
     return (
       <Flex

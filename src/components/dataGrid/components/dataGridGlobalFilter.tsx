@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useState } from 'react';
 import Box from '../../../box';
 import SearchIcon from '../../../icons/searchIcon';
 import Flex from '../../flex';
 import Textbox from '../../textbox';
 import GridModel from '../models/gridModel';
+import useFilterDraft from '../useFilterDraft';
 
 interface Props<TRow> {
   grid: GridModel<TRow>;
@@ -12,44 +13,26 @@ interface Props<TRow> {
 export default function DataGridGlobalFilter<TRow>(props: Props<TRow>) {
   const { grid } = props;
   const [localValue, setLocalValue] = useState(grid.globalFilterValue);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { debounce, cancel } = useFilterDraft(grid.globalFilterValue, (value) => value === localValue, setLocalValue);
 
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
-  }, []);
-
-  // Debounce filter changes
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value;
       setLocalValue(value);
-
-      // Clear previous timeout
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-
-      // Set new timeout
-      timeoutRef.current = setTimeout(() => {
-        grid.filter.setGlobalFilter(value);
-        timeoutRef.current = null;
-      }, 300);
+      debounce('value', () => grid.filter.setGlobalFilter(value));
     },
-    [grid],
+    [grid, debounce],
   );
 
   const handleClear = useCallback(() => {
+    cancel();
     setLocalValue('');
     grid.filter.setGlobalFilter('');
-  }, [grid]);
+  }, [grid, cancel]);
 
   const { filtered, total } = grid.filter.filterStats;
-  const showStats = grid.filter.hasActiveFilters && filtered !== total;
+  // The footer already says it; only a grid without one needs the count up here.
+  const showStats = !grid.props.def.bottomBar && grid.filter.hasActiveFilters && filtered !== total;
 
   return (
     <Flex component={`${grid.componentName}.topBar.globalFilter` as never}>
@@ -62,7 +45,14 @@ export default function DataGridGlobalFilter<TRow>(props: Props<TRow>) {
         <Flex position="absolute" insetStart={3} pointerEvents="none" color="gray-400" theme={{ dark: { color: 'gray-500' } }}>
           <SearchIcon fill="currentColor" width="14px" />
         </Flex>
-        <Textbox placeholder="Search..." variant="compact" value={localValue} onChange={handleChange} ps={8} pe={localValue ? 8 : 3} />
+        <Textbox
+          placeholder={grid.localeText.searchPlaceholder}
+          variant="compact"
+          value={localValue}
+          onChange={handleChange}
+          ps={8}
+          pe={localValue ? 8 : 3}
+        />
         {localValue && (
           <Box
             position="absolute"

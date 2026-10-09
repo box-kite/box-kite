@@ -25,13 +25,13 @@ export default function DataGridExport<TRow>(props: Props<TRow>) {
   return (
     <Flex component={`${grid.componentName}.topBar.export` as never} ai="center" gap={2}>
       {config.csv !== false && (
-        <ExportButton componentName={grid.componentName} onClick={csv} label="Export CSV">
-          CSV
+        <ExportButton componentName={grid.componentName} onClick={csv} label={grid.localeText.exportCsvLabel}>
+          {grid.localeText.exportCsv}
         </ExportButton>
       )}
       {config.xlsx !== false && (
-        <ExportButton componentName={grid.componentName} onClick={xlsx} label="Export Excel">
-          Excel
+        <ExportButton componentName={grid.componentName} onClick={xlsx} label={grid.localeText.exportExcelLabel}>
+          {grid.localeText.exportExcel}
         </ExportButton>
       )}
     </Flex>

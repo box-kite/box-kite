@@ -1,7 +1,9 @@
-import { useCallback, useMemo, useRef } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
+import { useLatest } from '../../react/a11y/callbacks';
 import { ChangeDetails } from '../../react/a11y/useControllableState';
 import useRovingFocus, { RovingFocusReason } from '../../react/a11y/useRovingFocus';
 import { useIsomorphicLayoutEffect } from '../../react/effects';
+import ActiveCellStore from '../../utils/dataGrid/activeCellStore';
 import { GridNavigation } from './gridNavigationContext';
 import { isTypingKey } from './models/editModel';
 import GridModel from './models/gridModel';
@@ -420,11 +422,25 @@ export default function useGridNavigation<TRow>(options: GridNavigationOptions<T
     ],
   );
 
-  const { cellProps, setActiveCell } = roving;
+  const { setActiveCell, activeIndex, activeColumn } = roving;
+
+  // The roving hook's `cellProps` changes with every move, and a context carrying it re-rendered every cell
+  // on screen per press. The ref and the handler are read at call time instead, and the tabindex is a store.
+  const rovingCellProps = useLatest(roving.cellProps);
+  const [activeCell] = useState(() => new ActiveCellStore(activeIndex, activeColumn));
+  useIsomorphicLayoutEffect(() => activeCell.set(activeIndex, activeColumn), [activeCell, activeColumn, activeIndex]);
+
+  const cellProps = useCallback(
+    (row: number, column: number) => {
+      const { ref, onFocus } = rovingCellProps.current(row, column);
+      return { ref, onFocus };
+    },
+    [rovingCellProps],
+  );
 
   const navigation = useMemo<GridNavigation>(
-    () => ({ rowCount, columnCount, headerRowCount, cellProps, setActiveCell }),
-    [cellProps, columnCount, headerRowCount, rowCount, setActiveCell],
+    () => ({ rowCount, columnCount, headerRowCount, cellProps, activeCell, setActiveCell }),
+    [activeCell, cellProps, columnCount, headerRowCount, rowCount, setActiveCell],
   );
 
   return { navigation, onKeyDown };

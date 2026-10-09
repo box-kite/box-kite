@@ -34,7 +34,7 @@ export default function DataGridCellRowDetail<TRow>(props: Props<TRow>) {
       // A chevron with nothing beside it: the name and the state both have to be spelled out.
       props={{
         tabIndex: -1,
-        'aria-label': `${expanded ? 'Collapse' : 'Expand'} details for row ${cell.row.rowIndex + 1}`,
+        'aria-label': (expanded ? cell.grid.localeText.collapseRowDetail : cell.grid.localeText.expandRowDetail)(cell.row.rowIndex + 1),
         'aria-expanded': expanded,
       }}
     >
