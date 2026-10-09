@@ -5,6 +5,7 @@ import {
   defaultThemeName,
   documentRoot,
   getSystemTheme,
+  pauseTransitions,
   readStoredTheme,
   setThemeAttribute,
   watchSystemTheme,
@@ -163,6 +164,31 @@ describe('themeRuntime', () => {
       expect(readStoredTheme(key)).toBeNull();
       expect(() => writeStoredTheme(key, 'dark')).not.toThrow();
       expect(() => clearStoredTheme(key)).not.toThrow();
+    });
+  });
+
+  describe('pauseTransitions', () => {
+    const paused = () =>
+      [...document.head.querySelectorAll('style')].filter((style) =>
+        [...(style.sheet?.cssRules ?? [])].some((rule) => /transition:\s*none\s*!important/.test(rule.cssText)),
+      ).length;
+
+    it('switches every transition off until resumed, and leaves nothing behind', () => {
+      const resume = pauseTransitions();
+
+      expect(paused()).toBe(1);
+
+      resume();
+
+      expect(paused()).toBe(0);
+    });
+
+    it('flushes styles before resuming, so nothing computed while paused transitions afterwards', () => {
+      const read = vi.spyOn(window, 'getComputedStyle');
+
+      pauseTransitions()();
+
+      expect(read).toHaveBeenCalledWith(document.documentElement);
     });
   });
 });

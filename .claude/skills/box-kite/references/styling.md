@@ -107,7 +107,8 @@ while the transition runs) and `viewTransitionClass` (a shared name, so `::view-
 `Box.viewTransition(update, { reducedMotion, types })` around the change itself: it feature-detects, hands back the same
 `ready`/`finished`/`updateCallbackDone`/`skip()` handle whether or not a transition ran, and **skips under reduced motion while still
 applying the update**. In React the update must be flushed inside the callback — `Box.viewTransition(() => flushSync(() => setTab(next)))` —
-or the screenshot catches the old state twice; `<Box.Theme viewTransition>` is that already done for a theme switch. A name _per list item_
+or the screenshot catches the old state twice; `<Box.Theme viewTransition>` is that already done for a theme switch (`viewTransition="reveal"`
+grows the new theme out of the pressed control instead), and a theme switch pauses every CSS transition while it is applied. A name _per list item_
 is a rule per item that is never freed, so that one belongs in `props={{ style: { viewTransitionName: id } }}`.
 
 **Gradients**: `bgGradient` — a gradient as a _value_, written as a record, so its stops are palette tokens and it is

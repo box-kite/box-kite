@@ -3,7 +3,12 @@
  * theme name onto an element. `<Box.Theme>` is a thin wrapper over these three calls, and a non-React
  * adapter can drive theming with the same ones. Every function is a no-op without a DOM.
  */
-import { documentRoot as environmentDocumentRoot, matchMedia } from '../../utils/environment/environmentUtils';
+import {
+  documentHead,
+  documentOrNull,
+  documentRoot as environmentDocumentRoot,
+  matchMedia,
+} from '../../utils/environment/environmentUtils';
 
 const DARK_QUERY = '(prefers-color-scheme: dark)';
 
@@ -54,6 +59,28 @@ export function applyThemeToElement(element: Element, themeName: string): () => 
   return () => {
     element.classList.remove(themeName);
     element.removeAttribute('data-theme');
+  };
+}
+
+/**
+ * Switch every CSS transition on the page off until the returned function runs. A theme flip changes
+ * `color` and `scrollbar-color`, both inherited, so with transitions on, every element on the page starts
+ * one of its own and each frame restyles the lot (bug #243). Resuming flushes the styles first, so the
+ * values computed in between have nothing to transition from.
+ */
+export function pauseTransitions(): () => void {
+  const doc = documentOrNull();
+  const head = documentHead();
+  if (!doc || !head) return () => {};
+
+  // Rules go in through the CSSOM, as the engine's do, so a CSP that refuses inline style text allows it.
+  const style = doc.createElement('style');
+  head.appendChild(style);
+  style.sheet?.insertRule('*,*::before,*::after{transition:none!important}');
+
+  return () => {
+    void doc.defaultView?.getComputedStyle(doc.documentElement).transitionProperty;
+    style.remove();
   };
 }
 

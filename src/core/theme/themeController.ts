@@ -3,6 +3,7 @@ import {
   clearStoredTheme,
   documentRoot,
   getSystemTheme,
+  pauseTransitions,
   readStoredTheme,
   watchSystemTheme,
   writeStoredTheme,
@@ -59,8 +60,10 @@ export default function createThemeController(options: ThemeControllerOptions = 
     if (next === theme) return;
 
     theme = next;
+    const resume = target ? pauseTransitions() : undefined;
     removeFromTarget?.();
     removeFromTarget = target ? applyThemeToElement(target, next) : undefined;
+    resume?.();
 
     for (const listener of [...listeners]) listener(next);
   }

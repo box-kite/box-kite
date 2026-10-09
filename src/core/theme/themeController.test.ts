@@ -190,6 +190,26 @@ describe('createThemeController', () => {
     expect(listener).not.toHaveBeenCalled();
   });
 
+  it('writes a theme change with every transition paused, and resumes them afterwards (bug #243)', () => {
+    stubMatchMedia(false);
+    const paused = () =>
+      [...document.head.querySelectorAll('style')].filter((style) =>
+        /transition:\s*none\s*!important/.test(style.sheet?.cssRules[0]?.cssText ?? ''),
+      ).length;
+    const controller = createThemeController({ target });
+    const seen: number[] = [];
+    const add = target.classList.add.bind(target.classList);
+    vi.spyOn(target.classList, 'add').mockImplementation((...names) => {
+      seen.push(paused());
+      add(...names);
+    });
+
+    controller.set('dark');
+
+    expect(seen).toEqual([1]);
+    expect(paused()).toBe(0);
+  });
+
   it('releases the media listener and the target on destroy', () => {
     const media = stubMatchMedia(false);
     const controller = createThemeController({ target });

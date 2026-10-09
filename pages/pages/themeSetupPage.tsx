@@ -182,6 +182,28 @@ function Sample() {
           </Code>
 
           <Code
+            id="animating-the-switch"
+            label="Animating the Switch"
+            language="jsx"
+            code={`import Box from '@box-kite/react';
+
+// viewTransition="reveal" grows the new theme out of the button that was pressed, as a circle;
+// viewTransition (or "fade") cross-fades the page. Both animate a screenshot on the compositor, so a
+// page of ten thousand elements switches as smoothly as a page of ten. Reduced motion skips it.
+function Providers({ children }: { children: React.ReactNode }) {
+  return (
+    <Box.Theme use="global" storageKey="theme" viewTransition="reveal">
+      {children}
+    </Box.Theme>
+  );
+}
+
+// Every Box transitions its own colours, and color is inherited — so a theme switch would start a
+// transition on every element on the page at once. <Box.Theme> pauses them for the one commit that
+// changes the theme, which leaves the view transition as the only thing that moves.`}
+          />
+
+          <Code
             id="nesting"
             label="A Theme Inside a Theme"
             language="jsx"
@@ -231,6 +253,7 @@ const sidebarLinks = [
   { id: 'define-styles', label: 'Define Your Own Styles' },
   { id: 'global-styles', label: 'App-wide Styles (globalStyles)' },
   { id: 'theme-switching', label: 'Theme Switching' },
+  { id: 'animating-the-switch', label: 'Animating the Switch' },
   { id: 'nesting', label: 'A Theme Inside a Theme' },
 ] as const;
 

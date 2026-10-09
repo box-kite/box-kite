@@ -200,7 +200,7 @@ function ThemeToggle({ theme, toggleTheme }: { theme: string; toggleTheme: () =>
       onClick={toggleTheme}
     >
       {/* Keyed on the theme, so each icon is a mount and `startingStyle` is its spin-in. */}
-      <IconSwap key={theme} rotate={-90}>
+      <IconSwap key={theme} motion="turn">
         <Icon
           size={4.5}
           color={theme === 'dark' ? 'amber-400' : 'indigo-500'}

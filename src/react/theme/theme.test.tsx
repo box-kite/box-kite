@@ -305,6 +305,58 @@ describe('Theme', () => {
     });
   });
 
+  /**
+   * A theme flip changes `color`, which every element inherits, so with transitions on, each one starts its own:
+   * 15,815 on the DataGrid page and 7.8 s to settle (bug #243). The commit that flips it must see them paused.
+   */
+  describe('transitions during a theme change', () => {
+    const paused = () =>
+      [...document.head.querySelectorAll('style')].filter((style) =>
+        /transition:\s*none\s*!important/.test(style.sheet?.cssRules[0]?.cssText ?? ''),
+      ).length;
+
+    function Probe({ seen }: { seen: string[] }) {
+      const [theme, setTheme] = Theme.useTheme();
+      React.useLayoutEffect(() => {
+        seen.push(`${theme}:${paused()}`);
+      }, [theme, seen]);
+
+      return (
+        <Box tag="button" id={testId} props={{ onClick: () => setTheme(theme === 'dark' ? 'light' : 'dark') }}>
+          {theme}
+        </Box>
+      );
+    }
+
+    it.each(['global', 'local'] as const)('are paused for the commit that changes the theme, use="%s"', (use) => {
+      const seen: string[] = [];
+      render(
+        <Theme theme="light" use={use}>
+          <Probe seen={seen} />
+        </Theme>,
+      );
+
+      act(() => document.getElementById(testId)?.click());
+
+      expect(seen).toEqual(['light:0', 'dark:1']);
+      expect(paused()).toBe(0);
+    });
+
+    it('are paused when the system preference flips the theme', () => {
+      const seen: string[] = [];
+      render(
+        <Theme use="global">
+          <Probe seen={seen} />
+        </Theme>,
+      );
+
+      act(() => matchMediaListeners.forEach((listener) => listener({ matches: true } as MediaQueryListEvent)));
+
+      expect(seen.at(-1)).toBe('dark:1');
+      expect(paused()).toBe(0);
+    });
+  });
+
   describe('custom theme names', () => {
     it('supports custom theme names beyond light/dark', () => {
       render(
@@ -987,6 +1039,39 @@ describe('Theme', () => {
 
       expect(seen).toEqual(['dark']);
       expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
+    });
+
+    it('reveals from the press that changed the theme', async () => {
+      let finish = () => {};
+      const finished = new Promise<void>((resolve) => (finish = resolve));
+      (document as unknown as Doc).startViewTransition = (update: () => void) => {
+        update();
+
+        return { ready: finished, finished, updateCallbackDone: Promise.resolve(), skipTransition: vi.fn() };
+      };
+      const animate = vi.fn();
+      document.documentElement.animate = animate;
+
+      render(
+        <Theme theme="light" use="global" viewTransition="reveal">
+          <Toggle />
+        </Theme>,
+      );
+      // The reveal is a chunk of its own, fetched when the provider mounts.
+      await act(() => vi.dynamicImportSettled());
+
+      const button = document.getElementById(testId)!;
+      act(() => {
+        button.dispatchEvent(new PointerEvent('pointerdown', { clientX: 40, clientY: 60, bubbles: true }));
+        button.click();
+      });
+      await act(async () => {
+        finish();
+        await finished;
+      });
+
+      expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
+      expect(animate.mock.calls[0][0].clipPath[0]).toBe('circle(0px at 40px 60px)');
     });
 
     it('changes theme without a transition when the prop is off', () => {

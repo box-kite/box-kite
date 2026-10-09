@@ -136,7 +136,7 @@ export default function Code(props: Props) {
 
               {code && (
                 <Button component="code.action" variant={{ done: copied }} onClick={() => !copied && copyHandler()}>
-                  <IconSwap key={copied ? 'check' : 'copy'} scale={0.8}>
+                  <IconSwap key={copied ? 'check' : 'copy'} motion="grow">
                     <Icon size={3.5}>{copied ? <Check /> : <Copy />}</Icon>
                   </IconSwap>
                   {copied ? 'Copied!' : 'Copy'}

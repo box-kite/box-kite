@@ -10,7 +10,7 @@ export default function Root() {
   return (
     <Box.Theme
       use="global"
-      viewTransition
+      viewTransition="reveal"
       globalStyles={{
         scrollbarWidth: 'thin',
         scrollbarColor: ['violet-500', 'transparent'],
