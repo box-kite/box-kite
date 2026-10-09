@@ -66,6 +66,7 @@ import SearchTrigger from '../components/searchTrigger';
 import SiteLink from '../components/siteLink';
 import { RELEASES_PATH } from '../site/releases';
 import { prefetchPage } from './routePages';
+import SectionNav from './sectionNav';
 
 interface SidebarProps {
   toggleTheme: () => void;
@@ -138,6 +139,11 @@ export default function Sidebar({ toggleTheme, onClose, onSearch }: SidebarProps
 
       <Box px={3} pt={3}>
         <SearchTrigger onOpen={onSearch} />
+      </Box>
+
+      {/* On a phone the section bar has no room in the header, so its links open the drawer instead. */}
+      <Box px={3} pt={3} lg={{ display: 'none' }}>
+        <SectionNav placement="drawer" />
       </Box>
 
       {/* Navigation */}

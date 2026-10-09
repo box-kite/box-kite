@@ -27,13 +27,19 @@ describe('sourceFor', () => {
     expect(sourceFor('/releases/2.1.0')).toBe('releases/2.1.0.md');
   });
 
+  it('sends an article to its markdown, for the same reason', () => {
+    expect(sourceFor('/blog/dark-mode-without-the-flash')).toBe('posts/dark-mode-without-the-flash.md');
+  });
+
   it('leaves an address the site does not serve alone', () => {
     expect(sourceFor('/nothing-here')).toBeUndefined();
   });
 
-  it('claims every page module but the two the router reaches without a route of its own', () => {
+  it('claims every page module but the three the router reaches without a route of its own', () => {
     const claimed = new Set(siteRoutes.map((route) => sourceFor(route.path)?.split('/').pop()));
-    const unclaimed = pageFiles.filter((file) => !claimed.has(file) && !['notFoundPage.tsx', 'releasePage.tsx'].includes(file));
+    const unclaimed = pageFiles.filter(
+      (file) => !claimed.has(file) && !['notFoundPage.tsx', 'releasePage.tsx', 'postPage.tsx'].includes(file),
+    );
 
     expect(unclaimed).toEqual([]);
   });

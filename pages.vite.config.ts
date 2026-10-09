@@ -4,6 +4,7 @@ import { dirname, join } from 'node:path';
 import reactPlugin from '@vitejs/plugin-react';
 import iconsPlugin from 'unplugin-icons/vite';
 import { defineConfig, Plugin } from 'vite';
+import { parsePosts, postRoutes } from './pages/site/posts';
 import { parseReleases, releaseRoutes } from './pages/site/releases';
 import { SEARCH_INDEX_PATH } from './pages/site/searchIndex';
 import { SITE_URL, SiteRoute, siteRoutes } from './pages/site/site';
@@ -17,20 +18,23 @@ import { buildRobotsTxt, buildSitemap, notFoundMeta, pageMeta, withHeadHtml } fr
  * an HTTP 404, so every route the sitemap listed would report itself missing.
  */
 /**
- * The routes the app serves, the release pages included. The app derives those from an `import.meta.glob`
- * over `releases/`; this runs in Node, where the same files are read with `fs`.
+ * The routes the app serves, the release and blog pages included. The app derives those from an
+ * `import.meta.glob` over `releases/` and `posts/`; this runs in Node, where the same files are read with `fs`.
  */
 function allRoutes(): readonly SiteRoute[] {
-  const dir = join(import.meta.dirname, 'releases');
-  const files = existsSync(dir)
+  return [...siteRoutes, ...releaseRoutes(parseReleases(markdownIn('releases'))), ...postRoutes(parsePosts(markdownIn('posts')))];
+}
+
+function markdownIn(folder: string): Record<string, string> {
+  const dir = join(import.meta.dirname, folder);
+
+  return existsSync(dir)
     ? Object.fromEntries(
         readdirSync(dir)
           .filter((file) => file.endsWith('.md'))
           .map((file) => [file, readFileSync(join(dir, file), 'utf8')]),
       )
     : {};
-
-  return [...siteRoutes, ...releaseRoutes(parseReleases(files))];
 }
 
 function siteMetadata(): Plugin {

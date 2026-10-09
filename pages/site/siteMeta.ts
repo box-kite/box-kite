@@ -91,6 +91,9 @@ export function buildRobotsTxt(siteUrl: string = SITE_URL): string {
 export const META_START = '<!--site-metadata-->';
 export const META_END = '<!--/site-metadata-->';
 
+/** The card a shared link shows: one image for the whole site, 1200×630 as every network asks. */
+export const SOCIAL_IMAGE = { path: '/og.png', width: 1200, height: 630, alt: 'Box Kite — every CSS property is a typed prop' };
+
 const escapeText = (value: string) => value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const escapeAttribute = (value: string) => escapeText(value).replace(/"/g, '&quot;');
 
@@ -108,7 +111,12 @@ export function buildHeadHtml(meta: PageMeta): string {
     `<meta property="og:title" content="${escapeAttribute(meta.title)}" />`,
     `<meta property="og:description" content="${escapeAttribute(meta.description)}" />`,
     ...(meta.canonical ? [`<meta property="og:url" content="${meta.canonical}" />`] : []),
-    `<meta name="twitter:card" content="summary" />`,
+    `<meta property="og:image" content="${SITE_URL}${SOCIAL_IMAGE.path}" />`,
+    `<meta property="og:image:width" content="${SOCIAL_IMAGE.width}" />`,
+    `<meta property="og:image:height" content="${SOCIAL_IMAGE.height}" />`,
+    `<meta property="og:image:alt" content="${escapeAttribute(SOCIAL_IMAGE.alt)}" />`,
+    `<meta name="twitter:card" content="summary_large_image" />`,
+    `<meta name="twitter:image" content="${SITE_URL}${SOCIAL_IMAGE.path}" />`,
     ...(meta.indexable ? [] : [`<meta name="robots" content="noindex, follow" />`]),
   ];
 

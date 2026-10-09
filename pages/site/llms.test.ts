@@ -8,6 +8,7 @@ const routes: SiteRoute[] = [
   { path: '/', name: 'Introduction', description: 'Every CSS property is a typed prop.' },
   { path: '/box', name: 'Box', description: 'The foundational component.' },
   { path: '/releases/1.0.0', name: 'Box Kite 1.0.0', description: 'The rename.' },
+  { path: '/blog/dark-mode', name: 'Dark mode without the flash', description: 'A theme that paints right the first time.' },
 ];
 
 const input: LlmsInput = {
@@ -46,6 +47,14 @@ describe('buildLlmsTxt', () => {
     expect(docs).toContain(`- [Box](${SITE}/box.md): The foundational component.`);
     expect(docs).not.toContain('/releases/1.0.0.md');
     expect(llms.split('## Optional')[1]).toContain(`- [Box Kite 1.0.0](${SITE}/releases/1.0.0.md): The rename.`);
+  });
+
+  it('lists the articles in a section of their own, after the docs', () => {
+    const articles = llms.split('## Articles')[1].split('\n## ')[0];
+
+    expect(articles).toContain(`- [Dark mode without the flash](${SITE}/blog/dark-mode.md): A theme that paints right the first time.`);
+    expect(llms.split('## Docs')[1].split('\n## ')[0]).not.toContain('/blog/');
+    expect(llms.indexOf('## Articles')).toBeGreaterThan(llms.indexOf('## Docs'));
   });
 
   it('sends a reader to the whole corpus last, and says what it is for', () => {

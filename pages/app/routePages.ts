@@ -1,4 +1,5 @@
 import { ComponentType, lazy } from 'react';
+import { POSTS_PATH } from '../site/posts';
 import { RELEASES_PATH } from '../site/releases';
 import { SiteRoutePath } from '../site/site';
 
@@ -21,6 +22,7 @@ const files: Record<SiteRoutePath, string> = {
   '/start': 'startPage',
   '/installation': 'installationPage',
   '/releases': 'releasesPage',
+  '/blog': 'blogPage',
   '/theme-setup': 'themeSetupPage',
   '/server-components': 'serverComponentsPage',
   '/generative-ui': 'generativeUiPage',
@@ -71,11 +73,15 @@ const files: Record<SiteRoutePath, string> = {
   '/ai-context': 'aiContextPage',
 };
 
-// Every release has a route of its own, but one page module: the version is in the pathname.
+// Every release and every article has a route of its own, but one page module each: the rest is in the pathname.
 const RELEASE_FILE = 'releasePage';
+const POST_FILE = 'postPage';
 
 function fileFor(path: string): string | undefined {
-  return files[path as SiteRoutePath] ?? (path.startsWith(`${RELEASES_PATH}/`) ? RELEASE_FILE : undefined);
+  if (path.startsWith(`${RELEASES_PATH}/`)) return RELEASE_FILE;
+  if (path.startsWith(`${POSTS_PATH}/`)) return POST_FILE;
+
+  return files[path as SiteRoutePath];
 }
 
 function loaderFor(path: string) {
@@ -85,11 +91,12 @@ function loaderFor(path: string) {
 }
 
 /**
- * The file a route is written in, for the link that opens it on GitHub. A release page is the one route
- * whose content is not its module: the notes are `releases/<version>.md`, which is what to edit.
+ * The file a route is written in, for the link that opens it on GitHub. A release or an article is a
+ * route whose content is not its module: `releases/<version>.md` and `posts/<slug>.md` are what to edit.
  */
 export function sourceFor(path: string): string | undefined {
   if (path.startsWith(`${RELEASES_PATH}/`)) return `releases/${path.slice(RELEASES_PATH.length + 1)}.md`;
+  if (path.startsWith(`${POSTS_PATH}/`)) return `posts/${path.slice(POSTS_PATH.length + 1)}.md`;
 
   const file = files[path as SiteRoutePath];
 

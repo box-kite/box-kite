@@ -10,7 +10,7 @@ pass at runtime and caches every rule by its content, so the same value anywhere
 one class — a project styles itself in TypeScript, with no CSS files to write and no class-name
 convention to remember.
 
-[Docs and live demos](https://www.box-kite.dev) · [Contributing](CONTRIBUTING.md) ·
+[Docs and live demos](https://www.box-kite.dev) · [Blog](https://www.box-kite.dev/blog/) · [Contributing](CONTRIBUTING.md) ·
 [Support](SUPPORT.md) · [Security](SECURITY.md) ·
 [Releases](https://github.com/box-kite/box-kite/releases)
 

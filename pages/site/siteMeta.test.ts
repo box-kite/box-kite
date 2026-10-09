@@ -1,6 +1,7 @@
-import { readFileSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
 import { resolve } from 'path';
 import { describe, expect, it } from 'vitest';
+import { SECTIONS } from './sections';
 import { SITE_URL, siteRoutes } from './site';
 import {
   buildHeadHtml,
@@ -14,6 +15,7 @@ import {
   notFoundMeta,
   pageMeta,
   routeFor,
+  SOCIAL_IMAGE,
   withHeadHtml,
 } from './siteMeta';
 
@@ -34,9 +36,9 @@ describe('the route table', () => {
   // The sidebar is written by hand and the route table drives the prerender, so the two can disagree:
   // C5 added /gradients-shadows, which prerendered and was reachable by URL but had no menu entry at
   // all (bug #112). A route that opts out with `indexable: false` is the one exception.
-  it('gives every listed route a link in the sidebar', () => {
+  it('gives every listed route a link in the sidebar or the section bar', () => {
     const sidebar = readFileSync(resolve(process.cwd(), 'pages/app/sidebar.tsx'), 'utf8');
-    const linked = new Set([...sidebar.matchAll(/to="([^"]+)"/g)].map((match) => match[1]));
+    const linked = new Set([...[...sidebar.matchAll(/to="([^"]+)"/g)].map((match) => match[1]), ...SECTIONS.map((section) => section.to)]);
     const missing = indexableRoutes()
       .map((route) => route.path)
       .filter((path) => !linked.has(path));
@@ -122,6 +124,14 @@ describe('buildHeadHtml', () => {
     expect(head).toContain(`<link rel="canonical" href="${SITE_URL}/" />`);
     expect(head).toContain(`<meta property="og:url" content="${SITE_URL}/" />`);
     expect(head).not.toContain('robots');
+  });
+
+  it('gives every shared link a large card, and points it at an image that ships with the site', () => {
+    const head = buildHeadHtml(pageMeta(siteRoutes[0]));
+
+    expect(head).toContain(`<meta property="og:image" content="${SITE_URL}/og.png" />`);
+    expect(head).toContain('<meta name="twitter:card" content="summary_large_image" />');
+    expect(existsSync(resolve(process.cwd(), 'pages/public', SOCIAL_IMAGE.path.slice(1)))).toBe(true);
   });
 
   it('marks an unlisted route noindex, and leaves the not-found shell without a canonical', () => {

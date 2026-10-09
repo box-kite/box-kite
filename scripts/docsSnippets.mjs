@@ -85,3 +85,55 @@ function snippetsIn(root, path) {
 export function collectDocsSnippets(root, dir = 'pages') {
   return walk(root, dir).flatMap((path) => snippetsIn(root, path));
 }
+
+/** The fenced languages in a post that are TypeScript to the compiler; anything else is a shell line or output. */
+const POST_LANGUAGES = new Set(['tsx', 'ts', 'jsx', 'js']);
+
+/**
+ * Every TypeScript block in the blog posts (`posts/*.md`), in the shape `collectDocsSnippets` returns, for
+ * `check-docs-snippets.mjs` only — a post's block is a whole file a reader pastes, not a playground demo.
+ * ` ```tsx nocheck ` opts a block out, the way `check={false}` does on a page.
+ */
+export function collectPostSnippets(root, dir = 'posts') {
+  let files;
+  try {
+    files = readdirSync(join(root, dir)).filter((name) => name.endsWith('.md'));
+  } catch {
+    return [];
+  }
+
+  return files.flatMap((name) => {
+    const path = `${dir}/${name}`;
+    const lines = readFileSync(join(root, path), 'utf8').split('\n');
+    const found = [];
+    let open = null;
+
+    lines.forEach((text, index) => {
+      if (!text.startsWith('```')) {
+        open?.body.push(text);
+        return;
+      }
+      if (open) {
+        if (POST_LANGUAGES.has(open.language)) {
+          found.push({
+            path,
+            line: open.line,
+            codeLine: open.line + 1,
+            language: 'jsx',
+            hasCode: true,
+            hasDemo: false,
+            code: open.body.join('\n'),
+            check: !open.flags.includes('nocheck'),
+            context: undefined,
+          });
+        }
+        open = null;
+        return;
+      }
+      const [language = '', ...flags] = text.slice(3).trim().split(' ');
+      open = { line: index + 1, language, flags, body: [] };
+    });
+
+    return found;
+  });
+}

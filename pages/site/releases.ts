@@ -1,3 +1,4 @@
+import { asDescription, documentHeader } from '../utils/markdownUtils';
 import { SITE_NAME, SiteRoute } from './site';
 
 /** The index of every release, and the prefix of each release's own page. */
@@ -49,36 +50,9 @@ export function withoutTitle(markdown: string): string {
 
 // The header the release script writes: an H1, an italic meta line whose first cell is the date, the intro.
 function describe(markdown: string, version: string): { date: string; summary: string } {
-  const lines = markdown.split('\n');
-  const metaAt = lines.findIndex((line, index) => index > 0 && /^_.*_\s*$/.test(line));
-  const date =
-    metaAt === -1
-      ? ''
-      : lines[metaAt]
-          .replace(/^_|_\s*$/g, '')
-          .split(' · ')[0]
-          .trim();
+  const { meta, sentence } = documentHeader(markdown);
 
-  const intro: string[] = [];
-  for (const line of lines.slice(metaAt + 1)) {
-    if (/^(#|```)/.test(line)) break;
-    if (line.trim() === '') {
-      if (intro.length) break;
-      continue;
-    }
-    intro.push(line);
-  }
-
-  const plain = intro
-    .join(' ')
-    .replace(/\*\*|__|`/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
-  const sentence = plain.match(/^.*?[.!?](?=\s|$)/)?.[0] ?? plain;
-  const summary = sentence || `What changed in ${SITE_NAME} ${version}.`;
-
-  // A meta description is cut at about 160 characters by a search result, so cut it here, visibly.
-  return { date, summary: summary.length > 160 ? `${summary.slice(0, 157).trimEnd()}…` : summary };
+  return { date: meta[0] ?? '', summary: asDescription(sentence || `What changed in ${SITE_NAME} ${version}.`) };
 }
 
 function compareVersions(a: string, b: string): number {

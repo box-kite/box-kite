@@ -7,9 +7,9 @@ import { slugify } from '../utils/markdownUtils';
 import Code from './code';
 
 /**
- * Markdown rendered with Box components — the release notes, which are written once and read on GitHub
- * and here. Only the constructs the notes use: headings, paragraphs, fenced code, lists, tables, links,
- * emphasis and inline code. Raw HTML in the source renders nothing.
+ * Markdown rendered with Box components — the release notes and the blog posts, which are written once and
+ * read elsewhere too. Only the constructs they use: headings, paragraphs, fenced code, lists, tables, links,
+ * images, emphasis and inline code. Raw HTML in the source renders nothing.
  */
 export default function Markdown({ source, ...rest }: { source: string } & BoxProps) {
   const tokens = useMemo(() => marked.lexer(source), [source]);
@@ -57,7 +57,8 @@ function block(token: Token): ReactNode {
     case 'code': {
       const { lang, text } = token as Tokens.Code;
 
-      return <Code language={LANGUAGES[lang ?? ''] ?? 'auto'} code={text} mb={6} />;
+      // The info string after the language is for tools (`tsx nocheck`), not for the reader.
+      return <Code language={LANGUAGES[lang?.split(' ')[0] ?? ''] ?? 'auto'} code={text} mb={6} />;
     }
     case 'list': {
       const { ordered, items } = token as Tokens.List;
@@ -205,6 +206,7 @@ function inlineToken(token: Token): ReactNode {
           props={own ? { href } : { href, target: '_blank', rel: 'noopener noreferrer' }}
           display="inline"
           textDecoration="underline"
+          cursor="pointer"
           theme={{
             dark: { color: 'sky-400', hover: { color: 'sky-300' } },
             light: { color: 'indigo-600', hover: { color: 'indigo-500' } },

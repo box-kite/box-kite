@@ -15,6 +15,8 @@ export default function Root() {
         scrollbarWidth: 'thin',
         scrollbarColor: ['violet-500', 'transparent'],
         theme: { dark: { scrollbarColor: ['violet-700', 'transparent'] } },
+        // A hash link lands below the sticky header — the section bar on a wide screen, the mobile header on a phone.
+        css: { scrollPaddingTop: '4.5rem' },
       }}
     >
       <App />
