@@ -122,6 +122,7 @@ export default function Sidebar({ onClose, onSearch }: SidebarProps) {
         </Flex>
         <Button
           clean
+          cursor="pointer"
           p={2}
           borderRadius={2}
           lg={{ display: 'none' }}
@@ -408,6 +409,7 @@ function ThemeButton() {
   return (
     <Button
       clean
+      cursor="pointer"
       p={2}
       px={3}
       borderRadius={2}

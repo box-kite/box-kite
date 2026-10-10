@@ -234,6 +234,7 @@ function NumbersSection() {
             <Button
               key={preset}
               clean
+              cursor="pointer"
               px={3}
               py={1}
               fontSize={13}

@@ -81,6 +81,7 @@ export default function Layout({ children }: LayoutProps) {
           <Flex ai="center" gap={3}>
             <Button
               clean
+              cursor="pointer"
               p={2}
               borderRadius={2}
               theme={{
@@ -191,6 +192,7 @@ function ThemeToggle() {
   return (
     <Button
       clean
+      cursor="pointer"
       p={2}
       borderRadius={2}
       theme={{

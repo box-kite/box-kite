@@ -186,6 +186,7 @@ function Options<TValue extends string>(props: { label: string; values: TValue[]
         <Button
           key={value}
           clean
+          cursor="pointer"
           px={3}
           py={1}
           borderRadius={2}
