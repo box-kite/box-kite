@@ -33,3 +33,5 @@ None.
 ## Fixes
 
 <!-- One bullet per fix: **What was wrong.** What it does now. -->
+
+- **`contentVisibility` had no `auto`**, the one value that skips an off-screen subtree's rendering until it scrolls near. It takes `'auto'` beside `'visible'` and `'hidden'`; pair it with `css={{ containIntrinsicSize: 'auto 480px' }}`, the size it holds before it has ever rendered.

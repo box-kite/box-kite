@@ -90,12 +90,16 @@ export default function Code(props: Props) {
           {label}
         </Box>
       )}
+      {/* Skipped while off screen, so a theme switch restyles the blocks in view rather than the whole page (8,209
+          elements to 3,840 on /datagrid). Here and not on the wrapper: the containment would clip this box's shadow. */}
       <Box
         shadow="large"
         borderRadius={3}
         overflow="hidden"
         b={1}
         theme={{ dark: { borderColor: 'slate-700' }, light: { borderColor: 'slate-200' } }}
+        contentVisibility="auto"
+        css={{ containIntrinsicSize: 'auto 480px' }}
       >
         {/* Demo Area — `data-md` because the markdown mirror wants the snippet, not the rendered
             markup it produces: a grid demo is four hundred rows of mock data as text. */}

@@ -524,7 +524,7 @@
       "example": { "value": "visible", "css": "content-visibility: visible" },
       "numeric": false,
       "open": false,
-      "values": ["visible", "hidden"]
+      "values": ["visible", "hidden", "auto"]
     },
     {
       "name": "clipPath",
