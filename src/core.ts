@@ -37,6 +37,8 @@ export type { FlushScheduler } from './core/engine/flushScheduler';
 export type { SinkMode, SortedRule, StyleElementDescriptor, StyleSink } from './core/engine/styleSink';
 export { default as startViewTransition } from './core/viewTransition';
 export type { ViewTransitionHandle, ViewTransitionOptions, ViewTransitionUpdate } from './core/viewTransition';
+export { prepareReveal, default as transitionTheme } from './core/theme/themeTransition';
+export type { ThemeTransition } from './core/theme/themeTransition';
 export { default as createThemeController } from './core/theme/themeController';
 export type { ThemeController, ThemeControllerOptions } from './core/theme/themeController';
 export {
@@ -45,6 +47,7 @@ export {
   defaultThemeName,
   documentRoot,
   getSystemTheme,
+  pauseTransitions,
   readStoredTheme,
   setThemeAttribute,
   watchSystemTheme,

@@ -5,6 +5,7 @@ import {
   defaultThemeName,
   documentRoot,
   getSystemTheme,
+  pauseTransitions,
   readStoredTheme,
   setThemeAttribute,
   watchSystemTheme,
@@ -163,6 +164,42 @@ describe('themeRuntime', () => {
       expect(readStoredTheme(key)).toBeNull();
       expect(() => writeStoredTheme(key, 'dark')).not.toThrow();
       expect(() => clearStoredTheme(key)).not.toThrow();
+    });
+  });
+
+  describe('pauseTransitions', () => {
+    const paused = () =>
+      [...document.head.querySelectorAll('style')].filter((style) =>
+        [...(style.sheet?.cssRules ?? [])].some((rule) => /transition:\s*none\s*!important/.test(rule.cssText)),
+      ).length;
+
+    const frames = () => new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+
+    it('switches every transition off until a frame after it is resumed, and leaves nothing behind', async () => {
+      const resume = pauseTransitions();
+
+      expect(paused()).toBe(1);
+
+      resume();
+
+      // Removing it at once would restyle the page a second time before the first paint (bug #244).
+      expect(paused()).toBe(1);
+      await vi.waitFor(() => expect(paused()).toBe(0));
+    });
+
+    it('stays paused until a running view transition has finished', async () => {
+      let finish = () => {};
+      const finished = new Promise<void>((resolve) => (finish = resolve));
+
+      pauseTransitions()(finished);
+      await frames();
+      await frames();
+
+      expect(paused()).toBe(1);
+
+      finish();
+
+      await vi.waitFor(() => expect(paused()).toBe(0));
     });
   });
 });

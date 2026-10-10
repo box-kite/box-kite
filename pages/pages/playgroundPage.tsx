@@ -280,6 +280,7 @@ function ActionButton({ onClick, label, children }: { onClick: () => void; label
   return (
     <Button
       clean
+      cursor="pointer"
       p={2}
       px={3}
       borderRadius={2}

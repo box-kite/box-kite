@@ -69,14 +69,11 @@ import { prefetchPage } from './routePages';
 import SectionNav from './sectionNav';
 
 interface SidebarProps {
-  toggleTheme: () => void;
   onClose?: () => void;
   onSearch: () => void;
 }
 
-export default function Sidebar({ toggleTheme, onClose, onSearch }: SidebarProps) {
-  const [theme] = Box.useTheme();
-
+export default function Sidebar({ onClose, onSearch }: SidebarProps) {
   return (
     <Box
       height="fit-screen"
@@ -125,6 +122,7 @@ export default function Sidebar({ toggleTheme, onClose, onSearch }: SidebarProps
         </Flex>
         <Button
           clean
+          cursor="pointer"
           p={2}
           borderRadius={2}
           lg={{ display: 'none' }}
@@ -397,26 +395,36 @@ export default function Sidebar({ toggleTheme, onClose, onSearch }: SidebarProps
               Theme
             </Flex>
           </Box>
-          <Button
-            clean
-            p={2}
-            px={3}
-            borderRadius={2}
-            theme={{
-              dark: { bgColor: 'slate-800', color: 'slate-300' },
-              light: { bgColor: 'slate-100', color: 'slate-600' },
-            }}
-            onClick={toggleTheme}
-            transitionDuration={150}
-          >
-            <Flex ai="center" gap={2}>
-              <Icon size={3.5}>{theme === 'dark' ? <Sun /> : <Moon />}</Icon>
-              <Box fontSize={12}>{theme === 'dark' ? 'Light' : 'Dark'}</Box>
-            </Flex>
-          </Button>
+          <ThemeButton />
         </Flex>
       </Box>
     </Box>
+  );
+}
+
+// The only part of the sidebar that reads the theme, so a switch re-renders this button rather than every link.
+function ThemeButton() {
+  const [theme, setTheme] = Box.useTheme();
+
+  return (
+    <Button
+      clean
+      cursor="pointer"
+      p={2}
+      px={3}
+      borderRadius={2}
+      theme={{
+        dark: { bgColor: 'slate-800', color: 'slate-300' },
+        light: { bgColor: 'slate-100', color: 'slate-600' },
+      }}
+      onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+      transitionDuration={150}
+    >
+      <Flex ai="center" gap={2}>
+        <Icon size={3.5}>{theme === 'dark' ? <Sun /> : <Moon />}</Icon>
+        <Box fontSize={12}>{theme === 'dark' ? 'Light' : 'Dark'}</Box>
+      </Flex>
+    </Button>
   );
 }
 

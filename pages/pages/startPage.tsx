@@ -260,7 +260,7 @@ function Prompt({ label, prompt }: { label: string; prompt: string }) {
             <Box>{label}</Box>
           </Box>
           <Button component="code.action" variant={{ done: copied }} onClick={() => !copied && copy()}>
-            <IconSwap key={copied ? 'check' : 'copy'} scale={0.8}>
+            <IconSwap key={copied ? 'check' : 'copy'} motion="grow">
               <Icon size={3.5}>{copied ? <Check /> : <Copy />}</Icon>
             </IconSwap>
             {copied ? 'Copied!' : 'Copy prompt'}

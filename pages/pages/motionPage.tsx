@@ -360,8 +360,8 @@ function ViewTransitions() {
       <Aside>
         A name has to be unique in the document while the transition runs, so the prop is for the handful a layout has. Reduced motion{' '}
         <strong>skips</strong> the transition and still applies the update — a whole-page cross-fade being exactly the motion the preference
-        is about. This site's own theme toggle is <Mono>&lt;Box.Theme viewTransition&gt;</Mono>, which is this call with the{' '}
-        <Mono>flushSync</Mono> already inside it.
+        is about. This site's own theme toggle is <Mono>&lt;Box.Theme viewTransition=&quot;reveal&quot;&gt;</Mono>, which is this call with
+        the <Mono>flushSync</Mono> already inside it.
       </Aside>
     </Demo>
   );

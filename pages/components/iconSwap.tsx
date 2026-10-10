@@ -2,12 +2,16 @@ import { ReactNode } from 'react';
 import Box from '../../src/box';
 import { useIsRealMount } from '../app/hydration';
 
+// Keyframes rather than `startingStyle`: a theme change pauses every transition, and the theme toggle swaps its icon then.
+Box.keyframes({
+  'icon-swap-turn': { from: { opacity: 0, rotate: -90 }, to: { opacity: 1, rotate: 0 } },
+  'icon-swap-grow': { from: { opacity: 0, scale: 0.8 }, to: { opacity: 1, scale: 1 } },
+});
+
 interface Props {
   children: ReactNode;
-  /** The angle the arriving icon turns from. */
-  rotate?: -45 | -90 | -135;
-  /** The size it grows from, unitless. */
-  scale?: number;
+  /** How the arriving icon comes in: turning a quarter, or growing. */
+  motion: 'turn' | 'grow';
 }
 
 /**
@@ -16,11 +20,16 @@ interface Props {
  * one has nowhere to go. Gated on hydration like every other entrance on this site, so the icon the
  * prerendered page is already showing does not spin on arrival.
  */
-export default function IconSwap({ children, rotate, scale }: Props) {
+export default function IconSwap({ children, motion }: Props) {
   const animate = useIsRealMount();
 
   return (
-    <Box startingStyle={animate ? { opacity: 0, rotate, scale } : undefined} transitionDuration={150}>
+    <Box
+      animationName={animate ? `icon-swap-${motion}` : undefined}
+      animationDuration={150}
+      animationTimingFunction="ease-out"
+      motionReduce={{ animationName: 'none' }}
+    >
       {children}
     </Box>
   );

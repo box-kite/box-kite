@@ -113,10 +113,11 @@
       "ignore": [
         "react",
         "react-dom",
-        "./diagnostics-*"
+        "./diagnostics-*",
+        "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "36.74 KB"
+      "limit": "37.07 KB"
     },
     {
       "name": "Box in a Server Component (react-server entry)",
@@ -124,7 +125,8 @@
       "ignore": [
         "react",
         "react-dom",
-        "./diagnostics-*"
+        "./diagnostics-*",
+        "./themeReveal-*"
       ],
       "gzip": true,
       "limit": "35.16 KB"
@@ -135,7 +137,8 @@
       "ignore": [
         "react",
         "react-dom",
-        "./diagnostics-*"
+        "./diagnostics-*",
+        "./themeReveal-*"
       ],
       "gzip": true,
       "limit": "3.2 KB"
@@ -146,7 +149,8 @@
       "ignore": [
         "react",
         "react-dom",
-        "./diagnostics-*"
+        "./diagnostics-*",
+        "./themeReveal-*"
       ],
       "gzip": true,
       "limit": "2.25 KB"
@@ -157,7 +161,8 @@
       "ignore": [
         "react",
         "react-dom",
-        "./diagnostics-*"
+        "./diagnostics-*",
+        "./themeReveal-*"
       ],
       "gzip": true,
       "limit": "55.18 KB"
@@ -168,7 +173,8 @@
       "ignore": [
         "react",
         "react-dom",
-        "./diagnostics-*"
+        "./diagnostics-*",
+        "./themeReveal-*"
       ],
       "gzip": true,
       "limit": "4.7 KB"
@@ -179,7 +185,8 @@
       "ignore": [
         "react",
         "react-dom",
-        "./diagnostics-*"
+        "./diagnostics-*",
+        "./themeReveal-*"
       ],
       "gzip": true,
       "limit": "4 KB"
@@ -188,9 +195,10 @@
       "name": "Core engine (@box-kite/core, no React)",
       "path": "dist-core/core.mjs",
       "gzip": true,
-      "limit": "36.20 KB",
+      "limit": "36.44 KB",
       "ignore": [
-        "./diagnostics-*"
+        "./diagnostics-*",
+        "./themeReveal-*"
       ]
     },
     {
@@ -199,10 +207,11 @@
       "ignore": [
         "react",
         "react-dom",
-        "./diagnostics-*"
+        "./diagnostics-*",
+        "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "38.83 KB"
+      "limit": "39.15 KB"
     },
     {
       "name": "Popover",
@@ -210,10 +219,11 @@
       "ignore": [
         "react",
         "react-dom",
-        "./diagnostics-*"
+        "./diagnostics-*",
+        "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "40.35 KB"
+      "limit": "40.67 KB"
     },
     {
       "name": "Menu",
@@ -221,10 +231,11 @@
       "ignore": [
         "react",
         "react-dom",
-        "./diagnostics-*"
+        "./diagnostics-*",
+        "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "42.63 KB"
+      "limit": "42.93 KB"
     },
     {
       "name": "Accordion",
@@ -232,10 +243,11 @@
       "ignore": [
         "react",
         "react-dom",
-        "./diagnostics-*"
+        "./diagnostics-*",
+        "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "38.07 KB"
+      "limit": "38.42 KB"
     },
     {
       "name": "Agent",
@@ -243,10 +255,11 @@
       "ignore": [
         "react",
         "react-dom",
-        "./diagnostics-*"
+        "./diagnostics-*",
+        "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "38.80 KB"
+      "limit": "39.16 KB"
     },
     {
       "name": "Markdown",
@@ -254,10 +267,11 @@
       "ignore": [
         "react",
         "react-dom",
-        "./diagnostics-*"
+        "./diagnostics-*",
+        "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "37.30 KB"
+      "limit": "37.63 KB"
     },
     {
       "name": "Skeleton",
@@ -265,10 +279,11 @@
       "ignore": [
         "react",
         "react-dom",
-        "./diagnostics-*"
+        "./diagnostics-*",
+        "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "36.64 KB"
+      "limit": "36.97 KB"
     },
     {
       "name": "Tabs",
@@ -276,10 +291,11 @@
       "ignore": [
         "react",
         "react-dom",
-        "./diagnostics-*"
+        "./diagnostics-*",
+        "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "39.26 KB"
+      "limit": "39.59 KB"
     },
     {
       "name": "Slider",
@@ -287,10 +303,11 @@
       "ignore": [
         "react",
         "react-dom",
-        "./diagnostics-*"
+        "./diagnostics-*",
+        "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "38.42 KB"
+      "limit": "38.75 KB"
     },
     {
       "name": "Progress",
@@ -298,10 +315,11 @@
       "ignore": [
         "react",
         "react-dom",
-        "./diagnostics-*"
+        "./diagnostics-*",
+        "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "36.62 KB"
+      "limit": "36.95 KB"
     },
     {
       "name": "Toaster",
@@ -309,10 +327,11 @@
       "ignore": [
         "react",
         "react-dom",
-        "./diagnostics-*"
+        "./diagnostics-*",
+        "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "40.08 KB"
+      "limit": "40.38 KB"
     },
     {
       "name": "Combobox",
@@ -320,10 +339,11 @@
       "ignore": [
         "react",
         "react-dom",
-        "./diagnostics-*"
+        "./diagnostics-*",
+        "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "45.88 KB"
+      "limit": "46.19 KB"
     },
     {
       "name": "Dashboard",
@@ -331,10 +351,11 @@
       "ignore": [
         "react",
         "react-dom",
-        "./diagnostics-*"
+        "./diagnostics-*",
+        "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "42.27 KB"
+      "limit": "42.60 KB"
     },
     {
       "name": "DataGrid",
@@ -342,10 +363,11 @@
       "ignore": [
         "react",
         "react-dom",
-        "./diagnostics-*"
+        "./diagnostics-*",
+        "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "87.02 KB"
+      "limit": "87.34 KB"
     },
     {
       "name": "DataGrid export, the chunk fetched on the first press",
@@ -353,7 +375,8 @@
       "ignore": [
         "react",
         "react-dom",
-        "./diagnostics-*"
+        "./diagnostics-*",
+        "./themeReveal-*"
       ],
       "gzip": true,
       "limit": "3.8 KB"
@@ -364,10 +387,11 @@
       "ignore": [
         "react",
         "react-dom",
-        "./diagnostics-*"
+        "./diagnostics-*",
+        "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "118.64 KB"
+      "limit": "118.95 KB"
     }
   ],
   "repository": {

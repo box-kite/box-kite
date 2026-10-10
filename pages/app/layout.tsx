@@ -30,10 +30,7 @@ export default function Layout({ children }: LayoutProps) {
   // Stays true once opened: the chunk is loaded, and an exit transition needs the node to survive.
   const [searchMounted, setSearchMounted] = useState(false);
   const [tocEntries, setTocEntries] = useState<TocEntry[]>([]);
-  const [theme, setTheme] = Box.useTheme();
   const location = useLocation();
-
-  const toggleTheme = () => setTheme(theme === 'dark' ? 'light' : 'dark');
 
   // Stable, or the shortcut's listener is torn down and re-added on every render of the page.
   const openSearch = useCallback(() => {
@@ -84,6 +81,7 @@ export default function Layout({ children }: LayoutProps) {
           <Flex ai="center" gap={3}>
             <Button
               clean
+              cursor="pointer"
               p={2}
               borderRadius={2}
               theme={{
@@ -113,7 +111,7 @@ export default function Layout({ children }: LayoutProps) {
           </Flex>
           <Flex ai="center" gap={2}>
             <SearchTrigger icon onOpen={openSearch} />
-            <ThemeToggle theme={theme} toggleTheme={toggleTheme} />
+            <ThemeToggle />
           </Flex>
         </Flex>
       </Box>
@@ -150,7 +148,7 @@ export default function Layout({ children }: LayoutProps) {
           transitionDuration={300}
           transitionTimingFunction="ease-in-out"
         >
-          <Sidebar toggleTheme={toggleTheme} onClose={() => setSidebarOpen(false)} onSearch={openSearch} />
+          <Sidebar onClose={() => setSidebarOpen(false)} onSearch={openSearch} />
         </Box>
 
         {/* Main Content + Right Sidebar */}
@@ -187,20 +185,24 @@ export default function Layout({ children }: LayoutProps) {
   );
 }
 
-function ThemeToggle({ theme, toggleTheme }: { theme: string; toggleTheme: () => void }) {
+// The only part of the shell that reads the theme, so a switch re-renders this button rather than the whole layout.
+function ThemeToggle() {
+  const [theme, setTheme] = Box.useTheme();
+
   return (
     <Button
       clean
+      cursor="pointer"
       p={2}
       borderRadius={2}
       theme={{
         dark: { bgColor: 'slate-800', color: 'slate-100' },
         light: { bgColor: 'slate-100', color: 'slate-900' },
       }}
-      onClick={toggleTheme}
+      onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
     >
       {/* Keyed on the theme, so each icon is a mount and `startingStyle` is its spin-in. */}
-      <IconSwap key={theme} rotate={-90}>
+      <IconSwap key={theme} motion="turn">
         <Icon
           size={4.5}
           color={theme === 'dark' ? 'amber-400' : 'indigo-500'}

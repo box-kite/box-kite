@@ -1010,7 +1010,7 @@ export const cssStyles = {
    */
   contentVisibility: [
     {
-      values: ['visible', 'hidden'] as const,
+      values: ['visible', 'hidden', 'auto'] as const,
       styleName: 'content-visibility',
     },
   ],

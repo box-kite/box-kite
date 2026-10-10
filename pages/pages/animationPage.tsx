@@ -636,7 +636,8 @@ const wobble = Box.spring({ stiffness: 120, damping: 8 });
             feature-detected, and it hands back the same <Mono>ready</Mono>/<Mono>finished</Mono>/<Mono>updateCallbackDone</Mono> promises
             and a <Mono>skip()</Mono> whether or not a transition ran, so there is one code path rather than two. Give an element a{' '}
             <Mono>viewTransitionName</Mono> and it animates <em>from where it was to where it is</em> instead of being cross-faded along
-            with everything else. This site's own theme toggle is one: <Mono>&lt;Box.Theme viewTransition&gt;</Mono>.
+            with everything else. This site's own theme toggle is one: <Mono>&lt;Box.Theme viewTransition=&quot;reveal&quot;&gt;</Mono>, a
+            circle growing out of the button.
           </Section>
 
           <Code

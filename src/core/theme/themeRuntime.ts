@@ -3,7 +3,12 @@
  * theme name onto an element. `<Box.Theme>` is a thin wrapper over these three calls, and a non-React
  * adapter can drive theming with the same ones. Every function is a no-op without a DOM.
  */
-import { documentRoot as environmentDocumentRoot, matchMedia } from '../../utils/environment/environmentUtils';
+import {
+  documentHead,
+  documentOrNull,
+  documentRoot as environmentDocumentRoot,
+  matchMedia,
+} from '../../utils/environment/environmentUtils';
 
 const DARK_QUERY = '(prefers-color-scheme: dark)';
 
@@ -54,6 +59,30 @@ export function applyThemeToElement(element: Element, themeName: string): () => 
   return () => {
     element.classList.remove(themeName);
     element.removeAttribute('data-theme');
+  };
+}
+
+/**
+ * Switch every CSS transition on the page off until the returned function runs. A theme flip changes
+ * `color` and `scrollbar-color`, both inherited, so with transitions on, every element on the page starts
+ * one of its own and each frame restyles the lot (bug #243). Resuming waits for `after` (a running view
+ * transition's `finished`) and then a painted frame, since removing the sheet restyles every element again.
+ */
+export function pauseTransitions(): (after?: PromiseLike<unknown>) => void {
+  const doc = documentOrNull();
+  const head = documentHead();
+  if (!doc || !head) return () => {};
+
+  // Rules go in through the CSSOM, as the engine's do, so a CSP that refuses inline style text allows it.
+  const style = doc.createElement('style');
+  head.appendChild(style);
+  style.sheet?.insertRule('*,*::before,*::after{transition:none!important}');
+
+  return (after) => {
+    const view = doc.defaultView;
+    // Two frames: the first paints the new theme with nothing transitioning, so the removal has nothing left to start.
+    const remove = () => (view ? view.requestAnimationFrame(() => view.requestAnimationFrame(() => style.remove())) : style.remove());
+    Promise.resolve(after).then(remove, remove);
   };
 }
 

@@ -726,7 +726,7 @@ so a change that was a jump becomes a transition with nothing animated by hand.
 | `viewTransitionName`                  | Names this element, so it animates _from where it was to where it is_ instead of being cross-faded with the page. A `<custom-ident>`, **not** dashed |
 | `viewTransitionClass`                 | A name shared by several elements, so `::view-transition-group(.card)` styles them together. Space-separated for more than one                       |
 | `Box.viewTransition(update, options)` | Runs `update` inside `document.startViewTransition` where the browser has one, and plainly where it has not                                          |
-| `<Box.Theme viewTransition>`          | That call around a theme change, `flushSync` included                                                                                                |
+| `<Box.Theme viewTransition>`          | That call around a theme change, `flushSync` included. `viewTransition="reveal"` grows the new theme out of the pressed control as a circle          |
 
 ```tsx
 const handle = Box.viewTransition(() => flushSync(() => setTab(next)), { types: ['forward'] });
@@ -756,7 +756,9 @@ interface ViewTransitionHandle {
 - **In React the update has to be flushed.** The browser takes its second screenshot the moment the
   callback returns, and a `setState` has not rendered by then — so a hand-rolled version captures the old
   state twice and nothing appears to move. `flushSync` inside the callback is the fix, and
-  `<Box.Theme viewTransition>` is it already done for the one change every app has.
+  `<Box.Theme viewTransition>` is it already done for the one change every app has. A theme change also
+  pauses every CSS transition until the new theme has painted (and the view transition has finished) — `color` is inherited and every Box transitions
+  `all`, so each element would start one of its own — which leaves the view transition as the only animation.
 - **A name has to be unique in the document while the transition runs.** Two elements sharing one is how a
   transition silently does nothing. The prop is for the handful of names a layout has (`header`, `main`);
   a name **per list item** is a rule per item that is never freed, so that one goes in
