@@ -158,8 +158,18 @@ export default function Layout({ children }: LayoutProps) {
             <Flex>
               <Box flex1 minWidth={0} minHeight="fit-screen">
                 {/* The landmark, and the root the markdown mirror converts: everything outside it is
-                chrome that repeats on every page (`scripts/prerender-pages.mjs`). */}
-                <Box tag="main" maxWidth={300} mx="auto" px={4} sm={{ px: 8 }} py={8} lg={{ py: 12 }}>
+                chrome that repeats on every page (`scripts/prerender-pages.mjs`). A page asks for the
+                whole column with `data-page-width="full"` (the playground's full width). */}
+                <Box
+                  tag="main"
+                  maxWidth={300}
+                  mx="auto"
+                  px={4}
+                  sm={{ px: 8 }}
+                  py={8}
+                  lg={{ py: 12 }}
+                  has={{ '[data-page-width=full]': { maxWidth: 'fit' } }}
+                >
                   {/* Keyed on the route, so a navigation is a fresh mount and `Reveal` has something to
                   reveal. The page under this is prerendered, which is why the entrance is gated on
                   hydration rather than running on the first paint. */}

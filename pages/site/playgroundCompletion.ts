@@ -493,18 +493,50 @@ interface RankOptions<T> {
   alphabetical?: boolean;
 }
 
+/**
+ * The CSS property a query names, for an item found by the CSS it writes rather than by its name. A prefix of
+ * the property scores as a prefix of a name does, so typing `ma` towards `margin` already offers `m`; from three
+ * letters a later word counts too (`direction` finds `d`), below every prefix.
+ */
+function aliasMatch(query: string, properties: string[] | undefined): { property: string; score: number } | null {
+  const wanted = query.toLowerCase().replace(/-/g, '');
+  if (!properties || wanted.length < 2) return null;
+
+  let best: { property: string; score: number } | null = null;
+  for (const property of properties) {
+    const words = property.split('-');
+    const flat = words.join('');
+    const score =
+      flat === wanted
+        ? 1008
+        : flat.startsWith(wanted)
+          ? 1005
+          : wanted.length >= 3 && words.some((_, index) => index > 0 && words.slice(index).join('').startsWith(wanted))
+            ? 300
+            : 0;
+    if (score > (best?.score ?? 0)) best = { property, score };
+  }
+
+  return best;
+}
+
 function rank<T>(items: T[], query: string, label: (item: T) => string, { alias, group, alphabetical }: RankOptions<T> = {}) {
   return items
     .map((item, order) => {
       const name = label(item);
       const direct = fuzzyMatch(query, name);
+      // Typed `margin`, offered `m` — and kept when its name matches too, if the property is the better match.
+      const found = aliasMatch(query, alias?.(item));
+
+      if (found && (!direct || found.score > direct.score)) {
+        // `width` writing `width` is no alias, so it says nothing beside the name.
+        const spelled = name.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`) === found.property;
+
+        return { item, order, score: found.score, indices: direct?.indices ?? [], alias: spelled ? undefined : found.property };
+      }
       if (direct) return { item, order, score: direct.score, indices: direct.indices, alias: undefined as string | undefined };
 
-      // Found by the CSS it writes rather than by its name: typed `padding`, offered `p`.
-      if (query.length < 3) return null;
-      const property = alias?.(item)?.find((candidate) => candidate.replace(/-/g, '').startsWith(query.toLowerCase().replace(/-/g, '')));
-
-      return property ? { item, order, score: 200 - name.length, indices: [], alias: property } : null;
+      return null;
     })
     .filter((ranked) => ranked !== null)
     .sort(
