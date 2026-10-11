@@ -13,6 +13,7 @@ import Box, { BoxProps } from '../../src/box';
 import Textarea from '../../src/components/textarea';
 import { accept, complete, Completion, MONO_FONT, opensOn, optionId } from '../site/playgroundCompletion';
 import { completionContext } from '../site/playgroundContext';
+import formatPlaygroundSnippet, { caretAfterFormat } from '../site/playgroundFormat';
 import { PlaygroundCompletions } from '../site/playgroundVocabulary';
 import CodeHighlight from './codeHighlight';
 import PlaygroundCompletion from './playgroundCompletion';
@@ -44,6 +45,20 @@ interface Props {
   label: string;
   /** Props and values to offer while typing; null until they have loaded, and the editor works without them. */
   completions?: PlaygroundCompletions | null;
+}
+
+/**
+ * Ctrl+S (the save reflex from VS Code), Ctrl+F, and VS Code's own Shift+Alt+F; Cmd for Ctrl on a Mac. `code`
+ * for the Alt one, since Alt+F on a Mac types a character and `key` reports that instead.
+ */
+function isFormatShortcut(event: KeyboardEvent<HTMLTextAreaElement>): boolean {
+  const command = event.ctrlKey || event.metaKey;
+  const key = event.key.toLowerCase();
+
+  return (
+    (command && !event.altKey && !event.shiftKey && (key === 's' || key === 'f')) ||
+    (!command && event.shiftKey && event.altKey && event.code === 'KeyF')
+  );
 }
 
 /** The width of one glyph in the textarea's font, which is monospaced — so a column is a multiplication. */
@@ -162,10 +177,31 @@ export default function PlaygroundEditor({ value, onChange, label, completions }
     refresh(element.value, element.selectionStart, true);
   }
 
+  /** Formats in place and keeps the caret where it was in the code — unless the reader typed on meanwhile. */
+  async function format() {
+    const element = field.current;
+    if (!element) return;
+
+    const before = element.value;
+    const caret = element.selectionStart;
+    const formatted = await formatPlaygroundSnippet(before).catch(() => null);
+
+    if (formatted === null || formatted === before || field.current?.value !== before) return;
+    write(formatted, caretAfterFormat(before, caret, formatted));
+  }
+
   function keyHandler(event: KeyboardEvent<HTMLTextAreaElement>) {
     const element = event.currentTarget;
     const plain = !event.shiftKey && !event.altKey && !event.ctrlKey && !event.metaKey;
     const count = completion?.suggestions.length ?? 0;
+
+    if (isFormatShortcut(event)) {
+      // The browser's save and find are not what a reader in an editor means by these.
+      event.preventDefault();
+      close();
+      void format();
+      return;
+    }
 
     if (completion) {
       const step = { ArrowDown: 1, ArrowUp: -1, PageDown: 8, PageUp: -8 }[event.key];

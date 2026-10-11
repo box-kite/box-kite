@@ -68,6 +68,26 @@ describe('props', () => {
     expect(padding?.alias).toBe('padding');
   });
 
+  /** A reader who knows CSS types its names, so the shorthand has to be there before the word is finished. */
+  it('offers the shorthand while its CSS name is still being typed', () => {
+    expect(labels('<Box ma|', 1)).toEqual(['m']);
+    expect(labels('<Box mar|', 1)).toEqual(['m']);
+    expect(labels('<Box margin|', 1)).toEqual(['m']);
+    expect(labels('<Box border|', 1)).toEqual(['b']);
+    expect(labels('<Box ma|', 20)).toContain('maxWidth');
+  });
+
+  it('finds a prop by a later word of its CSS name', () => {
+    expect(labels('<Box direction|', 5)).toContain('d');
+  });
+
+  it('names the property only when it is not the prop spelled out', () => {
+    const suggestions = at('<Box width|').completion!.suggestions;
+
+    expect(suggestions.find((suggestion) => suggestion.label === 'width')?.alias).toBeUndefined();
+    expect(suggestions.find((suggestion) => suggestion.label === 'b')?.alias).toBe('border-width');
+  });
+
   it('leaves out the props already written', () => {
     expect(labels('<Box p={2} |', 300)).not.toContain('p');
   });
