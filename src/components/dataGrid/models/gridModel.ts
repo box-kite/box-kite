@@ -824,6 +824,18 @@ export default class GridModel<TRow> {
   };
 
   /**
+   * Writes the width variables straight onto the sizing element, ahead of the render that will agree with
+   * them: a resize drag repaints without re-rendering every row, and a new scroller width lands before paint.
+   */
+  public paintSizes = (): void => {
+    const el = this._sizingElement;
+
+    if (!el) return;
+
+    Object.entries(this.sizes.value).forEach(([name, value]) => el.style.setProperty(name, value));
+  };
+
+  /**
    * Which way the grid reads, resolved off the element the widths are written to. A model with no
    * element yet — a server render, a headless host — reads as left to right, the initial value.
    */

@@ -123,6 +123,16 @@ export default class HeaderCellModel<TRow> {
     return this.grid.localeText.resizeColumn(String(this.label ?? this.column.key));
   }
 
+  /**
+   * Whether this header ends where the grid does. A resizer straddling that edge overhangs the scroller,
+   * which made every grid whose columns exactly fit scroll sideways by 3px.
+   */
+  public get isAtGridEnd(): boolean {
+    const last = this.column.leafs.at(-1);
+
+    return this.column.pin !== 'END' && !!last && this.grid.columns.value.visibleLeafs.at(-1) === last;
+  }
+
   /** `aria-valuenow`: how wide the column is right now, in px. */
   public get width(): number {
     return this.column.inlineWidth ?? this.column.baseWidth;

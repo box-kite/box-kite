@@ -77,6 +77,28 @@ describe('HeaderCellModel', () => {
     });
   });
 
+  describe('isAtGridEnd', () => {
+    it('is the last visible column, and moves when that one is hidden', () => {
+      const grid = getGrid({ columns: [{ key: 'firstName' }, { key: 'lastName' }, { key: 'age' }] });
+      expect(leaf(grid, 'age').headerCell.isAtGridEnd).toBe(true);
+      expect(leaf(grid, 'lastName').headerCell.isAtGridEnd).toBe(false);
+
+      grid.toggleColumnVisibility('age');
+      expect(leaf(grid, 'lastName').headerCell.isAtGridEnd).toBe(true);
+    });
+
+    it('covers a group header ending at the edge', () => {
+      const grid = getGrid({ columns: [{ key: 'firstName' }, { key: 'name', columns: [{ key: 'lastName' }, { key: 'age' }] }] });
+      const group = ArrayUtils.findOrThrow(grid.columns.value.flat, (c) => c.key === 'name');
+      expect(group.headerCell.isAtGridEnd).toBe(true);
+    });
+
+    it('is never an end-pinned column, whose resizer is on its start side', () => {
+      const grid = getGrid({ columns: [{ key: 'firstName' }, { key: 'age', pin: 'END' }] });
+      expect(leaf(grid, 'age').headerCell.isAtGridEnd).toBe(false);
+    });
+  });
+
   describe('sort context-menu availability', () => {
     it('offers asc + desc and no clear when unsorted', () => {
       const hc = leaf(getGrid(), 'firstName').headerCell;
