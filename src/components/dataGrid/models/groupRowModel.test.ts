@@ -35,6 +35,20 @@ describe('GroupRowModel', () => {
     expect(groupRow.key).toContain('day');
   });
 
+  // Bug #254: a server group row is kept across renders, so one instance has to follow the columns.
+  it('one instance follows the visible columns after they change', () => {
+    const grid = getGrid();
+    grid.toggleGrouping('day');
+    const groupRow = grid.rows.value[0] as GroupRowModel<Person>;
+    const before = groupRow.cells.length;
+
+    grid.toggleColumnVisibility('month');
+
+    expect(groupRow.cells.length).toBe(before - 1);
+    expect(groupRow.cells.map((c) => c.column)).toEqual(grid.columns.value.visibleLeafs);
+    expect(groupRow.renderedCells.every(({ cell }) => groupRow.cells.includes(cell))).toBe(true);
+  });
+
   it('depth increases for nested grouping', () => {
     const grid = getGrid();
     grid.toggleGrouping('day');

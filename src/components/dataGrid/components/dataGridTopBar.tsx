@@ -2,9 +2,9 @@ import Box from '../../../box';
 import Flex from '../../flex';
 import GridModel from '../models/gridModel';
 import DataGridColumnGroups from './dataGridColumnGroups';
+import DataGridColumnsPanel from './dataGridColumnsPanel';
 import DataGridExport from './dataGridExport';
 import DataGridGlobalFilter from './dataGridGlobalFilter';
-import DataGridTopBarContextMenu from './dataGridTopBarContextMenu';
 
 interface Props<TRow> {
   grid: GridModel<TRow>;
@@ -16,10 +16,9 @@ export default function DataGridTopBar<TRow>(props: Props<TRow>) {
 
   return (
     <Flex component={`${grid.componentName}.topBar` as never} position="relative" d="column" gap={3}>
-      {/* Row 1: Title/context menu on the left, search and the export buttons pinned to the right */}
+      {/* Row 1: title and grouping chips on the left; search, columns and export pinned to the right */}
       <Flex ai="center" jc="space-between" gap={4} flexWrap="wrap" width="fit">
         <Flex ai="center" gap={3} flexWrap="wrap" minWidth={0}>
-          <DataGridTopBarContextMenu grid={grid} />
           {title && (
             // The grid points `aria-labelledby` here: a grid is named by its title, never by the
             // rows inside it.
@@ -33,6 +32,7 @@ export default function DataGridTopBar<TRow>(props: Props<TRow>) {
 
         <Flex ai="center" gap={3} flexWrap="wrap">
           {globalFilter && <DataGridGlobalFilter grid={grid} />}
+          <DataGridColumnsPanel grid={grid} />
           <DataGridExport grid={grid} />
         </Flex>
       </Flex>

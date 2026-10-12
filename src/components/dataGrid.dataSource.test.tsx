@@ -171,6 +171,74 @@ describe('DataGrid data source', () => {
     expect(screen.queryByText('Name 2')).not.toBeInTheDocument();
   });
 
+  // Bug #254: a server row is cached across renders, and so were its cells — hiding a column left every
+  // row with one cell too many, and they wrapped into the tracks of the columns after them.
+  describe('hiding a column', () => {
+    const threeColumns = [
+      { key: 'id' as const, header: '#' },
+      { key: 'name' as const, header: 'Name' },
+      { key: 'country' as const, header: 'Country' },
+    ];
+
+    /** How many columns a row covers: its cells, a spanning one counted by its `aria-colspan`. */
+    const widthOf = (row: Element) =>
+      Array.from(row.querySelectorAll('[role="gridcell"]')).reduce((sum, cell) => sum + Number(cell.getAttribute('aria-colspan') ?? 1), 0);
+
+    /** Every rendered body row exactly as wide as the grid says it is, and no cell for the hidden column. */
+    function expectRowsMatchHeader(hidden?: string) {
+      const columns = Number(screen.getByRole('grid').getAttribute('aria-colcount'));
+      const bodyRows = screen.getAllByRole('row').filter((row) => row.querySelector('[role="gridcell"]'));
+      expect(bodyRows.length).toBeGreaterThan(0);
+      for (const row of bodyRows) expect(widthOf(row)).toBe(columns);
+      if (hidden) expect(screen.queryByText(hidden)).not.toBeInTheDocument();
+    }
+
+    async function toggleColumn(user: ReturnType<typeof userEvent.setup>, name: string) {
+      await user.click(screen.getByRole('button', { name: /^Columns/ }));
+      await user.click(screen.getByRole('switch', { name }));
+      await user.keyboard('{Escape}');
+    }
+
+    it('drops that cell from every row the server already sent, and brings it back', async () => {
+      const user = userEvent.setup();
+      const source = createSource();
+
+      render(<DataGrid def={def({ dataSource: source, topBar: true, columns: threeColumns })} />);
+      await waitFor(() => expect(screen.getByText('Name 1')).toBeInTheDocument());
+      expectRowsMatchHeader();
+
+      await toggleColumn(user, 'Name');
+      expectRowsMatchHeader('Name 1');
+
+      await toggleColumn(user, 'Name');
+      expect(screen.getByText('Name 1')).toBeInTheDocument();
+      expectRowsMatchHeader();
+    });
+
+    it('drops it from the group rows and the rows under them on a grid the server groups', async () => {
+      const user = userEvent.setup();
+      const source = createGroupingSource();
+
+      render(
+        <DataGrid def={def({ dataSource: { ...source, grouping: true }, topBar: true, columns: threeColumns, visibleRowsCount: 10 })} />,
+      );
+      await waitFor(() => expect(screen.getByText('Name 1')).toBeInTheDocument());
+      await user.click(screen.getByRole('button', { name: 'Column options for Country' }));
+      await user.click(await screen.findByRole('menuitem', { name: 'Group by Country' }));
+      await waitFor(() => expect(screen.getByText('USA (250)')).toBeInTheDocument());
+      await user.click(screen.getByRole('button', { name: /USA \(250\)/ }));
+      await waitFor(() => expect(screen.getByText('Name 1')).toBeInTheDocument());
+
+      expectRowsMatchHeader();
+      const columns = Number(screen.getByRole('grid').getAttribute('aria-colcount'));
+
+      await toggleColumn(user, '#');
+
+      expect(Number(screen.getByRole('grid').getAttribute('aria-colcount'))).toBe(columns - 1);
+      expectRowsMatchHeader();
+    });
+  });
+
   // The axe sweep's fixtures can only render a grid that has never been grouped — grouping is reached
   // through the column menu — so a *group row* has never been through it. This is where one is.
   it('a grouped server grid, with a group open, has no accessibility violations', async () => {

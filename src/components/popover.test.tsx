@@ -182,6 +182,27 @@ describe('Popover', () => {
       expect(dialog.matches(':popover-open')).toBe(false);
     });
 
+    // Bug #251: the refusal swallowed the request, so a controlled popover could never be opened at all.
+    it('tells a controlled consumer it was asked to open, and opens once it agrees', async () => {
+      const onOpenChange = vi.fn();
+      const { rerender } = renderWithApi({ open: false, onOpenChange });
+
+      const dialog = element();
+      act(() => dialog.showPopover());
+      expect(onOpenChange).not.toHaveBeenCalled();
+      await act(() => new Promise((resolve) => setTimeout(resolve)));
+      expect(onOpenChange).toHaveBeenCalledTimes(1);
+      expect(onOpenChange).toHaveBeenLastCalledWith(true, expect.objectContaining({ reason: 'trigger' satisfies PopoverReason }));
+
+      rerender(
+        <Popover label="Filters" open onOpenChange={onOpenChange} trigger={(t) => <Button {...t}>Filters</Button>}>
+          <Button>Only mine</Button>
+        </Popover>,
+      );
+      expect(dialog.matches(':popover-open')).toBe(true);
+      expect(onOpenChange).toHaveBeenCalledTimes(1);
+    });
+
     it('re-shows a controlled popover the browser closed, since a close cannot be refused', () => {
       renderWithApi({ open: true });
 

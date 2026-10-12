@@ -137,8 +137,11 @@ export default function usePopoverLayer<THasPopup extends PopoverHasPopup, TReas
     const next = toggle.newState === 'open';
     const target = event.currentTarget as HTMLElement;
 
+    // Refused, but still asked: a controlled consumer that never hears the request can never open (bug #251).
+    // A task later: agreeing any sooner, a microtask included, shows the panel inside this cancelled show (measured).
     if (next && open === false) {
       event.preventDefault();
+      setTimeout(() => setOpen(true, { reason: 'trigger', event }));
       return;
     }
 

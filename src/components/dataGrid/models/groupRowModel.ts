@@ -1,5 +1,4 @@
 import ArrayUtils from '../../../utils/array/arrayUtils';
-import memo from '../../../utils/memo';
 import { AggregateValue, Key } from '../contracts/dataGridContract';
 import { GROUPING_CELL_KEY } from './cellKeys';
 import ColumnModel from './columnModel';
@@ -60,9 +59,21 @@ export default class GroupRowModel<TRow> {
   }
   public parentRow?: GroupRowModel<TRow>;
 
-  private readonly _cells = memo(() => this.grid.columns.value.visibleLeafs.map((c) => new GroupRowCellModel<TRow>(this.grid, this, c)));
+  // Keyed on the column list, not cached for life: a server group row outlives a column change (bug #254).
+  private _cells?: {
+    leafs: ColumnModel<TRow>[];
+    cells: GroupRowCellModel<TRow>[];
+    rendered?: { cell: GroupRowCellModel<TRow>; columnIndex: number }[];
+  };
   public get cells(): GroupRowCellModel<TRow>[] {
-    return this._cells.value;
+    return this.cellCache().cells;
+  }
+
+  private cellCache() {
+    const leafs = this.grid.columns.value.visibleLeafs;
+    if (this._cells?.leafs !== leafs) this._cells = { leafs, cells: leafs.map((c) => new GroupRowCellModel<TRow>(this.grid, this, c)) };
+
+    return this._cells;
   }
 
   /**
@@ -70,17 +81,16 @@ export default class GroupRowModel<TRow> {
    * data column the grouping cell has absorbed into its span: no element, and nothing to navigate
    * to — which is why a group row's cell positions and its `aria-colindex` values differ.
    */
-  private readonly _renderedCells = memo(() => {
-    const rendered: { cell: GroupRowCellModel<TRow>; columnIndex: number }[] = [];
-
-    this.cells.forEach((cell, columnIndex) => {
-      if (cell.cellKind !== 'hidden') rendered.push({ cell, columnIndex });
-    });
-
-    return rendered;
-  });
   public get renderedCells(): { cell: GroupRowCellModel<TRow>; columnIndex: number }[] {
-    return this._renderedCells.value;
+    const cache = this.cellCache();
+    if (!cache.rendered) {
+      cache.rendered = [];
+      cache.cells.forEach((cell, columnIndex) => {
+        if (cell.cellKind !== 'hidden') cache.rendered!.push({ cell, columnIndex });
+      });
+    }
+
+    return cache.rendered;
   }
 
   /** Fewer than the column count — the width the grid navigation sees for this row. */

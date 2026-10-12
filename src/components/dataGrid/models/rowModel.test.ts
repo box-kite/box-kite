@@ -44,6 +44,19 @@ describe('RowModel', () => {
     expect(row.cells.length).toEqual(grid.columns.value.visibleLeafs.length);
   });
 
+  // Bug #254: a server row is kept across renders, so one instance has to follow the columns.
+  it('one instance follows the visible columns after they change', () => {
+    const grid = new GridModel<Person>({ data, def: { ...def, columns: [{ key: 'id' }, { key: 'firstName' }] } }, () => {});
+    const row = grid.rows.value[0];
+    expect(row.cells).toHaveLength(2);
+
+    grid.toggleColumnVisibility('id');
+    expect(row.cells.map((c) => c.column.key)).toEqual(['firstName']);
+
+    grid.toggleColumnVisibility('id');
+    expect(row.cells.map((c) => c.column.key)).toEqual(['id', 'firstName']);
+  });
+
   it('flatRows returns array with self when no rowDetail', () => {
     const grid = getGrid();
     const row = grid.rows.value[0];
