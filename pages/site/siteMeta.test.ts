@@ -2,9 +2,11 @@ import { existsSync, readFileSync } from 'fs';
 import { resolve } from 'path';
 import { describe, expect, it } from 'vitest';
 import { SECTIONS } from './sections';
-import { SITE_URL, siteRoutes } from './site';
+import { MOVED_ROUTES, SITE_URL, siteRoutes } from './site';
 import {
   buildHeadHtml,
+  buildRedirectHtml,
+  buildRedirectMarkdown,
   buildRobotsTxt,
   buildSitemap,
   canonicalUrl,
@@ -168,5 +170,24 @@ describe('withHeadHtml', () => {
 
   it('refuses to guess when index.html has lost its markers', () => {
     expect(() => withHeadHtml('<head></head>', notFoundMeta)).toThrow(/markers/);
+  });
+});
+
+describe('a moved page', () => {
+  it('leaves its old address to a route that no longer serves it, pointing at one that does', () => {
+    for (const [from, to] of Object.entries(MOVED_ROUTES)) {
+      expect(routeFor(from)).toBeUndefined();
+      expect(routeFor(to)).toBeDefined();
+    }
+  });
+
+  it('redirects at once, names the new page canonical and keeps a link for a reader with no script', () => {
+    const html = buildRedirectHtml('/start-with-ai');
+    const target = `${SITE_URL}/start-with-ai/`;
+
+    expect(html).toContain(`<link rel="canonical" href="${target}" />`);
+    expect(html).toContain(`<meta http-equiv="refresh" content="0; url=${target}" />`);
+    expect(html).toContain(`<a href="${target}">`);
+    expect(buildRedirectMarkdown('/start-with-ai')).toContain(`${SITE_URL}/start-with-ai.md`);
   });
 });

@@ -39,7 +39,7 @@ npx skills add box-kite/box-kite
 claude mcp add box-kite -- npx -y @box-kite/mcp
 ```
 
-The second line is for Claude Code; the [Built for AI page](https://www.box-kite.dev/ai-context) has the same setup for every other assistant. If you would rather let the assistant build the whole page, [Start with AI](https://www.box-kite.dev/start) has prompts to paste — this guide is the version where you see every line.
+The second line is for Claude Code; the [Built for AI page](https://www.box-kite.dev/ai-context) has the same setup for every other assistant. If you would rather let the assistant build the whole page, [Start with AI](https://www.box-kite.dev/start-with-ai) has prompts to paste — this guide is the version where you see every line.
 
 ## Step 3: put something in the middle of the screen
 
@@ -253,4 +253,4 @@ There is no stylesheet to upload and nothing to configure on the host: the CSS i
 - [The playground](https://www.box-kite.dev/playground) — change props and watch the CSS they write.
 - [Box](https://www.box-kite.dev/box) — every prop, searchable, with the CSS each one produces.
 - [Components](https://www.box-kite.dev/dialog) — dialogs, menus, tabs, forms and a data grid, all keyboard-accessible.
-- [Start with AI](https://www.box-kite.dev/start) — the same page, written by your assistant from a few prompts.
+- [Start with AI](https://www.box-kite.dev/start-with-ai) — the same page, written by your assistant from a few prompts.

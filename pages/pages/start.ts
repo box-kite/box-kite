@@ -77,3 +77,47 @@ Write realistic content for this product, and keep the look of the rest of the a
 
 ${finish} Then tell me the address of the new page.`;
 }
+
+/** One click fills the product box, for a reader who wants to see the prompts change before deciding. */
+export const PRODUCT_EXAMPLES = [
+  'A coffee subscription for small offices',
+  'A booking app for a yoga studio',
+  'A portfolio for a wedding photographer',
+] as const;
+
+/** Where the product box is kept between visits — step 1 takes a while, and the reader comes back for step 2. */
+export const PRODUCT_STORAGE_KEY = 'box-kite:start-product';
+
+/** What each prompt leaves behind, as the chips under its step. */
+export const STEP_OUTCOMES = {
+  setup: ['React + TypeScript + Vite', 'Box Kite installed', 'AGENTS.md', 'MCP server connected', 'A running app'],
+  landing: ['Hero', 'Features', 'How it works', 'Testimonials', 'Pricing', 'FAQ', 'Light and dark'],
+  product: ['Gallery', 'Options and quantity', 'Add to cart with a toast', 'Tabs', 'Shipping and returns', 'Related products'],
+} as const;
+
+export const START_FAQ = [
+  {
+    question: 'Do I need to know how to code?',
+    answer:
+      'No. Each prompt tells the agent which commands to run, which files to write and how to check the result. You read what it did, open the address it gives you, and ask for changes in plain words.',
+  },
+  {
+    question: 'Which AI agent should I use?',
+    answer:
+      'Any agent that can run commands in a folder: Claude Code, Cursor, Codex, VS Code with Copilot in agent mode, or Windsurf. A chat in a browser tab cannot do it, because it has no terminal.',
+  },
+  {
+    question: 'What does it cost?',
+    answer: 'Box Kite and its MCP server are free and MIT licensed. The agent is billed by whoever provides it.',
+  },
+  {
+    question: 'Can I use the prompts in an existing project?',
+    answer:
+      'Yes. The setup prompt keeps a React app that is already there and adds Box Kite to it; the landing and product page prompts work on any app the first one has set up.',
+  },
+  {
+    question: 'What if something looks wrong?',
+    answer:
+      'Say so and ask the agent to check. A style value Box Kite does not accept writes nothing at all, and the MCP server it connected in step 1 is how it finds out which one it was.',
+  },
+] as const;

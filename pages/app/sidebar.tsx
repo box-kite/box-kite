@@ -207,7 +207,7 @@ export default function Sidebar({ onClose, onSearch }: SidebarProps) {
           <MenuItem to="/" icon={<BookOpen />}>
             Introduction
           </MenuItem>
-          <MenuItem to="/start" icon={<Zap />}>
+          <MenuItem to="/start-with-ai" icon={<Zap />}>
             Start with AI
           </MenuItem>
           <MenuItem to="/installation" icon={<Download />}>

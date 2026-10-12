@@ -9,7 +9,7 @@ describe('sectionOf', () => {
   });
 
   it('names the AI start on its own, and leaves everything else to the docs', () => {
-    expect(sectionOf('/start/')).toBe('start');
+    expect(sectionOf('/start-with-ai/')).toBe('start');
     expect(sectionOf('/')).toBe('docs');
     expect(sectionOf('/box')).toBe('docs');
     expect(sectionOf('/blogger')).toBe('docs');

@@ -1,7 +1,8 @@
 import { Suspense } from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import NotFoundPage from '../pages/notFoundPage';
 import { routes } from '../site/routes';
+import { MOVED_ROUTES } from '../site/site';
 import Layout from './layout';
 import pageFor from './routePages';
 
@@ -26,6 +27,9 @@ export default function App() {
         <Routes>
           {routes.map(({ path }) => (
             <Route key={path} path={path} element={<RoutePage path={path} />} />
+          ))}
+          {Object.entries(MOVED_ROUTES).map(([from, to]) => (
+            <Route key={from} path={from} element={<Navigate to={to} replace />} />
           ))}
           <Route path="*" element={<NotFoundPage />} />
         </Routes>

@@ -31,7 +31,7 @@ export default function InstallationPage() {
           <Box fontSize={14} lineHeight={22} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
             Starting from an empty folder with an AI agent?{' '}
             <SiteLink
-              to="/start"
+              to="/start-with-ai"
               display="inline"
               theme={{ dark: { color: 'violet-400' }, light: { color: 'violet-600' } }}
               hover={{ textDecoration: 'underline' }}
