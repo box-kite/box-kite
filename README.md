@@ -20,9 +20,6 @@ version behind what it is writing against: [Built for AI](https://www.box-kite.d
 [`npx @box-kite/mcp`](https://www.npmjs.com/package/@box-kite/mcp) ·
 [generative UI](https://www.box-kite.dev/generative-ui/)
 
-> **Renamed at 1.0.0.** This was `@cronocode/react-box`. The API is unchanged — the move is one
-> find-and-replace, and `@cronocode/react-box@3.4.0` re-exports this package.
-
 ## Getting Started
 
 1. Installation

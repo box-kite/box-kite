@@ -78,7 +78,7 @@ export default function SectionNav({ placement }: { placement: 'bar' | 'drawer' 
 
       {bar && (
         <Flex ai="center" gap={1} ms="auto">
-          <External href={REPO_URL} label="Box Kite on GitHub">
+          <External href={REPO_URL} label="Star Box Kite on GitHub" text="Star">
             <SiGithub />
           </External>
           <External href="https://www.npmjs.com/package/@box-kite/react" label="@box-kite/react on npm">
@@ -90,20 +90,29 @@ export default function SectionNav({ placement }: { placement: 'bar' | 'drawer' 
   );
 }
 
-function External({ href, label, children }: { href: string; label: string; children: ReactElement }) {
+// `text` makes it a labelled pill: a visible ask is what turns a GitHub icon into a star.
+function External({ href, label, text, children }: { href: string; label: string; text?: string; children: ReactElement }) {
   return (
     <Link
-      props={{ href, target: '_blank', rel: 'noopener noreferrer' }}
+      props={{ href, target: '_blank', rel: 'noopener noreferrer', 'aria-label': text ? label : undefined }}
       display="flex"
-      p={2}
+      ai="center"
+      gap={1.5}
+      py={2}
+      px={text ? 3 : 2}
+      b={text ? 1 : undefined}
       borderRadius={2}
+      fontSize={13}
+      fontWeight={500}
+      textDecoration="none"
       cursor="pointer"
       transition="colors"
-      theme={muted}
+      theme={text ? { dark: { ...muted.dark, borderColor: 'slate-700' }, light: { ...muted.light, borderColor: 'slate-200' } } : muted}
     >
-      <Icon size={4.5} label={label}>
+      <Icon size={text ? 4 : 4.5} label={text ? undefined : label}>
         {children}
       </Icon>
+      {text}
     </Link>
   );
 }

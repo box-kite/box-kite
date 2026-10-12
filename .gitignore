@@ -1,6 +1,5 @@
 node_modules
 dist
-dist-bridge
 dist-core
 dist-mcp
 dist-pages
