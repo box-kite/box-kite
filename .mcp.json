@@ -10,6 +10,14 @@
         "--allow-unrestricted-file-access",
         "--output-dir=.playwright-mcp"
       ]
+    },
+    "box-kite": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@box-kite/mcp"
+      ]
     }
   }
 }
