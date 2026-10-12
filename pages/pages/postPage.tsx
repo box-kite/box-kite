@@ -1,7 +1,8 @@
-import { Newspaper } from 'lucide-react';
+import { Newspaper, Star } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 import Box from '../../src/box';
 import Flex from '../../src/components/flex';
+import Icon from '../../src/components/icon';
 import { Link } from '../../src/components/semantics';
 import Markdown from '../components/markdown';
 import PageHeader from '../components/pageHeader';
@@ -39,8 +40,49 @@ export default function PostPage() {
 
       <Reveal delay={0.2}>
         <Flex
-          gap={6}
+          ai="center"
+          jc="space-between"
+          gap={4}
+          flexWrap="wrap"
           mt={12}
+          p={5}
+          b={1}
+          borderRadius={3}
+          maxWidth={210}
+          theme={{ dark: { borderColor: 'slate-800', bgColor: 'slate-800/40' }, light: { borderColor: 'slate-200', bgColor: 'slate-50' } }}
+        >
+          <Box fontSize={15} lineHeight={24} theme={{ dark: { color: 'slate-300' }, light: { color: 'slate-700' } }}>
+            Found this useful? A star on GitHub is how other people find Box Kite.
+          </Box>
+          <Link
+            props={{ href: REPO_URL, target: '_blank', rel: 'noopener noreferrer' }}
+            display="flex"
+            ai="center"
+            gap={2}
+            px={4}
+            py={2}
+            borderRadius={2}
+            fontSize={14}
+            fontWeight={600}
+            whiteSpace="nowrap"
+            textDecoration="none"
+            cursor="pointer"
+            transition="colors"
+            theme={{
+              dark: { bgColor: 'white', color: 'slate-900', hover: { bgColor: 'slate-200' } },
+              light: { bgColor: 'slate-900', color: 'white', hover: { bgColor: 'slate-700' } },
+            }}
+          >
+            <Icon size={4}>
+              <Star />
+            </Icon>
+            Star on GitHub
+          </Link>
+        </Flex>
+
+        <Flex
+          gap={6}
+          mt={8}
           pt={6}
           bt={1}
           fontSize={14}
