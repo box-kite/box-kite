@@ -55,4 +55,44 @@ describe('ColumnVisibilityModel', () => {
     expect(grid.columnVisibility.hiddenCount).toBe(0);
     expect(grid.hiddenColumns.size).toBe(0);
   });
+
+  it('searches label and group, ignoring case, and cuts the result into runs per group', () => {
+    const grid = new GridModel<Person>({
+      data,
+      def: {
+        columns: [
+          {
+            key: 'name',
+            header: 'Name',
+            columns: [
+              { key: 'firstName', header: 'First' },
+              { key: 'lastName', header: 'Last' },
+            ],
+          },
+          { key: 'age', header: 'Age' },
+        ],
+      },
+    });
+    const cv = grid.columnVisibility;
+
+    expect(cv.entries.map((e) => e.group)).toEqual(['Name', 'Name', undefined]);
+    expect(cv.search('  FIR ').map((e) => e.id)).toEqual(['firstName']);
+    expect(cv.search('name').map((e) => e.id)).toEqual(['firstName', 'lastName']);
+    expect(cv.sections(cv.entries).map((s) => [s.group, s.entries.length])).toEqual([
+      ['Name', 2],
+      [undefined, 1],
+    ]);
+  });
+
+  it('setAll shows or hides only the entries it is given', () => {
+    const cv = getGrid().columnVisibility;
+
+    cv.setAll(false, cv.search('name'));
+    // 'First' is the label, so only the column labelled by its key matches.
+    expect(cv.selectedIds).toEqual(['firstName', 'age']);
+    expect(cv.visibleCount).toBe(2);
+
+    cv.setAll(true);
+    expect(cv.hiddenCount).toBe(0);
+  });
 });

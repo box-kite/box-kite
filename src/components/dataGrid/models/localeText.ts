@@ -7,11 +7,17 @@ export interface DataGridLocaleText {
   // ===== Top bar =====
   /** The global search box's placeholder. */
   searchPlaceholder: string;
-  /** The column chooser's accessible name. */
+  /** The columns button's text and the panel's accessible name. */
   columnsMenu: string;
+  /** The button's accessible name while some columns are hidden — it has to start with `columnsMenu`. */
+  columnsMenuLabel: (shown: number, total: number) => string;
   columnsMenuSearchPlaceholder: string;
   columnsMenuShowAll: string;
   columnsMenuHideAll: string;
+  /** The count above the list: "6 of 8 shown". */
+  columnsMenuShown: (shown: number, total: number) => string;
+  /** What the list says when the search matches no column. */
+  columnsMenuNoMatch: (query: string) => string;
   /** The ✕ on a grouped column's chip. */
   stopGrouping: (column: string) => string;
   /** The export buttons' visible text, and their accessible names. */
@@ -116,9 +122,12 @@ export interface DataGridLocaleText {
 export const DATA_GRID_LOCALE_TEXT: DataGridLocaleText = {
   searchPlaceholder: 'Search...',
   columnsMenu: 'Columns',
-  columnsMenuSearchPlaceholder: 'Search columns...',
-  columnsMenuShowAll: 'Show All',
-  columnsMenuHideAll: 'Hide All',
+  columnsMenuLabel: (shown, total) => `Columns, ${shown} of ${total} shown`,
+  columnsMenuSearchPlaceholder: 'Search columns',
+  columnsMenuShowAll: 'Show all',
+  columnsMenuHideAll: 'Hide all',
+  columnsMenuShown: (shown, total) => `${shown} of ${total} shown`,
+  columnsMenuNoMatch: (query) => `No columns match “${query}”`,
   stopGrouping: (column) => `Stop grouping by ${column}`,
   exportCsv: 'CSV',
   exportCsvLabel: 'Export CSV',

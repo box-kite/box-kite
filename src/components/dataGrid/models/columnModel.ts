@@ -156,6 +156,10 @@ export default class ColumnModel<TRow> {
   public get header() {
     return this.def.header;
   }
+  /** The header group this column sits under, if any. A pinned half of a group is a copy with the same header. */
+  public get group(): ColumnModel<TRow> | undefined {
+    return this.parent;
+  }
   public get align() {
     return this.def.align;
   }

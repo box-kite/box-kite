@@ -1,6 +1,6 @@
-import memo from '../../../utils/memo';
 import { Key } from '../contracts/dataGridContract';
 import CellModel from './cellModel';
+import ColumnModel from './columnModel';
 import DetailRowModel from './detailRowModel';
 import GridModel from './gridModel';
 import GroupRowModel from './groupRowModel';
@@ -51,11 +51,14 @@ export default class RowModel<TRow> {
     this.grid.toggleDetailRow(this.key);
   };
 
-  // Memoized per row instance: rows are rebuilt whenever columns/data/sort/filter change,
-  // so cached cells stay valid for the row's lifetime (stops per-render allocation).
-  private readonly _cells = memo(() => this.grid.columns.value.visibleLeafs.map((c) => new CellModel<TRow>(this.grid, this, c)));
+  // Keyed on the column list, not cached for life: a server row is kept across renders and outlives a
+  // column change, which left it a cell per hidden column (bug #254).
+  private _cells?: { leafs: ColumnModel<TRow>[]; cells: CellModel<TRow>[] };
   public get cells(): CellModel<TRow>[] {
-    return this._cells.value;
+    const leafs = this.grid.columns.value.visibleLeafs;
+    if (this._cells?.leafs !== leafs) this._cells = { leafs, cells: leafs.map((c) => new CellModel<TRow>(this.grid, this, c)) };
+
+    return this._cells.cells;
   }
 
   /** One cell per visible column — the width the grid navigation sees for this row. */

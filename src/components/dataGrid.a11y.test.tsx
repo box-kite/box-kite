@@ -440,7 +440,7 @@ describe('DataGrid accessibility', () => {
 
       // A name apiece: the column chooser, the select-all box, each row's box, each row's expander
       // and each column's menu. Bug #50 was that none of the icon-only ones had one.
-      expect(screen.getByRole('combobox', { name: 'Columns' })).toBeTruthy();
+      expect(screen.getByRole('button', { name: 'Columns' })).toBeTruthy();
       expect(screen.getByRole('checkbox', { name: 'Select all rows' })).toBeTruthy();
       expect(screen.getByRole('checkbox', { name: 'Select row 2' })).toBeTruthy();
       expect(screen.getByRole('button', { name: 'Expand details for row 1' })).toBeTruthy();

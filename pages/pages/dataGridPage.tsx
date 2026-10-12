@@ -1869,6 +1869,12 @@ const GERMAN: Partial<DataGridLocaleText> = {
   filterColumn: (column) => `${column} filtern`,
   clearFilter: (column) => `Filter für ${column} zurücksetzen`,
   columnsMenu: 'Spalten',
+  columnsMenuLabel: (shown, total) => `Spalten, ${shown} von ${total} sichtbar`,
+  columnsMenuSearchPlaceholder: 'Spalten suchen',
+  columnsMenuShowAll: 'Alle zeigen',
+  columnsMenuHideAll: 'Alle ausblenden',
+  columnsMenuShown: (shown, total) => `${shown} von ${total} sichtbar`,
+  columnsMenuNoMatch: (query) => `Keine Spalte passt zu „${query}“`,
   selectionAnnouncement: (selected, total) => (selected === 0 ? 'Keine Zeilen ausgewählt' : `${selected} von ${total} Zeilen ausgewählt`),
 };
 
