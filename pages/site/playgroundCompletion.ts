@@ -16,7 +16,7 @@ import type { Classifier, NameKind } from './codeTokens';
 import { CompletionContext, Span } from './playgroundContext';
 
 /** The editor's font, which the popup's names and values are set in too. */
-export const MONO_FONT = "'JetBrains Mono', 'Fira Code', 'SF Mono', Consolas, 'Liberation Mono', Menlo, monospace";
+export { MONO_FONT } from './fonts';
 
 /** A row's id, which the textarea's `aria-activedescendant` names. */
 export const optionId = (id: string, index: number) => `${id}-option-${index}`;

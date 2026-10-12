@@ -87,6 +87,34 @@ export function buildRobotsTxt(siteUrl: string = SITE_URL): string {
   return `${agents}\nSitemap: ${siteUrl}/sitemap.xml\n`;
 }
 
+/**
+ * The page left at an address that moved. A zero-second refresh is what Google reads as a permanent redirect when
+ * the host cannot send one, the canonical link names the new page, and the script keeps the query and the hash.
+ */
+export function buildRedirectHtml(to: string, siteUrl: string = SITE_URL): string {
+  const target = canonicalUrl(to, siteUrl);
+
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Moved — ${SITE_NAME}</title>
+    <link rel="canonical" href="${target}" />
+    <meta http-equiv="refresh" content="0; url=${target}" />
+    <script>location.replace(${JSON.stringify(target)} + location.search + location.hash)</script>
+  </head>
+  <body>
+    <p>This page has moved to <a href="${target}">${target}</a>.</p>
+  </body>
+</html>
+`;
+}
+
+/** The markdown left at a moved page's `.md` address, for an agent following an old link. */
+export function buildRedirectMarkdown(to: string, siteUrl: string = SITE_URL): string {
+  return `# Moved\n\nThis page is now at ${canonicalUrl(to, siteUrl)} — its markdown copy is ${siteUrl}${to}.md\n`;
+}
+
 /** The comments in `pages/index.html` between which the metadata block is written. */
 export const META_START = '<!--site-metadata-->';
 export const META_END = '<!--/site-metadata-->';

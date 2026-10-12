@@ -38,11 +38,11 @@ export const siteRoutes = [
       'A React library built to be written by an AI: the rules and the whole prop reference ship inside the package, and the compiler checks every value.',
   },
   {
-    path: '/start',
+    path: '/start-with-ai',
     name: 'Start with AI',
-    title: 'Start with AI — a new app in three prompts',
+    title: 'Build a React app with AI in three prompts — Box Kite',
     description:
-      'Three prompts to paste into an AI coding agent: one sets up a React app with Box Kite and its MCP server, two more build a landing page and a product page.',
+      'Copy three prompts into Claude Code, Cursor, Codex or Copilot: one sets up a React app with Box Kite, two more build a landing page and a product page.',
   },
   {
     path: '/installation',
@@ -52,9 +52,9 @@ export const siteRoutes = [
   {
     path: '/ai-context',
     name: 'Built for AI',
-    title: 'Built for AI — the instructions ship with the library',
+    title: 'Box Kite for AI coding agents — AGENTS.md, skill and MCP server',
     description:
-      'AGENTS.md, the whole prop reference and an MCP server that runs the real engine, all inside the package and generated from the prop registry itself.',
+      'Set up Claude Code, Cursor, Copilot or Codex in one command: the rules, every prop and an MCP server that checks each style against the real engine. No API key.',
   },
   {
     path: '/registry',
@@ -352,3 +352,11 @@ export const siteRoutes = [
 
 /** The union of every path the site serves — `app.tsx` keys its route components by it. */
 export type SiteRoutePath = (typeof siteRoutes)[number]['path'];
+
+/**
+ * Addresses a page used to have, and where it lives now. GitHub Pages cannot send a 301, so the build writes a
+ * shell at the old address that a crawler reads as a permanent move, and the router forwards the same paths.
+ */
+export const MOVED_ROUTES: Readonly<Record<string, SiteRoutePath>> = {
+  '/start': '/start-with-ai',
+};

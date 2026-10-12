@@ -90,7 +90,18 @@ async function serverBundle() {
 }
 
 const bundle = await serverBundle();
-const { renderRoute, prerenderPaths, NOT_FOUND_PATH, routes, routeFor, markdownPath, SEARCH_INDEX_PATH } = bundle;
+const {
+  renderRoute,
+  prerenderPaths,
+  NOT_FOUND_PATH,
+  routes,
+  routeFor,
+  markdownPath,
+  SEARCH_INDEX_PATH,
+  MOVED_ROUTES,
+  buildRedirectHtml,
+  buildRedirectMarkdown,
+} = bundle;
 
 // The same builder the dev server serves from, so the two can only ever produce the same files.
 const mirror = siteMarkdown(bundle);
@@ -161,6 +172,15 @@ for (const { path, file } of targets) {
   }
 
   rows.push({ route: path, html: html.length, css: styles.length, md: markdown.length, file: file.slice(dirname(CLIENT_OUT).length + 1) });
+}
+
+// A page that moved keeps its old address as a redirect, its markdown copy included.
+for (const [from, to] of Object.entries(MOVED_ROUTES)) {
+  if (routeFor(from, routes)) failures.push(`${from}: moved to ${to}, but a route still serves it`);
+
+  await mkdir(dirname(shellFor(from)), { recursive: true });
+  await writeFile(shellFor(from), buildRedirectHtml(to));
+  await writeMarkdown(from, buildRedirectMarkdown(to));
 }
 
 // The files an agent reads instead of the site: the index, the whole corpus behind it, and the prop
