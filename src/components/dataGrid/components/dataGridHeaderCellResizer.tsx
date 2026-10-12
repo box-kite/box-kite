@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef } from 'react';
 import Box from '../../../box';
 import Flex from '../../flex';
 import ColumnModel from '../models/columnModel';
-import GridModel from '../models/gridModel';
 
 interface Props<TRow> {
   column: ColumnModel<TRow>;
@@ -20,19 +19,6 @@ const RESIZE_STEP_PX = 16;
  * repeat ends without a `keyup` — losing focus mid-press — since a real one commits on release.
  */
 const KEY_COMMIT_MS = 150;
-
-/**
- * Column widths are CSS variables on one element, so a resize can be painted without React. This
- * is what keeps a drag at 60fps, and the keyboard needs it just as much: a held arrow key repeats
- * about thirty times a second, and a `notify()` per press re-renders every row in the grid.
- */
-function paintSizes<TRow>(grid: GridModel<TRow>): void {
-  const el = grid.sizingElement;
-
-  if (!el) return;
-
-  Object.entries(grid.sizes.value).forEach(([name, value]) => el.style.setProperty(name, value));
-}
 
 /**
  * The column resizer, which is APG's window splitter: a `separator` with a value in pixels, its own tab
@@ -69,7 +55,7 @@ export default function DataGridHeaderCellResizer<TRow>(props: Props<TRow>) {
 
       const paint = () => {
         column.applyResize(latestX);
-        paintSizes(grid);
+        grid.paintSizes();
       };
 
       // 'instant': paint synchronously on every move so the column tracks the cursor with no
@@ -117,7 +103,7 @@ export default function DataGridHeaderCellResizer<TRow>(props: Props<TRow>) {
     const { grid } = column;
 
     if (grid.resizeMode === 'instant') {
-      paintSizes(grid);
+      grid.paintSizes();
       return;
     }
 
@@ -125,7 +111,7 @@ export default function DataGridHeaderCellResizer<TRow>(props: Props<TRow>) {
 
     keyFrame.current = requestAnimationFrame(() => {
       keyFrame.current = 0;
-      paintSizes(grid);
+      grid.paintSizes();
     });
   }, [column]);
 
@@ -181,6 +167,9 @@ export default function DataGridHeaderCellResizer<TRow>(props: Props<TRow>) {
     [column, commitResize, headerCell, paintByKey],
   );
 
+  // At the grid's own edge there is no neighbour, and half a handle past it would widen the scroller.
+  const { isAtGridEnd } = headerCell;
+
   return (
     <Flex
       height="fit"
@@ -188,14 +177,16 @@ export default function DataGridHeaderCellResizer<TRow>(props: Props<TRow>) {
       position="absolute"
       // Across the boundary, so the line is the cell's last pixel and a hover pill on either side of it can
       // keep the same distance; above the neighbour, whose half of the handle it would otherwise take.
-      insetEnd={column.pin === 'END' ? undefined : -0.75}
+      insetEnd={column.pin === 'END' ? undefined : isAtGridEnd ? 0 : -0.75}
       insetStart={column.pin !== 'END' ? undefined : -0.75}
       zIndex={1}
       py={3}
     >
       <Box
         cursor="col-resize"
-        px={0.75}
+        // Same grab width at the edge, all of it inside, so the line stays the cell's last pixel.
+        px={isAtGridEnd ? undefined : 0.75}
+        ps={isAtGridEnd ? 1.5 : undefined}
         mt={-6}
         className="resizer"
         height="fit"

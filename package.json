@@ -367,7 +367,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "87.34 KB"
+      "limit": "87.37 KB"
     },
     {
       "name": "DataGrid export, the chunk fetched on the first press",
@@ -391,7 +391,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "118.95 KB"
+      "limit": "119 KB"
     }
   ],
   "repository": {

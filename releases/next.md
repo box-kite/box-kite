@@ -34,4 +34,6 @@ None.
 
 <!-- One bullet per fix: **What was wrong.** What it does now. -->
 
+- **A DataGrid whose columns fit its width showed a horizontal scrollbar anyway.** The last column's resize handle hung 3px past the grid's edge, enough for a scrollbar on Windows under every grid with flexible columns — and under a grid with a row detail open. That handle now sits inside the edge, same size, its line still on the grid's last pixel.
+- **A DataGrid with too few rows to scroll kept an empty strip down its edge.** The grid reserved its vertical scrollbar's space whether or not there was a scrollbar, so a filter that emptied it — or any grid shorter than its height — showed the header and the footer stopping 15px short. The space is no longer reserved: the columns fill the grid, and when a scrollbar arrives they are resized before the browser paints, so no horizontal scrollbar flashes in between.
 - **`contentVisibility` had no `auto`**, the one value that skips an off-screen subtree's rendering until it scrolls near. It takes `'auto'` beside `'visible'` and `'hidden'`; pair it with `css={{ containIntrinsicSize: 'auto 480px' }}`, the size it holds before it has ever rendered.
