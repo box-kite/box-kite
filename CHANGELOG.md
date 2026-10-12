@@ -6,7 +6,7 @@ The release notes live in [`releases/`](releases/), one file per version, and ea
 
 | Version                    | Date       | In one line                                                                                                                                  |
 | -------------------------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| [2.2.2](releases/2.2.2.md) | 2026-10-12 | Release 2.2.2.                                                                                                                               |
+| [2.2.2](releases/2.2.2.md) | 2026-10-12 | A theme switch that settles at once on any page, and a DataGrid column chooser you can read.                                                 |
 | [2.2.1](releases/2.2.1.md) | 2026-10-09 | The DataGrid header and bottom bar: a hover pill, every word translatable, a selection that survives a filter, and one-frame row ticks.      |
 | [2.2.0](releases/2.2.0.md) | 2026-10-08 | Scroll-driven animation and view transitions become props, and a page of Boxes re-renders, hydrates and restyles for a fraction of the cost. |
 | [2.1.0](releases/2.1.0.md) | 2026-09-21 | A model can compose the UI, the app still owns it, and the data grid becomes a spreadsheet.                                                  |
