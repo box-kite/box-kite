@@ -13,6 +13,7 @@ import SearchTrigger, { useSearchShortcut } from '../components/searchTrigger';
 import TableOfContents from '../components/tableOfContents';
 import PageContext, { TocEntry } from '../pageContext';
 import DocumentHead from '../site/documentHead';
+import { scrollToSection } from '../utils/scrollToSection';
 import { SectionBar } from './sectionNav';
 import Sidebar from './sidebar';
 
@@ -182,9 +183,9 @@ export default function Layout({ children }: LayoutProps) {
               {tocEntries.length > 0 && (
                 <Box width={50} flexShrink={0} display="none" xl={{ display: 'block' }}>
                   {/* Below the section bar, which is sticky over this column too. */}
-                  <Box position="sticky" top={14} css={{ maxHeight: 'calc(100vh - 3.5rem)' }} overflow="auto" py={8} pr={4}>
+                  <Flex d="column" position="sticky" top={14} css={{ maxHeight: 'calc(100vh - 3.5rem)' }} pt={12} pb={6} pe={4}>
                     <TableOfContents entries={tocEntries} />
-                  </Box>
+                  </Flex>
                 </Box>
               )}
             </Flex>
@@ -242,18 +243,22 @@ function ScrollToLocation() {
 
     let frame = 0;
     let frames = 0;
+    let cancelScroll = () => {};
 
     const find = () => {
       const target = document.getElementById(decodeURIComponent(hash.slice(1)));
 
-      if (target) return target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (target) return void (cancelScroll = scrollToSection(target));
       // About a second at 60Hz, after which the anchor is not going to appear.
       if (frames++ < 60) frame = requestAnimationFrame(find);
     };
 
     find();
 
-    return () => cancelAnimationFrame(frame);
+    return () => {
+      cancelAnimationFrame(frame);
+      cancelScroll();
+    };
   }, [hash, pathname]);
 
   return null;

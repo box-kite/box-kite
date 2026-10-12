@@ -10,6 +10,9 @@ import CodeHighlight from './codeHighlight';
 import IconSwap from './iconSwap';
 import SiteLink from './siteLink';
 
+// A typical demo's height in px, measured over /datagrid's twenty-odd: what a block reserves before its demo is laid out.
+const DEMO_HEIGHT = 500;
+
 interface Props extends BoxProps {
   language?: 'javascript' | 'shell' | 'jsx' | 'css' | 'json' | 'auto';
   label?: string;
@@ -74,6 +77,11 @@ export default function Code(props: Props) {
     copied && setTimeout(() => setCopied(false), 2000);
   }, [copied]);
 
+  const hasDemo = Boolean(children) && !codeOnly;
+  // The height this block takes before it is laid out: the header, the lines up to the `<pre>`'s 400px cap, and a typical demo.
+  // A flat guess was half the real height, so a far heading moved thousands of pixels while a scroll was on its way to it.
+  const estimate = 60 + Math.min(32 + 24 * code.split('\n').length, 400) + (hasDemo ? DEMO_HEIGHT : 0);
+
   const isShell = language === 'shell';
   const playable = useMemo(() => Boolean(code) && canOpenInPlayground(code, { language, check }), [code, language, check]);
 
@@ -99,17 +107,17 @@ export default function Code(props: Props) {
         b={1}
         theme={{ dark: { borderColor: 'slate-700' }, light: { borderColor: 'slate-200' } }}
         contentVisibility="auto"
-        css={{ containIntrinsicSize: 'auto 480px' }}
+        css={{ containIntrinsicSize: `auto ${Math.round(estimate / 20) * 20}px` }}
       >
         {/* Demo Area — `data-md` because the markdown mirror wants the snippet, not the rendered
             markup it produces: a grid demo is four hundred rows of mock data as text. */}
-        {children && !codeOnly && (
+        {hasDemo && (
           <Box
             ref={demoRef}
             props={{ 'data-md': 'skip' }}
             p={6}
             // Reserved while the demo is held back, so the page does not jump as it fills in.
-            minHeight={demoReady ? undefined : 100}
+            minHeight={demoReady ? undefined : DEMO_HEIGHT / 4}
             theme={{ dark: { bgColor: 'slate-900', borderColor: 'slate-700' }, light: { bgColor: 'slate-50', borderColor: 'slate-200' } }}
             bb={1}
           >
