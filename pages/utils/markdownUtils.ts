@@ -7,7 +7,7 @@ export function headings(markdown: string): { id: string; label: string }[] {
     .flatMap((token) => (token.type === 'heading' && token.depth === 2 ? [{ id: slugify(token.text), label: plainText(token.text) }] : []));
 }
 
-/** GitHub's heading anchors — lowercase, punctuation gone, spaces to hyphens — so `[…](#the-rename)` in the file resolves here too. */
+/** GitHub's heading anchors — lowercase, punctuation gone, spaces to hyphens — so `[…](#breaking-changes)` in the file resolves here too. */
 export function slugify(text: string): string {
   return plainText(text)
     .toLowerCase()

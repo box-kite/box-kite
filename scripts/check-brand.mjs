@@ -28,31 +28,6 @@ const ALLOWED = [
     reason: 'the origin story — "a repo called react-box" is what happened',
     strings: ['a repo called `react-box`'],
   },
-  {
-    file: '.claude/skills/release/SKILL.md',
-    reason: 'the one-time rename release runbook: the bridge publish and the deprecation both name the old package',
-    strings: ['@cronocode/react-box'],
-  },
-  {
-    file: 'releases/1.0.0.md',
-    reason: 'the rename release notes: the old package is what the reader is renaming from, and the bridge carries its name',
-    strings: ['@cronocode/react-box', 'crono-styles', 'crono-box', '[react-box]'],
-  },
-  {
-    file: 'CHANGELOG.md',
-    reason: 'the index says which name the releases before 1.0.0 were published under',
-    strings: ['@cronocode/react-box'],
-  },
-  {
-    file: 'README.md',
-    reason: 'the rename note, so a reader arriving with the old name in their package.json finds it here',
-    strings: ['@cronocode/react-box'],
-  },
-  {
-    file: 'scripts/build-bridge.mjs',
-    reason: 'the generator for the compatibility bridge, which is published under the old name on purpose',
-    strings: ['@cronocode/react-box'],
-  },
 ];
 
 /** Every file under `dir`, as a repo-relative POSIX path. */
@@ -70,12 +45,9 @@ function walk(dir) {
 }
 
 const tracked = execSync('git ls-files', { cwd: root, encoding: 'utf8' }).trim().split('\n');
-// Two exemptions that are structural rather than editorial. The bridge keeps the old specifier
-// resolving by design — it is published, not purged. And this file cannot be judged by its own rule:
-// naming the forbidden strings is what it is for, in the patterns, in the allowlist and in the message
-// it prints. An allowlist entry would have to quote every one of them and grow with each new one.
+// This file cannot be judged by its own rule: naming the forbidden strings is what it is for.
 const SELF = 'scripts/check-brand.mjs';
-const sources = tracked.filter((path) => !BINARY.test(path) && !path.startsWith('bridge/') && path !== SELF);
+const sources = tracked.filter((path) => !BINARY.test(path) && path !== SELF);
 const shipped = ['dist', 'dist-core']
   .filter((dir) => existsSync(join(root, dir)))
   .flatMap((dir) => walk(dir))

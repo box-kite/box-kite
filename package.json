@@ -76,7 +76,6 @@
     "build:core": "vite build --config vite.core.config.ts && node scripts/postbuild-core.mjs",
     "build:mcp": "vite build --config vite.mcp.config.ts && node scripts/postbuild-mcp.mjs",
     "postbuild": "node scripts/postbuild.mjs",
-    "build:bridge": "node scripts/build-bridge.mjs",
     "build:dev": "npm run build:core && vite build --mode dev",
     "compile": "tsc --noEmit --skipLibCheck",
     "test": "vitest run",
