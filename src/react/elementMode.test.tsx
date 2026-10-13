@@ -4,6 +4,7 @@ import { hydrateRoot } from 'react-dom/client';
 import { renderToStaticMarkup, renderToString } from 'react-dom/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import Box from '../box';
+import resolveStyles from './resolveStyles';
 import { StylesContext } from './useStyles';
 
 /**
@@ -58,6 +59,24 @@ describe('element mode', () => {
 
       expect(hrefs.length).toBe(new Set(hrefs).size);
       expect(hoisted().filter((element) => element.textContent!.includes('.b-1{border-width:1px}')).length).toBe(1);
+    });
+
+    it('hands every Box the same element objects, so an RSC payload sends each one once', () => {
+      // Flight serializes a repeated object as a reference and a fresh one in full: new elements per Box
+      // put the base stylesheet in the payload once per Box (bug #256).
+      const first = resolveStyles({ p: 4, mt: 3 }, false).styleElements!;
+      const second = resolveStyles({ p: 4, mt: 3 }, false).styleElements!;
+      const other = resolveStyles({ p: 4 }, false).styleElements!;
+
+      const padding = (elements: React.ReactElement[]) =>
+        elements.find((element) =>
+          (element.props as { dangerouslySetInnerHTML: { __html: string } }).dangerouslySetInnerHTML.__html.includes('padding:1rem'),
+        );
+
+      expect(second).toBe(first);
+      expect(other[0]).toBe(first[0]);
+      expect(padding(other)).toBeDefined();
+      expect(padding(other)).toBe(padding(first));
     });
 
     it('renders the elements as siblings, so a void tag still works', () => {

@@ -13,6 +13,25 @@ import { StyleElementDescriptor } from '../core';
 const canHoist = parseInt(React.version, 10) >= 19;
 let warned = false;
 
+// An RSC payload sends an object it has already sent as a reference and a fresh one in full, so a new
+// element per Box put the whole base stylesheet in the payload once per Box (bug #256). Same objects, then.
+const elementCache = new WeakMap<StyleElementDescriptor, React.ReactElement>();
+const listCache = new WeakMap<readonly StyleElementDescriptor[], React.ReactElement[]>();
+
+function styleElementOf(descriptor: StyleElementDescriptor): React.ReactElement {
+  let element = elementCache.get(descriptor);
+
+  if (!element) {
+    const { href, css, precedence } = descriptor;
+    // Raw HTML rather than a text child: React escapes text, and a `>` in a child selector would
+    // reach the browser as `&gt;` and take its rule down with it.
+    element = React.createElement('style', { key: href, href, precedence, dangerouslySetInnerHTML: { __html: css } });
+    elementCache.set(descriptor, element);
+  }
+
+  return element;
+}
+
 export default function styleElementsOf(descriptors: readonly StyleElementDescriptor[] | undefined): React.ReactElement[] | undefined {
   if (!descriptors?.length) return undefined;
 
@@ -23,9 +42,12 @@ export default function styleElementsOf(descriptors: readonly StyleElementDescri
     );
   }
 
-  return descriptors.map(({ href, css, precedence }) =>
-    // Raw HTML rather than a text child: React escapes text, and a `>` in a child selector would
-    // reach the browser as `&gt;` and take its rule down with it.
-    React.createElement('style', { key: href, href, precedence, dangerouslySetInnerHTML: { __html: css } }),
-  );
+  let elements = listCache.get(descriptors);
+
+  if (!elements) {
+    elements = descriptors.map(styleElementOf);
+    listCache.set(descriptors, elements);
+  }
+
+  return elements;
 }

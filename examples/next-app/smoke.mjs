@@ -166,6 +166,17 @@ check('the base style element is hoisted into <head>', head.includes('data-prece
 //    document up front. Without it React's hoisting order would decide whether `p` or `px` wins.
 check('the cascade-layer order is declared up front', layerOrder !== '', `${layerOrder.split(',').length} layers, declared in <head>`);
 
+// 3b. The RSC payload carries the base stylesheet once per version, not once per Box (bug #256): it
+//     sends a repeated object as a reference, so this holds only while every Box gets the same elements.
+const baseVersions = new Set(html.match(/rb-base-[0-9a-z]+/g) ?? []).size;
+const baseCopies = (html.match(/#box-kite-portal \{/g) ?? []).length;
+
+check(
+  'the response carries the base stylesheet once per version, not once per Box',
+  baseVersions > 0 && baseCopies <= 2 * baseVersions,
+  `${baseCopies} copies for ${baseVersions} version${baseVersions === 1 ? '' : 's'} (one in <head>, one in the RSC payload)`,
+);
+
 // 4. Rules travel as elements addressed by content hash — that is what lets React dedupe them.
 check(
   'generated rules ship as hoisted <style> elements',

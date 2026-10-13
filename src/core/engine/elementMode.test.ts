@@ -105,6 +105,33 @@ describe('element mode', () => {
     expect(second.rules.map((rule) => rule.href)).toContain(first.rules[0].href);
   });
 
+  it('hands back the same list and the same descriptors to every Box styled alike', () => {
+    const engine = makeEngine('elements-identity', { sink: 'element' });
+    const first = engine.resolveClassNames({ p: 4, m: 2 }, false).styleElements!;
+    const second = engine.resolveClassNames({ p: 4, m: 2 }, false).styleElements!;
+    const other = engine.resolveClassNames({ p: 4 }, false).styleElements!;
+
+    // An RSC payload sends a repeated object once and a fresh copy in full: a new array per Box sent the
+    // base stylesheet once per Box (bug #256).
+    expect(second).toBe(first);
+    expect(other[0]).toBe(first[0]);
+    expect(other.find((element) => element.css.includes('padding:1rem'))).toBe(
+      first.find((element) => element.css.includes('padding:1rem')),
+    );
+  });
+
+  it('builds a new list once the base element changes', () => {
+    const engine = makeEngine('elements-identity-base', { sink: 'element' });
+    engine.extend({ brand: '#123456' }, {}, {});
+    const before = engine.resolveClassNames({ p: 4 }, false).styleElements!;
+    engine.resolveClassNames({ bgColor: 'brand' } as never, false);
+    const after = engine.resolveClassNames({ p: 4 }, false).styleElements!;
+
+    expect(after).not.toBe(before);
+    expect(after[0].css).toContain('--brand');
+    expect(after.slice(1)).toEqual(before.slice(1));
+  });
+
   it('re-versions the base element when a variable is resolved later', () => {
     const engine = makeEngine('elements-variables', { sink: 'element' });
     engine.extend({ brand: '#123456' }, {}, {});

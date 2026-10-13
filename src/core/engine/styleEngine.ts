@@ -285,6 +285,8 @@ interface StyleContext {
 interface ResolvedStyles {
   classNames: string[];
   elements: StyleElementDescriptor[] | null;
+  /** `elements` behind the base element it was last built with, kept so every render returns the same array. */
+  withBase?: { base: StyleElementDescriptor | null; list: StyleElementDescriptor[] };
 }
 
 function resolveExtends(components: Components): Components {
@@ -994,14 +996,22 @@ export function createStyleEngine(options: StyleEngineOptions = {}): StyleEngine
 
   /**
    * A Box's elements with the engine's base element in front: the base block belongs to no single Box, so
-   * every Box carries it and React dedupes the copies by href.
+   * every Box carries it and React dedupes the copies by href. The same array comes back while the base is
+   * unchanged, because an RSC payload sends a repeated object once and a fresh copy every time (bug #256).
    */
-  function withBaseElement(elements: StyleElementDescriptor[]): StyleElementDescriptor[] {
+  function withBaseElement(
+    elements: StyleElementDescriptor[],
+    resolved: ResolvedStyles = { classNames: [], elements },
+  ): StyleElementDescriptor[] {
     // Nothing else would move the base rules out of the queue: no effect in element mode, no commit on a server.
     flush();
     const base = getSink().baseElement?.() ?? null;
 
-    return base ? [base, ...elements] : elements;
+    if (resolved.withBase?.base !== base) {
+      resolved.withBase = { base, list: base ? [base, ...elements] : elements };
+    }
+
+    return resolved.withBase.list;
   }
 
   /**
@@ -1064,7 +1074,7 @@ export function createStyleEngine(options: StyleEngineOptions = {}): StyleEngine
 
     const { classNames, elements } = resolved;
 
-    return elements ? { classNames, signature, styleElements: withBaseElement(elements) } : { classNames, signature };
+    return elements ? { classNames, signature, styleElements: withBaseElement(elements, resolved) } : { classNames, signature };
   }
 
   return {
