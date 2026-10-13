@@ -19,7 +19,8 @@ Cut a release of `@box-kite/react`, `@box-kite/core` and `@box-kite/mcp`. One ve
   run and no tag is made by hand.
 - **Merging the PR is the release.** When Tests go green on main, `release.yml` tags `v<version>`,
   creates the GitHub Release with the notes file as its body, and dispatches `publish.yml`, which
-  publishes core, then react, then mcp, with provenance. `pages.yml` deploys the site on the same push.
+  publishes core, then react, then mcp, with provenance, and then lists the new mcp version in the MCP registry
+  (its `mcp-registry` job, over GitHub OIDC). `pages.yml` deploys the site on the same push.
 
 ## Steps
 
@@ -37,7 +38,8 @@ Cut a release of `@box-kite/react`, `@box-kite/core` and `@box-kite/mcp`. One ve
 5. **Merge** (squash), then watch the chain: `gh run list --limit 6` shows Tests → Release →
    Publish to NPM, and Deploy static content to Pages beside them.
 6. **Confirm**: `npm view @box-kite/react version`, `npm view @box-kite/core version` and `npm view @box-kite/mcp version` say the new
-   version; the release page reads right; the site is up.
+   version; `curl -s https://registry.modelcontextprotocol.io/v0.1/servers/io.github.box-kite%2Fmcp/versions/<version>` is a 200;
+   the release page reads right; the site is up.
 
 ## When something fails
 

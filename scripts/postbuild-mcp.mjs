@@ -11,6 +11,7 @@ import { spawn } from 'node:child_process';
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
+import { MCP_NAME, MCP_PACKAGE, writeServerJson } from './mcp-server-json.mjs';
 
 const root = join(import.meta.dirname, '..');
 const out = join(root, 'dist-mcp');
@@ -24,12 +25,12 @@ if (!existsSync(bundle)) {
 const parent = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
 
 const manifest = {
-  name: '@box-kite/mcp',
+  name: MCP_PACKAGE,
   version: parent.version,
   type: 'module',
   description: 'The Box Kite MCP server: what an agent may write, what a component takes, and whether a value actually works.',
   // What registry.modelcontextprotocol.io checks a `server.json` against, so listing there needs no second release.
-  mcpName: 'io.github.box-kite/mcp',
+  mcpName: MCP_NAME,
   bin: { 'box-kite-mcp': './mcp.mjs' },
   exports: { '.': './mcp.mjs' },
   files: ['mcp.mjs', 'README.md', 'LICENSE'],
@@ -50,6 +51,9 @@ const manifest = {
 };
 
 writeFileSync(join(out, 'package.json'), `${JSON.stringify(manifest, null, 2)}\n`);
+
+// Built here as well as in publish.yml, so a description over the registry's limit fails CI rather than a release.
+writeServerJson(manifest.version, out);
 cpSync(join(root, 'mcp', 'README.md'), join(out, 'README.md'));
 cpSync(join(root, 'LICENSE'), join(out, 'LICENSE'));
 
