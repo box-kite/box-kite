@@ -1,8 +1,7 @@
 # Changelog
 
 The release notes live in [`releases/`](releases/), one file per version, and each is the body of the matching
-[GitHub Release](https://github.com/box-kite/box-kite/releases). The notes for versions before 1.0.0 are on the
-releases page.
+[GitHub Release](https://github.com/box-kite/box-kite/releases).
 
 | Version                    | Date       | In one line                                                                                                                                  |
 | -------------------------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
