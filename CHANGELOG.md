@@ -5,6 +5,7 @@ The release notes live in [`releases/`](releases/), one file per version, and ea
 
 | Version                    | Date       | In one line                                                                                                                                  |
 | -------------------------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| [2.2.4](releases/2.2.4.md) | 2026-10-13 | Release 2.2.4.                                                                                                                               |
 | [2.2.3](releases/2.2.3.md) | 2026-10-13 | Box Kite is the only name the package carries.                                                                                               |
 | [2.2.2](releases/2.2.2.md) | 2026-10-12 | A theme switch that settles at once on any page, and a DataGrid column chooser you can read.                                                 |
 | [2.2.1](releases/2.2.1.md) | 2026-10-09 | The DataGrid header and bottom bar: a hover pill, every word translatable, a selection that survives a filter, and one-frame row ticks.      |
