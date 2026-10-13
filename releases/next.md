@@ -17,9 +17,3 @@ None.
 ## Fixes
 
 <!-- One bullet per fix: **What was wrong.** What it does now. -->
-
-- **A Server Component page carried the base stylesheet once per Box.** The browser saw one copy, because React
-  dedupes `<style href>` by href. The RSC payload under the HTML still sent the whole ~24 KB base block, plus
-  every rule, for each Box: 1,000 four-Box cards in Next.js 16 came to 102 MB of HTML. Every Box now gets the same
-  style elements, which React sends once and refers to afterwards. The same page is 1.3 MB (34 KB gzipped,
-  against 25 KB for the page written with a CSS module), and nothing changes in your code.
