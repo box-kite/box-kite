@@ -25,6 +25,8 @@ permissions:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    outputs:
+      mcp-version: ${{ steps.mcp.outputs.version }}
 
     steps:
       - uses: actions/checkout@v4
@@ -81,8 +83,10 @@ jobs:
       - run: npm run build:mcp
 
       - name: Publish @box-kite/mcp
+        id: mcp
         run: |
           version=$(node -p "require('./dist-mcp/package.json').version")
+          echo "version=$version" >> "$GITHUB_OUTPUT"
           if npm view "@box-kite/mcp@$version" version > /dev/null 2>&1; then
             echo "@box-kite/mcp@$version is already on the registry — skipping"
           else
@@ -107,3 +111,31 @@ jobs:
           A package that is not on the registry yet has no Settings page to configure, so its first
           version is published by hand — see .claude/skills/release/SKILL.md, "Owner setup".
           EOF
+
+  # registry.modelcontextprotocol.io checks the npm package's `mcpName`, so this waits for npm. A job of its own, so a
+  # refused listing never reads as a refused npm publish. To list a version released before this job, dispatch from main.
+  mcp-registry:
+    needs: publish
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+
+      # `github-oidc` grants the `io.github.box-kite/*` namespace to a workflow in this organisation: no token, no secret.
+      - name: List @box-kite/mcp in the MCP registry
+        env:
+          VERSION: ${{ needs.publish.outputs.mcp-version }}
+        run: |
+          set -euo pipefail
+          if curl -sf -o /dev/null "https://registry.modelcontextprotocol.io/v0.1/servers/io.github.box-kite%2Fmcp/versions/$VERSION"; then
+            echo "io.github.box-kite/mcp@$VERSION is already listed — skipping"
+            exit 0
+          fi
+          node scripts/mcp-server-json.mjs "$VERSION"
+          curl -fsSL https://github.com/modelcontextprotocol/registry/releases/download/v1.8.1/mcp-publisher_linux_amd64.tar.gz | tar xz mcp-publisher
+          ./mcp-publisher login github-oidc
+          ./mcp-publisher publish
