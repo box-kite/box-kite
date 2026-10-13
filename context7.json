@@ -17,10 +17,9 @@
     "mcp",
     "pages",
     "registry",
-    "scripts",
-    "src"
+    "scripts"
   ],
-  "excludeFiles": ["CHANGELOG.md", "SECURITY.md", "SUPPORT.md", "boxmodell.png"],
+  "excludeFiles": ["CHANGELOG.md", "SECURITY.md", "SUPPORT.md", "boxmodell.png", "ARTICLE.md", "CONTRIBUTING.md"],
   "rules": [
     "Never use a `style` attribute: every visual value is a prop, and the one-off with no prop is `css={{ … }}`, which still compiles to a shared class.",
     "The dividers are per prop: spacing is ÷4 (`p={4}` is 1rem), `fontSize` is ÷16 (`fontSize={14}` is 14px), `borderRadius` is ÷4, and border width and `lineHeight` are direct px.",
