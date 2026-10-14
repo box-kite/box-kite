@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
-import { getDefaultEngine } from '../core';
+import { ComponentsRegistry, getDefaultEngine } from '../core';
 import { BoxStyleProps } from '../types';
 import styleElementsOf from './styleElements';
 
@@ -18,8 +18,12 @@ export interface ResolvedBoxStyles {
  * what those classes need comes back as elements to render, so there is nothing to flush. Its own module
  * for that reason: the RSC entry must reach this without pulling in `useStyles` and its flush effect.
  */
-export default function resolveStyles(props: BoxStyleProps<any>, isSvg: boolean): ResolvedBoxStyles & { signature: string | null } {
-  const { classNames, signature, styleElements } = getDefaultEngine().resolveClassNames(props, isSvg);
+export default function resolveStyles(
+  props: BoxStyleProps<any>,
+  isSvg: boolean,
+  components?: ComponentsRegistry,
+): ResolvedBoxStyles & { signature: string | null } {
+  const { classNames, signature, styleElements } = getDefaultEngine().resolveClassNames(props, isSvg, components);
 
   return { classNames, signature, styleElements: styleElementsOf(styleElements) };
 }

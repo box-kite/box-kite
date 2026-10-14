@@ -1064,6 +1064,34 @@ Box.components({
 });
 ```
 
+`extends` is resolved over everything registered so far, chains included, so overriding the base later still reaches the component built on it.
+
+### Box.createComponents() — A Design for One Subtree
+
+`Box.components()` styles the whole app: every call merges into one registry, so two designs cannot share a page through it. `Box.createComponents()` takes the same shape and registers nothing. It returns a design, and `<Box.Components value>`, or `components` on `Box.Theme`, applies it to everything inside.
+
+```tsx
+const aurora = Box.createComponents({ button: { styles: { borderRadius: 999 } }, card: { styles: { p: 6 } } });
+const harbor = Box.createComponents({ button: { styles: { borderRadius: 0 } } }, { base: 'builtin' });
+
+<Box.Theme use="local" components={aurora}>   {/* light/dark + design in one wrapper */}
+  <Button>Pill</Button>
+</Box.Theme>
+<Box.Components value={harbor}>
+  <Button>Square</Button>
+</Box.Components>
+```
+
+- **`base`** is what the design is merged over:
+  - `'global'` (the default) is the app's own `Box.components()`, followed as it changes.
+  - `'builtin'` ignores the app's registrations.
+  - Another registry chains onto that design.
+- **Props still beat the design**, the way they beat `Box.components()`.
+- **A design is identified by its content**, so building one inline does not grow the cache. Module scope still reads best.
+- **`<Box.Components>` renders no element.** `value={undefined}` hands a subtree back to the app's design.
+- **A Server Component cannot read the provider.** A client component under it can.
+- **Types for two designs that both name a component**: `interface ComponentsTypes extends MergeComponentsAndVariants<[typeof aurora, typeof harbor]> {}` (from `@box-kite/core/types`). Extending two `ExtractComponentsAndVariants` that disagree on `button` is an interface conflict.
+
 ---
 
 ## Extension System

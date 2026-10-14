@@ -4,6 +4,7 @@ import boxClassNames, { BoxClassNames } from './react/boxClassNames';
 import boxComponent from './react/boxComponent';
 import { BoxClassNameProps, BoxCoreProps } from './react/boxProps';
 import buildTagProps from './react/boxTagProps';
+import Components from './react/componentsProvider';
 import useVisibility from './react/hooks/useVisibility';
 import { ExtractElementFromTag } from './react/reactTypes';
 import Theme from './react/theme/theme';
@@ -61,6 +62,10 @@ interface BoxType {
   ): React.ReactNode;
   extend: typeof BoxExtends.extend;
   components: typeof BoxExtends.components;
+  /** A design for one subtree, registered nowhere: hand it to `<Box.Components value>` or `<Box.Theme components>`. */
+  createComponents: typeof BoxExtends.createComponents;
+  /** Every Box below resolves its `component` against this registry instead of the app's `Box.components()`. */
+  Components: typeof Components;
   keyframes: typeof BoxExtends.keyframes;
   /** A spring of your own, sampled into `{ easing, duration }` — the two halves the timing and duration props take. */
   spring: typeof Springs.spring;
@@ -77,6 +82,8 @@ const Box = boxComponent(useBoxElement, 'Box') as unknown as BoxType;
 
 Box.extend = BoxExtends.extend;
 Box.components = BoxExtends.components;
+Box.createComponents = BoxExtends.createComponents;
+Box.Components = Components;
 Box.keyframes = BoxExtends.keyframes;
 Box.spring = Springs.spring;
 Box.Theme = Theme;

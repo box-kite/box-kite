@@ -544,6 +544,18 @@ export const boxMembers: readonly BoxMember[] = [
     summary: 'Name a set of styles — with variants, named parts and inheritance — and wear it with component="card".',
   },
   {
+    id: 'createcomponents',
+    name: 'Box.createComponents()',
+    signature: 'const aurora = Box.createComponents({ button: { styles } }, { base })',
+    summary: 'The same shape as Box.components(), registered nowhere: a design for one subtree, so two designs can share a page.',
+  },
+  {
+    id: 'componentsprovider',
+    name: 'Box.Components',
+    signature: '<Box.Components value={aurora}>',
+    summary: 'Every Box below resolves its component against that design instead of the app’s. Box.Theme takes it as components={…}.',
+  },
+  {
     id: 'keyframes',
     name: 'Box.keyframes()',
     signature: 'Box.keyframes({ slideIn: { from: {…}, to: {…} } })',

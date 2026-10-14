@@ -57,6 +57,8 @@ interface RscBoxType {
   ): React.ReactNode;
   extend: typeof BoxExtends.extend;
   components: typeof BoxExtends.components;
+  /** A design for one subtree. A Server Component cannot read the provider that applies it; a client one under `<Box.Components>` can. */
+  createComponents: typeof BoxExtends.createComponents;
   keyframes: typeof BoxExtends.keyframes;
   /** A spring of your own, sampled into `{ easing, duration }`. Pure arithmetic, so a Server Component can call it. */
   spring: typeof Springs.spring;
@@ -74,6 +76,7 @@ const RscBox = Box as RscBoxType;
 
 RscBox.extend = BoxExtends.extend;
 RscBox.components = BoxExtends.components;
+RscBox.createComponents = BoxExtends.createComponents;
 RscBox.keyframes = BoxExtends.keyframes;
 RscBox.spring = Springs.spring;
 RscBox.getVariableValue = (name: string) => getDefaultEngine().getVariableValue(name);

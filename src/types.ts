@@ -158,6 +158,16 @@ type MergeUnion<T, U> = {
 };
 type Simplify<T> = T extends infer U ? { [K in keyof U]: U[K] } : never;
 
+type ComponentsOf<T> = T extends { readonly id: string; readonly components: infer C } ? C : T;
+
+/**
+ * Several designs as one `Augmented.ComponentsTypes`, each a `Box.createComponents()` registry or a `Box.components()`
+ * map: a component two of them define takes both variant sets, where two `ExtractComponentsAndVariants` conflict.
+ */
+export type MergeComponentsAndVariants<T extends readonly unknown[]> = T extends readonly [infer Head, ...infer Rest]
+  ? Simplify<MergeUnion<ExtractComponentsAndVariants<ComponentsOf<Head>>, MergeComponentsAndVariants<Rest>>>
+  : {};
+
 export type ComponentsAndVariants = Simplify<MergeUnion<ExtractComponentsAndVariants<typeof boxComponents>, Augmented.ComponentsTypes>>;
 
 export interface ComponentProps<TKey extends keyof ComponentsAndVariants = never> {

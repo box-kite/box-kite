@@ -2,6 +2,7 @@ import { BoxStyle } from '../coreTypes';
 import getDefaultEngine from '../engine/defaultEngine';
 import { Keyframes } from '../engine/keyframes';
 import { Components } from './boxComponents';
+import createComponentsRegistry from './componentsRegistry';
 
 // Thin delegation to the default style engine — every registry these functions used to own
 // (variables, extended props, component styles) now lives on the engine instance.
@@ -25,6 +26,9 @@ namespace BoxExtends {
   export function components<T extends Components>(components: T) {
     return getDefaultEngine().components(components);
   }
+
+  /** A design for one subtree: registered nowhere, applied by `<Box.Components value>` or `<Box.Theme components>`. */
+  export const createComponents = createComponentsRegistry;
 }
 
 export default BoxExtends;

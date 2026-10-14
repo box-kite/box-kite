@@ -30,6 +30,7 @@ import Containers from '../containers';
 import { BoxStyle, BoxStyleValue } from '../coreTypes';
 import type DiagnosticsModule from '../diagnostics';
 import defaultBoxComponents, { BoxComponent, Components } from '../extends/boxComponents';
+import { ComponentsRegistry } from '../extends/componentsRegistry';
 import { resolveComponentStyles } from '../extends/useComponents';
 import Filters from '../filters';
 import Groups from '../groups';
@@ -101,12 +102,14 @@ export interface StyleEngine {
   resolveClassNames(
     props: BoxStyleProps<any>,
     isSvg: boolean,
+    /** The design the Box is under — `<Box.Components value>`. Without one, the app's `components()`. */
+    components?: ComponentsRegistry,
   ): { classNames: string[]; signature: string | null; styleElements?: StyleElementDescriptor[] };
   /**
    * The class list as a `class` attribute value — the whole API a non-React adapter needs. The CSS
    * follows on the engine's own schedule; throws in element mode, where `resolveClassNames` is the way in.
    */
-  classNames(props: BoxStyleProps<any>, options?: { svg?: boolean }): string;
+  classNames(props: BoxStyleProps<any>, options?: { svg?: boolean; components?: ComponentsRegistry }): string;
   /** Rules targeting a root selector (`html`) rather than a class. Returns style elements like `resolveClassNames`. */
   addGlobalStyles(props: BoxStyleProps<any>, selector: string): StyleElementDescriptor[] | undefined;
   /** Write every pending rule to this engine's sink, now. */
@@ -289,18 +292,30 @@ interface ResolvedStyles {
   withBase?: { base: StyleElementDescriptor | null; list: StyleElementDescriptor[] };
 }
 
+/**
+ * `extends` resolved over the whole merged map, chains included. Always run on the raw map: resolving strips
+ * the key, so an override of the base registered later would never reach the component built on it (bug #258).
+ */
 function resolveExtends(components: Components): Components {
-  const resolved = { ...components };
+  const resolved: Components = {};
 
-  for (const [name, component] of Object.entries(resolved)) {
-    if (!component.extends) continue;
+  function resolve(name: string): BoxComponent | undefined {
+    if (name in resolved) return resolved[name];
 
-    const baseComponent = resolved[component.extends];
-    if (!baseComponent) continue;
+    const component = components[name];
+    if (!component) return undefined;
 
+    // Marked before recursing, so a cycle ends at the component as written.
+    resolved[name] = component;
+    if (!component.extends) return component;
+
+    const baseComponent = resolve(component.extends);
     const { extends: _, ...override } = component;
-    resolved[name] = mergeDeep<BoxComponent>({}, baseComponent, override);
+
+    return (resolved[name] = baseComponent ? mergeDeep<BoxComponent>({}, baseComponent, override) : component);
   }
+
+  for (const name in components) resolve(name);
 
   return resolved;
 }
@@ -373,7 +388,27 @@ export function createStyleEngine(options: StyleEngineOptions = {}): StyleEngine
 
   rebuildCssStylesIndex();
 
-  let componentsStyles: Components = defaultBoxComponents;
+  // What `Box.components()` was given, merged but unresolved, and the resolved map every Box reads.
+  let rawComponents: Components = defaultBoxComponents;
+  let componentsStyles: Components = resolveExtends(rawComponents);
+  // Resolved registries by id. Emptied by `components()`, since a `'global'` base has just changed.
+  const registryStyles = new Map<string, Components>();
+
+  function rawComponentsOf(registry: ComponentsRegistry): Components {
+    const { base } = registry;
+    const baseComponents = base === 'builtin' ? defaultBoxComponents : base === 'global' ? rawComponents : rawComponentsOf(base);
+
+    return mergeDeep<Components>(baseComponents, registry.components);
+  }
+
+  function componentsOf(registry: ComponentsRegistry | undefined): Components {
+    if (!registry) return componentsStyles;
+
+    let components = registryStyles.get(registry.id);
+    if (!components) registryStyles.set(registry.id, (components = resolveExtends(rawComponentsOf(registry))));
+
+    return components;
+  }
 
   // style signature → resolved class names. A Box's list is fully determined by its inputs, so
   // structurally identical Boxes (every DataGrid cell) collapse to one lookup. Rules dedupe separately.
@@ -406,9 +441,11 @@ export function createStyleEngine(options: StyleEngineOptions = {}): StyleEngine
    * A stable cache key for the inputs that decide a class list, built on every render, so a hit has to be
    * cheap. Null when a record will not serialize, and the caller falls back.
    */
-  function computeSignature(props: BoxStyleProps<any>, isSvg: boolean): string | null {
+  function computeSignature(props: BoxStyleProps<any>, isSvg: boolean, registry: ComponentsRegistry | undefined): string | null {
     try {
-      let sig = `${isSvg ? 's' : 'b'}|${props.clean ? 'c' : ''}|${props.component ?? ''}|`;
+      // The registry only matters to a Box that names a component, so every other Box keeps one cache entry.
+      const component = props.component ? `${props.component}${registry ? `@${registry.id}` : ''}` : '';
+      let sig = `${isSvg ? 's' : 'b'}|${props.clean ? 'c' : ''}|${component}|`;
       if (props.variant !== undefined) sig += JSON.stringify(props.variant);
       sig += '|';
 
@@ -1056,14 +1093,14 @@ export function createStyleEngine(options: StyleEngineOptions = {}): StyleEngine
     sink?.reset();
   }
 
-  function resolveClassNames(props: BoxStyleProps<any>, isSvg: boolean) {
+  function resolveClassNames(props: BoxStyleProps<any>, isSvg: boolean, registry?: ComponentsRegistry) {
     adoptRenderedStyles();
-    const signature = computeSignature(props, isSvg);
+    const signature = computeSignature(props, isSvg, registry);
 
     let resolved = signature !== null ? styleCache.get(signature) : undefined;
 
     if (!resolved) {
-      const componentStyles = resolveComponentStyles(props, componentsStyles) as BoxStyleProps;
+      const componentStyles = resolveComponentStyles(props, componentsOf(registry)) as BoxStyleProps;
       const propsToUse = componentStyles ? mergeDeep(componentStyles, props) : props;
 
       const classNames = [isSvg ? svgClassName : boxClassName];
@@ -1082,14 +1119,14 @@ export function createStyleEngine(options: StyleEngineOptions = {}): StyleEngine
 
     resolveClassNames,
 
-    classNames(props: BoxStyleProps<any>, options?: { svg?: boolean }) {
+    classNames(props: BoxStyleProps<any>, options?: { svg?: boolean; components?: ComponentsRegistry }) {
       if (isElementMode()) {
         throw new Error(
           '[box-kite] classNames() has nowhere to put its CSS in element mode: the rules come back from resolveClassNames() as style elements for the adapter to render.',
         );
       }
 
-      return resolveClassNames(props, options?.svg ?? false).classNames.join(' ');
+      return resolveClassNames(props, options?.svg ?? false, options?.components).classNames.join(' ');
     },
 
     addGlobalStyles(props: BoxStyleProps<any>, selector: string) {
@@ -1167,7 +1204,9 @@ export function createStyleEngine(options: StyleEngineOptions = {}): StyleEngine
 
     components(components) {
       // Merge into what this engine holds, not the defaults: sequential calls used to drop earlier ones.
-      componentsStyles = resolveExtends(mergeDeep<Components>(componentsStyles, components));
+      rawComponents = mergeDeep<Components>(rawComponents, components);
+      componentsStyles = resolveExtends(rawComponents);
+      registryStyles.clear();
       // Cached class lists were resolved against the previous component defaults.
       styleCache.clear();
 
