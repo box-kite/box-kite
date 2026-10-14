@@ -21,6 +21,8 @@ export { default as Springs } from './core/springs';
 export { createStyleEngine, DEFAULT_STYLE_ELEMENT_ID } from './core/engine/styleEngine';
 export { default as getDefaultEngine } from './core/engine/defaultEngine';
 export { default as BoxExtends } from './core/extends/boxExtends';
+export { default as createComponents } from './core/extends/componentsRegistry';
+export type { ComponentsBase, ComponentsRegistry } from './core/extends/componentsRegistry';
 export * as BoxCatalogs from './core/catalog/boxCatalog';
 export type {
   BoxCatalog,

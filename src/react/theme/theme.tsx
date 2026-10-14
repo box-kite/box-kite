@@ -4,6 +4,7 @@ import Box from '../../box';
 import {
   applyThemeToElement,
   clearStoredTheme,
+  ComponentsRegistry,
   defaultThemeName,
   documentRoot,
   getSystemTheme,
@@ -16,6 +17,7 @@ import {
   writeStoredTheme,
 } from '../../core';
 import { BoxStyleProps } from '../../types';
+import Components from '../componentsProvider';
 import { useIsomorphicInsertionEffect } from '../effects';
 import { useGlobalStyles } from '../useStyles';
 import ThemeContext from './themeContext';
@@ -43,6 +45,11 @@ interface ThemeProps {
    * update inside the callback. Reduced motion skips the transition and keeps the theme change.
    */
   viewTransition?: boolean | ThemeTransition;
+  /**
+   * A design for this subtree from `Box.createComponents()` — `<Box.Components value>` inside the theme,
+   * since one wrapper holding a design in both light and dark is what a themed section usually is.
+   */
+  components?: ComponentsRegistry;
 }
 
 /**
@@ -52,7 +59,8 @@ interface ThemeProps {
  * and context around it.
  */
 function Theme(props: ThemeProps) {
-  const { children, theme, use = 'local', storageKey, globalStyles, viewTransition } = props;
+  const { theme, use = 'local', storageKey, globalStyles, viewTransition, components } = props;
+  const children = components ? <Components value={components}>{props.children}</Components> : props.children;
 
   // In element mode the global rules come back as `<style>` elements to render: they target `html`,
   // so no Box owns them and nothing else would put them in the document.

@@ -28,7 +28,7 @@ export default function BoxFunctionsPage() {
           <Section id="surface" title="The whole surface">
             <Flex d="column" gap={5}>
               <Box>
-                Ten names, and you will use two of them. <Mono>Box.components()</Mono> is how a design system is written here, and{' '}
+                Twelve names, and you will use two of them. <Mono>Box.components()</Mono> is how a design system is written here, and{' '}
                 <Mono>Box.extend()</Mono> is how the prop set grows. The other eight are for the day you need them.
               </Box>
               <Box overflowX="auto">
@@ -61,7 +61,8 @@ export default function BoxFunctionsPage() {
               </Box>
               <Box fontSize={14} lineHeight={24}>
                 Everything is registered on one engine, shared by the whole app, so these are called once at module scope — not in a
-                component, not in an effect. Register before the first render and nothing has to be re-emitted.
+                component, not in an effect. Register before the first render and nothing has to be re-emitted. The one design that stops at
+                the edge of a subtree is <Mono>Box.createComponents()</Mono>, which registers nothing.
               </Box>
             </Flex>
           </Section>
@@ -134,6 +135,73 @@ declare module '@box-kite/core/types' {
 }`}
               codeOnly
             />
+          </Member>
+
+          <Member id="createcomponents">
+            <Box>
+              <Mono>Box.components()</Mono> styles the whole app, so two designs cannot share a page with it: a later call merges into the
+              earlier one. <Mono>Box.createComponents()</Mono> takes the same shape and registers nothing — it returns a design, and{' '}
+              <Mono>&lt;Box.Components value&gt;</Mono> applies it to everything inside. A white-label app with a design per tenant, a
+              redesign landing one screen at a time, a page of templates that each look different: one stylesheet, and each design ends
+              where its subtree does.
+            </Box>
+
+            <Code
+              label="Two designs, one page"
+              language="jsx"
+              code={`import Box from '@box-kite/react';
+import Button from '@box-kite/react/components/button';
+
+const pill = Box.createComponents({ button: { styles: { borderRadius: 999, px: 6 } } });
+const square = Box.createComponents({ button: { styles: { borderRadius: 0 } } }, { base: 'builtin' });
+
+export default function Designs() {
+  return (
+    <>
+      <Box.Components value={pill}>
+        <Button>Pill</Button>
+      </Box.Components>
+      <Box.Theme theme="dark" components={square}>
+        <Button>Square, dark</Button>
+      </Box.Theme>
+    </>
+  );
+}`}
+              codeOnly
+            />
+
+            <Callout title="Where a design starts, and what still wins">
+              <Mono>base</Mono> is what the design is merged over: <Mono>&apos;global&apos;</Mono> (the default) is the app&apos;s own{' '}
+              <Mono>Box.components()</Mono>, followed as it changes; <Mono>&apos;builtin&apos;</Mono> ignores the app&apos;s registrations;
+              another registry chains onto that design. Props written on an element still beat the design, the way they beat{' '}
+              <Mono>Box.components()</Mono>. A design is identified by its content, so building one inline costs nothing — but module scope
+              is where it reads best. A Server Component cannot see the provider; a client one under it can.
+            </Callout>
+
+            <Code
+              label="box.d.ts — two designs that both name button"
+              language="jsx"
+              check={false}
+              code={`import '@box-kite/react';
+import { MergeComponentsAndVariants } from '@box-kite/core/types';
+import { aurora, harbor } from './designs';
+
+declare module '@box-kite/core/types' {
+  namespace Augmented {
+    interface ComponentsTypes extends MergeComponentsAndVariants<[typeof aurora, typeof harbor]> {}
+  }
+}`}
+              codeOnly
+            />
+          </Member>
+
+          <Member id="componentsprovider">
+            <Box>
+              The half that applies a design. It renders no element, only context, so it can wrap anything — a route, one card, a
+              portal&apos;s contents. <Mono>Box.Theme</Mono> takes the same registry as <Mono>components=&#123;…&#125;</Mono>, because a
+              design in both light and dark is the usual case, and <Mono>value=&#123;undefined&#125;</Mono> hands a subtree back to the
+              app&apos;s own design.
+            </Box>
           </Member>
 
           <Member id="extend" more={{ label: 'Style Grouping', to: '/style-grouping' }}>
@@ -531,6 +599,8 @@ const sidebarLinks = [
   { id: 'surface', label: 'The whole surface' },
   { label: 'Extending', section: true as const },
   { id: 'components', label: 'Box.components()' },
+  { id: 'createcomponents', label: 'Box.createComponents()' },
+  { id: 'componentsprovider', label: 'Box.Components' },
   { id: 'extend', label: 'Box.extend()' },
   { label: 'Motion', section: true as const },
   { id: 'keyframes', label: 'Box.keyframes()' },

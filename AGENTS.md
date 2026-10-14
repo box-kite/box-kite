@@ -124,6 +124,7 @@ Different props have different dividers — this is the #1 source of bugs:
 - `src/core/extends/boxExtends.ts` — `Box.extend()` for custom CSS variables, new props, extending existing prop values; `Box.components()` for component default styles with variants; `Box.keyframes()` for `@keyframes` sequences
 - `src/core/extends/boxComponents.ts` — Built-in component default styles
 - `src/core/extends/useComponents.ts` — Merges component defaults with user-provided props
+- `src/core/extends/componentsRegistry.ts` — `Box.createComponents()`: a design registered nowhere, content-addressed, merged over `builtin`/`global`/another registry. The engine resolves it per id (`componentsOf`); `src/react/componentsProvider.tsx` (`Box.Components`, and `Box.Theme components`) supplies it through a context read in `useStyles` — never in `resolveStyles`, which stays hook-free for the RSC build
 
 ### Theme System
 

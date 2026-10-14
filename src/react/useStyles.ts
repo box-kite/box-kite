@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { useContext } from 'react';
 import { getDefaultEngine, StylesConfiguration } from '../core';
 import { BoxStyleProps } from '../types';
+import ComponentsContext from './componentsContext';
 import { useIsomorphicInsertionEffect } from './effects';
 import resolveStyles, { ResolvedBoxStyles } from './resolveStyles';
 import styleElementsOf from './styleElements';
@@ -12,7 +14,7 @@ const useFlushEffect = useIsomorphicInsertionEffect;
 export type { StylesConfiguration };
 
 export default function useStyles(props: BoxStyleProps<any>, isSvg: boolean): ResolvedBoxStyles {
-  const { classNames, signature, styleElements } = resolveStyles(props, isSvg);
+  const { classNames, signature, styleElements } = resolveStyles(props, isSvg, useContext(ComponentsContext));
 
   // Flush during the commit, before anything can paint or measure. Keyed on the stable signature
   // so it only re-runs when the class list changes; a cache hit added no rules, and a miss (new
