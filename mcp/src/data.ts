@@ -4,6 +4,7 @@ import propsApi from '../../api/props.json';
 import { name as libraryName, version as libraryVersion } from '../../package.json';
 import { installCommand, registryItems, RegistryItem } from '../../pages/site/registry';
 import { SITE_URL } from '../../pages/site/site';
+import { blockPath, blocks as blockPages } from '../../pages/site/templates';
 import { createStyleEngine } from '../../src/core';
 import catalogManifest from '../../src/utils/catalog/catalogManifest';
 
@@ -155,6 +156,13 @@ export const priorFacts: readonly string[] = agentsMarkdown
 export const blocks: readonly RegistryItem[] = registryItems;
 
 export const blockInstall = (name: string): string => installCommand(name);
+
+/** The page a registry item is shown on — running in light and dark, with every file — if it has one. */
+export const blockPage = (name: string): string | undefined => {
+  const page = blockPages.find((block) => block.registry === name);
+
+  return page && `${SITE_URL}${blockPath(page.slug)}/`;
+};
 
 /**
  * A fresh engine with readable class names, no DOM and no console: what `check_styles` judges a value with. One

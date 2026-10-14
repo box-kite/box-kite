@@ -81,5 +81,6 @@ describe('the server', () => {
   it('gives a block its install command', async () => {
     expect(await call('get_blocks', {})).toContain('npx shadcn@latest add');
     expect(await call('get_blocks', { name: 'data-grid' })).toContain('Files:');
+    expect(await call('get_blocks', { name: 'data-grid' })).toContain('/blocks/react-invoice-data-grid/');
   });
 });

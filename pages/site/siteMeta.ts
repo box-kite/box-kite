@@ -1,8 +1,20 @@
-import { SITE_NAME, SITE_URL, SiteRoute, siteRoutes } from './site';
+import { SITE_NAME, SITE_URL, SiteRoute, siteRoutes, SocialImage } from './site';
 
 // The table keeps its literal type so that `SiteRoutePath` can be a union of its paths; widen it
 // once here, where the optional fields have to be readable.
 const routes: readonly SiteRoute[] = siteRoutes;
+
+/** The card a shared link shows unless a page has its own: 1200×630 as every network asks. */
+export const SOCIAL_IMAGE: SocialImage = {
+  path: '/og.png',
+  width: 1200,
+  height: 630,
+  alt: 'Box Kite — every CSS property is a typed prop',
+};
+
+/** What a search result shows of a title and a description before it cuts them off. */
+export const TITLE_LIMIT = 60;
+export const DESCRIPTION_LIMIT = 160;
 
 /** What a single page tells browsers, crawlers and link previews about itself. */
 export interface PageMeta {
@@ -11,6 +23,14 @@ export interface PageMeta {
   /** Absent on the not-found shell: there is no address it is the canonical copy of. */
   canonical?: string;
   indexable: boolean;
+  image: SocialImage;
+  /** Every structured-data block the page carries, breadcrumbs first. */
+  jsonLd: readonly object[];
+}
+
+export interface Crumb {
+  name: string;
+  path: string;
 }
 
 /**
@@ -22,18 +42,62 @@ export function canonicalUrl(path: string, siteUrl: string = SITE_URL): string {
   return path === '/' ? `${siteUrl}/` : `${siteUrl}${path}/`;
 }
 
-/** The `<title>` for a route: its own when it carries one, `<name> — Box Kite` otherwise. */
+/**
+ * The `<title>` for a route: its own when it carries one, `<name> — Box Kite` otherwise — unless the name
+ * says Box Kite already, or the suffix would push it past what a search result shows.
+ */
 export function documentTitle(route: SiteRoute): string {
-  return route.title ?? `${route.name} — ${SITE_NAME}`;
+  if (route.title) return route.title;
+
+  const suffixed = `${route.name} — ${SITE_NAME}`;
+
+  return route.name.includes(SITE_NAME) || suffixed.length > TITLE_LIMIT ? route.name : suffixed;
 }
 
-/** Everything a route publishes about itself, in one shape the head tags can be built from. */
-export function pageMeta(route: SiteRoute): PageMeta {
+/**
+ * The trail to a page: home, every ancestor that is a route, then the page. Only a page with a section
+ * between it and home has one — `Box Kite › Button` tells a reader nothing the address does not.
+ */
+export function breadcrumbsFor(path: string, within: readonly SiteRoute[] = routes): Crumb[] {
+  const segments = path.split('/').filter(Boolean);
+  const ancestors = segments.slice(0, -1).flatMap((_, index) => {
+    const route = routeFor(`/${segments.slice(0, index + 1).join('/')}`, within);
+
+    return route ? [{ name: route.name, path: route.path }] : [];
+  });
+  const page = routeFor(path, within);
+
+  return page && ancestors.length ? [{ name: SITE_NAME, path: '/' }, ...ancestors, { name: page.name, path: page.path }] : [];
+}
+
+/** The same trail as structured data, which is what a search result shows in place of the address. */
+export function breadcrumbList(crumbs: readonly Crumb[]): object {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: crumbs.map((crumb, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: crumb.name,
+      item: canonicalUrl(crumb.path),
+    })),
+  };
+}
+
+/**
+ * Everything a route publishes about itself, in one shape the head tags can be built from. `within` is
+ * where the breadcrumbs look up their ancestors: the app's full list, releases and blocks included.
+ */
+export function pageMeta(route: SiteRoute, within: readonly SiteRoute[] = routes): PageMeta {
+  const crumbs = breadcrumbsFor(route.path, within);
+
   return {
     title: documentTitle(route),
     description: route.description,
     canonical: canonicalUrl(route.path),
     indexable: route.indexable !== false,
+    image: route.image ?? SOCIAL_IMAGE,
+    jsonLd: [...(crumbs.length ? [breadcrumbList(crumbs)] : []), ...(route.jsonLd ?? [])],
   };
 }
 
@@ -42,6 +106,8 @@ export const notFoundMeta: PageMeta = {
   title: `Page not found — ${SITE_NAME}`,
   description: `This address is not part of the ${SITE_NAME} documentation.`,
   indexable: false,
+  image: SOCIAL_IMAGE,
+  jsonLd: [],
 };
 
 /**
@@ -60,12 +126,21 @@ export function indexableRoutes(within: readonly SiteRoute[] = routes): readonly
 }
 
 /**
- * `sitemap.xml` for the whole site. No `<lastmod>`: the only date the build knows is its own, and a
- * sitemap that claims every page changed on every deploy is worse than one that says nothing.
+ * `sitemap.xml` for the whole site. `lastmod` is the newest commit to a route's own sources, never the
+ * build's date: a sitemap claiming every page changed on every deploy is worse than one saying nothing.
  */
-export function buildSitemap(siteUrl: string = SITE_URL, within: readonly SiteRoute[] = routes): string {
+export function buildSitemap(
+  siteUrl: string = SITE_URL,
+  within: readonly SiteRoute[] = routes,
+  lastModified: (path: string) => string | undefined = () => undefined,
+): string {
   const urls = indexableRoutes(within)
-    .map((route) => `  <url>\n    <loc>${canonicalUrl(route.path, siteUrl)}</loc>\n  </url>`)
+    .map((route) => {
+      const date = lastModified(route.path);
+      const lastmod = date ? `\n    <lastmod>${date}</lastmod>` : '';
+
+      return `  <url>\n    <loc>${canonicalUrl(route.path, siteUrl)}</loc>${lastmod}\n  </url>`;
+    })
     .join('\n');
 
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`;
@@ -119,11 +194,14 @@ export function buildRedirectMarkdown(to: string, siteUrl: string = SITE_URL): s
 export const META_START = '<!--site-metadata-->';
 export const META_END = '<!--/site-metadata-->';
 
-/** The card a shared link shows: one image for the whole site, 1200×630 as every network asks. */
-export const SOCIAL_IMAGE = { path: '/og.png', width: 1200, height: 630, alt: 'Box Kite — every CSS property is a typed prop' };
+/** Marks the structured data the site writes, so a navigation replaces it and leaves anything else alone. */
+export const JSON_LD_ATTRIBUTE = 'data-site-jsonld';
 
 const escapeText = (value: string) => value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const escapeAttribute = (value: string) => escapeText(value).replace(/"/g, '&quot;');
+
+/** JSON for a `<script>` element, with every `<` escaped so no string inside it can close the element. */
+export const jsonLdText = (data: object) => JSON.stringify(data).replace(/</g, '\\u003c');
 
 /**
  * The head a page carries before a single line of JavaScript runs — which is all a crawler that
@@ -139,13 +217,14 @@ export function buildHeadHtml(meta: PageMeta): string {
     `<meta property="og:title" content="${escapeAttribute(meta.title)}" />`,
     `<meta property="og:description" content="${escapeAttribute(meta.description)}" />`,
     ...(meta.canonical ? [`<meta property="og:url" content="${meta.canonical}" />`] : []),
-    `<meta property="og:image" content="${SITE_URL}${SOCIAL_IMAGE.path}" />`,
-    `<meta property="og:image:width" content="${SOCIAL_IMAGE.width}" />`,
-    `<meta property="og:image:height" content="${SOCIAL_IMAGE.height}" />`,
-    `<meta property="og:image:alt" content="${escapeAttribute(SOCIAL_IMAGE.alt)}" />`,
+    `<meta property="og:image" content="${SITE_URL}${meta.image.path}" />`,
+    `<meta property="og:image:width" content="${meta.image.width}" />`,
+    `<meta property="og:image:height" content="${meta.image.height}" />`,
+    `<meta property="og:image:alt" content="${escapeAttribute(meta.image.alt)}" />`,
     `<meta name="twitter:card" content="summary_large_image" />`,
-    `<meta name="twitter:image" content="${SITE_URL}${SOCIAL_IMAGE.path}" />`,
+    `<meta name="twitter:image" content="${SITE_URL}${meta.image.path}" />`,
     ...(meta.indexable ? [] : [`<meta name="robots" content="noindex, follow" />`]),
+    ...meta.jsonLd.map((data) => `<script type="application/ld+json" ${JSON_LD_ATTRIBUTE}>${jsonLdText(data)}</script>`),
   ];
 
   return tags.map((tag) => `    ${tag}`).join('\n');

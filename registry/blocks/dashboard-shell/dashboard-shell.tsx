@@ -103,12 +103,14 @@ export interface DashboardShellProps {
   /** The heading above the page, and the `id` of the nav item that is marked as current. */
   title: string;
   current?: string;
+  /** The theme to open in. Without it the shell follows the reader's saved choice, then their system. */
+  theme?: string;
   children: ReactNode;
 }
 
-export default function DashboardShell({ title, current = 'overview', children }: DashboardShellProps) {
+export default function DashboardShell({ title, current = 'overview', theme, children }: DashboardShellProps) {
   return (
-    <Box.Theme storageKey="dashboard-theme">
+    <Box.Theme theme={theme} storageKey="dashboard-theme">
       <Flex
         minHeight="fit"
         bgColor="slate-50"

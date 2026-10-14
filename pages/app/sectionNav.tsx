@@ -1,4 +1,4 @@
-import { BookOpen, Newspaper, Zap } from 'lucide-react';
+import { BookOpen, LayoutTemplate, Newspaper, Zap } from 'lucide-react';
 import { ReactElement } from 'react';
 import { useLocation } from 'react-router-dom';
 import Box from '../../src/box';
@@ -12,7 +12,7 @@ import SiGithub from '~icons/simple-icons/github';
 import SiNpm from '~icons/simple-icons/npm';
 
 // The icon is the bar's own; the sections themselves are data, so the sidebar test can count them as links.
-const ICONS: Record<Section, ReactElement> = { docs: <BookOpen />, start: <Zap />, blog: <Newspaper /> };
+const ICONS: Record<Section, ReactElement> = { docs: <BookOpen />, start: <Zap />, templates: <LayoutTemplate />, blog: <Newspaper /> };
 
 const muted = {
   dark: { color: 'slate-400', hover: { color: 'white' } },

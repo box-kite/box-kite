@@ -31,7 +31,11 @@ export { elementMarkdown, markdownPath, pageMarkdown } from './site/pageMarkdown
 export { buildLlmsFull, buildLlmsTxt } from './site/llms';
 // Docs search (G5): the index is built from the same rendered markup the markdown mirror converts.
 export { buildSearchIndex, pageSections, RELEASE_TEXT_LIMIT, SEARCH_INDEX_PATH } from './site/searchIndex';
-export { buildRedirectHtml, buildRedirectMarkdown, routeFor } from './site/siteMeta';
+export { buildRedirectHtml, buildRedirectMarkdown, notFoundMeta, pageMeta, routeFor } from './site/siteMeta';
+// The SEO and accessibility audit every prerendered page goes through (G14).
+export { auditPage } from './site/pageAudit';
+// What `npm run snapshot:templates` shoots, and where the images go.
+export { OG_SIZE, ogImagePath, SNAPSHOT_SIZE, snapshotPath, snapshotTargets } from './site/templates';
 export { MOVED_ROUTES } from './site/site';
 // The shadcn registry is served from this build too: the items are declared here and the block sources
 // come through a glob, neither of which a plain script can read.

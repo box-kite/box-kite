@@ -12,9 +12,11 @@
  * indexed in `llms.txt`. Converted rather than written twice — a mirror that can fall behind the page
  * is worse than no mirror, because it is the copy the agent trusts.
  */
+import { existsSync } from 'node:fs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { Window } from 'happy-dom';
 import { build } from 'vite';
 import { siteMarkdown } from './siteMarkdown.mjs';
 
@@ -27,6 +29,8 @@ const ROOT_DIV = '<div id="root"></div>';
 const MIN_STYLES = 2000;
 /** Smaller than the frame alone: the page rendered nothing at all. */
 const MIN_HTML = 20_000;
+/** A template's demo has no frame around it, so its floor is a page of content rather than the chrome. */
+const MIN_BARE_HTML = 2000;
 /**
  * The thinnest page here is /textarea at about 300 bytes of markdown — two snippets and a sentence.
  * Below this the conversion found no content, which is what a renamed landmark or a lost hint looks
@@ -71,6 +75,15 @@ const CLIENT_ISLANDS = {
   '/charts': 1,
 };
 
+/**
+ * Audit findings a route is allowed (`pages/site/pageAudit.ts`), by the start of the finding's text. A ledger
+ * for the same reason as the one above: a finding that stops firing is a line to delete here.
+ */
+const AUDIT_EXCEPTIONS = {
+  // The article's published headline, already cross-posted under it: shortening it is the author's call (bug #262).
+  '/blog/styling-server-components': ['the title is 62 characters'],
+};
+
 async function serverBundle() {
   await build({
     configFile: join(ROOT, 'pages.vite.config.ts'),
@@ -96,6 +109,9 @@ const {
   NOT_FOUND_PATH,
   routes,
   routeFor,
+  pageMeta,
+  notFoundMeta,
+  auditPage,
   markdownPath,
   SEARCH_INDEX_PATH,
   MOVED_ROUTES,
@@ -131,12 +147,17 @@ const targets = [
 
 const failures = [];
 const rows = [];
+// Every page's site-relative links, resolved once every file the build writes is on disk.
+const linksByPage = new Map();
+const auditWindow = new Window();
 const pages = [];
 const searchPages = [];
 
 for (const { path, file } of targets) {
   const shell = await readFile(file, 'utf8');
   const { html, styles, styleTag } = await renderRoute(path);
+  // The 404 shell is a page nobody links to and no index lists, so it gets no markdown copy.
+  const route = path === NOT_FOUND_PATH ? undefined : routeFor(path, routes);
 
   // Each of these has been silently true at some point in this file's life: a shell whose root div
   // was named differently, a page that rendered its frame and no content, a route whose CSS never
@@ -145,7 +166,19 @@ for (const { path, file } of targets) {
   const islands = html.split(CLIENT_ONLY_BOUNDARY).length - 1;
   const expected = CLIENT_ISLANDS[path] ?? 0;
   if (islands !== expected) failures.push(`${path}: ${islands} client-only boundaries, expected ${expected} — see CLIENT_ISLANDS`);
-  if (html.length < MIN_HTML) failures.push(`${path}: ${html.length} bytes of HTML, expected at least ${MIN_HTML}`);
+  const minHtml = route?.chrome === 'bare' ? MIN_BARE_HTML : MIN_HTML;
+  if (html.length < minHtml) failures.push(`${path}: ${html.length} bytes of HTML, expected at least ${minHtml}`);
+
+  auditWindow.document.body.innerHTML = html;
+  const audit = auditPage(auditWindow.document.body, route ? pageMeta(route, routes) : notFoundMeta);
+  const allowed = AUDIT_EXCEPTIONS[path] ?? [];
+  failures.push(
+    ...audit.problems.filter((problem) => !allowed.some((start) => problem.startsWith(start))).map((problem) => `${path}: ${problem}`),
+  );
+  for (const start of allowed.filter((start) => !audit.problems.some((problem) => problem.startsWith(start)))) {
+    failures.push(`${path}: "${start}" no longer fires — delete it from AUDIT_EXCEPTIONS`);
+  }
+  linksByPage.set(path, audit.links);
   if (styles.length < MIN_STYLES) failures.push(`${path}: ${styles.length} bytes of CSS, expected at least ${MIN_STYLES}`);
   // Without the manifest the browser rebuilds every rule during hydration (bug #203), and nothing else would say so.
   if (!styleTag.includes(' data-box-kite="')) failures.push(`${path}: the style tag carries no adoption manifest`);
@@ -159,11 +192,10 @@ for (const { path, file } of targets) {
 
   await writeFile(file, filled);
 
-  // The 404 shell is a page nobody links to and no index lists, so it gets no markdown copy.
-  const route = path === NOT_FOUND_PATH ? undefined : routeFor(path, routes);
-  const markdown = route ? mirror.pageFrom(route, html) : '';
+  const markdown = route && route.indexable !== false ? mirror.pageFrom(route, html) : '';
 
-  if (route) {
+  // A demo is its page with no words around it, so neither the mirror nor search should offer it.
+  if (route && route.indexable !== false) {
     if (markdown.length < MIN_MARKDOWN) failures.push(`${path}: ${markdown.length} bytes of markdown, expected at least ${MIN_MARKDOWN}`);
 
     await writeMarkdown(path, markdown);
@@ -213,6 +245,13 @@ for (const { path, content } of mirror.registry()) {
 
   await mkdir(dirname(file), { recursive: true });
   await writeFile(file, content);
+}
+
+// A link resolves to a route, an address that moved, or a file the build wrote — checked last, once they all exist.
+const served = (link) => routeFor(link, routes) || link in MOVED_ROUTES || existsSync(join(CLIENT_OUT, link.slice(1)));
+
+for (const [path, links] of linksByPage) {
+  for (const link of links.filter((candidate) => !served(candidate))) failures.push(`${path}: links to ${link}, which nothing serves`);
 }
 
 const corpus = pages.reduce((total, page) => total + page.markdown.length, 0);

@@ -10,7 +10,7 @@ import Switch from '@box-kite/react/components/switch';
 import Textarea from '@box-kite/react/components/textarea';
 import Textbox from '@box-kite/react/components/textbox';
 import { toast } from '@box-kite/react/components/toaster';
-import { type ReactNode } from 'react';
+import { type ReactNode, useId } from 'react';
 
 /**
  * A settings panel: text fields, a searchable select, a radio group, a slider and a switch, each a real
@@ -52,14 +52,11 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
   );
 }
 
-/**
- * A `Slider` is the exception: its `label` is the thumb's accessible name and draws nothing, and a
- * `<label>` cannot wrap it because there is no form control inside to attach to. So the caption is an
- * element with an id and `labelledBy` points at it — one name, read and seen.
- */
-const DENSITY_LABEL = 'settings-density-label';
-
 export default function SettingsForm() {
+  // A Slider's `label` names the thumb and draws nothing, and no `<label>` can wrap it, so the caption is an
+  // element `labelledBy` points at — with `useId`'s id, so two forms on one page do not label each other's slider.
+  const densityLabel = useId();
+
   return (
     <Form<Settings>
       p={6}
@@ -107,10 +104,10 @@ export default function SettingsForm() {
         </RadioGroup>
 
         <Flex d="column" gap={2}>
-          <Span id={DENSITY_LABEL} fontSize={14} fontWeight={500}>
+          <Span id={densityLabel} fontSize={14} fontWeight={500}>
             Row density
           </Span>
-          <Slider name="density" labelledBy={DENSITY_LABEL} defaultValue={44} min={32} max={64} step={4} format={(value) => `${value}px`} />
+          <Slider name="density" labelledBy={densityLabel} defaultValue={44} min={32} max={64} step={4} format={(value) => `${value}px`} />
           <Span fontSize={13} color="slate-500" theme={{ dark: { color: 'slate-400' } }}>
             How tall a row is in tables across the app.
           </Span>

@@ -4,7 +4,7 @@ import { transform } from 'sucrase';
 import { describe, expect, it } from 'vitest';
 import { collectDocsSnippets, DocsSnippet } from '../../scripts/docsSnippets.mjs';
 import { SNIPPET_SCOPE } from '../../scripts/snippetScope.mjs';
-import { sourceFor } from '../app/routePages';
+import { sourceFor } from '../site/routeSources';
 import {
   canOpenInPlayground,
   decodeSnippet,

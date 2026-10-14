@@ -114,7 +114,8 @@ export default function Code(props: Props) {
         {hasDemo && (
           <Box
             ref={demoRef}
-            props={{ 'data-md': 'skip' }}
+            // A demo is a document of its own: its headings are the example's, so the page audit leaves them out.
+            props={{ 'data-md': 'skip', 'data-preview': '' }}
             p={6}
             // Reserved while the demo is held back, so the page does not jump as it fills in.
             minHeight={demoReady ? undefined : DEMO_HEIGHT / 4}

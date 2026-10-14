@@ -9,6 +9,7 @@ _Unreleased. A PR that changes what a consumer sees adds its section here — se
 <!-- One bullet per section below, linking to it: **[Heading](#heading)** — one line on why it matters. -->
 
 - **[A design can stop at the edge of a subtree](#a-design-can-stop-at-the-edge-of-a-subtree)** — two designs on one page, one stylesheet.
+- **[Every block has a page of its own](#every-block-has-a-page-of-its-own)** — the block running in light and dark, every file it writes, and a link from `get_blocks`.
 
 <!-- One `##` per change, above Breaking changes: a sentence for the heading, a paragraph on what and why, an example if it helps. -->
 
@@ -26,6 +27,16 @@ const pill = Box.createComponents({ button: { styles: { borderRadius: 999 } } })
 
 A design merges over the app's own `Box.components()` unless `base: 'builtin'` says otherwise, and `MergeComponentsAndVariants` types two designs that both name a component. See [Box.createComponents()](https://www.box-kite.dev/box-functions/#createcomponents).
 
+## Every block has a page of its own
+
+The three registry blocks each have a page at [box-kite.dev/blocks](https://www.box-kite.dev/blocks/): the block running in light and dark side by side, the install command, every file it writes, and a full-screen demo. `get_blocks` in `@box-kite/mcp` now links a block's page beside its install command. The dashboard shell block takes a `theme` prop, the theme to open in, for a page that shows it in a fixed one.
+
+```tsx
+<DashboardShell title="Overview" theme="dark">
+  <DashboardStats />
+</DashboardShell>
+```
+
 ## Breaking changes
 
 None.
@@ -36,3 +47,4 @@ None.
 
 - **A component built on another with `extends` was unstyled until the app called `Box.components()`, and missed a later override of its base.** The built-in `gauge` (`extends: 'progressRing'`) rendered without its ring paint in an app that registered nothing. `extends` is now resolved over everything registered, chains included, every time the registry changes.
 - **A prop you wrote lost to a component's dark-theme default.** `<Button bgColor="red-500">` stayed indigo in dark mode: the button's own `theme.dark.bgColor` survived the merge, and a theme rule outranks a plain class. A prop now replaces the component's value for that prop in every theme, at the level you wrote it (`bgColor` clears `theme.*.bgColor`, and `hover.bgColor` clears the themed hover), while everything you did not mention keeps its dark styling. If you relied on the old result, write the dark value yourself: `theme={{ dark: { bgColor: 'indigo-500' } }}`.
+- **Two settings forms on one page labelled each other's slider.** The settings form block gave its density caption a fixed `id`, so a second copy pointed its slider at the first one's caption. The id now comes from `useId`. Run `npx shadcn@latest add https://www.box-kite.dev/r/settings-form.json` again to take the fix.
