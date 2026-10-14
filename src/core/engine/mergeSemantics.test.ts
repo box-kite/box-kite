@@ -209,3 +209,62 @@ describe('Box.extend() accumulates props', () => {
     expect(renderStyles(engine, { lateProp: 3 } as never)).toEqual(['_b', 'lateProp-3']);
   });
 });
+
+// Bug #259: a theme rule outranks a plain class, so a component's `theme.dark` value beat the caller's prop.
+describe('a caller’s prop holds in every theme', () => {
+  const card = {
+    styles: {
+      bgColor: 'indigo-600',
+      color: 'white',
+      hover: { bgColor: 'indigo-700', theme: { dark: { bgColor: 'indigo-400' } } },
+      vars: { accent: 'indigo-500', ring: 'indigo-300' },
+      theme: { dark: { bgColor: 'indigo-500', color: 'slate-100', hover: { bgColor: 'indigo-400' }, vars: { accent: 'indigo-300' } } },
+    },
+  };
+
+  function resolve(id: string, props: Record<string, unknown>) {
+    const engine = makeEngine(id);
+    engine.components({ themedCard: card } as never);
+
+    return renderStyles(engine, { component: 'themedCard', ...props } as never);
+  }
+
+  it('drops the component’s themed value for a prop the caller set at the top level', () => {
+    const classNames = resolve('merge-theme-top', { bgColor: 'red-500' });
+
+    expect(classNames).toContain('bgColor-red-500');
+    expect(classNames).not.toContain('theme-dark-bgColor-indigo-500');
+    // What the caller did not mention keeps its dark value, and so does every state.
+    expect(classNames).toContain('theme-dark-color-slate-100');
+    expect(classNames).toContain('hover-theme-dark-bgColor-indigo-400');
+  });
+
+  it('works at a pseudo-class level, leaving the plain level alone', () => {
+    const classNames = resolve('merge-theme-hover', { hover: { bgColor: 'red-700' } });
+
+    expect(classNames).toContain('hover-bgColor-red-700');
+    // theme.dark.hover and hover.theme.dark are one rule, and both are the caller's now.
+    expect(classNames).not.toContain('hover-theme-dark-bgColor-indigo-400');
+    expect(classNames).toContain('theme-dark-bgColor-indigo-500');
+  });
+
+  it('keeps a themed value the caller writes, and leaves the component alone when the caller says nothing', () => {
+    expect(resolve('merge-theme-own', { bgColor: 'red-500', theme: { dark: { bgColor: 'red-900' } } })).toContain(
+      'theme-dark-bgColor-red-900',
+    );
+    expect(resolve('merge-theme-none', {})).toContain('theme-dark-bgColor-indigo-500');
+  });
+
+  it('replaces a record prop entry by entry', () => {
+    const classNames = resolve('merge-theme-vars', { vars: { accent: 'red-500' } }).join(' ');
+
+    expect(classNames).not.toMatch(/theme-dark-vars[^ ]*accent/);
+  });
+
+  it('reads a pseudo2 boolean as the attribute it is, not as styles', () => {
+    const engine = makeEngine('merge-theme-pseudo2');
+    engine.components({ toggle: { styles: { theme: { dark: { disabled: { opacity: 0.5 } } } } } } as never);
+
+    expect(renderStyles(engine, { component: 'toggle', disabled: true } as never).join(' ')).toMatch(/disabled-theme-dark-opacity/);
+  });
+});

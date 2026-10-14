@@ -1066,6 +1066,8 @@ Box.components({
 
 `extends` is resolved over everything registered so far, chains included, so overriding the base later still reaches the component built on it.
 
+**A prop on the element wins in every theme.** `<Box component="card" bgColor="red-500">` replaces the card's `bgColor` and also its `theme.dark.bgColor` (at the same level: `hover.bgColor` replaces the themed hover). Everything else the card styles for dark stays. To keep a different dark value, write it: `theme={{ dark: { bgColor: 'red-900' } }}`.
+
 ### Box.createComponents() — A Design for One Subtree
 
 `Box.components()` styles the whole app: every call merges into one registry, so two designs cannot share a page through it. `Box.createComponents()` takes the same shape and registers nothing. It returns a design, and `<Box.Components value>`, or `components` on `Box.Theme`, applies it to everything inside.

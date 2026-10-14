@@ -320,6 +320,55 @@ function resolveExtends(components: Components): Components {
   return resolved;
 }
 
+type StyleRecord = Record<string, any>;
+
+const nestingKeySet: ReadonlySet<string> = new Set(nestingKeys);
+// Props whose value is a record merged entry by entry, so a caller's entry replaces only that entry.
+const recordProps: ReadonlySet<string> = new Set(['css', 'vars']);
+
+/**
+ * A component's styles without the themed values the caller replaced, at the level the caller set them. A theme
+ * rule is `@scope (.dark) … :scope .x`, which outranks a plain prop's class, so a top-level `bgColor` lost to the
+ * component's `theme.dark.bgColor` in dark mode (bug #259). Returns `styles` itself when nothing goes.
+ */
+function withoutReplacedThemeValues(styles: StyleRecord, props: StyleRecord, inTheme = false): StyleRecord {
+  let result = styles;
+
+  for (const key in styles) {
+    const value = styles[key];
+    const caller = props[key];
+    let next = value;
+
+    if (key === themeGroupClass.theme && !inTheme) {
+      for (const theme in value) next = swap(next, theme, withoutReplacedThemeValues(value[theme], props, true), value);
+    } else if (nestingKeySet.has(key)) {
+      // A nesting key carries an object, or a pseudo2 `[attribute, styles]` pair; a bare boolean is the attribute.
+      const nested = Array.isArray(caller) ? caller[1] : caller;
+      if (ObjectUtils.isObject(nested) && ObjectUtils.isObject(value)) next = withoutReplacedThemeValues(value, nested, inTheme);
+    } else if (inTheme && caller != null) {
+      next =
+        recordProps.has(key) && ObjectUtils.isObject(caller)
+          ? Object.fromEntries(Object.entries(value).filter(([entry]) => !(entry in caller)))
+          : undefined;
+    }
+
+    result = swap(result, key, next, styles);
+  }
+
+  return result;
+}
+
+/** `record` with `key` set to `next` (deleted when undefined), copied once: a record nothing changed is returned as is. */
+function swap(record: StyleRecord, key: string, next: unknown, original: StyleRecord): StyleRecord {
+  if (next === original[key]) return record;
+
+  const copy = record === original ? { ...record } : record;
+  if (next === undefined) delete copy[key];
+  else copy[key] = next;
+
+  return copy;
+}
+
 export function createStyleEngine(options: StyleEngineOptions = {}): StyleEngine {
   const styleElementId = options.styleElementId ?? `${DEFAULT_STYLE_ELEMENT_ID}-${++engineSequence}`;
 
@@ -1101,7 +1150,7 @@ export function createStyleEngine(options: StyleEngineOptions = {}): StyleEngine
 
     if (!resolved) {
       const componentStyles = resolveComponentStyles(props, componentsOf(registry)) as BoxStyleProps;
-      const propsToUse = componentStyles ? mergeDeep(componentStyles, props) : props;
+      const propsToUse = componentStyles ? mergeDeep(withoutReplacedThemeValues(componentStyles, props), props) : props;
 
       const classNames = [isSvg ? svgClassName : boxClassName];
       resolved = { classNames, elements: collect(() => addClassNames(propsToUse, classNames, rootContext())) };
