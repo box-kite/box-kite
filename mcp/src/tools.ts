@@ -256,6 +256,8 @@ export function getBlocks(name?: string): string {
     `\`\`\`bash\n${blockInstall(item.name)}\n\`\`\``,
     item.dependencies.length > 0 && `Installs: ${item.dependencies.map((dependency) => `\`${dependency}\``).join(', ')}.`,
     `Files: ${item.files.map((file) => `\`${file.target}\``).join(', ')}.`,
+    item.registryDependencies?.length &&
+      `Brings these items with it: ${item.registryDependencies.map((dependency) => `\`${dependency}\``).join(', ')}.`,
     blockPage(item.name) && `Running in light and dark, with the source: ${blockPage(item.name)}`,
   );
 }

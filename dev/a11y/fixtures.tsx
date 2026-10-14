@@ -1,6 +1,10 @@
 import { act, fireEvent, screen } from '@testing-library/react';
 import { Sun } from 'lucide-react';
 import { createElement } from 'react';
+import CartPage from '../../registry/designs/store/cart-page';
+import CheckoutPage from '../../registry/designs/store/checkout-page';
+import ProductPage from '../../registry/designs/store/product-page';
+import StorefrontPage from '../../registry/designs/store/storefront-page';
 import Box from '../../src/box';
 import Accordion, { Collapsible } from '../../src/components/accordion';
 import { ApprovalCard, Reasoning, StreamingText, ToolCallCard } from '../../src/components/agent';
@@ -777,4 +781,12 @@ export const fixtures: A11yFixture[] = [
       />
     ),
   },
+  // The store templates (G14), each page whole and in both themes: a design changes colours, and a page
+  // is where headings, landmarks and labels have to add up.
+  ...(['light', 'dark'] as const).flatMap((theme): A11yFixture[] => [
+    { name: `Store storefront (${theme})`, render: () => <StorefrontPage theme={theme} /> },
+    { name: `Store product page (${theme})`, render: () => <ProductPage theme={theme} /> },
+    { name: `Store cart (${theme})`, render: () => <CartPage theme={theme} /> },
+    { name: `Store checkout (${theme})`, render: () => <CheckoutPage theme={theme} /> },
+  ]),
 ];

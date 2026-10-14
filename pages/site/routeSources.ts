@@ -1,7 +1,8 @@
 import { POSTS_PATH } from './posts';
+import { itemWithDependencies } from './registry';
 import { RELEASES_PATH } from './releases';
 import { SiteRoutePath } from './site';
-import { BLOCKS_PATH, blockFor, registryItemFor, TEMPLATES_PATH, templateFor } from './templates';
+import { BLOCKS_PATH, blockFor, blocks, registryItemFor, TEMPLATES_PATH, templateFor } from './templates';
 
 /**
  * Which file each route is written in — the chunk the router loads, the "Edit this page" link and the
@@ -11,9 +12,9 @@ import { BLOCKS_PATH, blockFor, registryItemFor, TEMPLATES_PATH, templateFor } f
 /** Where the page modules live, from the repository root — the half of the GitHub link that is a path. */
 export const PAGES_DIRECTORY = 'pages/pages';
 
-/** A block's preview, and a template's page: the content a shared page module renders. */
+/** A block's preview, and what runs a template's demo: the content a shared page module renders. */
 export const BLOCK_PREVIEWS_DIRECTORY = 'pages/blocks';
-export const TEMPLATES_DIRECTORY = 'registry/templates';
+export const TEMPLATE_DEMOS_DIRECTORY = 'pages/templates';
 
 /**
  * One page module per route, keyed by the route table's own paths, so a page the table names and this
@@ -100,13 +101,37 @@ export function contentFor(path: string): string | undefined {
 
   const template = under(path, TEMPLATES_PATH) && path.endsWith('/demo') ? templateFor(path) : undefined;
 
-  return template && `${TEMPLATES_DIRECTORY}/${template.slug}/page.tsx`;
+  return template && `${TEMPLATE_DEMOS_DIRECTORY}/${template.slug}.tsx`;
 }
 
-/** The template whose page — not its demo — shows its source, which is loaded as text rather than run. */
+/** The block or template whose page — not its demo — shows its source, loaded as text rather than run. */
 export function sourcePageFor(path: string) {
-  return under(path, TEMPLATES_PATH) && !path.endsWith('/demo') ? templateFor(path) : undefined;
+  if (path.endsWith('/demo')) return undefined;
+  if (under(path, BLOCKS_PATH)) return blockFor(path);
+
+  return under(path, TEMPLATES_PATH) ? templateFor(path) : undefined;
 }
+
+type Entry = Parameters<typeof registryItemFor>[0];
+
+/** Every file a block or template installs, its own first and then its dependencies'. */
+export const installedFiles = (entry: Entry) =>
+  itemWithDependencies(registryItemFor(entry).name).flatMap((item) => item.files.map((file) => file.path));
+
+/** The design a template stands on: its dependencies that are not blocks, which have pages of their own. */
+export const designsOf = (entry: Entry) =>
+  itemWithDependencies(registryItemFor(entry).name)
+    .slice(1)
+    .filter((item) => !blocks.some((block) => block.registry === item.name));
+
+/**
+ * What a page prints: its own files, and on a template the file each design is declared in. The rest of a
+ * design installs with it but is printed nowhere, or four store pages would carry the same 500 KB.
+ */
+export const shownFiles = (entry: Entry) => [
+  ...registryItemFor(entry).files.map((file) => file.path),
+  ...('blocks' in entry ? designsOf(entry).map((design) => design.files[0].path) : []),
+];
 
 /**
  * The file a route is written in, for the link that opens it on GitHub. A release, an article, a block
@@ -119,7 +144,7 @@ export function sourceFor(path: string): string | undefined {
   const block = under(path, BLOCKS_PATH) ? blockFor(path) : undefined;
   if (block) return registryItemFor(block).files[0].path;
   const template = under(path, TEMPLATES_PATH) ? templateFor(path) : undefined;
-  if (template) return `${TEMPLATES_DIRECTORY}/${template.slug}/page.tsx`;
+  if (template) return registryItemFor(template).files[0].path;
 
   const file = fileFor(path);
 
@@ -134,8 +159,8 @@ export function sourcesFor(path: string): string[] {
 
   return [
     ...(file && !under(path, RELEASES_PATH) && !under(path, POSTS_PATH) ? [`${PAGES_DIRECTORY}/${file}.tsx`] : []),
-    ...(block ? [contentFor(path)!, ...registryItemFor(block).files.map((entry) => entry.path)] : []),
-    ...(template ? [`${TEMPLATES_DIRECTORY}/${template.slug}`] : []),
+    ...(block ? [contentFor(path)!, ...installedFiles(block)] : []),
+    ...(template ? [`${TEMPLATE_DEMOS_DIRECTORY}/${template.slug}.tsx`, ...installedFiles(template)] : []),
     ...(under(path, RELEASES_PATH) || under(path, POSTS_PATH) ? [sourceFor(path)!] : []),
   ];
 }

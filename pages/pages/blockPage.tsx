@@ -13,8 +13,7 @@ import PageHeader from '../components/pageHeader';
 import Reveal from '../components/reveal';
 import SiteLink from '../components/siteLink';
 import useTableOfContents from '../hooks/useTableOfContents';
-import { installCommand, itemPath, v0Url } from '../site/registry';
-import { registrySources } from '../site/registrySources';
+import { installCommand, itemPath, itemWithDependencies, v0Url } from '../site/registry';
 import { blockDemoPath, blockFor, ContentProps, registryItemFor, SnapshotTheme, templatePath, templatesUsing } from '../site/templates';
 import NotFoundPage from './notFoundPage';
 
@@ -27,7 +26,7 @@ const prose = { dark: { color: 'slate-400' }, light: { color: 'slate-600' } } as
 const heading = { dark: { color: 'white' }, light: { color: 'slate-900' } } as const;
 
 /** One block: `/blocks/<slug>/`, its preview handed over by the route's loader as `Content`. */
-export default function BlockPage({ Content }: FamilyPageProps) {
+export default function BlockPage({ Content, sources = {} }: FamilyPageProps) {
   const block = blockFor(useLocation().pathname);
   const usedIn = block ? templatesUsing(block.slug) : [];
 
@@ -41,6 +40,7 @@ export default function BlockPage({ Content }: FamilyPageProps) {
   if (!block || !Content) return <NotFoundPage />;
 
   const item = registryItemFor(block);
+  const [, ...dependencies] = itemWithDependencies(item.name);
 
   return (
     <Box>
@@ -68,7 +68,8 @@ export default function BlockPage({ Content }: FamilyPageProps) {
                 The item JSON
               </Link>
               <Box color="slate-500">
-                {item.files.length} file{item.files.length === 1 ? '' : 's'} · installs {item.dependencies.join(', ')}
+                {item.files.length} file{item.files.length === 1 ? '' : 's'} · installs{' '}
+                {[...item.dependencies, ...dependencies.map((entry) => entry.name)].join(', ')}
               </Box>
             </Flex>
           </Box>
@@ -107,15 +108,19 @@ export default function BlockPage({ Content }: FamilyPageProps) {
             </Box>
             <Flex d="column" gap={4}>
               {item.files.map((file) => (
-                <Code
-                  key={file.path}
-                  language="jsx"
-                  code={registrySources[file.path]}
-                  codeOnly
-                  label={file.target.replace('@components/', '')}
-                />
+                <Code key={file.path} language="jsx" code={sources[file.path]} codeOnly label={file.target.replace('@components/', '')} />
               ))}
             </Flex>
+            {dependencies.map((dependency) => (
+              <Box key={dependency.name} mt={6} fontSize={15} lineHeight={26} theme={prose}>
+                It stands on <Mono>{dependency.name}</Mono>, which the command installs with it. {dependency.description}{' '}
+                {usedIn.length > 0 && (
+                  <SiteLink to={`${templatePath(usedIn[0].slug)}#design`} display="inline" theme={linkTheme}>
+                    The design is on the template page.
+                  </SiteLink>
+                )}
+              </Box>
+            ))}
           </Box>
 
           {usedIn.length > 0 && (

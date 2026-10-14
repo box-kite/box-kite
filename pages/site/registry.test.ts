@@ -5,6 +5,7 @@ import {
   CATALOG_PATH,
   installCommand,
   itemPath,
+  itemWithDependencies,
   REGISTRY_NAME,
   REGISTRY_PATH,
   registryItems,
@@ -44,7 +45,7 @@ describe('registry items', () => {
   it('lands each file under the name it has here', () => {
     for (const item of registryItems) {
       for (const file of item.files) {
-        expect(file.path.startsWith('registry/blocks/')).toBe(true);
+        expect(file.path).toMatch(/^registry\/(blocks|designs)\//);
         expect(file.target.startsWith('@components/')).toBe(true);
         expect(file.target.split('/').pop()).toBe(file.path.split('/').pop());
       }
@@ -95,11 +96,45 @@ describe('registry items', () => {
   // component from outside the file that exports it — and a rename there is silent everywhere else.
   it('names the component each block exports in the note the CLI prints', () => {
     for (const item of registryItems) {
-      const block = item.files.find((file) => file.type === 'registry:block');
-      const exported = registrySources[block!.path].match(/export default function (\w+)/)?.[1];
+      // A design has no block: its note names the component it is applied with.
+      const block = item.files.find((file) => file.type === 'registry:block') ?? item.files[0];
+      const source = registrySources[block.path];
+      const exported = (source.match(/export default function (\w+)/) ?? source.match(/export function (\w+)/))?.[1];
 
       expect(exported, `${item.name} has no default export`).toBeTruthy();
       expect(item.docs, `${item.name} docs`).toContain(exported);
+    }
+  });
+});
+
+describe('the dependencies between items', () => {
+  it('name items this registry publishes, which arrive as their addresses', () => {
+    const names: string[] = registryItems.map((item) => item.name);
+
+    for (const item of registryItems) {
+      const dependencies: readonly string[] = 'registryDependencies' in item ? item.registryDependencies : [];
+      const published = JSON.parse(buildRegistryItem(item, registrySources));
+
+      for (const name of dependencies) expect(names, item.name).toContain(name);
+      expect(published.registryDependencies ?? [], item.name).toEqual(dependencies.map((name) => `${SITE_URL}/r/${name}.json`));
+    }
+  });
+
+  // A relative import is only right in the project if the file it names lands beside it there too.
+  it('resolve every relative import to a file installed in the same folder', () => {
+    for (const item of registryItems) {
+      const installed = itemWithDependencies(item.name).flatMap((entry) => entry.files);
+
+      for (const file of item.files) {
+        const folder = file.path.split('/').slice(0, -1).join('/');
+
+        for (const specifier of importsOf(registrySources[file.path]).filter((name) => name.startsWith('./'))) {
+          const target = installed.find((entry) => entry.path.replace(/\.tsx?$/, '') === `${folder}/${specifier.slice(2)}`);
+
+          expect(target, `${item.name}: ${file.path} imports ${specifier}`).toBeDefined();
+          expect(target!.target.split('/').slice(0, -1), specifier).toEqual(file.target.split('/').slice(0, -1));
+        }
+      }
     }
   });
 });

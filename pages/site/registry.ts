@@ -43,13 +43,27 @@ export interface RegistryItem {
   /** npm packages the CLI installs with the files. */
   dependencies: readonly string[];
   files: readonly RegistryFile[];
+  /** Other items of this registry, by name, that the CLI installs first: the store's blocks all stand on its design. */
+  registryDependencies?: readonly string[];
   /** Printed by the CLI once the files are written — the step the files cannot do for themselves. */
   docs?: string;
 }
 
+const STORE = 'registry/designs/store';
+
+/** A store file, landing in `box-kite/store/` so the relative imports between them hold in the project too. */
+const storeFile = (name: string, type: RegistryFileType = 'registry:block'): RegistryFile => ({
+  path: `${STORE}/${name}`,
+  type,
+  target: `@components/box-kite/store/${name}`,
+});
+
+const STORE_DOCS = 'Wrap it in <StoreSurface> from store-design.tsx, or render it inside one of the store pages.';
+
 /**
- * The three blocks. Each one is a finished section rather than a component: the point of a registry
- * item over an npm import is that the code lands in the project and is edited there.
+ * The blocks and the pages. Each one is a finished section rather than a component: the point of a registry
+ * item over an npm import is that the code lands in the project and is edited there. A design's items share
+ * one folder, so their relative imports hold, and stand on its design item through `registryDependencies`.
  */
 export const registryItems = [
   {
@@ -98,9 +112,165 @@ export const registryItems = [
     ],
     docs: 'Wrap a page in <DashboardShell title="Overview">. Box.Theme inside it is use="local", so the theme lands on the shell — move it to your root layout as use="global" for an app-wide switch.',
   },
+  {
+    name: 'store-design',
+    title: 'Store design',
+    description:
+      'The design the store blocks and pages share: the components restyled with Box.createComponents(), the catalogue, the drawn product art, and the header and footer.',
+    categories: ['ecommerce', 'design'],
+    dependencies: ['@box-kite/react', 'lucide-react'],
+    files: [
+      storeFile('store-design.tsx', 'registry:component'),
+      storeFile('store-data.ts', 'registry:lib'),
+      storeFile('product-art.tsx', 'registry:component'),
+      storeFile('quantity-stepper.tsx', 'registry:component'),
+      storeFile('form-field.tsx', 'registry:component'),
+      storeFile('store-shell.tsx', 'registry:component'),
+    ],
+    docs: 'Wrap a page in <StoreSurface>, or in <StoreShell> for the header and footer too. Point the links at your routes with <StoreLinks.Provider>.',
+  },
+  {
+    name: 'product-grid',
+    title: 'Product grid with filters',
+    description: 'A product grid with category and glaze filters, a sort and an announced count, over cards that are one link each.',
+    categories: ['ecommerce', 'product'],
+    dependencies: ['@box-kite/react'],
+    registryDependencies: ['store-design'],
+    files: [storeFile('product-grid.tsx'), storeFile('product-card.tsx', 'registry:component')],
+    docs: `Render <ProductGrid products={…} />. ${STORE_DOCS}`,
+  },
+  {
+    name: 'product-gallery',
+    title: 'Product image gallery',
+    description: 'A large product view with thumbnails that choose it, built as tabs so the arrow keys move between pictures.',
+    categories: ['ecommerce', 'product'],
+    dependencies: ['@box-kite/react'],
+    registryDependencies: ['store-design'],
+    files: [storeFile('product-gallery.tsx')],
+    docs: `Render <ProductGallery product={…} glaze={…} />. ${STORE_DOCS}`,
+  },
+  {
+    name: 'variant-picker',
+    title: 'Product variant picker',
+    description:
+      'Colour swatches and sizes as native radio groups, a quantity stepper and an Add to cart button that confirms with a toast.',
+    categories: ['ecommerce', 'product', 'form'],
+    dependencies: ['@box-kite/react'],
+    registryDependencies: ['store-design'],
+    files: [storeFile('variant-picker.tsx')],
+    docs: `Render <VariantPicker product={…} onAdd={…} />. It calls toast(), so mount <Toaster /> once near the root. ${STORE_DOCS}`,
+  },
+  {
+    name: 'cart-items',
+    title: 'Cart items',
+    description: 'The lines of a shopping cart: picture, name, options, a quantity stepper, the line price and a remove button.',
+    categories: ['ecommerce', 'cart'],
+    dependencies: ['@box-kite/react'],
+    registryDependencies: ['store-design'],
+    files: [storeFile('cart-items.tsx')],
+    docs: `Render <CartItems lines={lines} onLinesChange={setLines} /> — the cart is yours to keep. ${STORE_DOCS}`,
+  },
+  {
+    name: 'order-summary',
+    title: 'Order summary',
+    description:
+      'Subtotal, discount, shipping, tax and total from the cart lines, with a discount code field and a free-shipping progress bar.',
+    categories: ['ecommerce', 'cart', 'checkout'],
+    dependencies: ['@box-kite/react'],
+    registryDependencies: ['store-design'],
+    files: [storeFile('order-summary.tsx')],
+    docs: `Render <OrderSummary lines={lines} action={…} />. Check discount codes on your server. ${STORE_DOCS}`,
+  },
+  {
+    name: 'credit-card-form',
+    title: 'Credit card form',
+    description:
+      'Card number, name, expiry and security code, formatted as typed and checked on blur, with a card drawn above that fills in.',
+    categories: ['ecommerce', 'checkout', 'form'],
+    dependencies: ['@box-kite/react'],
+    registryDependencies: ['store-design'],
+    files: [storeFile('credit-card-form.tsx')],
+    docs: `Render <CreditCardForm /> inside your checkout form. In production, raw card numbers belong in your payment provider's hosted fields. ${STORE_DOCS}`,
+  },
+  {
+    name: 'address-form',
+    title: 'Address form',
+    description: 'A postal address fieldset with the autocomplete tokens a browser fills it from, and a searchable country select.',
+    categories: ['checkout', 'form'],
+    dependencies: ['@box-kite/react'],
+    registryDependencies: ['store-design'],
+    files: [storeFile('address-form.tsx')],
+    docs: `Render <AddressForm /> inside a form; a second one with prefix="billing" is the billing address. ${STORE_DOCS}`,
+  },
+  {
+    name: 'shipping-method',
+    title: 'Shipping method selector',
+    description: 'Delivery options as selectable cards over a native radio group, priced, with a free tier above an order total.',
+    categories: ['ecommerce', 'checkout', 'form'],
+    dependencies: ['@box-kite/react'],
+    registryDependencies: ['store-design'],
+    files: [storeFile('shipping-method.tsx')],
+    docs: `Render <ShippingMethod value={method} onValueChange={setMethod} />. ${STORE_DOCS}`,
+  },
+  {
+    name: 'ecommerce-storefront',
+    title: 'Ecommerce storefront',
+    description: 'A store front page: a drawn hero, three promises, the product grid with filters and a story band, in light and dark.',
+    categories: ['ecommerce', 'page'],
+    dependencies: ['@box-kite/react', 'lucide-react'],
+    registryDependencies: ['store-design', 'product-grid'],
+    files: [storeFile('storefront-page.tsx')],
+    docs: 'Render <StorefrontPage /> as your home route, and point the links at your routes with <StoreLinks.Provider>.',
+  },
+  {
+    name: 'product-page',
+    title: 'Product page',
+    description: 'A product page: gallery, variant picker, details accordion and related products, with a cart count that moves.',
+    categories: ['ecommerce', 'page'],
+    dependencies: ['@box-kite/react'],
+    registryDependencies: ['store-design', 'product-grid', 'product-gallery', 'variant-picker'],
+    files: [storeFile('product-page.tsx')],
+    docs: 'Render <ProductPage slug={…} /> from your product route. It calls toast(), so mount <Toaster /> once near the root.',
+  },
+  {
+    name: 'shopping-cart',
+    title: 'Shopping cart',
+    description:
+      'A cart page: editable line items beside an order summary, with a discount code, free-shipping progress and an empty state.',
+    categories: ['ecommerce', 'page', 'cart'],
+    dependencies: ['@box-kite/react'],
+    registryDependencies: ['store-design', 'cart-items', 'order-summary'],
+    files: [storeFile('cart-page.tsx')],
+    docs: 'Render <CartPage /> from your cart route, and replace its sample lines with your cart.',
+  },
+  {
+    name: 'checkout-page',
+    title: 'Checkout page',
+    description: 'A one-page checkout: contact, shipping address, delivery method and card payment beside the order summary.',
+    categories: ['ecommerce', 'page', 'checkout'],
+    dependencies: ['@box-kite/react'],
+    registryDependencies: ['store-design', 'address-form', 'shipping-method', 'credit-card-form', 'order-summary'],
+    files: [storeFile('checkout-page.tsx')],
+    docs: 'Render <CheckoutPage /> from your checkout route and send the form to your server. It calls toast(), so mount <Toaster /> once near the root.',
+  },
 ] as const satisfies readonly RegistryItem[];
 
 export type RegistryItemName = (typeof registryItems)[number]['name'];
+
+/** An item and everything the CLI installs with it, the item first and each dependency once. */
+export function itemWithDependencies(name: string, items: readonly RegistryItem[] = registryItems): RegistryItem[] {
+  const found: RegistryItem[] = [];
+  const visit = (next: string) => {
+    const item = items.find((entry) => entry.name === next);
+    if (!item || found.includes(item)) return;
+    found.push(item);
+    item.registryDependencies?.forEach(visit);
+  };
+
+  visit(name);
+
+  return found;
+}
 
 /** The address one item answers on. `{name}` in a `components.json` registry entry expands to this. */
 export const itemPath = (name: string) => `/r/${name}.json`;
@@ -123,6 +293,10 @@ export const v0Url = (name: string, siteUrl: string = SITE_URL) =>
 export const registryTemplate = (siteUrl: string = SITE_URL) => `${siteUrl}${itemPath('{name}')}`;
 
 const authorFor = (siteUrl: string) => `${SITE_NAME} <${siteUrl}>`;
+
+// As addresses rather than names: the CLI reads a bare name as one of shadcn's own, and a project need not have registered the namespace.
+const registryDependenciesOf = (item: RegistryItem, siteUrl: string) =>
+  item.registryDependencies?.length ? { registryDependencies: item.registryDependencies.map((name) => `${siteUrl}${itemPath(name)}`) } : {};
 
 /**
  * One item, with the file contents inlined — which is what the CLI writes. `contents` is keyed by the
@@ -147,6 +321,7 @@ export function buildRegistryItem(item: RegistryItem, contents: Readonly<Record<
       author: authorFor(siteUrl),
       categories: [...item.categories],
       dependencies: [...item.dependencies],
+      ...registryDependenciesOf(item, siteUrl),
       files,
       ...(item.docs ? { docs: item.docs } : {}),
     },
@@ -173,6 +348,7 @@ export function buildRegistryIndex(items: readonly RegistryItem[] = registryItem
         author: authorFor(siteUrl),
         categories: [...item.categories],
         dependencies: [...item.dependencies],
+        ...registryDependenciesOf(item, siteUrl),
         files: item.files.map((file) => ({ path: file.path, type: file.type, target: file.target })),
       })),
     },

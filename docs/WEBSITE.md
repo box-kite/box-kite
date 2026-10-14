@@ -269,7 +269,7 @@ The slug is the search phrase, keyword first and no brand: `react-settings-form`
 
 **Adding a block:**
 
-1. Write its files under `registry/blocks/<name>/` and add the registry item to
+1. Write its files under `registry/blocks/<name>/` — or in its design's folder, if it belongs to one — and add the registry item to
    [pages/site/registry.ts](pages/site/registry.ts) (the shadcn CLI installs those files).
 2. Add the entry to `blocks` in `templates.ts`: the slug, the item's name, an `<h1>`, a description of
    160 characters or fewer, and `wide` if it needs the whole column.
@@ -280,15 +280,30 @@ The slug is the search phrase, keyword first and no brand: `react-settings-form`
    `pages/public/snapshots/`, and commit them. **Committing the images is approving them**; the test
    in `templates.test.ts` fails a block whose images are missing.
 
-**Adding a template** is the same with `templates` and `registry/templates/<slug>/`: `page.tsx` is the
-default export the demo runs, the folder's other `.ts`/`.tsx` files are what the template page shows as
-source, and `blocks` lists the block slugs it is made of. Import the package by name with `'use client'`,
-so the files are copy-pasteable and `npm run compile` type-checks them.
+**A design** is one folder, `registry/designs/<design>/`, holding everything its templates and blocks are
+made of, because those files import each other: a relative import only holds in the installing project if
+the file it names lands beside it, so every file of a design installs into `box-kite/<design>/`. The
+design itself is a registry item too (`store-design`): the `Box.createComponents()` registry, applied by a
+`<StoreSurface>`-style wrapper, plus whatever its pages share (data, drawn art, the header and footer).
+Every block and template item names it in `registryDependencies`, which the published JSON writes as an
+address, so one command brings it along.
 
-Each family page module is handed its content by the route's loader in
-[pages/app/routePages.ts](pages/app/routePages.ts) — the preview or template as `Content`, a template's
-files as `sources` — so ten templates are ten chunks, and nothing behind its own `React.lazy` suspends the
-prerender.
+**Adding a template:**
+
+1. Write its page in the design's folder and add a registry item holding that one file, with the design and
+   its blocks in `registryDependencies`.
+2. Add the entry to `templates` in `templates.ts`: the slug, the item's name, an `<h1>`, a description and
+   `blocks`, the block slugs it is made of.
+3. Write `pages/templates/<slug>.tsx`, which runs the demo: the page inside the design's links provider,
+   pointed at the other templates' demos, so the pages of one design link to each other on the site.
+4. Snapshot and commit the images, as for a block.
+
+The template page prints the page's own file and the file each design is declared in; the blocks are linked
+to their own pages and the rest of the design is named, not printed, or every page of a design would carry
+the same source. Each family page module is handed its content by the route's loader in
+[pages/app/routePages.ts](pages/app/routePages.ts) — the preview or the demo as `Content`, the printed
+files as `sources` — so every template is a chunk of its own, and nothing behind its own `React.lazy`
+suspends the prerender.
 
 **What the head carries.** Every route can set `image` (`og:image`, `twitter:image`) and `jsonLd`. A page
 with a section between it and home also gets visible breadcrumbs and the `BreadcrumbList` built from the
