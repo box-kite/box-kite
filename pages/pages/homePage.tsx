@@ -314,9 +314,9 @@ function PillarCard({ pillar }: { pillar: Pillar }) {
           <PillarIcon />
         </Icon>
       </Flex>
-      <H3 fontSize={17} fontWeight={600} mb={2} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }}>
+      <H2 fontSize={17} fontWeight={600} mb={2} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }}>
         {pillar.title}
-      </H3>
+      </H2>
       <Box fontSize={14} lineHeight={22} mb={3}>
         {pillar.claim}
       </Box>

@@ -204,8 +204,9 @@ deprecations from the `@deprecated` tags in `src/`, both by
 
 ## Route chunks
 
-Every page is a dynamic import in [pages/app/routePages.ts](pages/app/routePages.ts), keyed by the
-route table's paths, so a page the table names and the loaders miss is a type error. A reader of
+Every page is a dynamic import in [pages/app/routePages.ts](pages/app/routePages.ts), found by the file
+name [pages/site/routeSources.ts](pages/site/routeSources.ts) keeps per path, so a page the table names
+and that record misses is a type error. A reader of
 /textbox no longer downloads the DataGrid, the 5 MB of mock rows behind it, Prism and Recharts: the
 entry chunk is 118 KB gz where it was 1.22 MB. A page-only heavyweight import belongs in its own file
 so the page's chunk carries it — the pattern `rechartsDemo.tsx` started.
@@ -245,12 +246,64 @@ choice — bug #15 shipped a `colSpan` prop that has never existed, next to a de
 
 1. Create a component in [pages/pages/](pages/pages/) (export default React component). Use `PageHeader` + `Code` blocks for consistency.
 2. Add its path, name and description to `siteRoutes` in [pages/site/site.ts](pages/site/site.ts), then
-   the component to the `pages` record in [pages/app/app.tsx](pages/app/app.tsx) — the compiler asks
-   for the second as soon as you write the first.
+   its file name to the `files` record in [pages/site/routeSources.ts](pages/site/routeSources.ts) — the
+   compiler asks for the second as soon as you write the first.
 3. Add a menu entry in [pages/app/sidebar.tsx](pages/app/sidebar.tsx) unless the page is an unlisted
    demo, in which case mark it `indexable: false` so it stays out of the sitemap.
 4. If you need custom theme tokens/variants, extend them in [pages/extends.ts](pages/extends.ts) (already imports `Box.extend` and `Box.components`).
 5. Keep styling in JSX via Box props; only add to [pages/index.css](pages/index.css) for truly global rules.
+
+## Templates and blocks
+
+`/blocks/` and `/templates/` are two route families, both declared in one table,
+[pages/site/templates.ts](pages/site/templates.ts) (G14). Each entry is three pages:
+
+| Page                                              | Indexed           | What it is                                                                                                |
+| ------------------------------------------------- | ----------------- | --------------------------------------------------------------------------------------------------------- |
+| `/blocks/<slug>/`                                 | yes               | The block running in light and dark side by side, the install command, and every file it writes           |
+| `/templates/<slug>/`                              | yes               | The snapshots, the blocks it is made of, and every file of it                                             |
+| `/blocks/<slug>/demo/`, `/templates/<slug>/demo/` | `noindex, follow` | The block or template alone, full-bleed: `chrome: 'bare'`, so `Layout` renders no sidebar, bars or footer |
+
+A gallery is served only once its table has an entry, so `/templates/` appears with the first template.
+The slug is the search phrase, keyword first and no brand: `react-settings-form`, not `box-kite-settings`.
+
+**Adding a block:**
+
+1. Write its files under `registry/blocks/<name>/` and add the registry item to
+   [pages/site/registry.ts](pages/site/registry.ts) (the shadcn CLI installs those files).
+2. Add the entry to `blocks` in `templates.ts`: the slug, the item's name, an `<h1>`, a description of
+   160 characters or fewer, and `wide` if it needs the whole column.
+3. Write `pages/blocks/<slug>.tsx`: a default export that renders the block. It is drawn twice on the
+   block's page, once per theme, so it must not hard-code an `id` (use `useId`), and it gets `theme` for
+   a block with a `Box.Theme` of its own.
+4. `npm run build:pages && npm run snapshot:templates -- <slug>`, look at the three images in
+   `pages/public/snapshots/`, and commit them. **Committing the images is approving them**; the test
+   in `templates.test.ts` fails a block whose images are missing.
+
+**Adding a template** is the same with `templates` and `registry/templates/<slug>/`: `page.tsx` is the
+default export the demo runs, the folder's other `.ts`/`.tsx` files are what the template page shows as
+source, and `blocks` lists the block slugs it is made of. Import the package by name with `'use client'`,
+so the files are copy-pasteable and `npm run compile` type-checks them.
+
+Each family page module is handed its content by the route's loader in
+[pages/app/routePages.ts](pages/app/routePages.ts) — the preview or template as `Content`, a template's
+files as `sources` — so ten templates are ten chunks, and nothing behind its own `React.lazy` suspends the
+prerender.
+
+**What the head carries.** Every route can set `image` (`og:image`, `twitter:image`) and `jsonLd`. A page
+with a section between it and home also gets visible breadcrumbs and the `BreadcrumbList` built from the
+same list, a block or template page a `SoftwareSourceCode`, and a gallery a `CollectionPage` with an
+`ItemList`. The sitemap's `lastmod` is the last commit to the route's own sources (`sourcesFor` in
+[pages/site/routeSources.ts](pages/site/routeSources.ts)), which is why `pages.yml` checks out the whole
+history; a shallow clone writes none.
+
+**The audit.** The prerender checks every page, not only these ones
+([pages/site/pageAudit.ts](pages/site/pageAudit.ts)): exactly one `<h1>`, no skipped heading level, a
+title of 60 characters or fewer and a description of 160 or fewer, every `<img>` with an `alt` and every
+`role="img"` named, and every site-relative link answered by a route, a moved address or a file in the
+build. A live demo is a document of its own, so headings inside `[data-preview]` (every `Code` demo, every
+block half) are left out. A finding a page is allowed goes in `AUDIT_EXCEPTIONS` with its reason, and the
+build fails once it stops firing.
 
 ## Testing/validation for site changes
 

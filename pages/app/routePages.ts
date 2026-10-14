@@ -1,106 +1,69 @@
-import { ComponentType, lazy } from 'react';
-import { POSTS_PATH } from '../site/posts';
-import { RELEASES_PATH } from '../site/releases';
-import { SiteRoutePath } from '../site/site';
+import { ComponentType, createElement, lazy } from 'react';
+import { contentFor, fileFor, sourcePageFor, TEMPLATES_DIRECTORY } from '../site/routeSources';
+import { ContentProps } from '../site/templates';
 
-/**
- * One page module per route. The record is keyed by the route table's own paths, so a page the table
- * names and this file misses is a type error — and a chunk per page: a reader of /textbox no longer
- * downloads the DataGrid, the 5 MB of mock rows behind it, or Recharts (bug #84).
- *
- * The value is the module's **file name** rather than its import, so one entry answers both questions:
- * which chunk to load, and which file to open on GitHub ("Edit this page", G5). A path and a loader
- * written side by side could disagree; a name resolved through the glob below cannot.
- */
-const pages = import.meta.glob('../pages/*.tsx') as Record<string, () => Promise<{ default: ComponentType }>>;
-
-/** Where the page modules live, from the repository root — the half of the GitHub link that is a path. */
-export const PAGES_DIRECTORY = 'pages/pages';
-
-const files: Record<SiteRoutePath, string> = {
-  '/': 'homePage',
-  '/start-with-ai': 'startPage',
-  '/installation': 'installationPage',
-  '/releases': 'releasesPage',
-  '/blog': 'blogPage',
-  '/theme-setup': 'themeSetupPage',
-  '/server-components': 'serverComponentsPage',
-  '/generative-ui': 'generativeUiPage',
-  '/interop': 'interopPage',
-  '/playground': 'playgroundPage',
-  '/showcase': 'showcasePage',
-  '/box': 'boxPage',
-  '/box-functions': 'boxFunctionsPage',
-  '/svg': 'svgPage',
-  '/icon': 'iconPage',
-  '/charts': 'chartsPage',
-  '/animation': 'animationPage',
-  '/motion': 'motionPage',
-  '/variants': 'variantsPage',
-  '/pseudo-elements': 'pseudoElementsPage',
-  '/container-queries': 'containerQueriesPage',
-  '/anchor': 'anchorPage',
-  '/rtl': 'rtlPage',
-  '/escape-hatch': 'escapeHatchPage',
-  '/button': 'buttonPage',
-  '/textbox': 'textboxPage',
-  '/textarea': 'textareaPage',
-  '/checkbox': 'checkboxPage',
-  '/radiobutton': 'radioButtonPage',
-  '/switch': 'switchPage',
-  '/tooltip': 'tooltipPage',
-  '/overlay': 'overlayPage',
-  '/popover': 'popoverPage',
-  '/dialog': 'dialogPage',
-  '/menu': 'menuPage',
-  '/tabs': 'tabsPage',
-  '/accordion': 'accordionPage',
-  '/slider': 'sliderPage',
-  '/progress': 'progressPage',
-  '/toaster': 'toasterPage',
-  '/combobox': 'comboboxPage',
-  '/dropdown': 'dropdownPage',
-  '/agent': 'agentPage',
-  '/dashboard': 'dashboardPage',
-  '/datagrid': 'dataGridPage',
-  '/benchmark': 'benchmarkPage',
-  '/registry': 'registryPage',
-  '/flex': 'flexPage',
-  '/grid': 'gridPage',
-  '/style-grouping': 'textStylePage',
-  '/colors': 'colorPage',
-  '/gradients-shadows': 'gradientsShadowsPage',
-  '/ai-context': 'aiContextPage',
-};
-
-// Every release and every article has a route of its own, but one page module each: the rest is in the pathname.
-const RELEASE_FILE = 'releasePage';
-const POST_FILE = 'postPage';
-
-function fileFor(path: string): string | undefined {
-  if (path.startsWith(`${RELEASES_PATH}/`)) return RELEASE_FILE;
-  if (path.startsWith(`${POSTS_PATH}/`)) return POST_FILE;
-
-  return files[path as SiteRoutePath];
+/** What a family page is handed: a block's preview or a template to run, or a template's files as text. */
+export interface FamilyPageProps {
+  Content?: ComponentType<ContentProps>;
+  /** Keyed by repository path. */
+  sources?: Readonly<Record<string, string>>;
 }
 
-function loaderFor(path: string) {
+type Module<P = FamilyPageProps> = { default: ComponentType<P> };
+type Loader = () => Promise<Module>;
+
+/**
+ * One chunk per page module, found through the file names `routeSources` keeps: a reader of /textbox
+ * no longer downloads the DataGrid, the 5 MB of mock rows behind it, or Recharts (bug #84).
+ */
+const pages = import.meta.glob('../pages/*.tsx') as Record<string, Loader>;
+// A block's preview and a template are chunks of their own, beside the one page module each family shares.
+const blockPreviews = import.meta.glob('../blocks/*.tsx') as Record<string, () => Promise<Module<ContentProps>>>;
+const templatePages = import.meta.glob('../../registry/templates/*/page.tsx') as Record<string, () => Promise<Module<ContentProps>>>;
+const templateFiles = import.meta.glob<string>('../../registry/templates/*/*.{ts,tsx}', { query: '?raw', import: 'default' });
+
+const contentLoader = (content: string) =>
+  content.startsWith('pages/') ? blockPreviews[`../${content.slice('pages/'.length)}`] : templatePages[`../../${content}`];
+
+/** A template's files as text, keyed by repository path — what its page shows and the reader copies. */
+async function templateSources(slug: string): Promise<Record<string, string>> {
+  const folder = `../../${TEMPLATES_DIRECTORY}/${slug}/`;
+  const entries = Object.entries(templateFiles).filter(([key]) => key.startsWith(folder));
+
+  return Object.fromEntries(await Promise.all(entries.map(async ([key, load]) => [key.slice('../../'.length), await load()])));
+}
+
+// One module per path: a second preload building a second wrapper would remount the page on screen.
+const composed = new Map<string, Promise<Module>>();
+
+function loaderFor(path: string): Loader | undefined {
   const file = fileFor(path);
+  const page = file ? pages[`../pages/${file}.tsx`] : undefined;
+  if (!page) return undefined;
 
-  return file ? pages[`../pages/${file}.tsx`] : undefined;
-}
+  const content = contentFor(path);
+  const load = content ? contentLoader(content) : undefined;
+  if (content && !load) return undefined;
 
-/**
- * The file a route is written in, for the link that opens it on GitHub. A release or an article is a
- * route whose content is not its module: `releases/<version>.md` and `posts/<slug>.md` are what to edit.
- */
-export function sourceFor(path: string): string | undefined {
-  if (path.startsWith(`${RELEASES_PATH}/`)) return `releases/${path.slice(RELEASES_PATH.length + 1)}.md`;
-  if (path.startsWith(`${POSTS_PATH}/`)) return `posts/${path.slice(POSTS_PATH.length + 1)}.md`;
+  const template = sourcePageFor(path);
+  if (!load && !template) return page;
 
-  const file = files[path as SiteRoutePath];
+  // Everything before the page renders: a content module behind a `lazy` of its own would suspend the prerender.
+  return () => {
+    let loading = composed.get(path);
 
-  return file ? `${PAGES_DIRECTORY}/${file}.tsx` : undefined;
+    if (!loading) {
+      loading = Promise.all([page(), load?.(), template && templateSources(template.slug)]).then(
+        ([{ default: Page }, loaded, sources]) => ({
+          default: () => createElement(Page, { Content: loaded?.default, sources }),
+        }),
+      );
+      loading.catch(() => composed.delete(path));
+      composed.set(path, loading);
+    }
+
+    return loading;
+  };
 }
 
 // Modules resolved before rendering starts. `React.lazy` always suspends on its first render, and a

@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { SECTIONS } from './sections';
 import { MOVED_ROUTES, SITE_URL, siteRoutes } from './site';
 import {
+  breadcrumbsFor,
   buildHeadHtml,
   buildRedirectHtml,
   buildRedirectMarkdown,
@@ -12,12 +13,15 @@ import {
   canonicalUrl,
   documentTitle,
   indexableRoutes,
+  JSON_LD_ATTRIBUTE,
+  jsonLdText,
   META_END,
   META_START,
   notFoundMeta,
   pageMeta,
   routeFor,
   SOCIAL_IMAGE,
+  TITLE_LIMIT,
   withHeadHtml,
 } from './siteMeta';
 
@@ -149,7 +153,7 @@ describe('buildHeadHtml', () => {
   });
 
   it('escapes text that would otherwise close an attribute or a tag', () => {
-    const head = buildHeadHtml({ title: 'a "quoted" <title>', description: 'ampersands & angles <>', indexable: true });
+    const head = buildHeadHtml({ ...notFoundMeta, title: 'a "quoted" <title>', description: 'ampersands & angles <>', indexable: true });
 
     expect(head).toContain('<title>a "quoted" &lt;title&gt;</title>');
     expect(head).toContain('content="ampersands &amp; angles &lt;&gt;"');
@@ -189,5 +193,81 @@ describe('a moved page', () => {
     expect(html).toContain(`<meta http-equiv="refresh" content="0; url=${target}" />`);
     expect(html).toContain(`<a href="${target}">`);
     expect(buildRedirectMarkdown('/start-with-ai')).toContain(`${SITE_URL}/start-with-ai.md`);
+  });
+});
+
+describe('documentTitle, held to a search result', () => {
+  it('drops the suffix where the name already says Box Kite, or where it would not fit', () => {
+    expect(documentTitle({ path: '/blog/x', name: 'Your first web page with Box Kite', description: '' })).toBe(
+      'Your first web page with Box Kite',
+    );
+
+    const long = 'Styling the thing you have without a stylesheet at all';
+
+    expect(documentTitle({ path: '/blog/y', name: long, description: '' })).toBe(long);
+  });
+
+  it('keeps every title in the route table within the limit', () => {
+    const tooLong = siteRoutes.map((route) => documentTitle(route)).filter((title) => title.length > TITLE_LIMIT);
+
+    expect(tooLong).toEqual([]);
+  });
+});
+
+describe('breadcrumbsFor', () => {
+  const within = [
+    { path: '/', name: 'Introduction', description: '' },
+    { path: '/blocks', name: 'Blocks', description: '' },
+    { path: '/blocks/react-settings-form', name: 'React settings form', description: '' },
+    { path: '/box', name: 'Box', description: '' },
+  ];
+
+  it('walks home, every ancestor that is a route, then the page', () => {
+    expect(breadcrumbsFor('/blocks/react-settings-form', within)).toEqual([
+      { name: 'Box Kite', path: '/' },
+      { name: 'Blocks', path: '/blocks' },
+      { name: 'React settings form', path: '/blocks/react-settings-form' },
+    ]);
+  });
+
+  it('gives a page with nothing between it and home no trail at all', () => {
+    expect(breadcrumbsFor('/box', within)).toEqual([]);
+    expect(breadcrumbsFor('/blocks', within)).toEqual([]);
+    expect(breadcrumbsFor('/', within)).toEqual([]);
+  });
+});
+
+// `<` as JSON writes it escaped: a backslash, then u003c.
+const ESCAPED_LT = `${String.fromCharCode(92)}u003c`;
+
+describe('structured data and the card', () => {
+  const block = { path: '/blocks/react-settings-form', name: 'React settings form', description: 'A form.' };
+  const within = [{ path: '/blocks', name: 'Blocks', description: '' }, block];
+
+  it('writes the breadcrumbs first, then whatever the route brings, as JSON nothing can close early', () => {
+    const meta = pageMeta({ ...block, jsonLd: [{ '@type': 'Thing', name: '</script><b>' }] }, within);
+    const head = buildHeadHtml(meta);
+
+    expect(meta.jsonLd.map((data) => (data as { '@type': string })['@type'])).toEqual(['BreadcrumbList', 'Thing']);
+    expect(head).toContain(`<script type="application/ld+json" ${JSON_LD_ATTRIBUTE}>`);
+    expect(head).toContain(`"${ESCAPED_LT}/script>${ESCAPED_LT}b>"`);
+    expect(head).not.toContain('</script><b>');
+    expect(jsonLdText({ a: '<' })).toBe(`{"a":"${ESCAPED_LT}"}`);
+  });
+
+  it('shows a page’s own card when it has one, and the site’s otherwise', () => {
+    const image = { path: '/snapshots/react-settings-form-og.jpg', width: 1200, height: 630, alt: 'A form' };
+
+    expect(buildHeadHtml(pageMeta({ ...block, image }, within))).toContain(`content="${SITE_URL}${image.path}"`);
+    expect(pageMeta(block, within).image).toBe(SOCIAL_IMAGE);
+  });
+});
+
+describe('buildSitemap, dated', () => {
+  it('prints the date a route was last changed, and nothing for a route it has none for', () => {
+    const sitemap = buildSitemap(SITE_URL, siteRoutes, (path) => (path === '/box' ? '2026-10-01' : undefined));
+
+    expect(sitemap).toContain(`<loc>${SITE_URL}/box/</loc>\n    <lastmod>2026-10-01</lastmod>`);
+    expect(sitemap).toContain(`<loc>${SITE_URL}/dropdown/</loc>\n  </url>`);
   });
 });

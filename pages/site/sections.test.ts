@@ -15,3 +15,12 @@ describe('sectionOf', () => {
     expect(sectionOf('/blogger')).toBe('docs');
   });
 });
+
+describe('the galleries', () => {
+  it('put both galleries and everything under them in one section', () => {
+    expect(sectionOf('/blocks')).toBe('templates');
+    expect(sectionOf('/blocks/react-settings-form/')).toBe('templates');
+    expect(sectionOf('/templates/react-checkout-page/demo')).toBe('templates');
+    expect(sectionOf('/blockchain')).toBe('docs');
+  });
+});

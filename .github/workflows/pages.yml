@@ -31,6 +31,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # The whole history: the sitemap dates each page by the last commit to its own sources.
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4

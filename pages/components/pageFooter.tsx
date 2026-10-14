@@ -2,9 +2,9 @@ import { useLocation } from 'react-router-dom';
 import Box from '../../src/box';
 import Flex from '../../src/components/flex';
 import { Link } from '../../src/components/semantics';
-import { sourceFor } from '../app/routePages';
 import { markdownPath } from '../site/pageMarkdown';
 import { routes } from '../site/routes';
+import { sourceFor } from '../site/routeSources';
 import { REPO_URL } from '../site/site';
 import { routeFor } from '../site/siteMeta';
 

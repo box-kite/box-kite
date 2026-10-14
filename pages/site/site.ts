@@ -22,6 +22,20 @@ export interface SiteRoute {
   title?: string;
   /** Unlisted demos set this to `false`: out of the sitemap, and `noindex` for crawlers. */
   indexable?: boolean;
+  /** The card a shared link shows, when the page has one of its own. */
+  image?: SocialImage;
+  /** Structured data beyond the breadcrumbs, which every page deep enough to show them gets anyway. */
+  jsonLd?: readonly object[];
+  /** `bare` is a template's demo: the page alone, with no sidebar, bars or footer around it. */
+  chrome?: 'docs' | 'bare';
+}
+
+export interface SocialImage {
+  /** Site-relative: `/og.png`. */
+  path: string;
+  width: number;
+  height: number;
+  alt: string;
 }
 
 /**
@@ -52,16 +66,16 @@ export const siteRoutes = [
   {
     path: '/ai-context',
     name: 'Built for AI',
-    title: 'Box Kite for AI coding agents — AGENTS.md, skill and MCP server',
+    title: 'Box Kite for AI agents — AGENTS.md, skill and MCP server',
     description:
       'Set up Claude Code, Cursor, Copilot or Codex in one command: the rules, every prop and an MCP server that checks each style against the real engine. No API key.',
   },
   {
     path: '/registry',
-    name: 'Blocks',
-    title: 'Blocks, installed by the shadcn CLI — Box Kite',
+    name: 'shadcn registry',
+    title: 'Install React blocks with the shadcn CLI — Box Kite',
     description:
-      'Finished sections the shadcn CLI installs into your own repository: an invoices data grid, a settings form and a dashboard shell, each one code you then own.',
+      'Every block on this site is a shadcn registry item: one command installs it into your own repository, as code you then own.',
   },
   {
     path: '/releases',
@@ -124,7 +138,7 @@ export const siteRoutes = [
   {
     path: '/box-functions',
     name: 'Box functions',
-    title: 'Box functions — extend, components, keyframes, spring, Theme, configure',
+    title: 'Box functions — extend, components, keyframes, Theme',
     description:
       'Everything Box carries that is not a prop: Box.extend(), Box.components(), Box.keyframes(), Box.spring(), Box.Theme and Box.configure(), each with an example.',
   },

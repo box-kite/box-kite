@@ -1,4 +1,16 @@
-import { ComponentProp, ComponentRecord, acceptedValues, blockInstall, blocks, components, prop, props, rules, siteUrl } from './data';
+import {
+  ComponentProp,
+  ComponentRecord,
+  acceptedValues,
+  blockInstall,
+  blockPage,
+  blocks,
+  components,
+  prop,
+  props,
+  rules,
+  siteUrl,
+} from './data';
 import { declarations, written } from './engine';
 import { Hit, componentsWithProp, resolveComponent, search } from './search';
 import { checkStyles } from './styles';
@@ -244,6 +256,7 @@ export function getBlocks(name?: string): string {
     `\`\`\`bash\n${blockInstall(item.name)}\n\`\`\``,
     item.dependencies.length > 0 && `Installs: ${item.dependencies.map((dependency) => `\`${dependency}\``).join(', ')}.`,
     `Files: ${item.files.map((file) => `\`${file.target}\``).join(', ')}.`,
+    blockPage(item.name) && `Running in light and dark, with the source: ${blockPage(item.name)}`,
   );
 }
 

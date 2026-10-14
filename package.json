@@ -71,6 +71,7 @@
     "smoke:next-app": "npm --prefix examples/next-app run smoke",
     "build:pages": "vite build ./pages --config ./pages.vite.config.ts --outDir ../dist-pages --mode production && npm run prerender:pages",
     "prerender:pages": "node scripts/prerender-pages.mjs",
+    "snapshot:templates": "node scripts/snapshot-templates.mjs",
     "preview": "vite preview ./pages --config ./pages.vite.config.ts --outDir ../dist-pages",
     "build": "npm run build:core && vite build",
     "build:core": "vite build --config vite.core.config.ts && node scripts/postbuild-core.mjs",

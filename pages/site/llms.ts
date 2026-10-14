@@ -2,6 +2,7 @@ import { markdownPath } from './pageMarkdown';
 import { POSTS_PATH } from './posts';
 import { RELEASES_PATH } from './releases';
 import { SITE_NAME, SITE_URL, SiteRoute } from './site';
+import { BLOCKS_PATH, TEMPLATES_PATH } from './templates';
 
 /**
  * `llms.txt` and `llms-full.txt`: the map an agent reads before fetching anything, and the whole
@@ -33,6 +34,7 @@ export interface LlmsInput {
 
 const isRelease = (route: SiteRoute) => route.path.startsWith(`${RELEASES_PATH}/`);
 const isPost = (route: SiteRoute) => route.path.startsWith(`${POSTS_PATH}/`);
+const isGallery = ({ path }: SiteRoute) => [TEMPLATES_PATH, BLOCKS_PATH].some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
 
 const link = (route: SiteRoute, siteUrl: string) => `- [${route.name}](${siteUrl}${markdownPath(route.path)}): ${route.description}`;
 
@@ -42,7 +44,9 @@ const link = (route: SiteRoute, siteUrl: string) => `- [${route.name}](${siteUrl
  * model's memory of a library with these prop names does not.
  */
 export function buildLlmsTxt({ packageName, version, routes, facts, deprecated, siteUrl = SITE_URL }: LlmsInput): string {
-  const pages = routes.filter((route) => !isRelease(route) && !isPost(route));
+  const pages = routes.filter((route) => !isRelease(route) && !isPost(route) && !isGallery(route));
+  // A template's demo is the template with no words around it; its page is the one worth reading.
+  const galleries = routes.filter((route) => isGallery(route) && route.indexable !== false);
   const releases = routes.filter(isRelease);
   const posts = routes.filter(isPost);
   const summary = pages[0]?.description ?? '';
@@ -61,6 +65,7 @@ export function buildLlmsTxt({ packageName, version, routes, facts, deprecated, 
     deprecated.map(({ name, instead }) => `- \`${name}\` — ${instead}`).join('\n'),
     '## Docs',
     pages.map((route) => link(route, siteUrl)).join('\n'),
+    ...(galleries.length ? ['## Templates and blocks', galleries.map((route) => link(route, siteUrl)).join('\n')] : []),
     ...(posts.length ? ['## Articles', posts.map((route) => link(route, siteUrl)).join('\n')] : []),
     '## Reference',
     [

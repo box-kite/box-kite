@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
@@ -6,9 +7,11 @@ import iconsPlugin from 'unplugin-icons/vite';
 import { defineConfig, Plugin } from 'vite';
 import { parsePosts, postRoutes } from './pages/site/posts';
 import { parseReleases, releaseRoutes } from './pages/site/releases';
+import { sourcesFor } from './pages/site/routeSources';
 import { SEARCH_INDEX_PATH } from './pages/site/searchIndex';
 import { SITE_URL, SiteRoute, siteRoutes } from './pages/site/site';
 import { buildRobotsTxt, buildSitemap, notFoundMeta, pageMeta, withHeadHtml } from './pages/site/siteMeta';
+import { blockRoutes, templateRoutes } from './pages/site/templates';
 
 /**
  * Everything the site publishes about its own address, built from the route table in `pages/site/site.ts`:
@@ -22,7 +25,33 @@ import { buildRobotsTxt, buildSitemap, notFoundMeta, pageMeta, withHeadHtml } fr
  * `import.meta.glob` over `releases/` and `posts/`; this runs in Node, where the same files are read with `fs`.
  */
 function allRoutes(): readonly SiteRoute[] {
-  return [...siteRoutes, ...releaseRoutes(parseReleases(markdownIn('releases'))), ...postRoutes(parsePosts(markdownIn('posts')))];
+  return [
+    ...siteRoutes,
+    ...releaseRoutes(parseReleases(markdownIn('releases'))),
+    ...postRoutes(parsePosts(markdownIn('posts'))),
+    ...templateRoutes(),
+    ...blockRoutes(),
+  ];
+}
+
+/**
+ * The day of the newest commit to a route's sources, for the sitemap. A shallow clone knows one commit,
+ * which would date every page to the deploy, so there it answers nothing (`pages.yml` fetches the history).
+ */
+function gitLastModified(): (path: string) => string | undefined {
+  const git = (...args: string[]) => execFileSync('git', args, { cwd: import.meta.dirname, encoding: 'utf8' }).trim();
+
+  try {
+    if (git('rev-parse', '--is-shallow-repository') !== 'false') return () => undefined;
+  } catch {
+    return () => undefined;
+  }
+
+  return (path) => {
+    const sources = sourcesFor(path);
+
+    return sources.length ? git('log', '-1', '--format=%cs', '--', ...sources) || undefined : undefined;
+  };
 }
 
 function markdownIn(folder: string): Record<string, string> {
@@ -45,10 +74,10 @@ function siteMetadata(): Plugin {
     name: 'site-metadata',
     transformIndexHtml: {
       order: 'pre',
-      handler: (html) => withHeadHtml(html, pageMeta(home)),
+      handler: (html) => withHeadHtml(html, pageMeta(home, routes)),
     },
     generateBundle() {
-      this.emitFile({ type: 'asset', fileName: 'sitemap.xml', source: buildSitemap(SITE_URL, routes) });
+      this.emitFile({ type: 'asset', fileName: 'sitemap.xml', source: buildSitemap(SITE_URL, routes, gitLastModified()) });
       this.emitFile({ type: 'asset', fileName: 'robots.txt', source: buildRobotsTxt() });
       // GitHub Pages keeps the custom domain in a repository setting that nothing in this repo can
       // see. Shipping the same host in the artifact means a setting that gets lost or overwritten
@@ -63,7 +92,7 @@ function siteMetadata(): Plugin {
 
       const pages = routes
         .filter((route) => route.path !== home.path)
-        .map((route) => [join(outDir, route.path.slice(1), 'index.html'), pageMeta(route)] as const)
+        .map((route) => [join(outDir, route.path.slice(1), 'index.html'), pageMeta(route, routes)] as const)
         .concat([[join(outDir, '404.html'), notFoundMeta] as const]);
 
       for (const [file, meta] of pages) {

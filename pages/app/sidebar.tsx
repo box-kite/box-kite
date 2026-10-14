@@ -28,6 +28,7 @@ import {
   Moon,
   MousePointer2,
   Package as PackageIcon,
+  PackagePlus,
   Paintbrush,
   Palette,
   PanelTop,
@@ -219,8 +220,11 @@ export default function Sidebar({ onClose, onSearch }: SidebarProps) {
           <MenuItem to="/showcase" icon={<LayoutList />}>
             Showcase
           </MenuItem>
-          <MenuItem to="/registry" icon={<Blocks />}>
+          <MenuItem to="/blocks" icon={<Blocks />}>
             Blocks
+          </MenuItem>
+          <MenuItem to="/registry" icon={<PackagePlus />}>
+            shadcn registry
           </MenuItem>
           <MenuItem to="/releases" icon={<Rocket />}>
             Releases

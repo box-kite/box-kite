@@ -6,6 +6,8 @@ import Button from '../../src/components/button';
 import Flex from '../../src/components/flex';
 import Icon from '../../src/components/icon';
 import Presence from '../../src/components/presence';
+import { Main } from '../../src/components/semantics';
+import Breadcrumbs from '../components/breadcrumbs';
 import IconSwap from '../components/iconSwap';
 import PageFooter from '../components/pageFooter';
 import Reveal from '../components/reveal';
@@ -13,6 +15,8 @@ import SearchTrigger, { useSearchShortcut } from '../components/searchTrigger';
 import TableOfContents from '../components/tableOfContents';
 import PageContext, { TocEntry } from '../pageContext';
 import DocumentHead from '../site/documentHead';
+import { routes } from '../site/routes';
+import { routeFor } from '../site/siteMeta';
 import { scrollToSection } from '../utils/scrollToSection';
 import { SectionBar } from './sectionNav';
 import Sidebar from './sidebar';
@@ -25,7 +29,28 @@ interface LayoutProps {
   children: React.ReactNode;
 }
 
+/**
+ * The frame around a page. A template's demo is `bare` — the page alone, full-bleed — and the choice is read
+ * off the route table, so the prerender and the hydration that adopts it always agree on it.
+ */
 export default function Layout({ children }: LayoutProps) {
+  const { pathname } = useLocation();
+
+  return routeFor(pathname, routes)?.chrome === 'bare' ? <BareLayout>{children}</BareLayout> : <DocsLayout>{children}</DocsLayout>;
+}
+
+// `<main>` stays, because the markdown mirror reads nothing else; so do the head and the scroll reset.
+function BareLayout({ children }: LayoutProps) {
+  return (
+    <>
+      <DocumentHead />
+      <ScrollToLocation />
+      <Main>{children}</Main>
+    </>
+  );
+}
+
+function DocsLayout({ children }: LayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   // Stays true once opened: the chunk is loaded, and an exit transition needs the node to survive.
@@ -174,6 +199,7 @@ export default function Layout({ children }: LayoutProps) {
                   {/* Keyed on the route, so a navigation is a fresh mount and `Reveal` has something to
                   reveal. The page under this is prerendered, which is why the entrance is gated on
                   hydration rather than running on the first paint. */}
+                  <Breadcrumbs />
                   <Reveal key={location.pathname} y={2.5}>
                     {children}
                   </Reveal>
