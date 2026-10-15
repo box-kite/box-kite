@@ -22,6 +22,7 @@ import {
   LayoutDashboard,
   LayoutGrid,
   LayoutList,
+  List as ListIcon,
   ListCollapse,
   LoaderCircle,
   MessageSquare,
@@ -333,6 +334,9 @@ export default function Sidebar({ onClose, onSearch }: SidebarProps) {
           </MenuItem>
           <MenuItem to="/accordion" icon={<ListCollapse />}>
             Accordion
+          </MenuItem>
+          <MenuItem to="/list" icon={<ListIcon />}>
+            List
           </MenuItem>
           <MenuItem to="/slider" icon={<SlidersVertical />}>
             Slider

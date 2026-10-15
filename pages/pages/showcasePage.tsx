@@ -14,6 +14,7 @@ import Dropdown from '../../src/components/dropdown';
 import Flex from '../../src/components/flex';
 import Grid from '../../src/components/grid';
 import Icon from '../../src/components/icon';
+import List from '../../src/components/list';
 import Menu from '../../src/components/menu';
 import Overlay from '../../src/components/overlay';
 import Popover from '../../src/components/popover';
@@ -385,6 +386,28 @@ const demos: Record<ShowcaseName, (scope: string) => ReactNode> = {
         </Box>
       )}
     </Presence>
+  ),
+
+  List: () => (
+    <List variant="card">
+      {[
+        ['AL', 'Ada Lovelace', '9:41', 'The engine might compose music.'],
+        ['GH', 'Grace Hopper', 'Mon', 'The compiler ships on Friday.'],
+      ].map(([initials, name, time, text]) => (
+        <List.Item key={name} chevron>
+          <List.Media variant="avatar">{initials}</List.Media>
+          <List.Content>
+            <List.Row>
+              <List.Title lines={1}>
+                <List.Action>{name}</List.Action>
+              </List.Title>
+              <List.Meta>{time}</List.Meta>
+            </List.Row>
+            <List.Description lines={1}>{text}</List.Description>
+          </List.Content>
+        </List.Item>
+      ))}
+    </List>
   ),
 
   DataGrid: () => (

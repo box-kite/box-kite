@@ -66,7 +66,7 @@ A component may report more than one event — `Slider` has `onValueChange` on e
 `onValueCommit` at the end of the interaction — but every one of them is a `ChangeHandler`.
 
 **Sanctioned, and this is the important one: a component that renders a real form control forwards
-the DOM event.** `Checkbox`, `Switch`, `RadioButton`, `Textbox`, `Textarea` and `Button` take
+the DOM event.** `Checkbox`, `Switch`, `RadioButton`, `Textbox`, `Textarea`, `Button` and `List.Action` take
 React's `onChange`/`onInput`/`onClick` unchanged. The event _is_ the API there — it carries the
 target, it is what a form library already wired up, and React's own types describe it better than
 ours would. Inventing a second channel beside it would mean two ways to hear about one keystroke.

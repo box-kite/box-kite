@@ -58,6 +58,7 @@ const files: Record<SiteRoutePath, string> = {
   '/menu': 'menuPage',
   '/tabs': 'tabsPage',
   '/accordion': 'accordionPage',
+  '/list': 'listPage',
   '/slider': 'sliderPage',
   '/progress': 'progressPage',
   '/toaster': 'toasterPage',

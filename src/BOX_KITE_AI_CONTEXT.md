@@ -1921,6 +1921,93 @@ on something at the panel's edge needs, since the clip is permanent.
 
 ---
 
+## List (`components/list`)
+
+```tsx
+import List from '@box-kite/react/components/list';
+
+<List>
+  {people.map((person) => (
+    <List.Item key={person.id} chevron>
+      <List.Media variant="avatar">{person.initials}</List.Media>
+      <List.Content>
+        <List.Row>
+          <List.Title lines={1}>
+            <List.Action props={{ href: `/people/${person.id}` }}>{person.name}</List.Action>
+          </List.Title>
+          <List.Meta>{person.lastSeen}</List.Meta>
+        </List.Row>
+        <List.Description lines={2}>{person.bio}</List.Description>
+      </List.Content>
+    </List.Item>
+  ))}
+</List>;
+```
+
+A list of things to read and pick from — messages, orders, people, settings. **An item is a flex row of
+three slots**, and the content is a column of rows:
+
+| Part               | Element                        | What it is                                                                                                     |
+| ------------------ | ------------------------------ | -------------------------------------------------------------------------------------------------------------- |
+| `List`             | `<ul role="list">`             | `variant`: dividers by default, `plain`, `card` (one framed block), `separated` (a frame per item); `tag="ol"` |
+| `List.Item`        | `<li>`                         | A flex row. `size` `sm`/`md`/`lg` (44/56/72px), `wrap`, `selected` (a tint), `chevron`                         |
+| `List.Media`       | `<div>`                        | Leading: `variant` `icon` (a tinted square), `avatar` (a circle that clips), `image` (a thumbnail)             |
+| `List.Content`     | `<div>`                        | The middle, taking the room; a column                                                                          |
+| `List.Row`         | `<div>`                        | Parts side by side, the last at the end. `secondary` (smaller, muted), `wrap`                                  |
+| `List.Overline`    | `<span>`                       | A small line above the title. `lines`                                                                          |
+| `List.Title`       | `<span>`                       | The name, holding the `List.Action`. `lines` `1` (ellipsis), `2`/`3` (clamp); unset, it wraps                  |
+| `List.Description` | `<span>`                       | Muted supporting text. `lines`                                                                                 |
+| `List.Meta`        | `<span>`                       | A small value that never wraps: a time, a count                                                                |
+| `List.End`         | `<div>`                        | Trailing: a value over its label, aligned to the end in tabular figures                                        |
+| `List.Actions`     | `<div>`                        | Controls of the item's own, lifted above the action                                                            |
+| `List.Action`      | `<a>` / `<label>` / `<button>` | The primary action, covering the item: `href` → link, `htmlFor` → label, otherwise a button                    |
+| `List.Fields`      | `<dl>`                         | Labelled values, as many to a line as fit at 8rem                                                              |
+| `List.Field`       | `<div>` + `<dt>` + `<dd>`      | `label` and the value                                                                                          |
+| `List.Group`       | `<li>` + `<ul>`                | A section: `label`, `level` (makes the label a heading), `sticky`                                              |
+
+**One action covers the item.** `List.Action`'s `::after` stretches over the whole `<li>`, so a press
+anywhere on the item is a press on it and the focus ring draws round the item — while its accessible
+name is the title alone, not every value in the row. A pick-list is a label: put the checkbox in
+`List.Actions` and give the action its `htmlFor`.
+
+```tsx
+<List.Item selected={picked}>
+  <List.Actions>
+    <Checkbox id="pick-ada" checked={picked} onChange={toggle} />
+  </List.Actions>
+  <List.Title>
+    <List.Action props={{ htmlFor: 'pick-ada' }}>Ada Lovelace</List.Action>
+  </List.Title>
+</List.Item>
+```
+
+Hover, pressed, current (`aria-current` on the action) and disabled are read off the action with
+`:has()`, so an item with no action is plain text and needs no prop to say so.
+
+**It renders on a server**: no hook, no context, no effect. That is why the list's look reaches its
+items as custom properties rather than through React — and they are yours to set with `vars`:
+
+| Variable               | Default               | What it is                                                    |
+| ---------------------- | --------------------- | ------------------------------------------------------------- |
+| `--list-divider`       | `currentColor` at 12% | The line between items; `plain` and `separated` make it clear |
+| `--list-divider-inset` | `0px`                 | Where the line starts — `4.5rem` lines it up with the text    |
+| `--list-item-frame`    | `none`                | The border round each item, which `separated` sets            |
+| `--list-item-radius`   | `0`                   | Each item's corners, which its tint follows                   |
+| `--list-sticky-top`    | `0`                   | How far down a sticky group label stops — an app's header     |
+
+**The style tree is paint only** — `list` (the three variants), `list.item` (the divider colour, the
+states, `selected`), `list.media`, `list.muted`, `list.action` (the focus ring) and `list.label` —
+because every engine entry carries it. The spacing is each part's default props, so a prop on the part
+beats it (`<List.Item py={1}>`) and `Box.components` cannot move it. The hairlines and tints are mixed
+from `currentColor`, so they follow any theme with no rule for it.
+
+It is a `<ul role="list">` — the role spelled out because Safari stops reporting a list whose items have
+lost their markers — and **not a composite widget**: each action is a tab stop, Enter follows or presses
+it, and the arrow keys stay the page's. Arrow-key selection among options is a listbox: `Combobox` or
+`Select`.
+
+---
+
 ## Slider & Progress
 
 ```tsx

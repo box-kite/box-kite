@@ -17,6 +17,7 @@ import Flex from '../../src/components/flex';
 import Form from '../../src/components/form';
 import Grid from '../../src/components/grid';
 import Icon from '../../src/components/icon';
+import List from '../../src/components/list';
 import { markdownComponents } from '../../src/components/markdown';
 import Menu from '../../src/components/menu';
 import Overlay from '../../src/components/overlay';
@@ -712,6 +713,60 @@ export const fixtures: A11yFixture[] = [
         <StreamingText text="Refunding order 4182" streaming />
         <StreamingText text="Refunded order 4182. The customer has been emailed." />
       </>
+    ),
+  },
+  {
+    // Every kind of item at once: a link, a label ticking its checkbox, a button beside a switch of its own, the
+    // labelled values, and a group whose label is a heading.
+    name: 'List',
+    render: () => (
+      <List variant="card">
+        <List.Group label="Today" level={2} sticky>
+          <List.Item chevron>
+            <List.Media variant="avatar">AL</List.Media>
+            <List.Content>
+              <List.Row>
+                <List.Title lines={1}>
+                  <List.Action props={{ href: '/inbox/42' }}>Ada Lovelace</List.Action>
+                </List.Title>
+                <List.Meta>9:41</List.Meta>
+              </List.Row>
+              <List.Description lines={2}>The engine might compose elaborate pieces of music.</List.Description>
+            </List.Content>
+          </List.Item>
+          <List.Item>
+            <List.Actions>
+              <Checkbox id="a11y-list-pick" />
+            </List.Actions>
+            <List.Content>
+              <List.Overline>Order 4182</List.Overline>
+              <List.Title>
+                <List.Action props={{ htmlFor: 'a11y-list-pick' }}>Grace Hopper</List.Action>
+              </List.Title>
+              <List.Fields>
+                <List.Field label="Status">Paid</List.Field>
+                <List.Field label="Items">3</List.Field>
+              </List.Fields>
+            </List.Content>
+            <List.End>
+              €42.00
+              <List.Meta>Total</List.Meta>
+            </List.End>
+          </List.Item>
+        </List.Group>
+        <List.Group label="Settings" level={2}>
+          <List.Item size="sm">
+            <List.Content>
+              <List.Title>
+                <List.Action>Notifications</List.Action>
+              </List.Title>
+            </List.Content>
+            <List.Actions>
+              <Switch props={{ 'aria-label': 'Notifications on' }} />
+            </List.Actions>
+          </List.Item>
+        </List.Group>
+      </List>
     ),
   },
   {

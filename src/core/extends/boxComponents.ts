@@ -18,6 +18,12 @@ export type Components = Record<string, BoxComponent>;
  */
 const FONT_MONO = 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace';
 
+/** A list's hairline — its divider and a separated item's frame — mixed from the text, so it follows any theme. */
+const HAIRLINE = 'color-mix(in oklab, currentColor 12%, transparent)';
+
+/** What a list item's icon, avatar or thumbnail sits on. */
+const MEDIA_FILL: BoxComponentStyles = { bgColor: 'currentColor/6' };
+
 /**
  * The DataGrid bottom bar's buttons. Quiet rather than links: they change the view, they do not go
  * anywhere — grey until hovered, so they sit beside the counts without shouting over them.
@@ -4109,6 +4115,61 @@ const boxComponents = {
           theme: { dark: { bgGradient: { linear: 'r', colors: ['transparent', 'white/10', 'transparent'] } } },
         },
       },
+    },
+  },
+  // A list of things a person reads and picks from. Paint only, since every engine entry carries this tree: the
+  // geometry is the parts' own default props. Most of it is mixed from `currentColor`, so it follows any theme
+  // without a second rule, and the look reaches the items as custom properties — a list has no context to pass.
+  list: {
+    styles: {},
+    variants: {
+      plain: { vars: { 'list-divider': 'transparent' } },
+      card: {
+        b: 1,
+        borderColor: 'currentColor/12',
+        borderRadius: 3,
+        bgColor: 'white',
+        // `clip`, not `hidden`: the corners clip and the list is still no scroll container, so a sticky label sticks.
+        css: { overflow: 'clip' },
+        theme: { dark: { bgColor: 'gray-900' } },
+      },
+      separated: {
+        display: 'flex',
+        d: 'column',
+        gap: 2,
+        vars: { 'list-divider': 'transparent', 'list-item-frame': `1px solid ${HAIRLINE}`, 'list-item-radius': '0.75rem' },
+      },
+    },
+    children: {
+      item: {
+        styles: {
+          // The line between items is the component's `::before`; this is its colour, which `plain` and `separated`
+          // take away from up the tree.
+          before: { css: { backgroundColor: `var(--list-divider, ${HAIRLINE})` } },
+          // Pressable when it holds a `List.Action`, so the states are read off that rather than a prop.
+          has: {
+            '[data-list-action]:active': { bgColor: 'currentColor/8' },
+            '[data-list-action][aria-current]:not([aria-current=false])': { bgColor: 'indigo-500/15' },
+            '[data-list-action]:disabled': { opacity: 0.5 },
+          },
+          pointerFine: { has: { '[data-list-action]:hover': { bgColor: 'currentColor/4' } } },
+        },
+        variants: { selected: { bgColor: 'indigo-500/10' } },
+      },
+      media: { styles: {}, variants: { icon: MEDIA_FILL, avatar: MEDIA_FILL, image: MEDIA_FILL } },
+      // The quieter half of an item: an overline, a description, a secondary row, a meta value, a field's label, a
+      // chevron. A palette pair rather than a mix, since a mix inside a mix would fade twice.
+      muted: { styles: { color: 'gray-500', theme: { dark: { color: 'gray-400' } } } },
+      // The item's one primary action: the ring round the item it covers. `disabled` here is the state; as a part's
+      // default prop it would be the attribute.
+      action: {
+        styles: {
+          disabled: { cursor: 'not-allowed' },
+          focusVisible: { after: { outline: 2, outlineStyle: 'solid', outlineOffset: -2, outlineColor: 'indigo-500' } },
+        },
+      },
+      // A group's label, opaque so a sticky one hides the items scrolling under it.
+      label: { styles: { color: 'gray-600', bgColor: 'gray-50', theme: { dark: { color: 'gray-300', bgColor: 'gray-800' } } } },
     },
   },
   // What the agent is saying, as it arrives. Two children and no third: the settled text is a bare text
