@@ -93,6 +93,8 @@ async function load(url) {
     await wait(100);
   }
 
+  // The link back to the site is the site's, not the demo's, so it stays out of the picture.
+  await evaluate(send, 'document.querySelectorAll("[data-demo-exit]").forEach((element) => element.remove())');
   await evaluate(send, 'new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)))');
   // An image or a lazily measured chart can land a moment after the second frame.
   await wait(400);
