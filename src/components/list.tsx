@@ -289,6 +289,7 @@ function ListChevron() {
     component: 'list.muted',
     display: 'flex',
     flexShrink: 0,
+    alignSelf: 'center',
     rtl: { flip: 'xAxis' },
     props: { 'aria-hidden': true },
     children: (

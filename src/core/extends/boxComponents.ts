@@ -4154,7 +4154,10 @@ const boxComponents = {
           },
           pointerFine: { has: { '[data-list-action]:hover': { bgColor: 'currentColor/4' } } },
         },
-        variants: { selected: { bgColor: 'indigo-500/10' } },
+        variants: {
+          // Its own hover too, or the item's hover tint would replace the selection while the pointer is on it.
+          selected: { bgColor: 'indigo-500/10', pointerFine: { has: { '[data-list-action]:hover': { bgColor: 'indigo-500/15' } } } },
+        },
       },
       media: { styles: {}, variants: { icon: MEDIA_FILL, avatar: MEDIA_FILL, image: MEDIA_FILL } },
       // The quieter half of an item: an overline, a description, a secondary row, a meta value, a field's label, a

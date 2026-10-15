@@ -117,7 +117,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "38.43 KB"
+      "limit": "38.44 KB"
     },
     {
       "name": "Box in a Server Component (react-server entry)",
@@ -223,7 +223,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "42.05 KB"
+      "limit": "42.06 KB"
     },
     {
       "name": "Menu",
@@ -235,7 +235,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "44.3 KB"
+      "limit": "44.31 KB"
     },
     {
       "name": "Accordion",
@@ -283,7 +283,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "40.27 KB"
+      "limit": "40.28 KB"
     },
     {
       "name": "Skeleton",
@@ -295,7 +295,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "38.34 KB"
+      "limit": "38.35 KB"
     },
     {
       "name": "Tabs",
@@ -307,7 +307,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "40.97 KB"
+      "limit": "40.98 KB"
     },
     {
       "name": "Slider",
@@ -343,7 +343,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "41.76 KB"
+      "limit": "41.77 KB"
     },
     {
       "name": "Combobox",
@@ -367,7 +367,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "43.99 KB"
+      "limit": "44 KB"
     },
     {
       "name": "DataGrid",
@@ -403,7 +403,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "123.37 KB"
+      "limit": "123.38 KB"
     }
   ],
   "repository": {
