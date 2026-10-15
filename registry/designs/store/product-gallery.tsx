@@ -1,8 +1,7 @@
 'use client';
-import Box from '@box-kite/react';
 import Tabs from '@box-kite/react/components/tabs';
 import VisuallyHidden from '@box-kite/react/components/visuallyHidden';
-import ProductArt, { type ArtView } from './product-art';
+import ProductArt, { type ArtView, glazeBackdrop } from './product-art';
 import { glazes, type Product, productBySlug } from './store-data';
 
 const views: { value: ArtView; label: string }[] = [
@@ -11,15 +10,9 @@ const views: { value: ArtView; label: string }[] = [
   { value: 'pair', label: 'Pair' },
 ];
 
-const frame = {
-  borderRadius: 5,
-  bgGradient: { radial: 'circle', at: 'top', colors: ['white', 'stone-200'] },
-  theme: { dark: { bgGradient: { radial: 'circle', at: 'top', colors: ['stone-800', 'stone-900'] } } },
-} as const;
-
 export interface ProductGalleryProps {
   product?: Product;
-  /** The glaze on show — the variant picker beside the gallery owns it. */
+  /** The glaze on show — the variant picker beside the gallery owns it, and the backdrop follows it. */
   glaze?: string;
 }
 
@@ -30,35 +23,44 @@ export interface ProductGalleryProps {
 export default function ProductGallery({ product = productBySlug('tide-mug'), glaze = product.glazes[0] }: ProductGalleryProps) {
   const pair = product.glazes.find((id) => id !== glaze) ?? glaze;
   const name = `${product.name} in ${glazes[glaze].name}`;
+  const backdrop = glazeBackdrop(glaze);
 
   return (
-    <Tabs defaultValue="front" gap={3}>
+    <Tabs defaultValue="front" gap={4}>
       <Tabs.List label={`${product.name} pictures`} order={1} bb={0} gap={3}>
         {views.map((view) => (
           <Tabs.Tab
             key={view.value}
             value={view.value}
-            {...frame}
-            p={2}
+            {...backdrop}
+            p={1.5}
             mb={0}
             width={20}
             height={20}
-            borderRadius={3}
+            borderRadius={4}
             b={2}
             borderColor="transparent"
-            ariaAttr={{ selected: { borderColor: 'stone-900' } }}
-            focusVisible={{ outlineOffset: 2, borderRadius: 3 }}
-            theme={{ dark: { ...frame.theme.dark, ariaAttr: { selected: { borderColor: 'stone-100' } } } }}
+            opacity={0.7}
+            hover={{ opacity: 1 }}
+            ariaAttr={{ selected: { borderColor: 'stone-900', opacity: 1 } }}
+            focusVisible={{ outlineOffset: 2, borderRadius: 4 }}
+            theme={{ dark: { ...backdrop.theme.dark, ariaAttr: { selected: { borderColor: 'stone-100' } } } }}
           >
-            <Box width="fit" height="fit" pointerEvents="none">
-              <ProductArt shape={product.shape} glaze={glaze} pairGlaze={pair} view={view.value} />
-            </Box>
+            <ProductArt shape={product.shape} glaze={glaze} pairGlaze={pair} view={view.value} />
             <VisuallyHidden>{view.label}</VisuallyHidden>
           </Tabs.Tab>
         ))}
       </Tabs.List>
       {views.map((view) => (
-        <Tabs.Panel key={view.value} value={view.value} aspectRatio="square" p={10} startingStyle={{ opacity: 0 }} {...frame}>
+        <Tabs.Panel
+          key={view.value}
+          value={view.value}
+          {...backdrop}
+          aspectRatio="square"
+          p={14}
+          borderRadius={8}
+          startingStyle={{ opacity: 0 }}
+        >
           <ProductArt
             shape={product.shape}
             glaze={glaze}

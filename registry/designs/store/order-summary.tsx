@@ -6,7 +6,7 @@ import Progress from '@box-kite/react/components/progress';
 import { Aside, H2, Label, Li, Span, Ul } from '@box-kite/react/components/semantics';
 import Textbox from '@box-kite/react/components/textbox';
 import { type FormEvent, type ReactNode, useId, useState } from 'react';
-import ProductArt from './product-art';
+import ProductArt, { glazeBackdrop } from './product-art';
 import { type CartLine, FREE_SHIPPING_FROM, formatPrice, glazes, productBySlug, subtotalOf, TAX_RATE } from './store-data';
 import { SERIF } from './store-design';
 
@@ -75,16 +75,7 @@ export default function OrderSummary({ lines, shipping, showLines, action, onDis
 
             return (
               <Li key={line.id} display="flex" ai="center" gap={3}>
-                <Box
-                  position="relative"
-                  flexShrink={0}
-                  width={14}
-                  height={14}
-                  p={1}
-                  borderRadius={2}
-                  bgColor="stone-100"
-                  theme={{ dark: { bgColor: 'stone-800' } }}
-                >
+                <Box position="relative" flexShrink={0} width={14} height={14} p={1} borderRadius={2} {...glazeBackdrop(line.glaze)}>
                   <ProductArt shape={product.shape} glaze={line.glaze} />
                   <Span
                     position="absolute"

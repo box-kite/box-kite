@@ -101,9 +101,8 @@ export default function StoreShell({ cartCount = 0, checkout, theme, children }:
                       borderRadius={999}
                       fontSize={11}
                       fontWeight={700}
-                      bgColor="orange-700"
+                      bgGradient={{ linear: 'br', colors: ['orange-600', 'rose-700'] }}
                       color="white"
-                      theme={{ dark: { bgColor: 'orange-500', color: 'stone-950' } }}
                     >
                       {cartCount}
                     </Span>
@@ -165,16 +164,27 @@ function Wordmark({ href }: { href: string }) {
       focusVisible={{ outline: 2, outlineColor: 'orange-600', outlineOffset: 4, borderRadius: 1 }}
       theme={{ dark: { color: 'stone-50' } }}
     >
-      <Svg viewBox="0 0 24 24" width={24} height={24}>
-        <Path d="M3 10 Q4 21 12 21 Q20 21 21 10 Z" fill="orange-700" theme={{ dark: { fill: 'orange-400' } }} />
-        <Path
-          d="M7 7 Q9 4 7 2 M12 7 Q14 4 12 2 M17 7 Q19 4 17 2"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={1.5}
-          strokeLinecap="round"
-        />
-      </Svg>
+      <Flex
+        width={8}
+        height={8}
+        ai="center"
+        jc="center"
+        borderRadius={2.5}
+        bgGradient={{ linear: 'br', colors: ['amber-400', 'orange-500', 'rose-600'] }}
+        shadow="sm"
+        shadowColor="orange-700/30"
+      >
+        <Svg viewBox="0 0 24 24" width={20} height={20}>
+          <Path d="M4 11 Q5 20 12 20 Q19 20 20 11 Z" fill="white" />
+          <Path
+            d="M8.5 8 Q10 6 8.5 4 M12 8 Q13.5 6 12 4 M15.5 8 Q17 6 15.5 4"
+            fill="none"
+            stroke="white"
+            strokeWidth={1.4}
+            strokeLinecap="round"
+          />
+        </Svg>
+      </Flex>
       <Span fontSize={21} fontWeight={600} letterSpacing={-0.5} css={{ fontFamily: SERIF }}>
         {STORE_NAME}
       </Span>

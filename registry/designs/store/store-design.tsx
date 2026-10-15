@@ -8,52 +8,88 @@ import { createContext, type ReactNode, useContext } from 'react';
  * the store can sit inside an app that looks like something else.
  */
 export const storeDesign = Box.createComponents({
+  // The kiln glow: the one gradient the brand spends on an action, so a primary button is never in doubt.
   button: {
     styles: {
-      bgColor: 'stone-900',
-      color: 'stone-50',
+      bgColor: 'orange-700',
+      bgGradient: { linear: 'r', colors: ['orange-700', 'rose-700'] },
+      color: 'white',
       borderRadius: 999,
       px: 6,
       fontWeight: 600,
-      hover: { bgColor: 'stone-700' },
-      active: { bgColor: 'stone-800' },
-      focus: { outlineColor: 'orange-400' },
-      disabled: { bgColor: 'stone-200', color: 'stone-500', hover: { bgColor: 'stone-200' } },
+      shadow: 'md',
+      shadowColor: 'orange-700/25',
+      transition: 'all',
+      hover: { bgGradient: { linear: 'r', colors: ['orange-800', 'rose-800'] }, translateY: -0.5, shadow: 'lg' },
+      active: { translateY: 0, shadow: 'sm' },
+      focus: { outlineColor: 'orange-300' },
+      disabled: {
+        bgGradient: { linear: 'r', colors: ['stone-200', 'stone-200'] },
+        color: 'stone-500',
+        shadow: 'none',
+        hover: { bgGradient: { linear: 'r', colors: ['stone-200', 'stone-200'] }, translateY: 0 },
+      },
       theme: {
         dark: {
-          bgColor: 'stone-100',
-          color: 'stone-900',
-          hover: { bgColor: 'white' },
-          active: { bgColor: 'stone-300' },
-          focus: { outlineColor: 'orange-300' },
-          disabled: { bgColor: 'stone-800', color: 'stone-500', hover: { bgColor: 'stone-800' } },
+          bgColor: 'orange-300',
+          bgGradient: { linear: 'r', colors: ['amber-300', 'orange-300', 'rose-300'] },
+          color: 'stone-950',
+          shadowColor: 'orange-400/20',
+          hover: { bgGradient: { linear: 'r', colors: ['amber-200', 'orange-200', 'rose-200'] } },
+          focus: { outlineColor: 'orange-700' },
+          disabled: {
+            bgGradient: { linear: 'r', colors: ['stone-800', 'stone-800'] },
+            color: 'stone-500',
+            hover: { bgGradient: { linear: 'r', colors: ['stone-800', 'stone-800'] } },
+          },
         },
       },
     },
     variants: {
       secondary: {
-        bgColor: 'transparent',
+        bgColor: 'white/60',
+        bgGradient: { linear: 'r', colors: ['transparent', 'transparent'] },
         color: 'stone-900',
         borderColor: 'stone-300',
-        hover: { bgColor: 'stone-100' },
-        active: { bgColor: 'stone-200' },
-        focus: { borderColor: 'stone-900', outlineColor: 'orange-400' },
+        shadow: 'none',
+        hover: { bgColor: 'white', bgGradient: { linear: 'r', colors: ['transparent', 'transparent'] }, shadow: 'sm' },
+        active: { bgColor: 'stone-100' },
+        focus: { borderColor: 'stone-900', outlineColor: 'orange-300' },
         theme: {
           dark: {
-            bgColor: 'transparent',
+            bgColor: 'white/5',
+            bgGradient: { linear: 'r', colors: ['transparent', 'transparent'] },
             color: 'stone-100',
             borderColor: 'stone-700',
-            hover: { bgColor: 'stone-800' },
+            hover: { bgColor: 'white/10', bgGradient: { linear: 'r', colors: ['transparent', 'transparent'] } },
             active: { bgColor: 'stone-700' },
-            focus: { borderColor: 'stone-300', outlineColor: 'orange-300' },
+            focus: { borderColor: 'stone-300', outlineColor: 'orange-700' },
           },
         },
       },
       ghost: {
+        bgColor: 'transparent',
+        bgGradient: { linear: 'r', colors: ['transparent', 'transparent'] },
         color: 'stone-700',
-        hover: { bgColor: 'stone-100' },
-        active: { bgColor: 'stone-200' },
-        theme: { dark: { color: 'stone-300', hover: { bgColor: 'stone-800' }, active: { bgColor: 'stone-700' } } },
+        shadow: 'none',
+        hover: {
+          bgColor: 'stone-900/5',
+          bgGradient: { linear: 'r', colors: ['transparent', 'transparent'] },
+          translateY: 0,
+          shadow: 'none',
+        },
+        active: { bgColor: 'stone-900/10' },
+        disabled: { bgColor: 'transparent', bgGradient: { linear: 'r', colors: ['transparent', 'transparent'] }, color: 'stone-400' },
+        theme: {
+          dark: {
+            bgColor: 'transparent',
+            bgGradient: { linear: 'r', colors: ['transparent', 'transparent'] },
+            color: 'stone-300',
+            hover: { bgColor: 'white/10', bgGradient: { linear: 'r', colors: ['transparent', 'transparent'] } },
+            active: { bgColor: 'white/15' },
+            disabled: { bgColor: 'transparent', bgGradient: { linear: 'r', colors: ['transparent', 'transparent'] }, color: 'stone-600' },
+          },
+        },
       },
     },
   },
@@ -163,7 +199,13 @@ export const storeDesign = Box.createComponents({
   progress: {
     styles: { height: 1.5, borderRadius: 999, bgColor: 'stone-200', theme: { dark: { bgColor: 'stone-800' } } },
     children: {
-      fill: { styles: { borderRadius: 999, bgColor: 'orange-700', theme: { dark: { bgColor: 'orange-400' } } } },
+      fill: {
+        styles: {
+          borderRadius: 999,
+          bgGradient: { linear: 'r', colors: ['amber-400', 'orange-500', 'rose-500'] },
+          theme: { dark: { bgGradient: { linear: 'r', colors: ['amber-300', 'orange-400', 'rose-400'] } } },
+        },
+      },
     },
   },
   accordion: {
@@ -195,6 +237,24 @@ export const storeDesign = Box.createComponents({
 /** The headings' face: a book serif every system already has, so the store loads no font. */
 export const SERIF = "'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif";
 
+/** The brand's gradient as type: spread it on a heading word or a label to set it in kiln light. */
+export const kilnText = {
+  bgGradient: { linear: 'r', colors: ['amber-600', 'orange-600', 'rose-600'] },
+  bgClip: 'text',
+  color: 'transparent',
+  theme: { dark: { bgGradient: { linear: 'r', colors: ['amber-300', 'orange-300', 'rose-300'] } } },
+} as const;
+
+/** A card on the page: white, a hairline and a soft warm shadow, in both themes. */
+export const card = {
+  bgColor: 'white',
+  b: 1,
+  borderColor: 'stone-200/70',
+  shadow: 'sm',
+  shadowColor: 'orange-900/5',
+  theme: { dark: { bgColor: 'stone-900', borderColor: 'white/10', shadow: 'none' } },
+} as const;
+
 /**
  * Where the pages and blocks link to. A provider rather than constants, so the same pages work under any
  * router: wrap them in `<StoreLinks.Provider value={…}>` with your own routes.
@@ -219,7 +279,7 @@ export const useStoreLinks = () => useContext(StoreLinks);
 export function StoreSurface({ children }: { children: ReactNode }) {
   return (
     <Box.Components value={storeDesign}>
-      <Box bgColor="stone-50" color="stone-900" theme={{ dark: { bgColor: 'stone-950', color: 'stone-100' } }}>
+      <Box bgColor="orange-50" color="stone-900" theme={{ dark: { bgColor: 'stone-950', color: 'stone-100' } }}>
         {children}
       </Box>
     </Box.Components>

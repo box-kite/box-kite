@@ -1,14 +1,18 @@
 /**
  * The catalogue the store pages render: plain objects, so swapping in your own fetch changes nothing else.
- * A glaze is two palette tokens, the colour and its shadow, which is all `ProductArt` needs to draw a piece.
+ * A glaze is four palette tokens from its lit edge to its darkest pool, and a palette family for the backdrop.
  */
 export type Shape = 'mug' | 'tumbler' | 'bowl' | 'plate' | 'vase' | 'budVase' | 'pitcher' | 'planter';
 
 export interface Glaze {
   id: string;
   name: string;
+  light: string;
   color: string;
   shade: string;
+  deep: string;
+  /** The family the piece's backdrop is tinted from. */
+  tint: string;
 }
 
 export interface Product {
@@ -41,13 +45,13 @@ export interface ShippingMethod {
 export const STORE_NAME = 'Tidewell';
 
 export const glazes: Record<string, Glaze> = {
-  sea: { id: 'sea', name: 'Sea glass', color: 'teal-500', shade: 'teal-800' },
-  ash: { id: 'ash', name: 'Ash', color: 'stone-300', shade: 'stone-500' },
-  ember: { id: 'ember', name: 'Ember', color: 'orange-600', shade: 'orange-900' },
-  moss: { id: 'moss', name: 'Moss', color: 'lime-700', shade: 'green-900' },
-  dusk: { id: 'dusk', name: 'Dusk', color: 'indigo-400', shade: 'indigo-700' },
-  bone: { id: 'bone', name: 'Bone', color: 'stone-100', shade: 'stone-400' },
-  ink: { id: 'ink', name: 'Ink', color: 'slate-700', shade: 'slate-950' },
+  sea: { id: 'sea', name: 'Sea glass', light: 'teal-200', color: 'teal-500', shade: 'teal-700', deep: 'teal-950', tint: 'teal' },
+  ash: { id: 'ash', name: 'Ash', light: 'stone-50', color: 'stone-300', shade: 'stone-500', deep: 'stone-700', tint: 'stone' },
+  ember: { id: 'ember', name: 'Ember', light: 'amber-300', color: 'orange-600', shade: 'orange-800', deep: 'red-950', tint: 'orange' },
+  moss: { id: 'moss', name: 'Moss', light: 'lime-300', color: 'lime-700', shade: 'green-800', deep: 'green-950', tint: 'lime' },
+  dusk: { id: 'dusk', name: 'Dusk', light: 'violet-200', color: 'indigo-400', shade: 'indigo-600', deep: 'indigo-950', tint: 'indigo' },
+  bone: { id: 'bone', name: 'Bone', light: 'white', color: 'stone-100', shade: 'stone-300', deep: 'stone-500', tint: 'amber' },
+  ink: { id: 'ink', name: 'Ink', light: 'slate-400', color: 'slate-700', shade: 'slate-900', deep: 'slate-950', tint: 'slate' },
 };
 
 export const products: readonly Product[] = [
@@ -96,7 +100,7 @@ export const products: readonly Product[] = [
     shape: 'plate',
     category: 'Bowls & plates',
     price: 38,
-    glazes: ['bone', 'sea'],
+    glazes: ['sea', 'bone'],
     summary: 'A 27 cm plate with a raised rim that keeps sauces where they belong.',
   },
   {

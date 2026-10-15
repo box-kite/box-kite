@@ -3,7 +3,7 @@ import Box from '@box-kite/react';
 import Button from '@box-kite/react/components/button';
 import Flex from '@box-kite/react/components/flex';
 import { Li, Link, Span, Ul } from '@box-kite/react/components/semantics';
-import ProductArt from './product-art';
+import ProductArt, { glazeBackdrop } from './product-art';
 import QuantityStepper from './quantity-stepper';
 import { type CartLine, formatPrice, glazes, productBySlug } from './store-data';
 import { SERIF, useStoreLinks } from './store-design';
@@ -29,16 +29,7 @@ export default function CartItems({ lines, onLinesChange }: CartItemsProps) {
 
         return (
           <Li key={line.id} display="flex" gap={4} py={5} bb={1} borderColor="stone-200" theme={{ dark: { borderColor: 'stone-800' } }}>
-            <Box
-              flexShrink={0}
-              width={24}
-              height={24}
-              sm={{ width: 28, height: 28 }}
-              p={2}
-              borderRadius={3}
-              bgColor="stone-100"
-              theme={{ dark: { bgColor: 'stone-800' } }}
-            >
+            <Box flexShrink={0} width={24} height={24} sm={{ width: 28, height: 28 }} p={2} borderRadius={3} {...glazeBackdrop(line.glaze)}>
               <ProductArt shape={product.shape} glaze={line.glaze} />
             </Box>
             <Flex d="column" flex1 minWidth={0} gap={1}>

@@ -144,8 +144,15 @@ function Card({ number, name, expiry }: { number: string; name: string; expiry: 
       borderRadius={4}
       color="white"
       shadow="lg"
-      bgGradient={{ linear: 135, colors: ['stone-800', 'stone-950'] }}
-      theme={{ dark: { bgGradient: { linear: 135, colors: ['orange-800', 'stone-900'] }, shadow: 'none', ring: 1, ringColor: 'white/10' } }}
+      bgGradient={{ linear: 135, colors: ['orange-500', 'rose-600', 'violet-800'], interpolate: 'oklch' }}
+      shadowColor="rose-900/30"
+      theme={{
+        dark: {
+          bgGradient: { linear: 135, colors: ['orange-700', 'rose-800', 'violet-950'], interpolate: 'oklch' },
+          ring: 1,
+          ringColor: 'white/10',
+        },
+      }}
       props={{ 'aria-hidden': true }}
     >
       <Flex jc="space-between" ai="start">

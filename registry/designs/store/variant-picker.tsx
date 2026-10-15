@@ -6,6 +6,7 @@ import { Span } from '@box-kite/react/components/semantics';
 import { toast } from '@box-kite/react/components/toaster';
 import VisuallyHidden from '@box-kite/react/components/visuallyHidden';
 import { useState } from 'react';
+import { glazeBead } from './product-art';
 import QuantityStepper from './quantity-stepper';
 import { type CartLine, formatPrice, glazes, type Product, productBySlug } from './store-data';
 import { useStoreLinks } from './store-design';
@@ -76,7 +77,7 @@ export default function VariantPicker({ product = productBySlug('tide-mug'), gla
             m={0}
             borderRadius={999}
             cursor="pointer"
-            css={{ backgroundColor: glazes[id].color }}
+            {...glazeBead(id)}
             ring={1}
             ringColor="stone-900/15"
             theme={{ dark: { ringColor: 'white/20' } }}

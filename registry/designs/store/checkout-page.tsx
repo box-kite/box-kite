@@ -15,10 +15,10 @@ import FormField from './form-field';
 import OrderSummary from './order-summary';
 import ShippingMethod from './shipping-method';
 import { FREE_SHIPPING_FROM, formatPrice, sampleCart, shippingMethods, subtotalOf, TAX_RATE } from './store-data';
-import { SERIF } from './store-design';
+import { card, SERIF } from './store-design';
 import StoreShell from './store-shell';
 
-const divider = { pt: 8, bt: 1, borderColor: 'stone-200', theme: { dark: { borderColor: 'stone-800' } } } as const;
+const panel = { ...card, p: 6, borderRadius: 6 } as const;
 
 /**
  * The checkout: one form of contact, address, delivery and payment, beside the order it pays for. The
@@ -45,32 +45,34 @@ export default function CheckoutPage({ theme }: { theme?: string }) {
         <Form<Record<string, string>>
           display="flex"
           d="column"
-          gap={8}
+          gap={5}
           onSubmit={(values) =>
             toast.success('Order placed', { description: `A confirmation is on its way to ${values.email || 'your inbox'}.` })
           }
         >
-          <Box tag="fieldset" b={0} p={0} m={0} minWidth={0}>
-            <Box tag="legend" fontSize={18} fontWeight={600} mb={4}>
-              Contact
+          <Box {...panel}>
+            <Box tag="fieldset" b={0} p={0} m={0} minWidth={0}>
+              <Box tag="legend" fontSize={18} fontWeight={600} mb={4}>
+                Contact
+              </Box>
+              <Flex d="column" gap={3}>
+                <FormField label="Email" hint="For the receipt and the tracking link, nothing else.">
+                  {(control) => <Textbox name="email" type="email" props={{ ...control, autoComplete: 'email' }} required />}
+                </FormField>
+                <Checkbox name="newsletter" label="Tell me when a new batch comes out of the kiln" />
+              </Flex>
             </Box>
-            <Flex d="column" gap={3}>
-              <FormField label="Email" hint="For the receipt and the tracking link, nothing else.">
-                {(control) => <Textbox name="email" type="email" props={{ ...control, autoComplete: 'email' }} required />}
-              </FormField>
-              <Checkbox name="newsletter" label="Tell me when a new batch comes out of the kiln" />
-            </Flex>
           </Box>
 
-          <Box {...divider}>
+          <Box {...panel}>
             <AddressForm />
           </Box>
 
-          <Box {...divider}>
+          <Box {...panel}>
             <ShippingMethod value={method} onValueChange={setMethod} freeStandard={freeStandard} />
           </Box>
 
-          <Box {...divider}>
+          <Box {...panel}>
             <CreditCardForm />
             <Box mt={5}>
               <Checkbox
@@ -83,7 +85,7 @@ export default function CheckoutPage({ theme }: { theme?: string }) {
           </Box>
 
           {!sameBilling && (
-            <Box {...divider}>
+            <Box {...panel}>
               <AddressForm legend="Billing address" prefix="billing" />
             </Box>
           )}

@@ -25,8 +25,9 @@ export function mergeDeep<T>(...objects: T[]) {
         // skip overriding object of styles with a boolean
       } else if (key in pseudo2 && Array.isArray(oVal)) {
         (prev as any)[key] = mergeDeep(pVal, oVal[1] ?? {});
-      } else if (Array.isArray(pVal) && Array.isArray(oVal)) {
-        (prev as any)[key] = pVal.concat(...oVal);
+      } else if (Array.isArray(oVal)) {
+        // An array is one value — a gradient's stops, a scrollbar's two colours — so the later one replaces it (bug #265).
+        (prev as any)[key] = oVal;
       } else if (ObjectUtils.isObject(pVal) && ObjectUtils.isObject(oVal)) {
         (prev as any)[key] = mergeDeep(pVal, oVal);
       } else {
