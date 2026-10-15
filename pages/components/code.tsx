@@ -103,11 +103,11 @@ export default function Code(props: Props) {
       <Box
         shadow="large"
         borderRadius={3}
-        overflow="hidden"
         b={1}
         theme={{ dark: { borderColor: 'slate-700' }, light: { borderColor: 'slate-200' } }}
         contentVisibility="auto"
-        css={{ containIntrinsicSize: `auto ${Math.round(estimate / 20) * 20}px` }}
+        // `clip`, not `hidden`: a scroll container would hold a demo's sticky bar inside the block instead of the viewport.
+        css={{ overflow: 'clip', containIntrinsicSize: `auto ${Math.round(estimate / 20) * 20}px` }}
       >
         {/* Demo Area — `data-md` because the markdown mirror wants the snippet, not the rendered
             markup it produces: a grid demo is four hundred rows of mock data as text. */}

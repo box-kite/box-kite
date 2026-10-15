@@ -259,12 +259,14 @@
       "DataGrid (paginated)",
       "DataGrid (virtualized, grouped, selectable)",
       "DataGrid (grouped, expanded)",
-      "DataGrid (tree data)"
+      "DataGrid (tree data)",
+      "DataGrid (list layout, grouped, selecting)",
+      "DataGrid (list layout, record view)"
     ],
     "knownViolations": []
   },
   "styleTree": [
-    { "path": "datagrid", "depth": 0, "extends": null, "variants": [] },
+    { "path": "datagrid", "depth": 0, "extends": null, "variants": ["list"] },
     { "path": "datagrid.content", "depth": 1, "extends": null, "variants": [] },
     { "path": "datagrid.loader", "depth": 1, "extends": null, "variants": [] },
     { "path": "datagrid.loader.track", "depth": 2, "extends": null, "variants": [] },
@@ -389,6 +391,28 @@
     { "path": "datagrid.bottomBar.pagination", "depth": 2, "extends": null, "variants": [] },
     { "path": "datagrid.bottomBar.pagination.button", "depth": 3, "extends": null, "variants": [] },
     { "path": "datagrid.bottomBar.pagination.info", "depth": 3, "extends": null, "variants": [] },
-    { "path": "datagrid.bottomBar.pagination.pageSize", "depth": 3, "extends": null, "variants": [] }
+    { "path": "datagrid.bottomBar.pagination.pageSize", "depth": 3, "extends": null, "variants": [] },
+    { "path": "datagrid.list", "depth": 1, "extends": null, "variants": [] },
+    { "path": "datagrid.list.toolbar", "depth": 2, "extends": null, "variants": [] },
+    { "path": "datagrid.list.toolbar.count", "depth": 3, "extends": null, "variants": [] },
+    { "path": "datagrid.list.toolbar.search", "depth": 3, "extends": null, "variants": [] },
+    { "path": "datagrid.list.toolbar.button", "depth": 3, "extends": null, "variants": ["active"] },
+    { "path": "datagrid.list.toolbar.chip", "depth": 3, "extends": null, "variants": [] },
+    { "path": "datagrid.list.item", "depth": 2, "extends": null, "variants": ["interactive", "selected"] },
+    { "path": "datagrid.list.item.title", "depth": 3, "extends": null, "variants": [] },
+    { "path": "datagrid.list.item.muted", "depth": 3, "extends": null, "variants": [] },
+    { "path": "datagrid.list.item.toggle", "depth": 3, "extends": null, "variants": [] },
+    { "path": "datagrid.list.item.detail", "depth": 3, "extends": null, "variants": [] },
+    { "path": "datagrid.list.group", "depth": 2, "extends": null, "variants": [] },
+    { "path": "datagrid.list.group.toggle", "depth": 3, "extends": null, "variants": [] },
+    { "path": "datagrid.list.group.count", "depth": 3, "extends": null, "variants": [] },
+    { "path": "datagrid.list.button", "depth": 2, "extends": null, "variants": [] },
+    { "path": "datagrid.list.selectionBar", "depth": 2, "extends": null, "variants": [] },
+    { "path": "datagrid.list.sheet", "depth": 2, "extends": null, "variants": [] },
+    { "path": "datagrid.list.sheet.line", "depth": 3, "extends": null, "variants": [] },
+    { "path": "datagrid.list.sheet.input", "depth": 3, "extends": null, "variants": [] },
+    { "path": "datagrid.list.sheet.chip", "depth": 3, "extends": null, "variants": [] },
+    { "path": "datagrid.list.sheet.button", "depth": 3, "extends": null, "variants": [] },
+    { "path": "datagrid.list.sheet.primary", "depth": 3, "extends": null, "variants": [] }
   ]
 }

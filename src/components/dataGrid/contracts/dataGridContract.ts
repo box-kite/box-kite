@@ -529,6 +529,30 @@ export interface DataGridHandle {
   clearEdits(): void;
 }
 
+// ========== List layout ==========
+
+/**
+ * Where a column goes in a list item, when the grid draws itself as a list. `title` is the item's name,
+ * `kicker` a small line above it (an id, a date), `subtitle` a line under it, `end` the one value opposite
+ * the title (a total, a status), `field` a labelled value, `detail` only the record view, `hidden` nowhere.
+ */
+export type ListRole = 'title' | 'kicker' | 'subtitle' | 'end' | 'field' | 'detail' | 'hidden';
+
+/** How the grid draws itself: a table, a list, or whichever its own width suits. */
+export type DataGridLayout = 'auto' | 'table' | 'list';
+
+/** The list layout's settings. */
+export interface ListConfig {
+  /** The grid's own width, in px, below which `layout: 'auto'` draws a list. Default: 576 (36rem). */
+  breakpoint?: number;
+  /** How many `field`s an item shows before the rest wait for the record view. Default: 4. */
+  fields?: number;
+  /** How many items one "Show more" adds. Default: 20. A paginated grid draws its page instead. */
+  batchSize?: number;
+  /** Whether pressing an item opens the record view, every column of one row with a pager. Default: true. */
+  recordView?: boolean;
+}
+
 // ========== Column Type ==========
 
 export interface ColumnType<TRow> {
@@ -581,6 +605,11 @@ export interface ColumnType<TRow> {
   flexible?: boolean;
   /** Control the header context menu. false hides it entirely. Object controls individual sections. Inherits from GridDefinition.contextMenu if undefined. */
   contextMenu?: boolean | ContextMenuConfig;
+  /**
+   * Where this column goes in a list item. Default: the first column is the title, the first end-aligned one
+   * sits opposite it, the next `def.list.fields` are fields and the rest wait for the record view.
+   */
+  list?: ListRole;
 }
 
 export interface GridDefinition<TRow> {
@@ -608,6 +637,14 @@ export interface GridDefinition<TRow> {
    */
   rangeSelection?: boolean;
   rowHeight?: number;
+  /**
+   * How the grid draws itself. `'auto'` (default) is a table, and a list once the grid itself is narrower
+   * than `def.list.breakpoint` — its own width rather than the viewport's, so a grid in a narrow column of
+   * a wide page reads as a list too. `'table'` and `'list'` choose one for good.
+   */
+  layout?: DataGridLayout;
+  /** The list layout's settings: the breakpoint, how many fields an item shows, the record view. */
+  list?: ListConfig;
   /** Number of visible rows. Set to 'all' to render all rows without virtualization or vertical scrollbar. */
   visibleRowsCount?: number | 'all';
   topBar?: boolean;

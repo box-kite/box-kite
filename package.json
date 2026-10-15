@@ -376,7 +376,8 @@
         "react",
         "react-dom",
         "./diagnostics-*",
-        "./themeReveal-*"
+        "./themeReveal-*",
+        "../dataGridList.mjs"
       ],
       "gzip": true,
       "limit": "90.71 KB"
@@ -392,6 +393,20 @@
       ],
       "gzip": true,
       "limit": "3.8 KB"
+    },
+    {
+      "name": "DataGrid list layout, the chunk a narrow grid fetches on top of the grid",
+      "path": "dist/dataGridList.mjs",
+      "ignore": [
+        "react",
+        "react-dom",
+        "./diagnostics-*",
+        "./themeReveal-*",
+        "./box.mjs",
+        "./components/*"
+      ],
+      "gzip": true,
+      "limit": "7.83 KB"
     },
     {
       "name": "Full library (Box + ssg + every component)",

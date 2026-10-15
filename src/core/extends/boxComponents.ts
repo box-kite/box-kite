@@ -28,6 +28,9 @@ const MEDIA_FILL: BoxComponentStyles = { bgColor: 'currentColor/6' };
  * The DataGrid bottom bar's buttons. Quiet rather than links: they change the view, they do not go
  * anywhere — grey until hovered, so they sit beside the counts without shouting over them.
  */
+/** The keyboard's mark on a control in the DataGrid's list layout. */
+const FOCUS_RING: BoxComponentStyles = { outline: 2, outlineStyle: 'solid', outlineOffset: 2, outlineColor: 'indigo-500' };
+
 const BAR_BUTTON: BoxComponentStyles = {
   display: 'inline-flex',
   ai: 'center',
@@ -2037,6 +2040,11 @@ const boxComponents = {
         },
       },
     },
+    variants: {
+      // `clip` rather than `hidden`: the corners still clip, but the grid stops being a scroll container, so the
+      // list's selection bar can stick to the bottom of the viewport.
+      list: { css: { overflow: 'clip' } },
+    },
     children: {
       content: {
         styles: {},
@@ -3440,6 +3448,160 @@ const boxComponents = {
               },
               pageSize: {
                 styles: {},
+              },
+            },
+          },
+        },
+      },
+      // The grid on a phone: a row is a list item, divided rather than carded (NN/g, "Cards"). Only the paint is
+      // here, because every engine entry carries this tree; the layout is in the list's own chunk.
+      list: {
+        styles: {},
+        children: {
+          toolbar: {
+            styles: { bb: 1, borderColor: 'gray-200', theme: { dark: { borderColor: 'gray-800' } } },
+            children: {
+              count: { styles: { color: 'gray-500', theme: { dark: { color: 'gray-400' } } } },
+              search: {
+                styles: {
+                  bgColor: 'gray-100',
+                  focus: { outline: 2, outlineStyle: 'solid', outlineColor: 'indigo-500', bgColor: 'white' },
+                  theme: { dark: { bgColor: 'gray-800', focus: { bgColor: 'gray-900' } } },
+                },
+              },
+              button: {
+                clean: true,
+                styles: {
+                  b: 1,
+                  borderColor: 'gray-200',
+                  color: 'gray-700',
+                  active: { bgColor: 'gray-100' },
+                  focusVisible: FOCUS_RING,
+                  theme: { dark: { borderColor: 'gray-700', color: 'gray-200', active: { bgColor: 'gray-800' } } },
+                },
+                variants: {
+                  active: {
+                    bgColor: 'indigo-50',
+                    borderColor: 'indigo-200',
+                    color: 'indigo-700',
+                    theme: { dark: { bgColor: 'indigo-500/15', borderColor: 'indigo-500/40', color: 'indigo-300' } },
+                  },
+                },
+              },
+              chip: { styles: { bgColor: 'gray-100', theme: { dark: { bgColor: 'gray-800' } } } },
+            },
+          },
+          item: {
+            styles: { bb: 1, borderColor: 'gray-100', theme: { dark: { borderColor: 'gray-800' } } },
+            variants: {
+              interactive: {
+                cursor: 'pointer',
+                pointerFine: { hover: { bgColor: 'gray-50' }, theme: { dark: { hover: { bgColor: 'gray-800/50' } } } },
+                active: { bgColor: 'gray-100' },
+                theme: { dark: { active: { bgColor: 'gray-800' } } },
+              },
+              selected: { bgColor: 'indigo-50/70', theme: { dark: { bgColor: 'indigo-500/10' } } },
+            },
+            children: {
+              title: { clean: true, styles: { focusVisible: FOCUS_RING } },
+              // The muted half of an item: the kicker, the subtitle, every label.
+              muted: { styles: { color: 'gray-500', theme: { dark: { color: 'gray-400' } } } },
+              toggle: {
+                clean: true,
+                styles: { color: 'indigo-600', focusVisible: FOCUS_RING, theme: { dark: { color: 'indigo-300' } } },
+              },
+              detail: { styles: { bgColor: 'gray-50', theme: { dark: { bgColor: 'gray-800/60' } } } },
+            },
+          },
+          // A group is a section header: the value, how many rows it holds and their totals.
+          group: {
+            styles: {
+              bb: 1,
+              borderColor: 'gray-200',
+              bgColor: 'gray-50',
+              theme: { dark: { bgColor: 'gray-800/60', borderColor: 'gray-800' } },
+            },
+            children: {
+              toggle: { clean: true, styles: { focusVisible: FOCUS_RING } },
+              count: { styles: { bgColor: 'gray-200', theme: { dark: { bgColor: 'gray-700' } } } },
+            },
+          },
+          button: {
+            clean: true,
+            styles: {
+              b: 1,
+              borderColor: 'gray-200',
+              color: 'gray-700',
+              active: { bgColor: 'gray-100' },
+              disabled: { opacity: 0.4 },
+              focusVisible: FOCUS_RING,
+              theme: { dark: { borderColor: 'gray-700', color: 'gray-200', active: { bgColor: 'gray-800' } } },
+            },
+          },
+          // What a selection is for sits where a thumb is: pinned to the bottom of the screen while rows are ticked.
+          selectionBar: {
+            styles: { bgColor: 'gray-900', color: 'white', theme: { dark: { bgColor: 'gray-100', color: 'gray-900' } } },
+          },
+          // The sort, the filters and the record view: a modal `<dialog>` docked to the bottom edge, where a thumb
+          // is, that slides up as it opens and back down as it closes.
+          sheet: {
+            styles: {
+              m: 0,
+              mt: 'auto',
+              p: 0,
+              width: 'fit',
+              b: 0,
+              borderRadiusTop: 5,
+              bgColor: 'white',
+              color: 'gray-900',
+              shadow: 'large',
+              css: { maxWidth: 'none', maxHeight: 'calc(100dvh - 2rem)' },
+              startingStyle: { translateY: '1/1' },
+              transitionBehavior: 'allow-discrete',
+              not: { open: { translateY: '1/1', display: 'none' } },
+              backdrop: { bgColor: 'black/40', transition: 'opacity', startingStyle: { opacity: 0 }, not: { open: { opacity: 0 } } },
+              theme: { dark: { bgColor: 'gray-900', color: 'gray-100' } },
+            },
+            children: {
+              line: { styles: { borderColor: 'gray-100', theme: { dark: { borderColor: 'gray-800' } } } },
+              input: {
+                styles: {
+                  b: 1,
+                  borderColor: 'gray-300',
+                  bgColor: 'white',
+                  focus: { outline: 2, outlineStyle: 'solid', outlineOffset: -1, outlineColor: 'indigo-500' },
+                  theme: { dark: { bgColor: 'gray-800', borderColor: 'gray-700' } },
+                },
+              },
+              chip: {
+                clean: true,
+                styles: {
+                  b: 1,
+                  borderColor: 'gray-300',
+                  focusVisible: FOCUS_RING,
+                  ariaAttr: { pressed: { bgColor: 'indigo-600', borderColor: 'indigo-600', color: 'white' } },
+                  theme: { dark: { borderColor: 'gray-600', ariaAttr: { pressed: { bgColor: 'indigo-500', borderColor: 'indigo-500' } } } },
+                },
+              },
+              button: {
+                clean: true,
+                styles: {
+                  color: 'gray-700',
+                  active: { bgColor: 'gray-100' },
+                  disabled: { opacity: 0.3 },
+                  focusVisible: FOCUS_RING,
+                  theme: { dark: { color: 'gray-200', active: { bgColor: 'gray-800' } } },
+                },
+              },
+              primary: {
+                clean: true,
+                styles: {
+                  bgColor: 'indigo-600',
+                  color: 'white',
+                  active: { bgColor: 'indigo-700' },
+                  focusVisible: FOCUS_RING,
+                  theme: { dark: { bgColor: 'indigo-500', active: { bgColor: 'indigo-600' } } },
+                },
               },
             },
           },

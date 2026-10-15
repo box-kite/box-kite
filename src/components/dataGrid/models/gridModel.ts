@@ -34,6 +34,7 @@ import EditModel from './editModel';
 import ExportModel from './exportModel';
 import FilterModel from './filterModel';
 import GroupRowModel from './groupRowModel';
+import ListModel from './listModel';
 import { DATA_GRID_LOCALE_TEXT, type DataGridLocaleText } from './localeText';
 import PaginationModel from './paginationModel';
 import RangeModel from './rangeModel';
@@ -1077,6 +1078,9 @@ export default class GridModel<TRow> {
 
   /** The current cell, the block of cells marked around it, and what the clipboard is written from. */
   public readonly range = new RangeModel(this);
+
+  /** The grid drawn as a list, for a phone. */
+  public readonly list = new ListModel(this);
 
   /**
    * Throw the fetched blocks away and ask for them again. The grid invalidates on its own whenever it

@@ -11,6 +11,7 @@ import Checkbox from '../../src/components/checkbox';
 import Combobox from '../../src/components/combobox';
 import DashboardGrid, { Widget } from '../../src/components/dashboard';
 import DataGrid from '../../src/components/dataGrid';
+import { loadListLayout } from '../../src/components/dataGrid/useListLayout';
 import Dialog, { AlertDialog } from '../../src/components/dialog';
 import Dropdown from '../../src/components/dropdown';
 import Flex from '../../src/components/flex';
@@ -49,6 +50,8 @@ export interface A11yFixture {
   name: string;
   /** The component the way the docs tell you to use it — what a consumer copy-pastes. */
   render(): React.ReactElement;
+  /** Whatever has to arrive before the render — a chunk the component loads on demand. */
+  prepare?(): Promise<unknown>;
   /** Reach the state under test: open the popup, focus the trigger. Runs after render. */
   setup?(): void;
   /**
@@ -831,5 +834,67 @@ export const fixtures: A11yFixture[] = [
         }}
       />
     ),
+  },
+  {
+    // The list a narrow grid draws instead of a table: a `<ul>` of items, each with a `<dl>`, grouped, with a
+    // row detail toggle, while selecting — which is when every item carries a checkbox and the bar is pinned.
+    name: 'DataGrid (list layout, grouped, selecting)',
+    prepare: loadListLayout,
+    render: () => (
+      <DataGrid<Employee>
+        data={employees.slice(0, 30)}
+        def={{
+          rowKey: 'id',
+          title: 'Employees',
+          layout: 'list',
+          globalFilter: true,
+          rowSelection: true,
+          groupBy: ['department'],
+          groupDefaultExpanded: true,
+          footer: true,
+          rowDetail: { content: (row) => `Employee ${row.id}` },
+          columns: [
+            { key: 'name', header: 'Name' },
+            { key: 'department', header: 'Department' },
+            { key: 'salary', header: 'Salary', align: 'end', aggregate: 'sum', filterable: { type: 'number' } },
+          ],
+        }}
+        columnFilters={{ salary: { type: 'number', operator: 'gte', value: 40_000 } }}
+      />
+    ),
+    setup: () => {
+      act(() => void fireEvent.click(screen.getByRole('button', { name: 'Select' })));
+      act(() => void fireEvent.click(screen.getAllByRole('checkbox', { name: /^Select row/ })[0]));
+    },
+  },
+  {
+    // One row at a time: the record view's sheet, with its pager, an editor open on a field and a tree around it.
+    name: 'DataGrid (list layout, record view)',
+    prepare: loadListLayout,
+    render: () => (
+      <DataGrid<TreeNode>
+        data={tree}
+        def={{
+          rowKey: 'id',
+          title: 'Files',
+          layout: 'list',
+          editable: true,
+          treeData: { childrenKey: 'children', defaultExpanded: true },
+          columns: [
+            { key: 'name', header: 'Name' },
+            { key: 'size', header: 'Size', align: 'end' },
+          ],
+        }}
+      />
+    ),
+    setup: () => {
+      act(
+        () =>
+          void fireEvent.click(
+            screen.getAllByRole('button', { name: /./, expanded: undefined }).find((b) => b.hasAttribute('data-list-title'))!,
+          ),
+      );
+      act(() => void fireEvent.click(screen.getByRole('button', { name: 'Edit Size' })));
+    },
   },
 ];
