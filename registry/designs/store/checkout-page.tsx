@@ -18,7 +18,7 @@ import { FREE_SHIPPING_FROM, formatPrice, sampleCart, shippingMethods, subtotalO
 import { card, heading } from './store-design';
 import StoreShell from './store-shell';
 
-const panel = { ...card, p: 6, borderRadius: 6 } as const;
+const panel = { ...card, p: 6, borderRadius: 0 } as const;
 
 /**
  * The checkout: one form of contact, address, delivery and payment, beside the order it pays for. The
@@ -37,7 +37,7 @@ export default function CheckoutPage({ theme }: { theme?: string }) {
 
   return (
     <StoreShell checkout theme={theme}>
-      <H1 fontSize={44} lineHeight={50} letterSpacing={-1} mb={8} {...heading}>
+      <H1 fontSize={40} lineHeight={46} mb={10} {...heading} letterSpacing={-1}>
         Checkout
       </H1>
 
@@ -52,14 +52,14 @@ export default function CheckoutPage({ theme }: { theme?: string }) {
         >
           <Box {...panel}>
             <Box tag="fieldset" b={0} p={0} m={0} minWidth={0}>
-              <Box tag="legend" fontSize={18} fontWeight={600} mb={4}>
+              <Box tag="legend" fontSize={16} fontWeight={500} mb={5}>
                 Contact
               </Box>
               <Flex d="column" gap={3}>
                 <FormField label="Email" hint="For the receipt and the tracking link, nothing else.">
                   {(control) => <Textbox name="email" type="email" props={{ ...control, autoComplete: 'email' }} required />}
                 </FormField>
-                <Checkbox name="newsletter" label="Tell me when the next drop lands" />
+                <Checkbox name="newsletter" label="Tell me when the new collection arrives" />
               </Flex>
             </Box>
           </Box>
@@ -94,7 +94,7 @@ export default function CheckoutPage({ theme }: { theme?: string }) {
             <Button type="submit" width="fit" py={4} fontSize={17}>
               Pay {formatPrice(total)}
             </Button>
-            <P mt={3} fontSize={13} textAlign="center" color="slate-600" theme={{ dark: { color: 'slate-400' } }}>
+            <P mt={3} fontSize={13} textAlign="center" color="stone-600" theme={{ dark: { color: 'stone-400' } }}>
               A demo: nothing is charged and nothing is sent anywhere.
             </P>
           </Box>

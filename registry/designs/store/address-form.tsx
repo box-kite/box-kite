@@ -26,7 +26,7 @@ export default function AddressForm({ legend = 'Shipping address', prefix = 'shi
 
   return (
     <Box tag="fieldset" b={0} p={0} m={0} minWidth={0}>
-      <Box tag="legend" fontSize={18} fontWeight={600} mb={4}>
+      <Box tag="legend" fontSize={16} fontWeight={500} mb={5}>
         {legend}
       </Box>
       <Flex d="column" gap={4}>

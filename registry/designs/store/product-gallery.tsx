@@ -1,18 +1,19 @@
 'use client';
 import Tabs from '@box-kite/react/components/tabs';
 import VisuallyHidden from '@box-kite/react/components/visuallyHidden';
-import ProductArt, { type ArtView, finishBackdrop } from './product-art';
+import ProductArt, { type ArtView } from './product-art';
 import { finishes, type Product, productBySlug } from './store-data';
 
 const views: { value: ArtView; label: string }[] = [
   { value: 'front', label: 'Front' },
-  { value: 'detail', label: 'Close-up' },
-  { value: 'pair', label: 'Pair' },
+  { value: 'set', label: 'All finishes' },
 ];
+
+const list = new Intl.ListFormat('en');
 
 export interface ProductGalleryProps {
   product?: Product;
-  /** The finish on show — the variant picker beside the gallery owns it, and the backdrop follows it. */
+  /** The finish on show — the variant picker beside the gallery owns it. */
   finish?: string;
 }
 
@@ -20,54 +21,44 @@ export interface ProductGalleryProps {
  * A product's pictures: one large view and a row of thumbnails that choose it. The thumbnails are tabs
  * (APG's tabbed carousel), so the arrow keys move between them and each picture is named by its tab.
  */
-export default function ProductGallery({ product = productBySlug('bolt-robot'), finish = product.finishes[0] }: ProductGalleryProps) {
-  const pair = product.finishes.find((id) => id !== finish) ?? finish;
-  const name = `${product.name} in ${finishes[finish].name}`;
-  const backdrop = finishBackdrop(finish);
+export default function ProductGallery({ product = productBySlug('table-lamp'), finish = product.finishes[0] }: ProductGalleryProps) {
+  const also = product.finishes.filter((id) => id !== finish);
+  const labels: Record<ArtView, string> = {
+    front: `${product.name} in ${finishes[finish].name}`,
+    set: `${product.name} in ${list.format([finish, ...also].map((id) => finishes[id].name))}`,
+  };
 
   return (
-    <Tabs defaultValue="front" gap={4}>
+    <Tabs defaultValue="front" gap={3}>
       <Tabs.List label={`${product.name} pictures`} order={1} bb={0} gap={3}>
         {views.map((view) => (
           <Tabs.Tab
             key={view.value}
             value={view.value}
-            {...backdrop}
-            p={1.5}
+            px={1}
+            py={1}
+            bgColor="transparent"
             mb={0}
             width={20}
             height={20}
-            borderRadius={4}
-            b={2}
+            borderRadius={0}
+            b={1}
             borderColor="transparent"
-            opacity={0.7}
-            hover={{ opacity: 1 }}
-            ariaAttr={{ selected: { borderColor: 'slate-900', opacity: 1 } }}
-            focusVisible={{ outlineOffset: 2, borderRadius: 4 }}
-            theme={{ dark: { ...backdrop.theme.dark, ariaAttr: { selected: { borderColor: 'slate-100' } } } }}
+            hover={{ borderColor: 'stone-300' }}
+            ariaAttr={{ selected: { borderColor: 'stone-900' } }}
+            focusVisible={{ outlineOffset: 2 }}
+            theme={{
+              dark: { bgColor: 'transparent', hover: { borderColor: 'stone-600' }, ariaAttr: { selected: { borderColor: 'stone-100' } } },
+            }}
           >
-            <ProductArt shape={product.shape} finish={finish} pairFinish={pair} view={view.value} />
+            <ProductArt shape={product.shape} finish={finish} also={also} view={view.value} stroke={1.5} />
             <VisuallyHidden>{view.label}</VisuallyHidden>
           </Tabs.Tab>
         ))}
       </Tabs.List>
       {views.map((view) => (
-        <Tabs.Panel
-          key={view.value}
-          value={view.value}
-          {...backdrop}
-          aspectRatio="square"
-          p={14}
-          borderRadius={8}
-          startingStyle={{ opacity: 0 }}
-        >
-          <ProductArt
-            shape={product.shape}
-            finish={finish}
-            pairFinish={pair}
-            view={view.value}
-            label={`${name}, ${view.label.toLowerCase()}`}
-          />
+        <Tabs.Panel key={view.value} value={view.value} aspectRatio="square" startingStyle={{ opacity: 0 }}>
+          <ProductArt shape={product.shape} finish={finish} also={also} view={view.value} label={labels[view.value]} stroke={0.5} />
         </Tabs.Panel>
       ))}
     </Tabs>

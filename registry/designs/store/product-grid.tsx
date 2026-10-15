@@ -57,11 +57,11 @@ export default function ProductGrid({ products = catalogue, title = 'Shop the co
     <Section props={{ 'aria-labelledby': headingId }}>
       <Flex jc="space-between" ai="end" gap={4} flexWrap="wrap" mb={6}>
         <Box>
-          <H2 id={headingId} fontSize={30} letterSpacing={-0.5} {...heading}>
+          <H2 id={headingId} fontSize={24} {...heading}>
             {title}
           </H2>
-          <P mt={1} fontSize={14} color="slate-600" theme={{ dark: { color: 'slate-400' } }} props={{ 'aria-live': 'polite' }}>
-            {shown.length} {shown.length === 1 ? 'toy' : 'toys'}
+          <P mt={1} fontSize={14} color="stone-600" theme={{ dark: { color: 'stone-400' } }} props={{ 'aria-live': 'polite' }}>
+            {shown.length} {shown.length === 1 ? 'object' : 'objects'}
           </P>
         </Box>
         <Dropdown<Sort>
@@ -130,12 +130,12 @@ export default function ProductGrid({ products = catalogue, title = 'Shop the co
             jc="center"
             gap={2}
             p={10}
-            borderRadius={4}
-            bgColor="slate-100"
-            theme={{ dark: { bgColor: 'slate-900' } }}
+            borderRadius={0}
+            bgColor="stone-100"
+            theme={{ dark: { bgColor: 'stone-900' } }}
           >
-            <Span fontWeight={600}>Nothing matches those filters.</Span>
-            <Span fontSize={14} color="slate-600" theme={{ dark: { color: 'slate-400' } }}>
+            <Span fontWeight={500}>Nothing matches those filters.</Span>
+            <Span fontSize={14} color="stone-600" theme={{ dark: { color: 'stone-400' } }}>
               Try another finish, or clear them all.
             </Span>
           </Flex>
@@ -153,11 +153,11 @@ function Filter({ legend, children }: { legend: string; children: ReactNode }) {
         tag="legend"
         mb={3}
         fontSize={12}
-        fontWeight={600}
+        fontWeight={500}
         letterSpacing={1}
         textTransform="uppercase"
-        color="slate-600"
-        theme={{ dark: { color: 'slate-400' } }}
+        color="stone-600"
+        theme={{ dark: { color: 'stone-400' } }}
       >
         {legend}
       </Box>

@@ -6,7 +6,7 @@ import { templateDemoPath } from '../site/templates';
 /** The store's links on this site: each page is another template's demo, and a product is a query on one. */
 export const storeDemoRoutes: StoreRoutes = {
   shop: `${templateDemoPath('react-ecommerce-storefront')}/`,
-  product: (slug) => `${templateDemoPath('react-product-page')}/${slug === 'bolt-robot' ? '' : `?product=${slug}`}`,
+  product: (slug) => `${templateDemoPath('react-product-page')}/${slug === 'table-lamp' ? '' : `?product=${slug}`}`,
   cart: `${templateDemoPath('react-shopping-cart')}/`,
   checkout: `${templateDemoPath('react-checkout-page')}/`,
 };

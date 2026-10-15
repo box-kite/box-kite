@@ -40,30 +40,30 @@ export default function ShippingMethod({ methods = shippingMethods, value, onVal
             gap: 3,
             p: 4,
             b: 1,
-            borderRadius: 3,
+            borderRadius: 0,
             cursor: 'pointer',
-            borderColor: 'slate-300',
-            bgColor: 'white',
-            hover: { borderColor: 'slate-500' },
-            has: { ':checked': { borderColor: 'violet-700', ring: 1, ringColor: 'violet-700', bgColor: 'violet-50' } },
+            borderColor: 'stone-300',
+            bgColor: 'transparent',
+            hover: { borderColor: 'stone-500' },
+            has: { ':checked': { borderColor: 'stone-900', ring: 1, ringColor: 'stone-900' } },
             theme: {
               dark: {
-                borderColor: 'slate-700',
-                bgColor: 'slate-900',
-                hover: { borderColor: 'slate-500' },
-                has: { ':checked': { borderColor: 'violet-400', ringColor: 'violet-400', bgColor: 'violet-950/40' } },
+                borderColor: 'stone-700',
+                bgColor: 'transparent',
+                hover: { borderColor: 'stone-500' },
+                has: { ':checked': { borderColor: 'stone-100', ringColor: 'stone-100' } },
               },
             },
           }}
           label={
             <Flex flex1 jc="space-between" ai="center" gap={4}>
               <Flex d="column" gap={0.5}>
-                <Span fontWeight={600}>{method.name}</Span>
-                <Span fontSize={14} color="slate-600" theme={{ dark: { color: 'slate-400' } }}>
+                <Span fontWeight={500}>{method.name}</Span>
+                <Span fontSize={14} color="stone-600" theme={{ dark: { color: 'stone-400' } }}>
                   {method.detail}
                 </Span>
               </Flex>
-              <Span fontWeight={600}>{priceOf(method) ? formatPrice(priceOf(method)) : 'Free'}</Span>
+              <Span fontWeight={500}>{priceOf(method) ? formatPrice(priceOf(method)) : 'Free'}</Span>
             </Flex>
           }
         />

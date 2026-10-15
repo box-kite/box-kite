@@ -12,7 +12,7 @@ const query = () => new URLSearchParams(window.location.search).get('product') ?
  */
 export default function Demo() {
   const asked = useSyncExternalStore(noUpdates, query, () => '');
-  const slug = products.some((product) => product.slug === asked) ? asked : 'bolt-robot';
+  const slug = products.some((product) => product.slug === asked) ? asked : 'table-lamp';
 
   return (
     <StoreDemoLinks>

@@ -6,7 +6,7 @@ import { Span } from '@box-kite/react/components/semantics';
 import { toast } from '@box-kite/react/components/toaster';
 import VisuallyHidden from '@box-kite/react/components/visuallyHidden';
 import { useState } from 'react';
-import { finishBead } from './product-art';
+import { finishSwatch } from './product-art';
 import QuantityStepper from './quantity-stepper';
 import { type CartLine, formatPrice, finishes, type Product, productBySlug } from './store-data';
 import { useStoreLinks } from './store-design';
@@ -25,7 +25,7 @@ export interface VariantPickerProps {
  * tab stop with the arrow keys inside it, and only the frame around them is drawn here: the `<label>`
  * finds out which radio is chosen with `:has(:checked)`, so nothing is mirrored into state for the styling.
  */
-export default function VariantPicker({ product = productBySlug('bolt-robot'), finish, onFinishChange, onAdd }: VariantPickerProps) {
+export default function VariantPicker({ product = productBySlug('table-lamp'), finish, onFinishChange, onAdd }: VariantPickerProps) {
   const links = useStoreLinks();
   const [ownFinish, setOwnFinish] = useState(product.finishes[0]);
   const [size, setSize] = useState(product.sizes?.[0]);
@@ -54,7 +54,7 @@ export default function VariantPicker({ product = productBySlug('bolt-robot'), f
         label={
           <>
             Finish:{' '}
-            <Span fontWeight={400} color="slate-600" theme={{ dark: { color: 'slate-400' } }}>
+            <Span fontWeight={400} color="stone-600" theme={{ dark: { color: 'stone-400' } }}>
               {finishes[current].name}
             </Span>
           </>
@@ -77,9 +77,9 @@ export default function VariantPicker({ product = productBySlug('bolt-robot'), f
             m={0}
             borderRadius={999}
             cursor="pointer"
-            {...finishBead(id)}
+            {...finishSwatch(id)}
             ring={1}
-            ringColor="slate-900/15"
+            ringColor="stone-900/15"
             theme={{ dark: { ringColor: 'white/20' } }}
             labelProps={{
               p: 1,
@@ -87,10 +87,10 @@ export default function VariantPicker({ product = productBySlug('bolt-robot'), f
               borderRadius: 999,
               borderColor: 'transparent',
               has: {
-                ':checked': { borderColor: 'slate-900' },
-                ':focus-visible': { outline: 2, outlineColor: 'violet-600', outlineOffset: 2 },
+                ':checked': { borderColor: 'stone-900' },
+                ':focus-visible': { outline: 2, outlineColor: 'stone-900', outlineOffset: 2 },
               },
-              theme: { dark: { has: { ':checked': { borderColor: 'slate-100' } } } },
+              theme: { dark: { has: { ':checked': { borderColor: 'stone-100' } } } },
             }}
           />
         ))}
@@ -115,21 +115,21 @@ export default function VariantPicker({ product = productBySlug('bolt-robot'), f
                 px: 5,
                 py: 2,
                 b: 1,
-                borderRadius: 999,
+                borderRadius: 0,
                 fontSize: 14,
                 fontWeight: 500,
                 cursor: 'pointer',
-                borderColor: 'slate-300',
-                hover: { borderColor: 'slate-500' },
+                borderColor: 'stone-300',
+                hover: { borderColor: 'stone-500' },
                 has: {
-                  ':checked': { bgColor: 'slate-900', borderColor: 'slate-900', color: 'slate-50' },
-                  ':focus-visible': { outline: 2, outlineColor: 'violet-600', outlineOffset: 2 },
+                  ':checked': { bgColor: 'stone-900', borderColor: 'stone-900', color: 'stone-50' },
+                  ':focus-visible': { outline: 2, outlineColor: 'stone-900', outlineOffset: 2 },
                 },
                 theme: {
                   dark: {
-                    borderColor: 'slate-700',
-                    hover: { borderColor: 'slate-500' },
-                    has: { ':checked': { bgColor: 'slate-100', borderColor: 'slate-100', color: 'slate-900' } },
+                    borderColor: 'stone-700',
+                    hover: { borderColor: 'stone-500' },
+                    has: { ':checked': { bgColor: 'stone-100', borderColor: 'stone-100', color: 'stone-900' } },
                   },
                 },
               }}

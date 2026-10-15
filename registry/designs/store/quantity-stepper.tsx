@@ -19,15 +19,15 @@ export interface QuantityStepperProps {
  * own, so a screen reader hears the new number after each press with nothing wired up.
  */
 export default function QuantityStepper({ value, onChange, item, min = 1, max = 10 }: QuantityStepperProps) {
-  const step = { variant: 'ghost', px: 0, py: 0, width: 9, height: 9, borderRadius: 999 } as const;
+  const step = { variant: 'ghost', px: 0, py: 0, width: 9, height: 9, borderRadius: 0 } as const;
 
   return (
     <Flex
       ai="center"
       b={1}
-      borderRadius={999}
-      borderColor="slate-300"
-      theme={{ dark: { borderColor: 'slate-700' } }}
+      borderRadius={0}
+      borderColor="stone-300"
+      theme={{ dark: { borderColor: 'stone-700' } }}
       props={{ role: 'group', 'aria-label': `Quantity of ${item}` }}
     >
       <Button {...step} disabled={value <= min} onClick={() => onChange(value - 1)} props={{ 'aria-label': `Remove one ${item}` }}>
@@ -35,7 +35,7 @@ export default function QuantityStepper({ value, onChange, item, min = 1, max = 
           <Minus />
         </Icon>
       </Button>
-      <Box tag="output" minWidth={6} textAlign="center" fontSize={15} fontWeight={600}>
+      <Box tag="output" minWidth={6} textAlign="center" fontSize={15} fontWeight={500}>
         {value}
       </Box>
       <Button {...step} disabled={value >= max} onClick={() => onChange(value + 1)} props={{ 'aria-label': `Add one ${item}` }}>

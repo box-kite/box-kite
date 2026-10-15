@@ -1,18 +1,18 @@
 /**
  * The catalogue the store pages render: plain objects, so swapping in your own fetch changes nothing else.
- * A finish is four palette tokens from its highlight to its deepest shade, and a palette family for the glow.
+ * A finish is the object's colour, the wash its picture sits on, and the ink the picture is drawn in.
  */
-export type Shape = 'robot' | 'duck' | 'cat' | 'ghost' | 'rocket' | 'planet' | 'mushroom' | 'cloud';
+export type Shape = 'lamp' | 'clock' | 'vase' | 'speaker' | 'mug' | 'chair' | 'glass' | 'desk-lamp';
 
 export interface Finish {
   id: string;
   name: string;
-  light: string;
+  /** The swatch, as any CSS colour: the finishes are muted on purpose, between the palette's steps. */
   color: string;
-  shade: string;
-  deep: string;
-  /** The family the toy's backdrop glows in. */
-  tint: string;
+  /** The wash behind the picture: the finish, lightened. */
+  tile: string;
+  /** The picture's line: a deep tone of the same hue, or a light one on a dark finish. */
+  ink: string;
 }
 
 export interface Product {
@@ -42,127 +42,120 @@ export interface ShippingMethod {
   price: number;
 }
 
-export const STORE_NAME = 'Moonpop';
+export const STORE_NAME = 'Still';
 
 export const finishes: Record<string, Finish> = {
-  grape: { id: 'grape', name: 'Grape', light: 'violet-200', color: 'violet-400', shade: 'violet-600', deep: 'indigo-900', tint: 'violet' },
-  bubblegum: {
-    id: 'bubblegum',
-    name: 'Bubblegum',
-    light: 'pink-200',
-    color: 'pink-400',
-    shade: 'fuchsia-600',
-    deep: 'purple-900',
-    tint: 'pink',
-  },
-  lemon: { id: 'lemon', name: 'Lemon', light: 'yellow-100', color: 'yellow-300', shade: 'amber-500', deep: 'orange-700', tint: 'amber' },
-  mint: { id: 'mint', name: 'Mint', light: 'emerald-100', color: 'emerald-300', shade: 'teal-500', deep: 'teal-800', tint: 'emerald' },
-  ocean: { id: 'ocean', name: 'Ocean', light: 'sky-200', color: 'sky-400', shade: 'blue-600', deep: 'indigo-900', tint: 'sky' },
-  sunset: { id: 'sunset', name: 'Sunset', light: 'amber-200', color: 'orange-400', shade: 'rose-500', deep: 'rose-800', tint: 'orange' },
-  pearl: { id: 'pearl', name: 'Pearl', light: 'white', color: 'slate-50', shade: 'violet-200', deep: 'indigo-400', tint: 'violet' },
+  chalk: { id: 'chalk', name: 'Chalk', color: 'oklch(99% .004 85)', tile: 'oklch(95.5% .006 85)', ink: 'oklch(34% .01 70)' },
+  sand: { id: 'sand', name: 'Sand', color: 'oklch(86% .035 80)', tile: 'oklch(92.5% .028 82)', ink: 'oklch(42% .045 70)' },
+  clay: { id: 'clay', name: 'Clay', color: 'oklch(66% .095 45)', tile: 'oklch(87% .045 50)', ink: 'oklch(42% .09 40)' },
+  sage: { id: 'sage', name: 'Sage', color: 'oklch(74% .045 145)', tile: 'oklch(91% .03 145)', ink: 'oklch(39% .05 150)' },
+  graphite: { id: 'graphite', name: 'Graphite', color: 'oklch(38% .006 260)', tile: 'oklch(33% .006 260)', ink: 'oklch(92% .004 85)' },
 };
 
 export const products: readonly Product[] = [
   {
-    slug: 'bolt-robot',
-    name: 'Bolt the robot',
-    shape: 'robot',
-    category: 'Space',
-    price: 32,
-    finishes: ['grape', 'ocean', 'pearl'],
-    sizes: ['Mini · 8 cm', 'Classic · 14 cm'],
+    slug: 'table-lamp',
+    name: 'Table lamp',
+    shape: 'lamp',
+    category: 'Lighting',
+    price: 240,
+    finishes: ['clay', 'chalk', 'graphite'],
+    sizes: ['Small · 30 cm', 'Large · 45 cm'],
     badge: 'Bestseller',
-    summary: 'A pocket-sized co-pilot with a glossy visor and two eyes that glow in the dark after an hour on a sunny desk.',
+    summary: 'A linen shade on a turned base. The light falls down and out, never into your eyes, and a touch on the base dims it.',
   },
   {
-    slug: 'quack-duck',
-    name: 'Quack the duck',
-    shape: 'duck',
-    category: 'Critters',
-    price: 24,
-    finishes: ['lemon', 'bubblegum', 'mint'],
-    summary: 'The rubber duck for explaining your code to, in soft-touch vinyl that never squeaks during a meeting.',
+    slug: 'wall-clock',
+    name: 'Wall clock',
+    shape: 'clock',
+    category: 'Living',
+    price: 120,
+    finishes: ['chalk', 'sage', 'graphite'],
+    summary: 'Twelve marks, two hands and a silent sweep movement. Nothing on the face that a glance across the room does not need.',
   },
   {
-    slug: 'mochi-cat',
-    name: 'Mochi the cat',
-    shape: 'cat',
-    category: 'Critters',
-    price: 28,
-    finishes: ['bubblegum', 'grape', 'pearl'],
+    slug: 'bud-vase',
+    name: 'Bud vase',
+    shape: 'vase',
+    category: 'Living',
+    price: 38,
+    finishes: ['sand', 'clay', 'sage'],
     badge: 'New',
-    summary: 'A round, unbothered cat head with permanent blush, weighted at the base so it sits wherever it is put.',
+    summary: 'Slip-cast stoneware with a narrow neck that holds one stem upright. Glazed inside, left bare and soft outside.',
   },
   {
-    slug: 'boo-ghost',
-    name: 'Boo the ghost',
-    shape: 'ghost',
-    category: 'Critters',
-    price: 22,
-    finishes: ['pearl', 'mint', 'grape'],
-    summary: 'A friendly little ghost in pearlescent vinyl, more surprised to see you than you are to see it.',
+    slug: 'speaker',
+    name: 'Speaker',
+    shape: 'speaker',
+    category: 'Living',
+    price: 180,
+    finishes: ['graphite', 'chalk', 'sage'],
+    summary: 'An oak box, two drivers and one knob. Bluetooth and a line in, a cell that lasts a week, and no app to install.',
   },
   {
-    slug: 'zoom-rocket',
-    name: 'Zoom rocket',
-    shape: 'rocket',
-    category: 'Space',
-    price: 36,
-    finishes: ['ocean', 'sunset', 'pearl'],
-    sizes: ['Mini · 8 cm', 'Classic · 14 cm'],
-    summary: 'A tilted-for-take-off rocket with a glass porthole and a translucent flame that catches the light.',
+    slug: 'stacking-mug',
+    name: 'Stacking mug',
+    shape: 'mug',
+    category: 'Kitchen',
+    price: 24,
+    finishes: ['sage', 'chalk', 'sand', 'clay', 'graphite'],
+    sizes: ['250 ml', '350 ml'],
+    summary: 'A straight-sided porcelain mug that nests in its neighbours, so six take the shelf space of two.',
   },
   {
-    slug: 'ringo-planet',
-    name: 'Ringo planet',
-    shape: 'planet',
-    category: 'Space',
-    price: 44,
-    finishes: ['sunset', 'grape'],
-    badge: 'Limited run',
-    summary: 'A cratered planet in its own iridescent ring, cast in a run of 500 and numbered on the base.',
+    slug: 'lounge-chair',
+    name: 'Lounge chair',
+    shape: 'chair',
+    category: 'Living',
+    price: 420,
+    finishes: ['sand', 'clay', 'graphite'],
+    summary: 'A low oak frame and a wool seat deep enough to fold your legs into. Every cover zips off and can be replaced.',
   },
   {
-    slug: 'toad-mushroom',
-    name: 'Toad the mushroom',
-    shape: 'mushroom',
-    category: 'Daydreams',
-    price: 26,
-    finishes: ['bubblegum', 'sunset'],
-    summary: 'A spotty toadstool with a shy smile, the kind of thing a desk did not know it was missing.',
+    slug: 'tumbler-set',
+    name: 'Tumblers, set of two',
+    shape: 'glass',
+    category: 'Kitchen',
+    price: 32,
+    finishes: ['chalk', 'sage', 'sand'],
+    summary: 'Mouth-blown glass, tinted just enough to tell yours from a guest’s, and heavy enough at the base not to tip.',
   },
   {
-    slug: 'puff-cloud',
-    name: 'Puff the cloud',
-    shape: 'cloud',
-    category: 'Daydreams',
-    price: 30,
-    finishes: ['mint', 'pearl', 'ocean'],
-    summary: 'A sleepy cloud with rosy cheeks, soft enough to squeeze through the last hour of a long day.',
+    slug: 'desk-lamp',
+    name: 'Desk lamp',
+    shape: 'desk-lamp',
+    category: 'Lighting',
+    price: 180,
+    finishes: ['graphite', 'clay', 'chalk'],
+    badge: 'Limited',
+    summary: 'One arm, one hinge and a head that turns a full circle. The light stays on the page and off the screen.',
   },
 ];
 
 export const categories = [...new Set(products.map((product) => product.category))];
 
 export const sampleCart: readonly CartLine[] = [
-  { id: 'line-1', slug: 'bolt-robot', finish: 'grape', size: 'Classic · 14 cm', quantity: 2 },
-  { id: 'line-2', slug: 'quack-duck', finish: 'lemon', quantity: 1 },
-  { id: 'line-3', slug: 'puff-cloud', finish: 'mint', quantity: 1 },
+  { id: 'line-1', slug: 'wall-clock', finish: 'chalk', quantity: 1 },
+  { id: 'line-2', slug: 'stacking-mug', finish: 'clay', size: '350 ml', quantity: 2 },
+  { id: 'line-3', slug: 'bud-vase', finish: 'sage', quantity: 1 },
 ];
 
 export const shippingMethods: readonly ShippingMethod[] = [
-  { id: 'standard', name: 'Standard', detail: '3–5 working days, tracked', price: 6 },
-  { id: 'express', name: 'Express', detail: 'Next working day if ordered by 2 pm', price: 14 },
-  { id: 'pickup', name: 'Collect from the studio', detail: 'Ready in two days, Tuesday to Saturday', price: 0 },
+  { id: 'standard', name: 'Standard', detail: '3–5 working days, tracked', price: 8 },
+  { id: 'express', name: 'Express', detail: 'Next working day if ordered by 2 pm', price: 18 },
+  { id: 'pickup', name: 'Collect from the shop', detail: 'Ready in two days, Tuesday to Saturday', price: 0 },
 ];
 
 /** Orders over this ship free on the standard service. */
-export const FREE_SHIPPING_FROM = 150;
+export const FREE_SHIPPING_FROM = 250;
 export const TAX_RATE = 0.08;
 
 const money = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
 
-export const formatPrice = (amount: number) => money.format(amount);
+const whole = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+
+/** A price as a tag prints it: $240, with cents only when there are some. */
+export const formatPrice = (amount: number) => (Number.isInteger(amount) ? whole : money).format(amount);
 
 export const productBySlug = (slug: string) => products.find((product) => product.slug === slug) ?? products[0];
 

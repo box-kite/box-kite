@@ -7,14 +7,14 @@ import { useState } from 'react';
 import ProductCard from './product-card';
 import ProductGallery from './product-gallery';
 import { countOf, formatPrice, productBySlug, products, sampleCart } from './store-data';
-import { heading, useStoreLinks } from './store-design';
+import { eyebrow, heading, useStoreLinks } from './store-design';
 import StoreShell from './store-shell';
 import VariantPicker from './variant-picker';
 
-const muted = { color: 'slate-600', theme: { dark: { color: 'slate-400' } } } as const;
+const muted = { color: 'stone-600', theme: { dark: { color: 'stone-400' } } } as const;
 
 /** One product: the gallery and the picker share the finish, and adding to the cart moves the header's count. */
-export default function ProductPage({ slug = 'bolt-robot', theme }: { slug?: string; theme?: string }) {
+export default function ProductPage({ slug = 'table-lamp', theme }: { slug?: string; theme?: string }) {
   const links = useStoreLinks();
   const product = productBySlug(slug);
   const [finish, setFinish] = useState(product.finishes[0]);
@@ -31,8 +31,8 @@ export default function ProductPage({ slug = 'bolt-robot', theme }: { slug?: str
             <Link
               props={{ href: `${links.shop}#collection` }}
               color="currentColor"
-              hover={{ color: 'violet-800' }}
-              theme={{ dark: { hover: { color: 'violet-300' } } }}
+              hover={{ color: 'stone-500' }}
+              theme={{ dark: { hover: { color: 'stone-400' } } }}
             >
               Shop
             </Link>
@@ -40,7 +40,7 @@ export default function ProductPage({ slug = 'bolt-robot', theme }: { slug?: str
           <Li props={{ 'aria-hidden': true }}>/</Li>
           <Li>{product.category}</Li>
           <Li props={{ 'aria-hidden': true }}>/</Li>
-          <Li color="slate-900" theme={{ dark: { color: 'slate-100' } }} props={{ 'aria-current': 'page' }}>
+          <Li color="stone-900" theme={{ dark: { color: 'stone-100' } }} props={{ 'aria-current': 'page' }}>
             {product.name}
           </Li>
         </Ol>
@@ -51,21 +51,14 @@ export default function ProductPage({ slug = 'bolt-robot', theme }: { slug?: str
 
         <Box>
           {product.badge && (
-            <Span
-              fontSize={13}
-              fontWeight={600}
-              letterSpacing={1.5}
-              textTransform="uppercase"
-              color="violet-800"
-              theme={{ dark: { color: 'violet-300' } }}
-            >
+            <Span {...eyebrow} {...muted}>
               {product.badge}
             </Span>
           )}
-          <H1 mt={2} fontSize={44} lineHeight={50} letterSpacing={-1} {...heading}>
+          <H1 mt={3} fontSize={40} lineHeight={46} {...heading} letterSpacing={-1}>
             {product.name}
           </H1>
-          <Span display="block" mt={3} fontSize={22} fontWeight={500}>
+          <Span display="block" mt={2} fontSize={20}>
             {formatPrice(product.price)}
           </Span>
           <P mt={5} fontSize={17} lineHeight={28} {...muted}>
@@ -82,30 +75,30 @@ export default function ProductPage({ slug = 'bolt-robot', theme }: { slug?: str
           </Box>
 
           <Ul listStyle="none" m={0} p={0} mt={6} display="flex" d="column" gap={1.5} fontSize={14} {...muted}>
-            <Li>Ships in 2–3 working days from the studio.</Li>
-            <Li>Arrives in a numbered box, ready to give.</Li>
+            <Li>Ships in 2–3 working days.</Li>
+            <Li>Spare parts for ten years.</Li>
           </Ul>
 
           <Accordion id="details" mt={8} defaultValue={['materials']} level={2} css={{ scrollMarginTop: '6rem' }}>
             <Accordion.Item value="materials">
               <Accordion.Trigger>Materials and size</Accordion.Trigger>
               <Accordion.Panel>
-                Soft-touch vinyl with a gloss coat, weighted at the base so it stands where it is put. Every toy is painted by hand, so the
-                blush and the eyes wander a millimetre from one to the next.
+                Solid materials only — steel, oak, stoneware and porcelain — under a matte finish that does not chip or yellow. Where an
+                object comes in more than one size, the measurements are on the options above.
               </Accordion.Panel>
             </Accordion.Item>
             <Accordion.Item value="care">
-              <Accordion.Trigger>Care and cleaning</Accordion.Trigger>
+              <Accordion.Trigger>Care</Accordion.Trigger>
               <Accordion.Panel>
-                Wipe with a damp cloth and a drop of soap. Keep it out of a hot car: vinyl forgives a lot, but not a summer afternoon on a
-                dashboard.
+                Dust with a dry cloth; a damp one and a drop of soap for anything more. Every part unscrews, and every part can be ordered
+                again for ten years after you buy it.
               </Accordion.Panel>
             </Accordion.Item>
             <Accordion.Item value="shipping">
               <Accordion.Trigger>Shipping and returns</Accordion.Trigger>
               <Accordion.Panel>
-                Free standard shipping on orders over $150. Returns are free within 30 days, and anything that arrives scuffed is replaced —
-                send us a photo, keep the toy.
+                Free standard shipping on orders over $250. Returns are free within 30 days, and anything that arrives damaged is replaced —
+                send us a photo, and keep the box.
               </Accordion.Panel>
             </Accordion.Item>
           </Accordion>
@@ -113,7 +106,7 @@ export default function ProductPage({ slug = 'bolt-robot', theme }: { slug?: str
       </Grid>
 
       <Section props={{ 'aria-labelledby': 'related-heading' }} mt={20}>
-        <H2 id="related-heading" fontSize={30} letterSpacing={-0.5} mb={6} {...heading}>
+        <H2 id="related-heading" fontSize={24} mb={8} {...heading}>
           You might also like
         </H2>
         <Grid gridTemplateColumns={2} lg={{ gridTemplateColumns: 4 }} columnGap={5} rowGap={8}>

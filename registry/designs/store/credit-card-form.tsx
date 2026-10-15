@@ -71,7 +71,7 @@ export default function CreditCardForm() {
 
   return (
     <Box tag="fieldset" b={0} p={0} m={0} minWidth={0}>
-      <Box tag="legend" fontSize={18} fontWeight={600} mb={4}>
+      <Box tag="legend" fontSize={16} fontWeight={500} mb={5}>
         Payment
       </Box>
 
@@ -141,23 +141,15 @@ function Card({ number, name, expiry }: { number: string; name: string; expiry: 
       aspectRatio={1.586}
       maxWidth={88}
       p={5}
-      borderRadius={4}
-      color="white"
-      shadow="lg"
-      bgGradient={{ linear: 135, colors: ['sky-400', 'violet-600', 'fuchsia-600'], interpolate: 'oklch' }}
-      shadowColor="violet-900/30"
-      theme={{
-        dark: {
-          bgGradient: { linear: 135, colors: ['sky-700', 'violet-800', 'fuchsia-900'], interpolate: 'oklch' },
-          ring: 1,
-          ringColor: 'white/10',
-        },
-      }}
+      borderRadius={3}
+      color="stone-100"
+      bgColor="stone-900"
+      theme={{ dark: { bgColor: 'stone-800', ring: 1, ringColor: 'white/10' } }}
       props={{ 'aria-hidden': true }}
     >
       <Flex jc="space-between" ai="start">
-        <Box width={10} height={7.5} borderRadius={1.5} bgGradient={{ linear: 'br', colors: ['amber-200', 'amber-500'] }} />
-        <Span fontSize={13} fontWeight={600} letterSpacing={2} opacity={0.8}>
+        <Box width={9} height={7} borderRadius={1} bgColor="stone-400" />
+        <Span fontSize={12} fontWeight={500} letterSpacing={2} color="stone-400">
           DEBIT
         </Span>
       </Flex>
