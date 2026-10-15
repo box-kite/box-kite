@@ -42,16 +42,16 @@ export default function ShippingMethod({ methods = shippingMethods, value, onVal
             b: 1,
             borderRadius: 3,
             cursor: 'pointer',
-            borderColor: 'stone-300',
+            borderColor: 'slate-300',
             bgColor: 'white',
-            hover: { borderColor: 'stone-500' },
-            has: { ':checked': { borderColor: 'orange-700', ring: 1, ringColor: 'orange-700', bgColor: 'orange-50' } },
+            hover: { borderColor: 'slate-500' },
+            has: { ':checked': { borderColor: 'violet-700', ring: 1, ringColor: 'violet-700', bgColor: 'violet-50' } },
             theme: {
               dark: {
-                borderColor: 'stone-700',
-                bgColor: 'stone-900',
-                hover: { borderColor: 'stone-500' },
-                has: { ':checked': { borderColor: 'orange-400', ringColor: 'orange-400', bgColor: 'orange-950/40' } },
+                borderColor: 'slate-700',
+                bgColor: 'slate-900',
+                hover: { borderColor: 'slate-500' },
+                has: { ':checked': { borderColor: 'violet-400', ringColor: 'violet-400', bgColor: 'violet-950/40' } },
               },
             },
           }}
@@ -59,7 +59,7 @@ export default function ShippingMethod({ methods = shippingMethods, value, onVal
             <Flex flex1 jc="space-between" ai="center" gap={4}>
               <Flex d="column" gap={0.5}>
                 <Span fontWeight={600}>{method.name}</Span>
-                <Span fontSize={14} color="stone-600" theme={{ dark: { color: 'stone-400' } }}>
+                <Span fontSize={14} color="slate-600" theme={{ dark: { color: 'slate-400' } }}>
                   {method.detail}
                 </Span>
               </Flex>

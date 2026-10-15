@@ -15,7 +15,7 @@ import FormField from './form-field';
 import OrderSummary from './order-summary';
 import ShippingMethod from './shipping-method';
 import { FREE_SHIPPING_FROM, formatPrice, sampleCart, shippingMethods, subtotalOf, TAX_RATE } from './store-data';
-import { card, SERIF } from './store-design';
+import { card, heading } from './store-design';
 import StoreShell from './store-shell';
 
 const panel = { ...card, p: 6, borderRadius: 6 } as const;
@@ -37,7 +37,7 @@ export default function CheckoutPage({ theme }: { theme?: string }) {
 
   return (
     <StoreShell checkout theme={theme}>
-      <H1 fontSize={44} lineHeight={50} fontWeight={500} letterSpacing={-1} mb={8} css={{ fontFamily: SERIF }}>
+      <H1 fontSize={44} lineHeight={50} letterSpacing={-1} mb={8} {...heading}>
         Checkout
       </H1>
 
@@ -59,7 +59,7 @@ export default function CheckoutPage({ theme }: { theme?: string }) {
                 <FormField label="Email" hint="For the receipt and the tracking link, nothing else.">
                   {(control) => <Textbox name="email" type="email" props={{ ...control, autoComplete: 'email' }} required />}
                 </FormField>
-                <Checkbox name="newsletter" label="Tell me when a new batch comes out of the kiln" />
+                <Checkbox name="newsletter" label="Tell me when the next drop lands" />
               </Flex>
             </Box>
           </Box>
@@ -94,7 +94,7 @@ export default function CheckoutPage({ theme }: { theme?: string }) {
             <Button type="submit" width="fit" py={4} fontSize={17}>
               Pay {formatPrice(total)}
             </Button>
-            <P mt={3} fontSize={13} textAlign="center" color="stone-600" theme={{ dark: { color: 'stone-400' } }}>
+            <P mt={3} fontSize={13} textAlign="center" color="slate-600" theme={{ dark: { color: 'slate-400' } }}>
               A demo: nothing is charged and nothing is sent anywhere.
             </P>
           </Box>

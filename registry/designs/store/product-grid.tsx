@@ -8,8 +8,8 @@ import Grid from '@box-kite/react/components/grid';
 import { H2, P, Section, Span } from '@box-kite/react/components/semantics';
 import { type ReactNode, useId, useMemo, useState } from 'react';
 import ProductCard from './product-card';
-import { categories, glazes, type Product, products as catalogue } from './store-data';
-import { SERIF } from './store-design';
+import { categories, finishes, type Product, products as catalogue } from './store-data';
+import { heading } from './store-design';
 
 type Sort = 'featured' | 'price-asc' | 'price-desc' | 'name';
 
@@ -33,12 +33,12 @@ export interface ProductGridProps {
 }
 
 /**
- * A product grid with filters: categories and glazes as checkboxes, a sort, and a count that is announced
+ * A product grid with filters: categories and finishes as checkboxes, a sort, and a count that is announced
  * as it changes. Filtering is a `useMemo` over the list it is given — hand it the page your API returned.
  */
 export default function ProductGrid({ products = catalogue, title = 'Shop the collection' }: ProductGridProps) {
   const [chosen, setChosen] = useState<string[]>([]);
-  const [glaze, setGlaze] = useState<string[]>([]);
+  const [finish, setFinish] = useState<string[]>([]);
   const [sort, setSort] = useState<Sort>('featured');
   const headingId = useId();
 
@@ -46,9 +46,9 @@ export default function ProductGrid({ products = catalogue, title = 'Shop the co
     () =>
       [...products]
         .filter((product) => !chosen.length || chosen.includes(product.category))
-        .filter((product) => !glaze.length || product.glazes.some((id) => glaze.includes(id)))
+        .filter((product) => !finish.length || product.finishes.some((id) => finish.includes(id)))
         .sort(order[sort]),
-    [products, chosen, glaze, sort],
+    [products, chosen, finish, sort],
   );
 
   const toggle = (list: string[], value: string, on: boolean) => (on ? [...list, value] : list.filter((entry) => entry !== value));
@@ -57,11 +57,11 @@ export default function ProductGrid({ products = catalogue, title = 'Shop the co
     <Section props={{ 'aria-labelledby': headingId }}>
       <Flex jc="space-between" ai="end" gap={4} flexWrap="wrap" mb={6}>
         <Box>
-          <H2 id={headingId} fontSize={30} fontWeight={500} letterSpacing={-0.5} css={{ fontFamily: SERIF }}>
+          <H2 id={headingId} fontSize={30} letterSpacing={-0.5} {...heading}>
             {title}
           </H2>
-          <P mt={1} fontSize={14} color="stone-600" theme={{ dark: { color: 'stone-400' } }} props={{ 'aria-live': 'polite' }}>
-            {shown.length} {shown.length === 1 ? 'piece' : 'pieces'}
+          <P mt={1} fontSize={14} color="slate-600" theme={{ dark: { color: 'slate-400' } }} props={{ 'aria-live': 'polite' }}>
+            {shown.length} {shown.length === 1 ? 'toy' : 'toys'}
           </P>
         </Box>
         <Dropdown<Sort>
@@ -90,17 +90,17 @@ export default function ProductGrid({ products = catalogue, title = 'Shop the co
               />
             ))}
           </Filter>
-          <Filter legend="Glaze">
-            {Object.values(glazes).map((entry) => (
+          <Filter legend="Finish">
+            {Object.values(finishes).map((entry) => (
               <Checkbox
                 key={entry.id}
                 label={entry.name}
-                checked={glaze.includes(entry.id)}
-                onChange={(event) => setGlaze(toggle(glaze, entry.id, event.target.checked))}
+                checked={finish.includes(entry.id)}
+                onChange={(event) => setFinish(toggle(finish, entry.id, event.target.checked))}
               />
             ))}
           </Filter>
-          {(chosen.length > 0 || glaze.length > 0) && (
+          {(chosen.length > 0 || finish.length > 0) && (
             <Button
               variant="secondary"
               alignSelf="start"
@@ -109,7 +109,7 @@ export default function ProductGrid({ products = catalogue, title = 'Shop the co
               fontSize={13}
               onClick={() => {
                 setChosen([]);
-                setGlaze([]);
+                setFinish([]);
               }}
             >
               Clear filters
@@ -131,12 +131,12 @@ export default function ProductGrid({ products = catalogue, title = 'Shop the co
             gap={2}
             p={10}
             borderRadius={4}
-            bgColor="stone-100"
-            theme={{ dark: { bgColor: 'stone-900' } }}
+            bgColor="slate-100"
+            theme={{ dark: { bgColor: 'slate-900' } }}
           >
             <Span fontWeight={600}>Nothing matches those filters.</Span>
-            <Span fontSize={14} color="stone-600" theme={{ dark: { color: 'stone-400' } }}>
-              Try another glaze, or clear them all.
+            <Span fontSize={14} color="slate-600" theme={{ dark: { color: 'slate-400' } }}>
+              Try another finish, or clear them all.
             </Span>
           </Flex>
         )}
@@ -156,8 +156,8 @@ function Filter({ legend, children }: { legend: string; children: ReactNode }) {
         fontWeight={600}
         letterSpacing={1}
         textTransform="uppercase"
-        color="stone-600"
-        theme={{ dark: { color: 'stone-400' } }}
+        color="slate-600"
+        theme={{ dark: { color: 'slate-400' } }}
       >
         {legend}
       </Box>

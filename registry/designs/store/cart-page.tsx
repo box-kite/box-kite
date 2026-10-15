@@ -8,10 +8,10 @@ import CartItems from './cart-items';
 import OrderSummary from './order-summary';
 import ProductArt from './product-art';
 import { type CartLine, countOf, sampleCart } from './store-data';
-import { SERIF, useStoreLinks } from './store-design';
+import { heading, useStoreLinks } from './store-design';
 import StoreShell from './store-shell';
 
-const muted = { color: 'stone-600', theme: { dark: { color: 'stone-400' } } } as const;
+const muted = { color: 'slate-600', theme: { dark: { color: 'slate-400' } } } as const;
 
 /** The cart: its lines beside the summary, both reading one list, and an empty state once it is cleared. */
 export default function CartPage({ theme }: { theme?: string }) {
@@ -22,10 +22,10 @@ export default function CartPage({ theme }: { theme?: string }) {
   return (
     <StoreShell cartCount={count} theme={theme}>
       <Flex jc="space-between" ai="baseline" gap={4} flexWrap="wrap" mb={8}>
-        <H1 fontSize={44} lineHeight={50} fontWeight={500} letterSpacing={-1} css={{ fontFamily: SERIF }}>
+        <H1 fontSize={44} lineHeight={50} letterSpacing={-1} {...heading}>
           Your cart
         </H1>
-        <Link props={{ href: `${links.shop}#collection` }} fontSize={15} color="orange-800" theme={{ dark: { color: 'orange-300' } }}>
+        <Link props={{ href: `${links.shop}#collection` }} fontSize={15} color="violet-800" theme={{ dark: { color: 'violet-300' } }}>
           Continue shopping
         </Link>
       </Flex>
@@ -34,7 +34,7 @@ export default function CartPage({ theme }: { theme?: string }) {
         <Grid gridTemplateColumns={1} lg={{ css: { gridTemplateColumns: 'minmax(0, 1fr) 24rem' } }} gap={10} ai="start">
           <Box>
             <P mb={4} fontSize={15} {...muted}>
-              {count} {count === 1 ? 'piece' : 'pieces'}, each thrown by hand — so yours will differ a little from the pictures.
+              {count} {count === 1 ? 'toy' : 'toys'}, each hand-finished — so the paint on yours may wander a little from the pictures.
             </P>
             <CartItems lines={lines} onLinesChange={setLines} />
           </Box>
@@ -55,17 +55,17 @@ export default function CartPage({ theme }: { theme?: string }) {
           gap={3}
           py={16}
           borderRadius={6}
-          bgColor="stone-100"
-          theme={{ dark: { bgColor: 'stone-900' } }}
+          bgColor="slate-100"
+          theme={{ dark: { bgColor: 'slate-900' } }}
         >
           <Box width={32} height={32}>
-            <ProductArt shape="bowl" glaze="bone" />
+            <ProductArt shape="ghost" finish="pearl" />
           </Box>
-          <P fontSize={20} fontWeight={500} css={{ fontFamily: SERIF }}>
+          <P fontSize={20} {...heading}>
             Your cart is empty.
           </P>
           <P fontSize={15} {...muted}>
-            The next kiln opens on Thursday.
+            Boo is lonely. The next drop lands on Thursday.
           </P>
           <Link component="button" props={{ href: `${links.shop}#collection` }} mt={3} textDecoration="none">
             Browse the collection

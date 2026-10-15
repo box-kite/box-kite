@@ -6,18 +6,18 @@ import Progress from '@box-kite/react/components/progress';
 import { Aside, H2, Label, Li, Span, Ul } from '@box-kite/react/components/semantics';
 import Textbox from '@box-kite/react/components/textbox';
 import { type FormEvent, type ReactNode, useId, useState } from 'react';
-import ProductArt, { glazeBackdrop } from './product-art';
-import { type CartLine, FREE_SHIPPING_FROM, formatPrice, glazes, productBySlug, subtotalOf, TAX_RATE } from './store-data';
-import { SERIF } from './store-design';
+import ProductArt, { finishBackdrop } from './product-art';
+import { type CartLine, FREE_SHIPPING_FROM, formatPrice, finishes, productBySlug, subtotalOf, TAX_RATE } from './store-data';
+import { heading } from './store-design';
 
 /** The one code the demo accepts. Check codes on your server; this is only the shape of the round trip. */
-const CODES: Record<string, number> = { FIRSTFIRE: 0.1 };
+const CODES: Record<string, number> = { MOONPOP10: 0.1 };
 
 export interface OrderSummaryProps {
   lines: readonly CartLine[];
   /** The shipping price once a method is chosen. Left out, the summary says it is worked out at checkout. */
   shipping?: number;
-  /** List the pieces themselves — what a checkout page shows, where the cart is no longer on screen. */
+  /** List the toys themselves — what a checkout page shows, where the cart is no longer on screen. */
   showLines?: boolean;
   /** The button underneath: "Checkout" on the cart page, nothing on the checkout. */
   action?: ReactNode;
@@ -61,10 +61,10 @@ export default function OrderSummary({ lines, shipping, showLines, action, onDis
       borderRadius={5}
       bgColor="white"
       b={1}
-      borderColor="stone-200"
-      theme={{ dark: { bgColor: 'stone-900', borderColor: 'stone-800' } }}
+      borderColor="slate-200"
+      theme={{ dark: { bgColor: 'slate-900', borderColor: 'slate-800' } }}
     >
-      <H2 id={ids.heading} fontSize={22} fontWeight={500} css={{ fontFamily: SERIF }}>
+      <H2 id={ids.heading} fontSize={22} {...heading}>
         Order summary
       </H2>
 
@@ -75,8 +75,8 @@ export default function OrderSummary({ lines, shipping, showLines, action, onDis
 
             return (
               <Li key={line.id} display="flex" ai="center" gap={3}>
-                <Box position="relative" flexShrink={0} width={14} height={14} p={1} borderRadius={2} {...glazeBackdrop(line.glaze)}>
-                  <ProductArt shape={product.shape} glaze={line.glaze} />
+                <Box position="relative" flexShrink={0} width={14} height={14} p={1} borderRadius={2} {...finishBackdrop(line.finish)}>
+                  <ProductArt shape={product.shape} finish={line.finish} />
                   <Span
                     position="absolute"
                     top={-1.5}
@@ -90,7 +90,7 @@ export default function OrderSummary({ lines, shipping, showLines, action, onDis
                     borderRadius={999}
                     fontSize={11}
                     fontWeight={700}
-                    bgColor="stone-700"
+                    bgColor="slate-700"
                     color="white"
                     props={{ 'aria-hidden': true }}
                   >
@@ -102,8 +102,8 @@ export default function OrderSummary({ lines, shipping, showLines, action, onDis
                     {product.name}
                     {line.quantity > 1 && <Span display="inline" fontWeight={400}>{` × ${line.quantity}`}</Span>}
                   </Span>
-                  <Span color="stone-600" theme={{ dark: { color: 'stone-400' } }}>
-                    {[glazes[line.glaze].name, line.size].filter(Boolean).join(' · ')}
+                  <Span color="slate-600" theme={{ dark: { color: 'slate-400' } }}>
+                    {[finishes[line.finish].name, line.size].filter(Boolean).join(' · ')}
                   </Span>
                 </Flex>
                 <Span fontSize={14} fontWeight={500}>
@@ -124,7 +124,7 @@ export default function OrderSummary({ lines, shipping, showLines, action, onDis
             id={ids.code}
             value={code}
             onChange={(event) => setCode(event.target.value)}
-            placeholder="Try FIRSTFIRE"
+            placeholder="Try MOONPOP10"
             props={{ autoComplete: 'off', 'aria-invalid': error ? true : undefined, 'aria-describedby': error ? ids.error : undefined }}
           />
           <Button type="submit" variant="secondary" flexShrink={0}>
@@ -143,7 +143,7 @@ export default function OrderSummary({ lines, shipping, showLines, action, onDis
         {applied && <Row term={`Discount (${applied})`} value={`−${formatPrice(discount)}`} accent />}
         <Row term="Shipping" value={shipping === undefined ? 'At checkout' : shipping === 0 ? 'Free' : formatPrice(shipping)} />
         <Row term="Estimated tax" value={formatPrice(tax)} />
-        <Flex jc="space-between" ai="baseline" pt={4} mt={1} bt={1} borderColor="stone-200" theme={{ dark: { borderColor: 'stone-800' } }}>
+        <Flex jc="space-between" ai="baseline" pt={4} mt={1} bt={1} borderColor="slate-200" theme={{ dark: { borderColor: 'slate-800' } }}>
           <Box tag="dt" fontWeight={600}>
             Total
           </Box>
@@ -156,7 +156,7 @@ export default function OrderSummary({ lines, shipping, showLines, action, onDis
       {shipping === undefined && (
         <Box mt={5}>
           <Progress label="Progress towards free shipping" value={Math.min(subtotal / FREE_SHIPPING_FROM, 1) * 100} />
-          <Span display="block" mt={2} fontSize={13} color="stone-600" theme={{ dark: { color: 'stone-400' } }}>
+          <Span display="block" mt={2} fontSize={13} color="slate-600" theme={{ dark: { color: 'slate-400' } }}>
             {toFree ? `${formatPrice(toFree)} more and standard shipping is free.` : 'Your order ships free.'}
           </Span>
         </Box>
@@ -170,7 +170,7 @@ export default function OrderSummary({ lines, shipping, showLines, action, onDis
 function Row({ term, value, accent }: { term: string; value: string; accent?: boolean }) {
   return (
     <Flex jc="space-between" gap={4} color={accent ? 'green-700' : undefined} theme={accent ? { dark: { color: 'green-400' } } : undefined}>
-      <Box tag="dt" color={accent ? undefined : 'stone-600'} theme={accent ? undefined : { dark: { color: 'stone-400' } }}>
+      <Box tag="dt" color={accent ? undefined : 'slate-600'} theme={accent ? undefined : { dark: { color: 'slate-400' } }}>
         {term}
       </Box>
       <Box tag="dd" m={0} fontWeight={500}>

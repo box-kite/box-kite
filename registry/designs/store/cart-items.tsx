@@ -3,10 +3,10 @@ import Box from '@box-kite/react';
 import Button from '@box-kite/react/components/button';
 import Flex from '@box-kite/react/components/flex';
 import { Li, Link, Span, Ul } from '@box-kite/react/components/semantics';
-import ProductArt, { glazeBackdrop } from './product-art';
+import ProductArt, { finishBackdrop } from './product-art';
 import QuantityStepper from './quantity-stepper';
-import { type CartLine, formatPrice, glazes, productBySlug } from './store-data';
-import { SERIF, useStoreLinks } from './store-design';
+import { type CartLine, formatPrice, finishes, productBySlug } from './store-data';
+import { heading, useStoreLinks } from './store-design';
 
 export interface CartItemsProps {
   lines: readonly CartLine[];
@@ -23,18 +23,26 @@ export default function CartItems({ lines, onLinesChange }: CartItemsProps) {
   const remove = (id: string) => onLinesChange(lines.filter((line) => line.id !== id));
 
   return (
-    <Ul listStyle="none" m={0} p={0} bt={1} borderColor="stone-200" theme={{ dark: { borderColor: 'stone-800' } }}>
+    <Ul listStyle="none" m={0} p={0} bt={1} borderColor="slate-200" theme={{ dark: { borderColor: 'slate-800' } }}>
       {lines.map((line) => {
         const product = productBySlug(line.slug);
 
         return (
-          <Li key={line.id} display="flex" gap={4} py={5} bb={1} borderColor="stone-200" theme={{ dark: { borderColor: 'stone-800' } }}>
-            <Box flexShrink={0} width={24} height={24} sm={{ width: 28, height: 28 }} p={2} borderRadius={3} {...glazeBackdrop(line.glaze)}>
-              <ProductArt shape={product.shape} glaze={line.glaze} />
+          <Li key={line.id} display="flex" gap={4} py={5} bb={1} borderColor="slate-200" theme={{ dark: { borderColor: 'slate-800' } }}>
+            <Box
+              flexShrink={0}
+              width={24}
+              height={24}
+              sm={{ width: 28, height: 28 }}
+              p={2}
+              borderRadius={3}
+              {...finishBackdrop(line.finish)}
+            >
+              <ProductArt shape={product.shape} finish={line.finish} />
             </Box>
             <Flex d="column" flex1 minWidth={0} gap={1}>
               <Flex jc="space-between" gap={3}>
-                <Span fontSize={17} fontWeight={500} css={{ fontFamily: SERIF }}>
+                <Span fontSize={17} {...heading}>
                   <Link
                     props={{ href: links.product(product.slug) }}
                     color="currentColor"
@@ -46,8 +54,8 @@ export default function CartItems({ lines, onLinesChange }: CartItemsProps) {
                 </Span>
                 <Span fontWeight={600}>{formatPrice(product.price * line.quantity)}</Span>
               </Flex>
-              <Span fontSize={14} color="stone-600" theme={{ dark: { color: 'stone-400' } }}>
-                {[glazes[line.glaze].name, line.size].filter(Boolean).join(' · ')}
+              <Span fontSize={14} color="slate-600" theme={{ dark: { color: 'slate-400' } }}>
+                {[finishes[line.finish].name, line.size].filter(Boolean).join(' · ')}
                 {line.quantity > 1 && ` · ${formatPrice(product.price)} each`}
               </Span>
               <Flex ai="center" jc="space-between" gap={3} mt="auto" pt={3}>

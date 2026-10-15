@@ -6,16 +6,16 @@ import { Span } from '@box-kite/react/components/semantics';
 import { toast } from '@box-kite/react/components/toaster';
 import VisuallyHidden from '@box-kite/react/components/visuallyHidden';
 import { useState } from 'react';
-import { glazeBead } from './product-art';
+import { finishBead } from './product-art';
 import QuantityStepper from './quantity-stepper';
-import { type CartLine, formatPrice, glazes, type Product, productBySlug } from './store-data';
+import { type CartLine, formatPrice, finishes, type Product, productBySlug } from './store-data';
 import { useStoreLinks } from './store-design';
 
 export interface VariantPickerProps {
   product?: Product;
-  /** The glaze, when the page owns it — the gallery beside the picker shows the same one. */
-  glaze?: string;
-  onGlazeChange?: (glaze: string) => void;
+  /** The finish, when the page owns it — the gallery beside the picker shows the same one. */
+  finish?: string;
+  onFinishChange?: (finish: string) => void;
   /** Called with the line the reader added. */
   onAdd?: (line: CartLine) => void;
 }
@@ -25,25 +25,25 @@ export interface VariantPickerProps {
  * tab stop with the arrow keys inside it, and only the frame around them is drawn here: the `<label>`
  * finds out which radio is chosen with `:has(:checked)`, so nothing is mirrored into state for the styling.
  */
-export default function VariantPicker({ product = productBySlug('tide-mug'), glaze, onGlazeChange, onAdd }: VariantPickerProps) {
+export default function VariantPicker({ product = productBySlug('bolt-robot'), finish, onFinishChange, onAdd }: VariantPickerProps) {
   const links = useStoreLinks();
-  const [ownGlaze, setOwnGlaze] = useState(product.glazes[0]);
+  const [ownFinish, setOwnFinish] = useState(product.finishes[0]);
   const [size, setSize] = useState(product.sizes?.[0]);
   const [quantity, setQuantity] = useState(1);
-  const current = glaze ?? ownGlaze;
+  const current = finish ?? ownFinish;
 
   const choose = (value: string | undefined) => {
     if (!value) return;
-    setOwnGlaze(value);
-    onGlazeChange?.(value);
+    setOwnFinish(value);
+    onFinishChange?.(value);
   };
 
   const add = () => {
-    const line = { id: `${product.slug}-${current}-${size ?? ''}`, slug: product.slug, glaze: current, size, quantity };
+    const line = { id: `${product.slug}-${current}-${size ?? ''}`, slug: product.slug, finish: current, size, quantity };
 
     onAdd?.(line);
     toast.success('Added to your cart', {
-      description: `${quantity} × ${product.name}, ${glazes[current].name}${size ? `, ${size}` : ''}`,
+      description: `${quantity} × ${product.name}, ${finishes[current].name}${size ? `, ${size}` : ''}`,
       action: { label: 'View cart', onClick: () => window.location.assign(links.cart) },
     });
   };
@@ -53,9 +53,9 @@ export default function VariantPicker({ product = productBySlug('tide-mug'), gla
       <RadioGroup
         label={
           <>
-            Glaze:{' '}
-            <Span fontWeight={400} color="stone-600" theme={{ dark: { color: 'stone-400' } }}>
-              {glazes[current].name}
+            Finish:{' '}
+            <Span fontWeight={400} color="slate-600" theme={{ dark: { color: 'slate-400' } }}>
+              {finishes[current].name}
             </Span>
           </>
         }
@@ -64,11 +64,11 @@ export default function VariantPicker({ product = productBySlug('tide-mug'), gla
         orientation="horizontal"
         gap={3}
       >
-        {product.glazes.map((id) => (
+        {product.finishes.map((id) => (
           <RadioGroup.Item
             key={id}
             value={id}
-            label={<VisuallyHidden>{glazes[id].name}</VisuallyHidden>}
+            label={<VisuallyHidden>{finishes[id].name}</VisuallyHidden>}
             clean
             appearance="none"
             display="block"
@@ -77,9 +77,9 @@ export default function VariantPicker({ product = productBySlug('tide-mug'), gla
             m={0}
             borderRadius={999}
             cursor="pointer"
-            {...glazeBead(id)}
+            {...finishBead(id)}
             ring={1}
-            ringColor="stone-900/15"
+            ringColor="slate-900/15"
             theme={{ dark: { ringColor: 'white/20' } }}
             labelProps={{
               p: 1,
@@ -87,10 +87,10 @@ export default function VariantPicker({ product = productBySlug('tide-mug'), gla
               borderRadius: 999,
               borderColor: 'transparent',
               has: {
-                ':checked': { borderColor: 'stone-900' },
-                ':focus-visible': { outline: 2, outlineColor: 'orange-600', outlineOffset: 2 },
+                ':checked': { borderColor: 'slate-900' },
+                ':focus-visible': { outline: 2, outlineColor: 'violet-600', outlineOffset: 2 },
               },
-              theme: { dark: { has: { ':checked': { borderColor: 'stone-100' } } } },
+              theme: { dark: { has: { ':checked': { borderColor: 'slate-100' } } } },
             }}
           />
         ))}
@@ -119,17 +119,17 @@ export default function VariantPicker({ product = productBySlug('tide-mug'), gla
                 fontSize: 14,
                 fontWeight: 500,
                 cursor: 'pointer',
-                borderColor: 'stone-300',
-                hover: { borderColor: 'stone-500' },
+                borderColor: 'slate-300',
+                hover: { borderColor: 'slate-500' },
                 has: {
-                  ':checked': { bgColor: 'stone-900', borderColor: 'stone-900', color: 'stone-50' },
-                  ':focus-visible': { outline: 2, outlineColor: 'orange-600', outlineOffset: 2 },
+                  ':checked': { bgColor: 'slate-900', borderColor: 'slate-900', color: 'slate-50' },
+                  ':focus-visible': { outline: 2, outlineColor: 'violet-600', outlineOffset: 2 },
                 },
                 theme: {
                   dark: {
-                    borderColor: 'stone-700',
-                    hover: { borderColor: 'stone-500' },
-                    has: { ':checked': { bgColor: 'stone-100', borderColor: 'stone-100', color: 'stone-900' } },
+                    borderColor: 'slate-700',
+                    hover: { borderColor: 'slate-500' },
+                    has: { ':checked': { bgColor: 'slate-100', borderColor: 'slate-100', color: 'slate-900' } },
                   },
                 },
               }}

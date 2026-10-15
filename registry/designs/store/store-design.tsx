@@ -8,39 +8,39 @@ import { createContext, type ReactNode, useContext } from 'react';
  * the store can sit inside an app that looks like something else.
  */
 export const storeDesign = Box.createComponents({
-  // The kiln glow: the one gradient the brand spends on an action, so a primary button is never in doubt.
+  // The moonbeam: the one gradient the brand spends on an action, so a primary button is never in doubt.
   button: {
     styles: {
-      bgColor: 'orange-700',
-      bgGradient: { linear: 'r', colors: ['orange-700', 'rose-700'] },
+      bgColor: 'violet-600',
+      bgGradient: { linear: 'r', colors: ['violet-600', 'fuchsia-600'] },
       color: 'white',
       borderRadius: 999,
       px: 6,
       fontWeight: 600,
       shadow: 'md',
-      shadowColor: 'orange-700/25',
+      shadowColor: 'fuchsia-700/30',
       transition: 'all',
-      hover: { bgGradient: { linear: 'r', colors: ['orange-800', 'rose-800'] }, translateY: -0.5, shadow: 'lg' },
+      hover: { bgGradient: { linear: 'r', colors: ['violet-700', 'fuchsia-700'] }, translateY: -0.5, shadow: 'lg' },
       active: { translateY: 0, shadow: 'sm' },
-      focus: { outlineColor: 'orange-300' },
+      focus: { outlineColor: 'violet-300' },
       disabled: {
-        bgGradient: { linear: 'r', colors: ['stone-200', 'stone-200'] },
-        color: 'stone-500',
+        bgGradient: { linear: 'r', colors: ['slate-200', 'slate-200'] },
+        color: 'slate-500',
         shadow: 'none',
-        hover: { bgGradient: { linear: 'r', colors: ['stone-200', 'stone-200'] }, translateY: 0 },
+        hover: { bgGradient: { linear: 'r', colors: ['slate-200', 'slate-200'] }, translateY: 0 },
       },
       theme: {
         dark: {
-          bgColor: 'orange-300',
-          bgGradient: { linear: 'r', colors: ['amber-300', 'orange-300', 'rose-300'] },
-          color: 'stone-950',
-          shadowColor: 'orange-400/20',
-          hover: { bgGradient: { linear: 'r', colors: ['amber-200', 'orange-200', 'rose-200'] } },
-          focus: { outlineColor: 'orange-700' },
+          bgColor: 'violet-300',
+          bgGradient: { linear: 'r', colors: ['violet-300', 'fuchsia-300', 'pink-300'] },
+          color: 'slate-950',
+          shadowColor: 'violet-400/20',
+          hover: { bgGradient: { linear: 'r', colors: ['violet-200', 'fuchsia-200', 'pink-200'] } },
+          focus: { outlineColor: 'violet-600' },
           disabled: {
-            bgGradient: { linear: 'r', colors: ['stone-800', 'stone-800'] },
-            color: 'stone-500',
-            hover: { bgGradient: { linear: 'r', colors: ['stone-800', 'stone-800'] } },
+            bgGradient: { linear: 'r', colors: ['slate-800', 'slate-800'] },
+            color: 'slate-500',
+            hover: { bgGradient: { linear: 'r', colors: ['slate-800', 'slate-800'] } },
           },
         },
       },
@@ -49,45 +49,45 @@ export const storeDesign = Box.createComponents({
       secondary: {
         bgColor: 'white/60',
         bgGradient: { linear: 'r', colors: ['transparent', 'transparent'] },
-        color: 'stone-900',
-        borderColor: 'stone-300',
+        color: 'slate-900',
+        borderColor: 'slate-300',
         shadow: 'none',
         hover: { bgColor: 'white', bgGradient: { linear: 'r', colors: ['transparent', 'transparent'] }, shadow: 'sm' },
-        active: { bgColor: 'stone-100' },
-        focus: { borderColor: 'stone-900', outlineColor: 'orange-300' },
+        active: { bgColor: 'slate-100' },
+        focus: { borderColor: 'slate-900', outlineColor: 'violet-300' },
         theme: {
           dark: {
             bgColor: 'white/5',
             bgGradient: { linear: 'r', colors: ['transparent', 'transparent'] },
-            color: 'stone-100',
-            borderColor: 'stone-700',
+            color: 'slate-100',
+            borderColor: 'slate-700',
             hover: { bgColor: 'white/10', bgGradient: { linear: 'r', colors: ['transparent', 'transparent'] } },
-            active: { bgColor: 'stone-700' },
-            focus: { borderColor: 'stone-300', outlineColor: 'orange-700' },
+            active: { bgColor: 'slate-700' },
+            focus: { borderColor: 'slate-300', outlineColor: 'violet-600' },
           },
         },
       },
       ghost: {
         bgColor: 'transparent',
         bgGradient: { linear: 'r', colors: ['transparent', 'transparent'] },
-        color: 'stone-700',
+        color: 'slate-700',
         shadow: 'none',
         hover: {
-          bgColor: 'stone-900/5',
+          bgColor: 'slate-900/5',
           bgGradient: { linear: 'r', colors: ['transparent', 'transparent'] },
           translateY: 0,
           shadow: 'none',
         },
-        active: { bgColor: 'stone-900/10' },
-        disabled: { bgColor: 'transparent', bgGradient: { linear: 'r', colors: ['transparent', 'transparent'] }, color: 'stone-400' },
+        active: { bgColor: 'slate-900/10' },
+        disabled: { bgColor: 'transparent', bgGradient: { linear: 'r', colors: ['transparent', 'transparent'] }, color: 'slate-400' },
         theme: {
           dark: {
             bgColor: 'transparent',
             bgGradient: { linear: 'r', colors: ['transparent', 'transparent'] },
-            color: 'stone-300',
+            color: 'slate-300',
             hover: { bgColor: 'white/10', bgGradient: { linear: 'r', colors: ['transparent', 'transparent'] } },
             active: { bgColor: 'white/15' },
-            disabled: { bgColor: 'transparent', bgGradient: { linear: 'r', colors: ['transparent', 'transparent'] }, color: 'stone-600' },
+            disabled: { bgColor: 'transparent', bgGradient: { linear: 'r', colors: ['transparent', 'transparent'] }, color: 'slate-600' },
           },
         },
       },
@@ -96,19 +96,19 @@ export const storeDesign = Box.createComponents({
   textbox: {
     styles: {
       width: 'fit',
-      borderColor: 'stone-300',
+      borderColor: 'slate-300',
       bgColor: 'white',
-      color: 'stone-900',
-      hover: { borderColor: 'stone-400' },
-      focus: { borderColor: 'orange-700', outlineColor: 'orange-200' },
+      color: 'slate-900',
+      hover: { borderColor: 'slate-400' },
+      focus: { borderColor: 'violet-600', outlineColor: 'violet-200' },
       ariaAttr: { invalid: { borderColor: 'red-600', focus: { outlineColor: 'red-200' } } },
       theme: {
         dark: {
-          bgColor: 'stone-900',
-          color: 'stone-100',
-          borderColor: 'stone-700',
-          hover: { borderColor: 'stone-600' },
-          focus: { borderColor: 'orange-400', outlineColor: 'orange-900' },
+          bgColor: 'slate-900',
+          color: 'slate-100',
+          borderColor: 'slate-700',
+          hover: { borderColor: 'slate-600' },
+          focus: { borderColor: 'violet-400', outlineColor: 'violet-900' },
           ariaAttr: { invalid: { borderColor: 'red-400', focus: { outlineColor: 'red-900' } } },
         },
       },
@@ -116,32 +116,32 @@ export const storeDesign = Box.createComponents({
   },
   checkbox: {
     styles: {
-      borderColor: 'stone-400',
-      outlineColor: 'orange-200',
-      hover: { borderColor: 'orange-600' },
-      checked: { bgColor: 'orange-700', borderColor: 'orange-700' },
+      borderColor: 'slate-400',
+      outlineColor: 'violet-200',
+      hover: { borderColor: 'violet-600' },
+      checked: { bgColor: 'violet-600', borderColor: 'violet-600' },
       theme: {
         dark: {
-          borderColor: 'stone-500',
-          outlineColor: 'orange-900',
-          hover: { borderColor: 'orange-400' },
-          checked: { bgColor: 'orange-600', borderColor: 'orange-600' },
+          borderColor: 'slate-500',
+          outlineColor: 'violet-900',
+          hover: { borderColor: 'violet-400' },
+          checked: { bgColor: 'violet-600', borderColor: 'violet-600' },
         },
       },
     },
   },
   radioButton: {
     styles: {
-      borderColor: 'stone-400',
-      outlineColor: 'orange-200',
-      hover: { borderColor: 'orange-600' },
-      checked: { bgColor: 'orange-700', borderColor: 'orange-700' },
+      borderColor: 'slate-400',
+      outlineColor: 'violet-200',
+      hover: { borderColor: 'violet-600' },
+      checked: { bgColor: 'violet-600', borderColor: 'violet-600' },
       theme: {
         dark: {
-          borderColor: 'stone-500',
-          outlineColor: 'orange-900',
-          hover: { borderColor: 'orange-400' },
-          checked: { bgColor: 'orange-600', borderColor: 'orange-600' },
+          borderColor: 'slate-500',
+          outlineColor: 'violet-900',
+          hover: { borderColor: 'violet-400' },
+          checked: { bgColor: 'violet-600', borderColor: 'violet-600' },
         },
       },
     },
@@ -150,109 +150,113 @@ export const storeDesign = Box.createComponents({
   radioGroup: {
     variants: { horizontal: { flexWrap: 'wrap' } },
     children: {
-      label: { styles: { width: 'fit', fontWeight: 600, color: 'stone-900', theme: { dark: { color: 'stone-100' } } } },
+      label: { styles: { width: 'fit', fontWeight: 600, color: 'slate-900', theme: { dark: { color: 'slate-100' } } } },
     },
   },
   dropdown: {
     styles: {
       width: 'fit',
-      borderColor: 'stone-300',
+      borderColor: 'slate-300',
       bgColor: 'white',
-      color: 'stone-900',
-      hover: { borderColor: 'stone-400' },
-      focus: { borderColor: 'orange-700', outlineColor: 'orange-200' },
+      color: 'slate-900',
+      hover: { borderColor: 'slate-400' },
+      focus: { borderColor: 'violet-600', outlineColor: 'violet-200' },
       theme: {
         dark: {
-          bgColor: 'stone-900',
-          color: 'stone-100',
-          borderColor: 'stone-700',
-          hover: { borderColor: 'stone-600' },
-          focus: { borderColor: 'orange-400', outlineColor: 'orange-900' },
+          bgColor: 'slate-900',
+          color: 'slate-100',
+          borderColor: 'slate-700',
+          hover: { borderColor: 'slate-600' },
+          focus: { borderColor: 'violet-400', outlineColor: 'violet-900' },
         },
       },
     },
     children: {
       items: {
         styles: {
-          borderColor: 'stone-200',
-          color: 'stone-900',
-          theme: { dark: { bgColor: 'stone-900', borderColor: 'stone-700', color: 'stone-100' } },
+          borderColor: 'slate-200',
+          color: 'slate-900',
+          theme: { dark: { bgColor: 'slate-900', borderColor: 'slate-700', color: 'slate-100' } },
         },
       },
       item: {
         styles: {
-          hover: { bgColor: 'stone-100' },
-          focus: { bgColor: 'orange-50' },
-          selected: { bgColor: 'orange-50', hover: { bgColor: 'orange-100' } },
+          hover: { bgColor: 'slate-100' },
+          focus: { bgColor: 'violet-50' },
+          selected: { bgColor: 'violet-50', hover: { bgColor: 'violet-100' } },
           theme: {
             dark: {
-              hover: { bgColor: 'stone-800' },
-              focus: { bgColor: 'stone-800' },
-              selected: { bgColor: 'orange-950', hover: { bgColor: 'orange-900' } },
+              hover: { bgColor: 'slate-800' },
+              focus: { bgColor: 'slate-800' },
+              selected: { bgColor: 'violet-950', hover: { bgColor: 'violet-900' } },
             },
           },
         },
-        variants: { highlighted: { outlineColor: 'orange-600', theme: { dark: { outlineColor: 'orange-400' } } } },
+        variants: { highlighted: { outlineColor: 'violet-600', theme: { dark: { outlineColor: 'violet-400' } } } },
       },
     },
   },
   progress: {
-    styles: { height: 1.5, borderRadius: 999, bgColor: 'stone-200', theme: { dark: { bgColor: 'stone-800' } } },
+    styles: { height: 1.5, borderRadius: 999, bgColor: 'slate-200', theme: { dark: { bgColor: 'slate-800' } } },
     children: {
       fill: {
         styles: {
           borderRadius: 999,
-          bgGradient: { linear: 'r', colors: ['amber-400', 'orange-500', 'rose-500'] },
-          theme: { dark: { bgGradient: { linear: 'r', colors: ['amber-300', 'orange-400', 'rose-400'] } } },
+          bgGradient: { linear: 'r', colors: ['violet-500', 'fuchsia-500', 'pink-400'] },
+          theme: { dark: { bgGradient: { linear: 'r', colors: ['violet-400', 'fuchsia-400', 'pink-300'] } } },
         },
       },
     },
   },
   accordion: {
     children: {
-      item: { styles: { borderColor: 'stone-200', theme: { dark: { borderColor: 'stone-800' } } } },
+      item: { styles: { borderColor: 'slate-200', theme: { dark: { borderColor: 'slate-800' } } } },
       trigger: {
         styles: {
           py: 4,
           fontSize: 15,
           fontWeight: 600,
-          color: 'stone-900',
-          hover: { color: 'orange-800' },
-          ariaAttr: { expanded: { color: 'stone-900' } },
-          focusVisible: { outlineColor: 'orange-600' },
-          theme: { dark: { color: 'stone-100', hover: { color: 'orange-300' }, ariaAttr: { expanded: { color: 'stone-100' } } } },
+          color: 'slate-900',
+          hover: { color: 'violet-700' },
+          ariaAttr: { expanded: { color: 'slate-900' } },
+          focusVisible: { outlineColor: 'violet-600' },
+          theme: { dark: { color: 'slate-100', hover: { color: 'violet-300' }, ariaAttr: { expanded: { color: 'slate-100' } } } },
         },
       },
-      panel: { styles: { fontSize: 15, lineHeight: 24, color: 'stone-600', theme: { dark: { color: 'stone-400' } } } },
+      panel: { styles: { fontSize: 15, lineHeight: 24, color: 'slate-600', theme: { dark: { color: 'slate-400' } } } },
     },
   },
   tabs: {
     children: {
-      tab: { styles: { focusVisible: { outlineColor: 'orange-600' } } },
-      panel: { styles: { focusVisible: { outlineColor: 'orange-600' } } },
+      tab: { styles: { focusVisible: { outlineColor: 'violet-600' } } },
+      panel: { styles: { focusVisible: { outlineColor: 'violet-600' } } },
     },
   },
 });
 
-/** The headings' face: a book serif every system already has, so the store loads no font. */
-export const SERIF = "'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif";
+/** The headings' face: the rounded sans each system already has, so the store loads no font. */
+export const DISPLAY =
+  "ui-rounded, 'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Quicksand, Comfortaa, Manjari, 'Arial Rounded MT', 'Arial Rounded MT Bold', Calibri, system-ui, sans-serif";
 
-/** The brand's gradient as type: spread it on a heading word or a label to set it in kiln light. */
-export const kilnText = {
-  bgGradient: { linear: 'r', colors: ['amber-600', 'orange-600', 'rose-600'] },
+/** Spread on a heading: the rounded face, heavy. Last among its props, so it wins the weight. */
+export const heading = { fontWeight: 800, css: { fontFamily: DISPLAY } } as const;
+
+/** The brand's gradient as type: spread it on a heading word or a label to set it in moonlight. */
+export const glowText = {
+  bgGradient: { linear: 'r', colors: ['violet-600', 'fuchsia-600', 'pink-500'] },
   bgClip: 'text',
   color: 'transparent',
-  theme: { dark: { bgGradient: { linear: 'r', colors: ['amber-300', 'orange-300', 'rose-300'] } } },
+  theme: { dark: { bgGradient: { linear: 'r', colors: ['violet-300', 'fuchsia-300', 'pink-300'] } } },
 } as const;
 
-/** A card on the page: white, a hairline and a soft warm shadow, in both themes. */
+/** A card on the page: white, a hairline and a soft violet shadow; a pane of night glass in the dark. */
 export const card = {
   bgColor: 'white',
   b: 1,
-  borderColor: 'stone-200/70',
+  borderColor: 'violet-200/60',
   shadow: 'sm',
-  shadowColor: 'orange-900/5',
-  theme: { dark: { bgColor: 'stone-900', borderColor: 'white/10', shadow: 'none' } },
+  shadowColor: 'violet-900/5',
+  theme: { dark: { bgColor: 'white/5', borderColor: 'white/10', shadow: 'none' } },
 } as const;
 
 /**
@@ -279,7 +283,7 @@ export const useStoreLinks = () => useContext(StoreLinks);
 export function StoreSurface({ children }: { children: ReactNode }) {
   return (
     <Box.Components value={storeDesign}>
-      <Box bgColor="orange-50" color="stone-900" theme={{ dark: { bgColor: 'stone-950', color: 'stone-100' } }}>
+      <Box bgColor="violet-50" color="slate-900" theme={{ dark: { bgColor: 'slate-950', color: 'slate-100' } }}>
         {children}
       </Box>
     </Box.Components>
@@ -292,7 +296,7 @@ export function StoreSurface({ children }: { children: ReactNode }) {
  */
 export function StoreTheme({ theme, children }: { theme?: string; children: ReactNode }) {
   return (
-    <Box.Theme theme={theme} storageKey="tidewell-theme">
+    <Box.Theme theme={theme} storageKey="moonpop-theme">
       <StoreSurface>
         <Box minHeight="fit-screen">{children}</Box>
       </StoreSurface>

@@ -132,7 +132,7 @@ export const registryItems = [
   {
     name: 'product-grid',
     title: 'Product grid with filters',
-    description: 'A product grid with category and glaze filters, a sort and an announced count, over cards that are one link each.',
+    description: 'A product grid with category and finish filters, a sort and an announced count, over cards that are one link each.',
     categories: ['ecommerce', 'product'],
     dependencies: ['@box-kite/react'],
     registryDependencies: ['store-design'],
@@ -147,7 +147,7 @@ export const registryItems = [
     dependencies: ['@box-kite/react'],
     registryDependencies: ['store-design'],
     files: [storeFile('product-gallery.tsx')],
-    docs: `Render <ProductGallery product={…} glaze={…} />. ${STORE_DOCS}`,
+    docs: `Render <ProductGallery product={…} finish={…} />. ${STORE_DOCS}`,
   },
   {
     name: 'variant-picker',

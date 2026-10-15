@@ -1,8 +1,8 @@
 'use client';
 import Tabs from '@box-kite/react/components/tabs';
 import VisuallyHidden from '@box-kite/react/components/visuallyHidden';
-import ProductArt, { type ArtView, glazeBackdrop } from './product-art';
-import { glazes, type Product, productBySlug } from './store-data';
+import ProductArt, { type ArtView, finishBackdrop } from './product-art';
+import { finishes, type Product, productBySlug } from './store-data';
 
 const views: { value: ArtView; label: string }[] = [
   { value: 'front', label: 'Front' },
@@ -12,18 +12,18 @@ const views: { value: ArtView; label: string }[] = [
 
 export interface ProductGalleryProps {
   product?: Product;
-  /** The glaze on show — the variant picker beside the gallery owns it, and the backdrop follows it. */
-  glaze?: string;
+  /** The finish on show — the variant picker beside the gallery owns it, and the backdrop follows it. */
+  finish?: string;
 }
 
 /**
  * A product's pictures: one large view and a row of thumbnails that choose it. The thumbnails are tabs
  * (APG's tabbed carousel), so the arrow keys move between them and each picture is named by its tab.
  */
-export default function ProductGallery({ product = productBySlug('tide-mug'), glaze = product.glazes[0] }: ProductGalleryProps) {
-  const pair = product.glazes.find((id) => id !== glaze) ?? glaze;
-  const name = `${product.name} in ${glazes[glaze].name}`;
-  const backdrop = glazeBackdrop(glaze);
+export default function ProductGallery({ product = productBySlug('bolt-robot'), finish = product.finishes[0] }: ProductGalleryProps) {
+  const pair = product.finishes.find((id) => id !== finish) ?? finish;
+  const name = `${product.name} in ${finishes[finish].name}`;
+  const backdrop = finishBackdrop(finish);
 
   return (
     <Tabs defaultValue="front" gap={4}>
@@ -42,11 +42,11 @@ export default function ProductGallery({ product = productBySlug('tide-mug'), gl
             borderColor="transparent"
             opacity={0.7}
             hover={{ opacity: 1 }}
-            ariaAttr={{ selected: { borderColor: 'stone-900', opacity: 1 } }}
+            ariaAttr={{ selected: { borderColor: 'slate-900', opacity: 1 } }}
             focusVisible={{ outlineOffset: 2, borderRadius: 4 }}
-            theme={{ dark: { ...backdrop.theme.dark, ariaAttr: { selected: { borderColor: 'stone-100' } } } }}
+            theme={{ dark: { ...backdrop.theme.dark, ariaAttr: { selected: { borderColor: 'slate-100' } } } }}
           >
-            <ProductArt shape={product.shape} glaze={glaze} pairGlaze={pair} view={view.value} />
+            <ProductArt shape={product.shape} finish={finish} pairFinish={pair} view={view.value} />
             <VisuallyHidden>{view.label}</VisuallyHidden>
           </Tabs.Tab>
         ))}
@@ -63,8 +63,8 @@ export default function ProductGallery({ product = productBySlug('tide-mug'), gl
         >
           <ProductArt
             shape={product.shape}
-            glaze={glaze}
-            pairGlaze={pair}
+            finish={finish}
+            pairFinish={pair}
             view={view.value}
             label={`${name}, ${view.label.toLowerCase()}`}
           />

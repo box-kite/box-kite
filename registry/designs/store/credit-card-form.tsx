@@ -144,11 +144,11 @@ function Card({ number, name, expiry }: { number: string; name: string; expiry: 
       borderRadius={4}
       color="white"
       shadow="lg"
-      bgGradient={{ linear: 135, colors: ['orange-500', 'rose-600', 'violet-800'], interpolate: 'oklch' }}
-      shadowColor="rose-900/30"
+      bgGradient={{ linear: 135, colors: ['sky-400', 'violet-600', 'fuchsia-600'], interpolate: 'oklch' }}
+      shadowColor="violet-900/30"
       theme={{
         dark: {
-          bgGradient: { linear: 135, colors: ['orange-700', 'rose-800', 'violet-950'], interpolate: 'oklch' },
+          bgGradient: { linear: 135, colors: ['sky-700', 'violet-800', 'fuchsia-900'], interpolate: 'oklch' },
           ring: 1,
           ringColor: 'white/10',
         },

@@ -33,7 +33,7 @@ export default function FormField({ label, error, hint, children }: FormFieldPro
       </Label>
       {children({ id, 'aria-invalid': error ? true : undefined, 'aria-describedby': described })}
       {(error || hint) && (
-        <Span id={note} fontSize={13} color={error ? 'red-700' : 'stone-600'} theme={{ dark: { color: error ? 'red-400' : 'stone-400' } }}>
+        <Span id={note} fontSize={13} color={error ? 'red-700' : 'slate-600'} theme={{ dark: { color: error ? 'red-400' : 'slate-400' } }}>
           {error ?? hint}
         </Span>
       )}

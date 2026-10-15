@@ -8,7 +8,7 @@ import { Minus, Plus } from 'lucide-react';
 export interface QuantityStepperProps {
   value: number;
   onChange: (value: number) => void;
-  /** What is being counted, for the buttons' names: "Add one Tide mug". */
+  /** What is being counted, for the buttons' names: "Add one Bolt the robot". */
   item: string;
   min?: number;
   max?: number;
@@ -26,8 +26,8 @@ export default function QuantityStepper({ value, onChange, item, min = 1, max = 
       ai="center"
       b={1}
       borderRadius={999}
-      borderColor="stone-300"
-      theme={{ dark: { borderColor: 'stone-700' } }}
+      borderColor="slate-300"
+      theme={{ dark: { borderColor: 'slate-700' } }}
       props={{ role: 'group', 'aria-label': `Quantity of ${item}` }}
     >
       <Button {...step} disabled={value <= min} onClick={() => onChange(value - 1)} props={{ 'aria-label': `Remove one ${item}` }}>

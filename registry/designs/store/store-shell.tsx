@@ -9,7 +9,7 @@ import { Path, Svg } from '@box-kite/react/components/svg';
 import { Lock, Moon, ShoppingBag, Sun } from 'lucide-react';
 import { type ReactNode } from 'react';
 import { STORE_NAME } from './store-data';
-import { SERIF, StoreTheme, useStoreLinks } from './store-design';
+import { heading, StoreTheme, useStoreLinks } from './store-design';
 
 export interface StoreShellProps {
   /** The number on the cart link. */
@@ -21,13 +21,13 @@ export interface StoreShellProps {
   children: ReactNode;
 }
 
-const muted = { color: 'stone-600', theme: { dark: { color: 'stone-400' } } } as const;
+const muted = { color: 'slate-600', theme: { dark: { color: 'slate-400' } } } as const;
 const navLink = {
-  color: 'stone-700',
+  color: 'slate-700',
   fontSize: 15,
   textDecoration: 'none',
-  hover: { color: 'stone-950', textDecoration: 'underline' },
-  theme: { dark: { color: 'stone-300', hover: { color: 'white' } } },
+  hover: { color: 'slate-950', textDecoration: 'underline' },
+  theme: { dark: { color: 'slate-300', hover: { color: 'white' } } },
 } as const;
 
 /** The frame every store page shares: the header, the page, the footer, and the theme switch. */
@@ -41,10 +41,10 @@ export default function StoreShell({ cartCount = 0, checkout, theme, children }:
         top={0}
         zIndex={10}
         bb={1}
-        borderColor="stone-200"
-        bgColor="stone-50/85"
+        borderColor="slate-200"
+        bgColor="slate-50/85"
         backdropBlur="md"
-        theme={{ dark: { borderColor: 'stone-800', bgColor: 'stone-950/85' } }}
+        theme={{ dark: { borderColor: 'slate-800', bgColor: 'slate-950/85' } }}
       >
         <Flex ai="center" gap={6} maxWidth={300} mx="auto" px={5} md={{ px: 8 }} height={16}>
           <Wordmark href={links.shop} />
@@ -79,10 +79,10 @@ export default function StoreShell({ cartCount = 0, checkout, theme, children }:
                   display="flex"
                   p={2}
                   borderRadius={999}
-                  color="stone-800"
-                  hover={{ bgColor: 'stone-100' }}
-                  focusVisible={{ outline: 2, outlineColor: 'orange-600', outlineOffset: 2 }}
-                  theme={{ dark: { color: 'stone-200', hover: { bgColor: 'stone-800' } } }}
+                  color="slate-800"
+                  hover={{ bgColor: 'slate-100' }}
+                  focusVisible={{ outline: 2, outlineColor: 'violet-600', outlineOffset: 2 }}
+                  theme={{ dark: { color: 'slate-200', hover: { bgColor: 'slate-800' } } }}
                 >
                   <Icon size={5}>
                     <ShoppingBag />
@@ -101,7 +101,7 @@ export default function StoreShell({ cartCount = 0, checkout, theme, children }:
                       borderRadius={999}
                       fontSize={11}
                       fontWeight={700}
-                      bgGradient={{ linear: 'br', colors: ['orange-600', 'rose-700'] }}
+                      bgGradient={{ linear: 'br', colors: ['violet-600', 'fuchsia-700'] }}
                       color="white"
                     >
                       {cartCount}
@@ -118,13 +118,13 @@ export default function StoreShell({ cartCount = 0, checkout, theme, children }:
         {children}
       </Main>
 
-      <Footer bt={1} borderColor="stone-200" theme={{ dark: { borderColor: 'stone-800' } }}>
+      <Footer bt={1} borderColor="slate-200" theme={{ dark: { borderColor: 'slate-800' } }}>
         <Grid maxWidth={300} mx="auto" px={5} md={{ px: 8, gridTemplateColumns: 4 }} py={12} gap={8} gridTemplateColumns={1} fontSize={14}>
           <Box md={{ gridColumn: 2 }}>
             <Wordmark href={links.shop} />
             <P mt={3} maxWidth={80} lineHeight={22} {...muted}>
-              Stoneware thrown, trimmed and glazed by four potters in a converted boathouse. Every piece is a little different from the
-              photograph — there is no photograph.
+              Glossy vinyl desk toys, designed by three people in a very small studio and cast in numbered runs. Every one is hand-finished,
+              so no two blush quite the same.
             </P>
           </Box>
           <FooterLinks
@@ -138,14 +138,14 @@ export default function StoreShell({ cartCount = 0, checkout, theme, children }:
           <FooterLinks
             title="Help"
             links={[
-              { label: 'Care and cleaning', href: `${links.product('tide-mug')}#details` },
-              { label: 'Shipping and returns', href: `${links.product('tide-mug')}#details` },
+              { label: 'Care and cleaning', href: `${links.product('bolt-robot')}#details` },
+              { label: 'Shipping and returns', href: `${links.product('bolt-robot')}#details` },
               { label: 'The studio', href: `${links.shop}#studio` },
             ]}
           />
         </Grid>
         <P maxWidth={300} mx="auto" px={5} md={{ px: 8 }} pb={8} fontSize={13} {...muted}>
-          © 2026 {STORE_NAME} Ceramics. A fictional studio — nothing here is for sale.
+          © 2026 {STORE_NAME} Toys. A fictional studio — nothing here is for sale.
         </P>
       </Footer>
     </StoreTheme>
@@ -159,10 +159,10 @@ function Wordmark({ href }: { href: string }) {
       display="flex"
       ai="center"
       gap={2}
-      color="stone-900"
+      color="slate-900"
       textDecoration="none"
-      focusVisible={{ outline: 2, outlineColor: 'orange-600', outlineOffset: 4, borderRadius: 1 }}
-      theme={{ dark: { color: 'stone-50' } }}
+      focusVisible={{ outline: 2, outlineColor: 'violet-600', outlineOffset: 4, borderRadius: 1 }}
+      theme={{ dark: { color: 'slate-50' } }}
     >
       <Flex
         width={8}
@@ -170,22 +170,16 @@ function Wordmark({ href }: { href: string }) {
         ai="center"
         jc="center"
         borderRadius={2.5}
-        bgGradient={{ linear: 'br', colors: ['amber-400', 'orange-500', 'rose-600'] }}
+        bgGradient={{ linear: 'br', colors: ['violet-500', 'fuchsia-500', 'pink-400'] }}
         shadow="sm"
-        shadowColor="orange-700/30"
+        shadowColor="violet-700/30"
       >
         <Svg viewBox="0 0 24 24" width={20} height={20}>
-          <Path d="M4 11 Q5 20 12 20 Q19 20 20 11 Z" fill="white" />
-          <Path
-            d="M8.5 8 Q10 6 8.5 4 M12 8 Q13.5 6 12 4 M15.5 8 Q17 6 15.5 4"
-            fill="none"
-            stroke="white"
-            strokeWidth={1.4}
-            strokeLinecap="round"
-          />
+          <Path d="M14.5 4.5 A8 8 0 1 0 19.5 16.5 A6.5 6.5 0 1 1 14.5 4.5 Z" fill="white" />
+          <Path d="M18 3 L18.8 5.2 L21 6 L18.8 6.8 L18 9 L17.2 6.8 L15 6 L17.2 5.2 Z" fill="white" />
         </Svg>
       </Flex>
-      <Span fontSize={21} fontWeight={600} letterSpacing={-0.5} css={{ fontFamily: SERIF }}>
+      <Span fontSize={21} letterSpacing={-0.5} {...heading}>
         {STORE_NAME}
       </Span>
     </Link>

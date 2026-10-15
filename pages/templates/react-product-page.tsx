@@ -7,12 +7,12 @@ const noUpdates = () => () => {};
 const query = () => new URLSearchParams(window.location.search).get('product') ?? '';
 
 /**
- * Every product links to this one demo with `?product=`. The page is prerendered once, for the mug, so the
+ * Every product links to this one demo with `?product=`. The page is prerendered once, for the robot, so the
  * server's answer is the empty query and hydration matches it before the real one is read.
  */
 export default function Demo() {
   const asked = useSyncExternalStore(noUpdates, query, () => '');
-  const slug = products.some((product) => product.slug === asked) ? asked : 'tide-mug';
+  const slug = products.some((product) => product.slug === asked) ? asked : 'bolt-robot';
 
   return (
     <StoreDemoLinks>

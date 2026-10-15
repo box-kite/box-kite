@@ -7,17 +7,17 @@ import { useState } from 'react';
 import ProductCard from './product-card';
 import ProductGallery from './product-gallery';
 import { countOf, formatPrice, productBySlug, products, sampleCart } from './store-data';
-import { SERIF, useStoreLinks } from './store-design';
+import { heading, useStoreLinks } from './store-design';
 import StoreShell from './store-shell';
 import VariantPicker from './variant-picker';
 
-const muted = { color: 'stone-600', theme: { dark: { color: 'stone-400' } } } as const;
+const muted = { color: 'slate-600', theme: { dark: { color: 'slate-400' } } } as const;
 
-/** One product: the gallery and the picker share the glaze, and adding to the cart moves the header's count. */
-export default function ProductPage({ slug = 'tide-mug', theme }: { slug?: string; theme?: string }) {
+/** One product: the gallery and the picker share the finish, and adding to the cart moves the header's count. */
+export default function ProductPage({ slug = 'bolt-robot', theme }: { slug?: string; theme?: string }) {
   const links = useStoreLinks();
   const product = productBySlug(slug);
-  const [glaze, setGlaze] = useState(product.glazes[0]);
+  const [finish, setFinish] = useState(product.finishes[0]);
   const [cartCount, setCartCount] = useState(countOf(sampleCart));
   const related = [...products.filter((entry) => entry.slug !== product.slug)]
     .sort((a, b) => Number(b.category === product.category) - Number(a.category === product.category))
@@ -31,8 +31,8 @@ export default function ProductPage({ slug = 'tide-mug', theme }: { slug?: strin
             <Link
               props={{ href: `${links.shop}#collection` }}
               color="currentColor"
-              hover={{ color: 'orange-800' }}
-              theme={{ dark: { hover: { color: 'orange-300' } } }}
+              hover={{ color: 'violet-800' }}
+              theme={{ dark: { hover: { color: 'violet-300' } } }}
             >
               Shop
             </Link>
@@ -40,14 +40,14 @@ export default function ProductPage({ slug = 'tide-mug', theme }: { slug?: strin
           <Li props={{ 'aria-hidden': true }}>/</Li>
           <Li>{product.category}</Li>
           <Li props={{ 'aria-hidden': true }}>/</Li>
-          <Li color="stone-900" theme={{ dark: { color: 'stone-100' } }} props={{ 'aria-current': 'page' }}>
+          <Li color="slate-900" theme={{ dark: { color: 'slate-100' } }} props={{ 'aria-current': 'page' }}>
             {product.name}
           </Li>
         </Ol>
       </Nav>
 
       <Grid gridTemplateColumns={1} lg={{ gridTemplateColumns: 2 }} gap={10} xl={{ gap: 16 }} ai="start">
-        <ProductGallery product={product} glaze={glaze} />
+        <ProductGallery product={product} finish={finish} />
 
         <Box>
           {product.badge && (
@@ -56,13 +56,13 @@ export default function ProductPage({ slug = 'tide-mug', theme }: { slug?: strin
               fontWeight={600}
               letterSpacing={1.5}
               textTransform="uppercase"
-              color="orange-800"
-              theme={{ dark: { color: 'orange-300' } }}
+              color="violet-800"
+              theme={{ dark: { color: 'violet-300' } }}
             >
               {product.badge}
             </Span>
           )}
-          <H1 mt={2} fontSize={44} lineHeight={50} fontWeight={500} letterSpacing={-1} css={{ fontFamily: SERIF }}>
+          <H1 mt={2} fontSize={44} lineHeight={50} letterSpacing={-1} {...heading}>
             {product.name}
           </H1>
           <Span display="block" mt={3} fontSize={22} fontWeight={500}>
@@ -75,37 +75,37 @@ export default function ProductPage({ slug = 'tide-mug', theme }: { slug?: strin
           <Box mt={8}>
             <VariantPicker
               product={product}
-              glaze={glaze}
-              onGlazeChange={setGlaze}
+              finish={finish}
+              onFinishChange={setFinish}
               onAdd={(line) => setCartCount((count) => count + line.quantity)}
             />
           </Box>
 
           <Ul listStyle="none" m={0} p={0} mt={6} display="flex" d="column" gap={1.5} fontSize={14} {...muted}>
             <Li>Ships in 2–3 working days from the studio.</Li>
-            <Li>Dishwasher and microwave safe.</Li>
+            <Li>Arrives in a numbered box, ready to give.</Li>
           </Ul>
 
           <Accordion id="details" mt={8} defaultValue={['materials']} level={2} css={{ scrollMarginTop: '6rem' }}>
             <Accordion.Item value="materials">
               <Accordion.Trigger>Materials and size</Accordion.Trigger>
               <Accordion.Panel>
-                Mid-fired stoneware with a food-safe glaze, fired to 1,240 °C. Each piece is thrown by hand, so sizes vary by a few
-                millimetres and the glaze breaks a little differently over every rim.
+                Soft-touch vinyl with a gloss coat, weighted at the base so it stands where it is put. Every toy is painted by hand, so the
+                blush and the eyes wander a millimetre from one to the next.
               </Accordion.Panel>
             </Accordion.Item>
             <Accordion.Item value="care">
               <Accordion.Trigger>Care and cleaning</Accordion.Trigger>
               <Accordion.Panel>
-                Dishwasher safe on a normal cycle. Avoid going straight from the freezer to the oven; stoneware forgives a lot, but not a
-                sudden 200 degrees.
+                Wipe with a damp cloth and a drop of soap. Keep it out of a hot car: vinyl forgives a lot, but not a summer afternoon on a
+                dashboard.
               </Accordion.Panel>
             </Accordion.Item>
             <Accordion.Item value="shipping">
               <Accordion.Trigger>Shipping and returns</Accordion.Trigger>
               <Accordion.Panel>
-                Free standard shipping on orders over $150. Returns are free within 30 days, and anything that arrives broken is replaced —
-                send us a photo, keep the pieces.
+                Free standard shipping on orders over $150. Returns are free within 30 days, and anything that arrives scuffed is replaced —
+                send us a photo, keep the toy.
               </Accordion.Panel>
             </Accordion.Item>
           </Accordion>
@@ -113,7 +113,7 @@ export default function ProductPage({ slug = 'tide-mug', theme }: { slug?: strin
       </Grid>
 
       <Section props={{ 'aria-labelledby': 'related-heading' }} mt={20}>
-        <H2 id="related-heading" fontSize={30} fontWeight={500} letterSpacing={-0.5} mb={6} css={{ fontFamily: SERIF }}>
+        <H2 id="related-heading" fontSize={30} letterSpacing={-0.5} mb={6} {...heading}>
           You might also like
         </H2>
         <Grid gridTemplateColumns={2} lg={{ gridTemplateColumns: 4 }} columnGap={5} rowGap={8}>
