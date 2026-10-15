@@ -115,7 +115,7 @@ export default function VariantPicker({ product = productBySlug('table-lamp'), f
                 px: 5,
                 py: 2,
                 b: 1,
-                borderRadius: 0,
+                borderRadius: 999,
                 fontSize: 14,
                 fontWeight: 500,
                 cursor: 'pointer',

@@ -55,7 +55,7 @@ export default function OrderSummary({ lines, shipping, showLines, action, onDis
   };
 
   return (
-    <Aside props={{ 'aria-labelledby': ids.heading }} p={6} bgColor="stone-100" theme={{ dark: { bgColor: 'stone-900' } }}>
+    <Aside props={{ 'aria-labelledby': ids.heading }} p={6} borderRadius={4} bgColor="stone-100" theme={{ dark: { bgColor: 'stone-900' } }}>
       <H2 id={ids.heading} fontSize={18} {...heading}>
         Order summary
       </H2>
@@ -68,7 +68,7 @@ export default function OrderSummary({ lines, shipping, showLines, action, onDis
             return (
               <Li key={line.id} display="flex" ai="center" gap={3}>
                 <Box position="relative" flexShrink={0} width={14} height={14}>
-                  <ProductArt shape={product.shape} finish={line.finish} stroke={1.5} />
+                  <ProductArt shape={product.shape} finish={line.finish} stroke={1.5} radius={2} />
                   <Span
                     position="absolute"
                     top={-1.5}

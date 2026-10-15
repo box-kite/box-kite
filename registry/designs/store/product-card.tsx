@@ -25,9 +25,20 @@ export default function ProductCard({ product, level = 'h3' }: ProductCardProps)
   return (
     <Article position="relative" className="card">
       <Box position="relative" aspectRatio="square" transition="opacity" group={{ 'card/hover': { opacity: 0.8 } }}>
-        <ProductArt shape={product.shape} finish={first} />
+        <ProductArt shape={product.shape} finish={first} radius={4} />
         {product.badge && (
-          <Span position="absolute" top={4} insetStart={4} px={2} py={1} {...eyebrow} fontSize={11} bgColor="white" color="stone-900">
+          <Span
+            position="absolute"
+            top={4}
+            insetStart={4}
+            px={2.5}
+            py={1}
+            borderRadius={999}
+            {...eyebrow}
+            fontSize={11}
+            bgColor="white"
+            color="stone-900"
+          >
             {product.badge}
           </Span>
         )}
@@ -39,7 +50,7 @@ export default function ProductCard({ product, level = 'h3' }: ProductCardProps)
             color="currentColor"
             textDecoration="none"
             // The link's box stretched over the card, so the whole card is one target and still one tab stop.
-            after={{ position: 'absolute', inset: 0 }}
+            after={{ position: 'absolute', inset: 0, borderRadius: 4 }}
             focusVisible={{ outline: 0, after: { outline: 2, outlineColor: 'stone-900', outlineOffset: 4 } }}
             theme={{ dark: { focusVisible: { after: { outlineColor: 'stone-100' } } } }}
           >

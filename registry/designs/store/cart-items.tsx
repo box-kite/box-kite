@@ -30,7 +30,7 @@ export default function CartItems({ lines, onLinesChange }: CartItemsProps) {
         return (
           <Li key={line.id} display="flex" gap={4} py={5} bb={1} borderColor="stone-200" theme={{ dark: { borderColor: 'stone-800' } }}>
             <Box flexShrink={0} width={24} height={24} sm={{ width: 28, height: 28 }}>
-              <ProductArt shape={product.shape} finish={line.finish} stroke={1} />
+              <ProductArt shape={product.shape} finish={line.finish} stroke={1} radius={3} />
             </Box>
             <Flex d="column" flex1 minWidth={0} gap={1}>
               <Flex jc="space-between" gap={3}>

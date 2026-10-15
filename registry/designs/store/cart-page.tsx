@@ -58,7 +58,7 @@ export default function CartPage({ theme }: { theme?: string }) {
       ) : (
         <Flex d="column" ai="center" textAlign="center" gap={3} py={16} {...card}>
           <Box width={32} height={32}>
-            <ProductArt shape="vase" finish="chalk" />
+            <ProductArt shape="vase" finish="chalk" radius={4} />
           </Box>
           <P fontSize={20} {...heading}>
             Your cart is empty.

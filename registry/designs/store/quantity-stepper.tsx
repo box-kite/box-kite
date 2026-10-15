@@ -19,13 +19,13 @@ export interface QuantityStepperProps {
  * own, so a screen reader hears the new number after each press with nothing wired up.
  */
 export default function QuantityStepper({ value, onChange, item, min = 1, max = 10 }: QuantityStepperProps) {
-  const step = { variant: 'ghost', px: 0, py: 0, width: 9, height: 9, borderRadius: 0 } as const;
+  const step = { variant: 'ghost', px: 0, py: 0, width: 9, height: 9, borderRadius: 999 } as const;
 
   return (
     <Flex
       ai="center"
       b={1}
-      borderRadius={0}
+      borderRadius={999}
       borderColor="stone-300"
       theme={{ dark: { borderColor: 'stone-700' } }}
       props={{ role: 'group', 'aria-label': `Quantity of ${item}` }}

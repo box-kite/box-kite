@@ -31,15 +31,23 @@ export interface ProductArtProps {
   label?: string;
   /** The line's width in the icon's own 24-unit grid: thinner on a large tile, heavier on a thumbnail. */
   stroke?: 0.5 | 0.75 | 1 | 1.25 | 1.5;
+  /** Rounds the picture’s corners, on the ÷4 scale: the tiles clip themselves, so nothing around them has to. */
+  radius?: 2 | 3 | 4 | 6;
 }
 
 /** Fills its parent: give the parent a size or an aspect ratio, and the picture takes the rest. */
-export default function ProductArt({ shape, finish, also = [], view = 'front', label, stroke = 0.75 }: ProductArtProps) {
+export default function ProductArt({ shape, finish, also = [], view = 'front', label, stroke = 0.75, radius }: ProductArtProps) {
   const Glyph = icons[shape];
   const shown = view === 'set' ? [finish, ...also] : [finish];
 
   return (
-    <Flex width="fit" height="fit" props={label ? { role: 'img', 'aria-label': label } : { 'aria-hidden': true }}>
+    <Flex
+      width="fit"
+      height="fit"
+      borderRadius={radius}
+      overflow="hidden"
+      props={label ? { role: 'img', 'aria-label': label } : { 'aria-hidden': true }}
+    >
       {shown.map((id) => (
         <Flex
           key={id}

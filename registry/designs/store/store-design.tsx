@@ -13,7 +13,7 @@ export const storeDesign = Box.createComponents({
     styles: {
       bgColor: 'stone-900',
       color: 'white',
-      borderRadius: 0,
+      borderRadius: 999,
       px: 6,
       fontWeight: 500,
       transition: 'colors',
@@ -73,7 +73,7 @@ export const storeDesign = Box.createComponents({
   textbox: {
     styles: {
       width: 'fit',
-      borderRadius: 0,
+      borderRadius: 2.5,
       borderColor: 'stone-300',
       bgColor: 'white',
       color: 'stone-900',
@@ -94,7 +94,7 @@ export const storeDesign = Box.createComponents({
   },
   checkbox: {
     styles: {
-      borderRadius: 0,
+      borderRadius: 1,
       borderColor: 'stone-400',
       outlineColor: 'stone-300',
       hover: { borderColor: 'stone-900' },
@@ -135,7 +135,7 @@ export const storeDesign = Box.createComponents({
   dropdown: {
     styles: {
       width: 'fit',
-      borderRadius: 0,
+      borderRadius: 2.5,
       borderColor: 'stone-300',
       bgColor: 'white',
       color: 'stone-900',
@@ -154,7 +154,7 @@ export const storeDesign = Box.createComponents({
     children: {
       items: {
         styles: {
-          borderRadius: 0,
+          borderRadius: 3,
           borderColor: 'stone-200',
           color: 'stone-900',
           theme: { dark: { bgColor: 'stone-950', borderColor: 'stone-800', color: 'stone-100' } },
@@ -162,7 +162,7 @@ export const storeDesign = Box.createComponents({
       },
       item: {
         styles: {
-          borderRadius: 0,
+          borderRadius: 2,
           hover: { bgColor: 'stone-100' },
           focus: { bgColor: 'stone-100' },
           selected: { bgColor: 'stone-100', hover: { bgColor: 'stone-200' } },
@@ -179,9 +179,9 @@ export const storeDesign = Box.createComponents({
     },
   },
   progress: {
-    styles: { height: 0.5, borderRadius: 0, bgColor: 'stone-200', theme: { dark: { bgColor: 'stone-800' } } },
+    styles: { height: 0.5, borderRadius: 999, bgColor: 'stone-200', theme: { dark: { bgColor: 'stone-800' } } },
     children: {
-      fill: { styles: { borderRadius: 0, bgColor: 'stone-900', theme: { dark: { bgColor: 'stone-100' } } } },
+      fill: { styles: { borderRadius: 999, bgColor: 'stone-900', theme: { dark: { bgColor: 'stone-100' } } } },
     },
   },
   accordion: {
@@ -216,8 +216,8 @@ export const heading = { fontWeight: 500, letterSpacing: -0.5 } as const;
 /** The small spaced capitals over a section, beside a badge or under a price. */
 export const eyebrow = { fontSize: 12, fontWeight: 500, letterSpacing: 1.5, textTransform: 'uppercase' } as const;
 
-/** A panel on the page: a hairline and nothing else. */
-export const card = { b: 1, borderColor: 'stone-200', theme: { dark: { borderColor: 'stone-800' } } } as const;
+/** A panel on the page: a hairline and soft corners, nothing else. */
+export const card = { b: 1, borderRadius: 4, borderColor: 'stone-200', theme: { dark: { borderColor: 'stone-800' } } } as const;
 
 /** Secondary text, in both themes. */
 export const muted = { color: 'stone-500', theme: { dark: { color: 'stone-400' } } } as const;

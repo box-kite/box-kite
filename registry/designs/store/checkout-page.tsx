@@ -18,7 +18,7 @@ import { FREE_SHIPPING_FROM, formatPrice, sampleCart, shippingMethods, subtotalO
 import { card, heading } from './store-design';
 import StoreShell from './store-shell';
 
-const panel = { ...card, p: 6, borderRadius: 0 } as const;
+const panel = { ...card, p: 6 } as const;
 
 /**
  * The checkout: one form of contact, address, delivery and payment, beside the order it pays for. The

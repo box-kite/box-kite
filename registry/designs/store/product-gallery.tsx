@@ -41,7 +41,7 @@ export default function ProductGallery({ product = productBySlug('table-lamp'), 
             mb={0}
             width={20}
             height={20}
-            borderRadius={0}
+            borderRadius={3}
             b={1}
             borderColor="transparent"
             hover={{ borderColor: 'stone-300' }}
@@ -51,14 +51,22 @@ export default function ProductGallery({ product = productBySlug('table-lamp'), 
               dark: { bgColor: 'transparent', hover: { borderColor: 'stone-600' }, ariaAttr: { selected: { borderColor: 'stone-100' } } },
             }}
           >
-            <ProductArt shape={product.shape} finish={finish} also={also} view={view.value} stroke={1.5} />
+            <ProductArt shape={product.shape} finish={finish} also={also} view={view.value} stroke={1.5} radius={2} />
             <VisuallyHidden>{view.label}</VisuallyHidden>
           </Tabs.Tab>
         ))}
       </Tabs.List>
       {views.map((view) => (
-        <Tabs.Panel key={view.value} value={view.value} aspectRatio="square" startingStyle={{ opacity: 0 }}>
-          <ProductArt shape={product.shape} finish={finish} also={also} view={view.value} label={labels[view.value]} stroke={0.5} />
+        <Tabs.Panel key={view.value} value={view.value} aspectRatio="square" borderRadius={6} startingStyle={{ opacity: 0 }}>
+          <ProductArt
+            shape={product.shape}
+            finish={finish}
+            also={also}
+            view={view.value}
+            label={labels[view.value]}
+            stroke={0.5}
+            radius={6}
+          />
         </Tabs.Panel>
       ))}
     </Tabs>

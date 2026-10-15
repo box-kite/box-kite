@@ -40,7 +40,7 @@ export default function ShippingMethod({ methods = shippingMethods, value, onVal
             gap: 3,
             p: 4,
             b: 1,
-            borderRadius: 0,
+            borderRadius: 3,
             cursor: 'pointer',
             borderColor: 'stone-300',
             bgColor: 'transparent',

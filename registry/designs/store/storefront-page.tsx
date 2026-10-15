@@ -65,8 +65,8 @@ export default function StorefrontPage({ theme }: { theme?: string }) {
           </Box>
 
           <Box>
-            <Link props={{ href: links.product(lamp.slug) }} display="block" aspectRatio="square">
-              <ProductArt shape={lamp.shape} finish="clay" label={`${lamp.name} in Clay`} stroke={0.5} />
+            <Link props={{ href: links.product(lamp.slug) }} display="block" aspectRatio="square" borderRadius={6}>
+              <ProductArt shape={lamp.shape} finish="clay" label={`${lamp.name} in Clay`} stroke={0.5} radius={6} />
             </Link>
             <Flex jc="space-between" mt={3} fontSize={14} {...muted}>
               <Span>{lamp.name}, Clay</Span>
@@ -128,6 +128,7 @@ function Studio() {
             view="set"
             label="Two bud vases, one in Sand and one in Sage"
             stroke={0.5}
+            radius={6}
           />
         </Box>
         <Box>

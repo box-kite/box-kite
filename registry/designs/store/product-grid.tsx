@@ -130,7 +130,7 @@ export default function ProductGrid({ products = catalogue, title = 'Shop the co
             jc="center"
             gap={2}
             p={10}
-            borderRadius={0}
+            borderRadius={4}
             bgColor="stone-100"
             theme={{ dark: { bgColor: 'stone-900' } }}
           >
