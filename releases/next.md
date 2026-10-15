@@ -40,7 +40,7 @@ The three registry blocks each have a page at [box-kite.dev/blocks](https://www.
 
 ## A store to start from
 
-Four complete pages of one design are at [box-kite.dev/templates](https://www.box-kite.dev/templates/): a storefront, a product page, a cart and a checkout, linked to each other, in light and dark, with every product picture drawn in SVG rather than photographed. Their eight sections are blocks of their own, among them a [credit card form](https://www.box-kite.dev/blocks/react-credit-card-form/), a [product grid with filters](https://www.box-kite.dev/blocks/react-product-grid/) and an [order summary](https://www.box-kite.dev/blocks/react-order-summary/). The design is one `Box.createComponents()` registry, so it stops at the edge of the store. A template installs with its design and its blocks in one command:
+Four complete pages of one design are at [box-kite.dev/templates](https://www.box-kite.dev/templates/): a storefront, a product page, a cart and a checkout, linked to each other, in light and dark, with every product picture a lucide icon on a tile in the product's colour, so swapping in your photographs means replacing one component. Their eight sections are blocks of their own, among them a [credit card form](https://www.box-kite.dev/blocks/react-credit-card-form/), a [product grid with filters](https://www.box-kite.dev/blocks/react-product-grid/) and an [order summary](https://www.box-kite.dev/blocks/react-order-summary/). The design is one `Box.createComponents()` registry, so it stops at the edge of the store. A template installs with its design and its blocks in one command:
 
 ```bash
 npx shadcn@latest add https://www.box-kite.dev/r/checkout-page.json
