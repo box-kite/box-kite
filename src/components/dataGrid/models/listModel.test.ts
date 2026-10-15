@@ -202,6 +202,16 @@ describe('ListModel', () => {
       selectable.setSelecting(true);
       expect(selectable.selecting).toBe(true);
     });
+
+    it('gives each row a checkbox id that is the grid’s own and survives any key', () => {
+      const first = getGrid();
+      const second = getGrid();
+      first.setIdentifier('grid-a');
+      second.setIdentifier('grid-b');
+
+      expect(first.list.checkboxId(1)).not.toBe(second.list.checkboxId(1));
+      expect(first.list.checkboxId('a b/c')).toBe('grid-a-pick-a%20b%2Fc');
+    });
   });
 
   describe('sheets and filters', () => {

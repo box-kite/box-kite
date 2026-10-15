@@ -28,14 +28,14 @@ export default function DataGridListFooter<TRow>(props: Props<TRow>) {
   return (
     <>
       {totals.length > 0 && (
-        <Box component={`${name}.list.group` as never} px={4} py={3}>
+        <Box bgColor="currentColor/3" px={4} py={3}>
           <Box fontWeight={600} fontSize={14} mb={1}>
             {aggregation.footerLabel}
           </Box>
           <Box tag="dl" display="grid" gridTemplateColumns={2} columnGap={4} rowGap={2} m={0}>
             {totals.map((cell) => (
               <Box key={cell.column.key} minWidth={0}>
-                <Box tag="dt" component={`${name}.list.item.muted` as never} fontSize={12} lineHeight={16}>
+                <Box tag="dt" component="list.muted" fontSize={12} lineHeight={16}>
                   {cell.column.header ?? String(cell.column.key)}
                 </Box>
                 <Box tag="dd" m={0} fontSize={14} lineHeight={20} fontWeight={600}>
@@ -49,7 +49,7 @@ export default function DataGridListFooter<TRow>(props: Props<TRow>) {
 
       {state ? (
         <Flex
-          component={`${name}.list.item.muted` as never}
+          component="list.muted"
           d="column"
           gap={2}
           ai="center"
@@ -87,7 +87,7 @@ export default function DataGridListFooter<TRow>(props: Props<TRow>) {
       ) : (
         (list.hasMore || shown !== undefined) && (
           <Flex
-            component={`${name}.list.item.muted` as never}
+            component="list.muted"
             d="column"
             gap={2}
             ai="center"

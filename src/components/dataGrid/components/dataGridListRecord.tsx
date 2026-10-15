@@ -36,7 +36,7 @@ function RecordField<TRow>({ cell, index }: { cell: CellModel<TRow>; index: numb
   return (
     // `dt` and `dd` straight inside the group, as a `<dl>` requires — the Edit button rides in the `dd`.
     <Box component={`${name}.list.sheet.line` as never} py={3} bb={1}>
-      <Box tag="dt" component={`${name}.list.item.muted` as never} fontSize={13} lineHeight={18}>
+      <Box tag="dt" component="list.muted" fontSize={13} lineHeight={18}>
         {label}
       </Box>
       <Box
@@ -109,7 +109,7 @@ export default function DataGridListRecord<TRow>(props: Props<TRow>) {
       const items = grid.sizingElement?.querySelectorAll<HTMLElement>('[data-list-key]') ?? [];
       const item = Array.from(items).find((el) => el.dataset.listKey === String(key));
 
-      item?.querySelector<HTMLElement>('[data-list-title]')?.focus();
+      item?.querySelector<HTMLElement>('[data-list-action]')?.focus();
     });
   }, [grid, list]);
 

@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import Box from '../../../box';
 import Flex from '../../flex';
-import { Ul } from '../../semantics';
+import List from '../../list';
 import GridModel from '../models/gridModel';
 import DataGridDataSourceError from './dataGridDataSourceError';
 import DataGridListFooter from './dataGridListFooter';
@@ -46,16 +46,11 @@ export default function DataGridList<TRow>(props: Props<TRow>) {
       {loading && <DataGridLoader grid={grid} />}
 
       {items.length === 0 ? (
-        <Box component={`${name}.list.item.muted` as never} px={4} py={10} textAlign="center">
+        <Box component="list.muted" px={4} py={10} textAlign="center">
           {grid.props.def.noDataComponent ?? (loading ? grid.localeText.loadingRows : grid.localeText.noRows)}
         </Box>
       ) : (
-        <Ul
-          m={0}
-          p={0}
-          css={{ listStyle: 'none' }}
-          props={{ 'aria-labelledby': grid.props.def.title ? grid.titleId : undefined, 'aria-busy': loading || undefined }}
-        >
+        <List props={{ 'aria-labelledby': grid.props.def.title ? grid.titleId : undefined, 'aria-busy': loading || undefined }}>
           {items.map(({ row, index }, position) =>
             row.kind === 'group' ? (
               <DataGridListGroup key={row.key} row={row} version={grid.rowVersion(row, index)} />
@@ -70,7 +65,7 @@ export default function DataGridList<TRow>(props: Props<TRow>) {
               />
             ),
           )}
-        </Ul>
+        </List>
       )}
 
       <DataGridListFooter grid={grid} shown={flat ? items.length : undefined} />

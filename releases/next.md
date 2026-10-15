@@ -77,7 +77,7 @@ columns: [
 
 A column with no `list` role still lands somewhere sensible: the first column is the title, the first end-aligned one sits opposite it, the next four are fields and the rest wait for the row's sheet. The markup is a `<ul>` with a `<dl>` per item, so every value keeps its label for a screen reader. The sheets and the row view are a separate chunk, 7.8 KB gzipped, fetched only when a grid is narrow.
 
-**A grid that is narrower than 576px today will draw a list after this update.** That includes a grid in a sidebar or a dashboard widget on a wide screen, because the switch follows the grid's own width, not the screen's. To keep the table there, set `def.layout: 'table'`. `def.list.breakpoint` moves the switch. See [On a phone, a list](https://www.box-kite.dev/datagrid/#mobile).
+**A grid that is narrower than 576px today will draw a list after this update.** That includes a grid in a sidebar or a dashboard widget on a wide screen, because the switch follows the grid's own width, not the screen's. To keep the table there, set `def.layout: 'table'`. `def.list.breakpoint` moves the switch. Each row is a [`List.Item`](https://www.box-kite.dev/list/), so a `Box.components({ list: … })` of yours styles the grid's rows too. See [On a phone, a list](https://www.box-kite.dev/datagrid/#mobile).
 
 ## Breaking changes
 

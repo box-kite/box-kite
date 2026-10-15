@@ -220,6 +220,11 @@ export default class ListModel<TRow> {
     this.grid.notify();
   };
 
+  /** The id of a row's checkbox, which the item's title is the label of — so a press anywhere on the item ticks it. */
+  public checkboxId(key: Key): string {
+    return `${this.grid.identifier}-pick-${encodeURIComponent(String(key))}`;
+  }
+
   // ========== Sheets ==========
 
   private _sheet: ListSheet | null = null;

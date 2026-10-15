@@ -24,13 +24,13 @@ const HAIRLINE = 'color-mix(in oklab, currentColor 12%, transparent)';
 /** What a list item's icon, avatar or thumbnail sits on. */
 const MEDIA_FILL: BoxComponentStyles = { bgColor: 'currentColor/6' };
 
+/** The keyboard's mark on a control in the DataGrid's list layout. */
+const FOCUS_RING: BoxComponentStyles = { outline: 2, outlineStyle: 'solid', outlineOffset: 2, outlineColor: 'indigo-500' };
+
 /**
  * The DataGrid bottom bar's buttons. Quiet rather than links: they change the view, they do not go
  * anywhere — grey until hovered, so they sit beside the counts without shouting over them.
  */
-/** The keyboard's mark on a control in the DataGrid's list layout. */
-const FOCUS_RING: BoxComponentStyles = { outline: 2, outlineStyle: 'solid', outlineOffset: 2, outlineColor: 'indigo-500' };
-
 const BAR_BUTTON: BoxComponentStyles = {
   display: 'inline-flex',
   ai: 'center',
@@ -3491,41 +3491,13 @@ const boxComponents = {
               chip: { styles: { bgColor: 'gray-100', theme: { dark: { bgColor: 'gray-800' } } } },
             },
           },
-          item: {
-            styles: { bb: 1, borderColor: 'gray-100', theme: { dark: { borderColor: 'gray-800' } } },
-            variants: {
-              interactive: {
-                cursor: 'pointer',
-                pointerFine: { hover: { bgColor: 'gray-50' }, theme: { dark: { hover: { bgColor: 'gray-800/50' } } } },
-                active: { bgColor: 'gray-100' },
-                theme: { dark: { active: { bgColor: 'gray-800' } } },
-              },
-              selected: { bgColor: 'indigo-50/70', theme: { dark: { bgColor: 'indigo-500/10' } } },
-            },
-            children: {
-              title: { clean: true, styles: { focusVisible: FOCUS_RING } },
-              // The muted half of an item: the kicker, the subtitle, every label.
-              muted: { styles: { color: 'gray-500', theme: { dark: { color: 'gray-400' } } } },
-              toggle: {
-                clean: true,
-                styles: { color: 'indigo-600', focusVisible: FOCUS_RING, theme: { dark: { color: 'indigo-300' } } },
-              },
-              detail: { styles: { bgColor: 'gray-50', theme: { dark: { bgColor: 'gray-800/60' } } } },
-            },
+          // The rows themselves are `List.Item`s, styled by the `list` tree. These are the grid's own inside one: a tree's
+          // chevron and the row-detail toggle, and the detail panel under it.
+          toggle: {
+            clean: true,
+            styles: { color: 'indigo-600', focusVisible: FOCUS_RING, theme: { dark: { color: 'indigo-300' } } },
           },
-          // A group is a section header: the value, how many rows it holds and their totals.
-          group: {
-            styles: {
-              bb: 1,
-              borderColor: 'gray-200',
-              bgColor: 'gray-50',
-              theme: { dark: { bgColor: 'gray-800/60', borderColor: 'gray-800' } },
-            },
-            children: {
-              toggle: { clean: true, styles: { focusVisible: FOCUS_RING } },
-              count: { styles: { bgColor: 'gray-200', theme: { dark: { bgColor: 'gray-700' } } } },
-            },
-          },
+          detail: { styles: { bgColor: 'gray-50', theme: { dark: { bgColor: 'gray-800/60' } } } },
           button: {
             clean: true,
             styles: {

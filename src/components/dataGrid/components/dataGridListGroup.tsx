@@ -1,10 +1,8 @@
 import { memo } from 'react';
-import Box from '../../../box';
 import ExpandIcon from '../../../icons/expandIcon';
-import Button from '../../button';
 import Checkbox from '../../checkbox';
-import Flex from '../../flex';
-import { Li } from '../../semantics';
+import List from '../../list';
+import { Span } from '../../semantics';
 import GroupRowModel from '../models/groupRowModel';
 import DataGridListAggregate from './dataGridListAggregate';
 
@@ -14,27 +12,26 @@ interface Props<TRow> {
   version: string;
 }
 
-/** A group as a section header: the value, how many rows it holds, and their totals underneath. */
+/**
+ * A group as a section header: the value, how many rows it holds, and their totals underneath. The toggle is
+ * the item's `List.Action`, so the whole header opens and closes the group.
+ */
 function DataGridListGroupImpl<TRow>(props: Props<TRow>) {
   const { row } = props;
   const { grid } = row;
-  const name = grid.componentName;
   const aggregates = row.cells.flatMap((cell) => (cell.aggregate ? [cell.aggregate] : []));
   const value = row.placeholder ? '' : String(row.groupValue);
 
   return (
-    <Li
-      component={`${name}.list.group` as never}
-      display="flex"
-      d="column"
-      gap={0.5}
-      px={4}
-      py={2}
+    <List.Item
+      size="sm"
+      // A section header: tinted from the text, so the hover and pressed tints the item already has still read over it.
+      bgColor="currentColor/3"
       ps={4 + Math.min(row.depth, 3) * 4}
       props={{ 'aria-busy': row.placeholder || undefined }}
     >
-      <Flex ai="center" gap={2}>
-        {grid.list.selecting && row.selectable && (
+      {grid.list.selecting && row.selectable && (
+        <List.Actions>
           <Checkbox
             variant="datagrid"
             checked={row.selected}
@@ -42,61 +39,32 @@ function DataGridListGroupImpl<TRow>(props: Props<TRow>) {
             onChange={row.toggleSelectAll}
             props={{ 'aria-label': grid.localeText.selectGroupRows(value) }}
           />
-        )}
-        <Button
-          type="button"
-          component={`${name}.list.group.toggle` as never}
-          display="flex"
-          ai="center"
-          gap={2}
-          minHeight={9}
-          width="fit"
-          fontSize={14}
-          fontWeight={600}
-          textAlign="start"
-          cursor="pointer"
-          onClick={() => row.toggleRow()}
-          props={{ 'aria-expanded': row.expanded }}
-        >
-          <ExpandIcon width="16px" height="16px" rotate={row.expanded ? 0 : -90} rtl={{ rotate: row.expanded ? 0 : 90 }} />
-          <Box tag="span" flex1 minWidth={0} textOverflow="ellipsis" overflow="hidden" textWrap="nowrap">
-            {value}
-          </Box>
-          <Box
-            tag="span"
-            component={`${name}.list.group.count` as never}
-            px={2}
-            borderRadius={999}
-            fontSize={12}
-            fontWeight={600}
-            lineHeight={20}
-          >
-            {row.count}
-          </Box>
-        </Button>
-      </Flex>
-      {aggregates.length > 0 && (
-        <Box
-          component={`${name}.list.item.muted` as never}
-          display="flex"
-          flexWrap="wrap"
-          columnGap={4}
-          ps={7}
-          pb={1}
-          fontSize={13}
-          css={{ fontVariantNumeric: 'tabular-nums' }}
-        >
-          {aggregates.map((cell) => (
-            <Box key={cell.column.key} tag="span" display="inline-flex" gap={1}>
-              <Box tag="span">{cell.column.header ?? String(cell.column.key)}</Box>
-              <Box tag="span" fontWeight={600}>
-                <DataGridListAggregate cell={cell} />
-              </Box>
-            </Box>
-          ))}
-        </Box>
+        </List.Actions>
       )}
-    </Li>
+      <ExpandIcon width="16px" height="16px" flexShrink={0} rotate={row.expanded ? 0 : -90} rtl={{ rotate: row.expanded ? 0 : 90 }} />
+      <List.Content>
+        <List.Title lines={1} fontSize={14} fontWeight={600}>
+          <List.Action onClick={() => row.toggleRow()} props={{ 'aria-expanded': row.expanded }}>
+            {value}
+          </List.Action>
+        </List.Title>
+        {aggregates.length > 0 && (
+          <List.Row secondary wrap columnGap={4} fontSize={13} css={{ fontVariantNumeric: 'tabular-nums' }}>
+            {aggregates.map((cell) => (
+              <Span key={cell.column.key} display="inline-flex" gap={1}>
+                <Span>{cell.column.header ?? String(cell.column.key)}</Span>
+                <Span fontWeight={600}>
+                  <DataGridListAggregate cell={cell} />
+                </Span>
+              </Span>
+            ))}
+          </List.Row>
+        )}
+      </List.Content>
+      <List.Meta px={2} borderRadius={999} fontSize={12} fontWeight={600} lineHeight={20} bgColor="currentColor/10" alignSelf="center">
+        {row.count}
+      </List.Meta>
+    </List.Item>
   );
 }
 

@@ -2892,7 +2892,7 @@ Four things to know:
 3. **Unmeasured is a table.** A server render cannot know the width, so `layout: 'auto'` prerenders the table and a phone switches before its first paint after hydration. Force `layout: 'list'` where the server knows better.
 4. **The selection bar sticks to the viewport**, so no ancestor of the grid may be a scroll container (`overflow: hidden`/`auto`): `overflow: clip` clips the same corners without being one. The grid itself switches to `clip` in the list layout.
 
-Styling: `datagrid.list` > `toolbar` > (`count`, `search`, `button` with an `active` variant, `chip`), `item` (variants `interactive`, `selected`) > (`title`, `muted`, `toggle`, `detail`), `group` > (`toggle`, `count`), `button`, `selectionBar`, `sheet` > (`line`, `input`, `chip`, `button`, `primary`). The tree carries paint only — colours, borders, states; the geometry is in the list's own chunk.
+Styling: every row and group header is a `List.Item` (see List), so the `list` tree styles them — the dividers, the hover and pressed tints, `selected`, the muted text. The grid's own is `datagrid.list` > `toolbar` > (`count`, `search`, `button` with an `active` variant, `chip`), `toggle` (a tree's chevron, the Details toggle), `detail`, `button`, `selectionBar`, `sheet` > (`line`, `input`, `chip`, `button`, `primary`). Both trees carry paint only; the geometry is in the list's own chunk.
 
 ### ContextMenuConfig
 

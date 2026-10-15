@@ -74,7 +74,7 @@ describe('DataGrid as a list', () => {
     const [first] = items();
 
     expect(within(first).getByText('Country').tagName).toBe('DT');
-    expect(within(first).getByText('Japan').tagName).toBe('DD');
+    expect(within(first).getByText('Japan').closest('dd')).not.toBeNull();
     // A detail column waits for the record view.
     expect(within(first).queryByText('555-0')).toBeNull();
   });
@@ -138,8 +138,10 @@ describe('DataGrid as a list', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Select' }));
     expect(screen.getByRole('button', { name: 'Select' }).getAttribute('aria-pressed')).toBe('true');
 
-    fireEvent.click(items()[1]);
-    fireEvent.click(items()[2]);
+    // The title is the label of the row's checkbox, so a press on it ticks the row.
+    fireEvent.click(within(items()[1]).getByText('Person 2'));
+    fireEvent.click(within(items()[2]).getByText('Person 3'));
+    expect(within(items()[1]).getByRole('checkbox', { name: 'Person 2' })).toBeChecked();
 
     expect(onSelectedRowKeysChange).toHaveBeenLastCalledWith([2, 3], expect.anything());
     expect(screen.getByText('2 selected')).toBeTruthy();

@@ -864,7 +864,8 @@ export const fixtures: A11yFixture[] = [
     ),
     setup: () => {
       act(() => void fireEvent.click(screen.getByRole('button', { name: 'Select' })));
-      act(() => void fireEvent.click(screen.getAllByRole('checkbox', { name: /^Select row/ })[0]));
+      // A row's checkbox is named by its title, which is the checkbox's label; a group's names the group.
+      act(() => void fireEvent.click(screen.getAllByRole('checkbox').find((checkbox) => checkbox.closest('[data-list-key]'))!));
     },
   },
   {
@@ -891,7 +892,7 @@ export const fixtures: A11yFixture[] = [
       act(
         () =>
           void fireEvent.click(
-            screen.getAllByRole('button', { name: /./, expanded: undefined }).find((b) => b.hasAttribute('data-list-title'))!,
+            screen.getAllByRole('button', { name: /./, expanded: undefined }).find((b) => b.hasAttribute('data-list-action'))!,
           ),
       );
       act(() => void fireEvent.click(screen.getByRole('button', { name: 'Edit Size' })));
