@@ -121,7 +121,7 @@ The actions are real buttons in the tab order, and focus reaching one opens its 
 </SortableList>
 ```
 
-**`<VirtualList>`** draws a window of a list too long to render whole. Each item drawn is measured and kept by its `itemKey`, so one-line and three-line items mix, and an item not drawn yet counts as `estimateSize`. The scroller is found rather than declared: the nearest ancestor that scrolls, or the page. Each item carries `aria-setsize` and `aria-posinset`, the item focus is in stays rendered, and `onRangeChange` is where an endless list fetches its next page.
+**`<VirtualList>`** draws a window of a list too long to render whole. Each item drawn is measured and kept by its `itemKey`, so one-line and three-line items mix, and an item not drawn yet counts as the mean of those that have been (`estimateSize` before any has). While the list scrolls its height holds still, so a dragged scrollbar thumb stays under the pointer, and what it measured meanwhile lands once the scroll stops. The scroller is found rather than declared: the nearest ancestor that scrolls, or the page. Each item carries `aria-setsize` and `aria-posinset`, the item focus is in stays rendered, and `onRangeChange` is where an endless list fetches its next page.
 
 ```tsx
 <VirtualList items={messages} itemKey={(message) => message.id}>
@@ -135,7 +135,7 @@ The actions are real buttons in the tab order, and focus reaching one opens its 
 </VirtualList>
 ```
 
-`List.Chevron` is new too: the chevron `chevron` ends an item with, for an item something else draws. On top of Box, and counting the `List` each one draws, `SwipeItem` is 5.4 KB gzipped, `SortableList` 5.7 KB and `VirtualList` 4.1 KB. See [Swipe actions, reorder and long lists](https://www.box-kite.dev/list/#swipe).
+`List.Chevron` is new too: the chevron `chevron` ends an item with, for an item something else draws. On top of Box, and counting the `List` each one draws, `SwipeItem` is 5.4 KB gzipped, `SortableList` 5.7 KB and `VirtualList` 4.5 KB. See [Swipe actions, reorder and long lists](https://www.box-kite.dev/list/#swipe).
 
 ## Breaking changes
 

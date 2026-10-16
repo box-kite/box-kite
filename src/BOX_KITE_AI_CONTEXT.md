@@ -2072,7 +2072,8 @@ press on another item then drops it there — the single-pointer way WCAG 2.5.7 
 items in the order you hold; a refused move is just not applied.
 
 **`VirtualList` measures each item it draws** and keeps the height by `itemKey`, so mixed heights work;
-an undrawn item counts as `estimateSize`. The scroller is the nearest ancestor that scrolls, else the
+an undrawn item counts as the mean of those drawn (`estimateSize` before any is), and the list holds its
+height while it scrolls, since a scrollbar drag loses a move whenever it changes. The scroller is the nearest ancestor that scrolls, else the
 page; `scrollerRef` overrides. Each item gets `aria-setsize`/`aria-posinset`, the item focus is in
 stays rendered, and an item above the screen that turns out taller than estimated scrolls the list by
 the difference so nothing on screen moves. Groups and sticky labels need the whole list and do not

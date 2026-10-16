@@ -57,6 +57,12 @@ describe('MeasuredWindow', () => {
     });
   });
 
+  it('counts a row not yet drawn as the mean of the rows that have been, or the fallback before any has', () => {
+    expect(MeasuredWindow.typicalSize([50, 70, 90], 57)).toBe(70);
+    expect(MeasuredWindow.typicalSize(new Map([['a', 40]]).values(), 57)).toBe(40);
+    expect(MeasuredWindow.typicalSize([], 57)).toBe(57);
+  });
+
   it('renders nothing for an empty list', () => {
     expect(MeasuredWindow.measuredWindow({ offsets: [0], viewStart: 0, viewEnd: 100 })).toEqual({
       startIndex: 0,

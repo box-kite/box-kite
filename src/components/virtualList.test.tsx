@@ -82,7 +82,7 @@ describe('VirtualList', () => {
     expect(onRangeChange).toHaveBeenLastCalledWith({ startIndex: 4998, endIndex: 5016 });
   });
 
-  it('keeps a measured height by key, and moves what is below it', () => {
+  it('keeps a measured height by key, and counts an item not yet drawn as the mean of those that have been', () => {
     vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (this: HTMLElement) {
       const height = this.tagName === 'LI' ? (this.textContent === 'Message 1' ? 120 : 57) : 0;
 
@@ -90,7 +90,63 @@ describe('VirtualList', () => {
     });
     render(<Messages />);
 
-    expect(screen.getByRole('list').style.paddingBlockEnd).toBe(`${(10_000 - 15) * 57}px`);
+    // The first frame draws `initialCount`, twenty, and measures them all: those past the screen keep their own 57px.
+    const drawn = screen.getAllByRole('listitem').length;
+    const mean = (120 + 19 * 57) / 20;
+    expect(parseFloat(screen.getByRole('list').style.paddingBlockEnd)).toBeCloseTo((20 - drawn) * 57 + (10_000 - 20) * mean, 3);
+  });
+
+  it('holds its height still while it scrolls, and takes in what it measured once the scroll stops', async () => {
+    let tall = false;
+    let listTop = 0;
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (this: HTMLElement) {
+      if (this.tagName === 'UL') return { top: listTop, bottom: 0, height: 0 } as DOMRect;
+      // The items far down the list are taller than the ones at the top it measured first.
+      const height = this.tagName === 'LI' ? (tall && !/^Message \d{1,2}$/.test(this.textContent ?? '') ? 100 : 57) : 0;
+
+      return { top: 0, bottom: height, height } as DOMRect;
+    });
+    render(<Messages />);
+    const list = screen.getByRole('list');
+    // What the scrollbar reads: the space above, every item drawn, and the space below.
+    const height = () =>
+      parseFloat(list.style.paddingBlockStart) +
+      screen.getAllByRole('listitem').length * (tall ? 100 : 57) +
+      parseFloat(list.style.paddingBlockEnd);
+    expect(height()).toBe(10_000 * 57);
+
+    // A scroll halfway down draws items taller than any measured so far — a scrollbar drag would lose its next move.
+    tall = true;
+    listTop = -57 * 5000;
+    fireEvent.scroll(window);
+    await frame();
+    expect(subjects()[0]).toMatch(/^Message 49\d\d$/);
+    expect(height()).toBe(10_000 * 57);
+
+    await act(() => new Promise((resolve) => setTimeout(resolve, 200)));
+    expect(height()).toBeGreaterThan(10_000 * 57);
+  });
+
+  it('gives its held height up once the last item is drawn, where it would be blank space', async () => {
+    let short = false;
+    let listTop = 0;
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (this: HTMLElement) {
+      if (this.tagName === 'UL') return { top: listTop, bottom: 0, height: 0 } as DOMRect;
+      const height = this.tagName === 'LI' ? (short ? 40 : 57) : 0;
+
+      return { top: 0, bottom: height, height } as DOMRect;
+    });
+    render(<Messages />);
+    const list = screen.getByRole('list');
+
+    // Items shorter than the held estimate: the list's real end is above the height it is holding.
+    short = true;
+    listTop = -57 * 9990;
+    fireEvent.scroll(window);
+    await frame();
+
+    expect(subjects().at(-1)).toBe('Message 10000');
+    expect(list.style.paddingBlockEnd).toBe('0px');
   });
 
   it('keeps the item focus is in while the list scrolls away from it', async () => {

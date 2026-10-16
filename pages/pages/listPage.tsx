@@ -642,9 +642,10 @@ const toggleNotifications = () => {};`}
             <Box>
               <Mono>VirtualList</Mono> (<Mono>@box-kite/react/components/virtualList</Mono>) renders the items near the screen and makes the
               rest space. Each item drawn is measured and kept by its <Mono>itemKey</Mono>, so items of different heights mix; one not drawn
-              yet counts as <Mono>estimateSize</Mono>. The scroller is found rather than declared — the nearest one that scrolls, or the
-              page — and each item carries <Mono>aria-setsize</Mono> and <Mono>aria-posinset</Mono>, so a reader hears &quot;12 of
-              10,000&quot;. <Mono>onRangeChange</Mono> is where an endless list fetches its next page.
+              yet counts as the mean of those that have been, and the list holds its height while it scrolls, so a dragged scrollbar thumb
+              stays under the pointer. The scroller is found rather than declared — the nearest one that scrolls, or the page — and each
+              item carries <Mono>aria-setsize</Mono> and <Mono>aria-posinset</Mono>, so a reader hears &quot;12 of 10,000&quot;.{' '}
+              <Mono>onRangeChange</Mono> is where an endless list fetches its next page.
             </Box>
             <Code
               language="jsx"

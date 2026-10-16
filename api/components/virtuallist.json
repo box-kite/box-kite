@@ -31,7 +31,7 @@
       "type": "number",
       "required": false,
       "default": "57",
-      "description": "What an item is taken to measure before it has been drawn, in px. Default 57, a `md` item and its divider."
+      "description": "What an item counts as until one has been drawn, in px — then the mean of those drawn. Default 57, a `md` item."
     },
     {
       "name": "overscan",

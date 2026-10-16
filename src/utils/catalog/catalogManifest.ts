@@ -1370,7 +1370,10 @@ const catalogManifest: CatalogManifest = {
       slots: [],
       events: ['itemKey', 'children', 'onRangeChange'],
       props: {
-        estimateSize: { type: 'number', description: 'What an item is taken to measure before it has been drawn, in px.' },
+        estimateSize: {
+          type: 'number',
+          description: 'What an item counts as until one has been drawn, in px — then the mean of those drawn.',
+        },
         overscan: { type: 'number', description: 'Items kept either side of what is on screen, so a fast scroll has something to show.' },
         initialCount: {
           type: 'number',

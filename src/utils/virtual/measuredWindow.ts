@@ -26,6 +26,18 @@ namespace MeasuredWindow {
     return offsets;
   }
 
+  /** What a row not yet drawn counts as: the mean of the rows that have been, or `fallback` before any has. */
+  export function typicalSize(sizes: Iterable<number>, fallback: number): number {
+    let sum = 0;
+    let count = 0;
+    for (const size of sizes) {
+      sum += size;
+      count++;
+    }
+
+    return count ? sum / count : fallback;
+  }
+
   export interface MeasuredWindowOptions {
     /** From `offsetsOf`. */
     offsets: readonly number[];

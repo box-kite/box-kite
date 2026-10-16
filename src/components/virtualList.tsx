@@ -7,6 +7,24 @@ import { scrollParentOf } from '../utils/scroll/scrollUtils';
 import MeasuredWindow from '../utils/virtual/measuredWindow';
 import List, { ListProps } from './list';
 
+interface Anchor {
+  element: Element;
+  top: number;
+}
+
+/** The first item on screen, and where its top is. */
+function anchorIn(list: Element, viewTop: number): Anchor | null {
+  for (const element of Array.from(list.children)) {
+    const rect = element.getBoundingClientRect();
+    if (rect.bottom > viewTop) return { element, top: rect.top };
+  }
+
+  return null;
+}
+
+/** How long a scroll has to have stopped before the measurements made during it change the list's height. */
+const SETTLE_MS = 150;
+
 export interface VirtualListRange {
   /** The first item rendered. */
   startIndex: number;
@@ -21,7 +39,7 @@ export interface VirtualListProps<TItem, TKey extends keyof ComponentsAndVariant
   itemKey: (item: TItem, index: number) => Key;
   /** Draws one item: a `List.Item`, a `SwipeItem` — one `<li>` per item, and nothing around it. */
   children: (item: TItem, index: number) => React.ReactNode;
-  /** What an item is taken to measure before it has been drawn, in px. Default 57, a `md` item and its divider. */
+  /** What an item counts as until one has been drawn, in px — then the mean of those drawn. Default 57, a `md` item. */
   estimateSize?: number;
   /** Items kept either side of what is on screen, so a fast scroll has something to show. Default 6. */
   overscan?: number;
@@ -49,9 +67,10 @@ export interface VirtualListProps<TItem, TKey extends keyof ComponentsAndVariant
  *
  * **It is a `List`** — every look and every part — that draws a window of its items. **Items keep their own
  * height**: each one drawn is measured, and kept by its `itemKey`, so a one-line item and a three-line one
- * mix and an item that grows (an image loading, a description opening) moves what is below it. Until an
- * item has been drawn it counts as `estimateSize`, so the scrollbar is right to within the estimate and gets
- * righter as the list is read.
+ * mix and an item that grows (an image loading, a description opening) moves what is below it. An item not
+ * drawn yet counts as the mean of those that have been (`estimateSize` before any has), and while the list
+ * scrolls its height holds still — a scrollbar thumb loses its next move whenever it changes — taking in what
+ * it measured once the scroll stops.
  *
  * **The scroller is found, not declared**: the nearest ancestor that scrolls, or the page itself — which on a
  * phone is usually what scrolls a list. `scrollerRef` names one when that guess is wrong.
@@ -103,14 +122,24 @@ function VirtualListImpl<TItem, TKey extends keyof ComponentsAndVariants = 'list
     [ref],
   );
 
+  // Chrome drops the next move of a scrollbar drag whenever the scroll height changes, so while the list scrolls its
+  // height and its estimate hold still, and the measurements made meanwhile settle once it stops.
+  const [hold, setHold] = useState<{ count: number; total: number; estimate: number } | null>(null);
+
   const keys = useMemo(() => items.map((item, index) => itemKey(item, index)), [items, itemKey]);
-  const offsets = useMemo(() => MeasuredWindow.offsetsOf(keys.map((key) => sizes.get(key) ?? estimateSize)), [keys, sizes, estimateSize]);
-  const latest = useLatest({ offsets, pin, overscan, count: items.length });
+  const typical = useMemo(() => MeasuredWindow.typicalSize(sizes.values(), estimateSize), [sizes, estimateSize]);
+  // An item added or removed meanwhile is a different list, whose height is not the one held.
+  const held = hold?.count === items.length ? hold : null;
+  const estimate = held ? held.estimate : typical;
+  const offsets = useMemo(() => MeasuredWindow.offsetsOf(keys.map((key) => sizes.get(key) ?? estimate)), [keys, sizes, estimate]);
+  const total = offsets[items.length];
+  const latest = useLatest({ offsets, pin, overscan, count: items.length, total, estimate });
+  // An item on screen and where it was, taken before a change that moves what is above it.
+  const anchor = useRef<Anchor | null>(null);
 
   // Fewer items than the window reached — a filter, a delete — pulls the window back inside the list.
   const startIndex = Math.min(range.startIndex, Math.max(0, items.length - 1));
   const endIndex = Math.min(Math.max(range.endIndex, startIndex), items.length);
-  const total = offsets[items.length];
 
   /** Which items the screen shows now, read off the list's place under the scroller. */
   const update = useEventCallback(() => {
@@ -148,6 +177,12 @@ function VirtualListImpl<TItem, TKey extends keyof ComponentsAndVariants = 'list
     const scroller = scrollerRef?.current ?? scrollParentOf(list);
     const viewTop = scroller ? scroller.getBoundingClientRect().top : 0;
     const gap = parseFloat(getComputedStyle(list).rowGap) || 0;
+
+    // Read off the page rather than worked out, so a scroll the browser clamped at the end is counted too.
+    const moved = anchor.current;
+    anchor.current = null;
+    if (moved?.element.isConnected) above += moved.element.getBoundingClientRect().top - moved.top;
+
     Array.from(list.children).forEach((child, index) => {
       const position = startIndex + index;
       const key = keys[position];
@@ -159,7 +194,7 @@ function VirtualListImpl<TItem, TKey extends keyof ComponentsAndVariants = 'list
       // A height of zero is an environment that lays nothing out, not an empty item: the estimate stands.
       const rect = child.getBoundingClientRect();
       const size = rect.height + gap;
-      const known = sizes.get(key) ?? estimateSize;
+      const known = sizes.get(key) ?? estimate;
       if (rect.height > 0 && sizes.get(key) !== size) {
         measured ??= new Map(sizes);
         measured.set(key, size);
@@ -176,8 +211,11 @@ function VirtualListImpl<TItem, TKey extends keyof ComponentsAndVariants = 'list
       target?.scrollTo({ top: top + above, behavior: 'instant' });
     }
 
-    if (measured) setSizes(measured);
-    else update();
+    if (measured) {
+      // A new measurement is a new estimate for every item not yet drawn, those above the screen included.
+      anchor.current = anchorIn(list, viewTop);
+      setSizes(measured);
+    } else update();
   });
 
   // A later change of height — an image arriving, a description opening — is a measurement too.
@@ -200,22 +238,55 @@ function VirtualListImpl<TItem, TKey extends keyof ComponentsAndVariants = 'list
     const scroller = scrollerRef?.current ?? scrollParentOf(list);
     const target: HTMLElement | Window = scroller ?? view;
     let frame = 0;
+    let pressed = false;
+    let settle = 0;
     const schedule = () => {
       if (!frame) frame = requestAnimationFrame(() => ((frame = 0), update()));
     };
+    const holdStill = () => {
+      const { count, total: heldTotal, estimate: heldEstimate } = latest.current!;
+      setHold((current) => current ?? { count, total: heldTotal, estimate: heldEstimate });
+      clearTimeout(settle);
+      // A thumb held still is still a drag: it settles once the pointer is up and the scrolling has stopped.
+      settle = view.setTimeout(() => {
+        if (pressed) return;
+        anchor.current = anchorIn(list, scroller ? scroller.getBoundingClientRect().top : 0);
+        setHold(null);
+      }, SETTLE_MS);
+    };
+    const onScroll = () => {
+      holdStill();
+      schedule();
+    };
+    const onPress = () => {
+      pressed = true;
+      holdStill();
+    };
+    const onRelease = () => {
+      if (!pressed) return;
+      pressed = false;
+      holdStill();
+    };
 
-    target.addEventListener('scroll', schedule, { passive: true });
+    target.addEventListener('scroll', onScroll, { passive: true });
+    target.addEventListener('pointerdown', onPress, { capture: true, passive: true });
+    view.addEventListener('pointerup', onRelease, true);
+    view.addEventListener('pointercancel', onRelease, true);
     view.addEventListener('resize', schedule);
     const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(schedule);
     if (scroller) observer?.observe(scroller);
 
     return () => {
       cancelAnimationFrame(frame);
-      target.removeEventListener('scroll', schedule);
+      clearTimeout(settle);
+      target.removeEventListener('scroll', onScroll);
+      target.removeEventListener('pointerdown', onPress, true);
+      view.removeEventListener('pointerup', onRelease, true);
+      view.removeEventListener('pointercancel', onRelease, true);
       view.removeEventListener('resize', schedule);
       observer?.disconnect();
     };
-  }, [scrollerRef, update]);
+  }, [scrollerRef, update, latest]);
 
   useEffect(() => {
     rangeHandler({ startIndex: range.startIndex, endIndex: range.endIndex });
@@ -246,7 +317,11 @@ function VirtualListImpl<TItem, TKey extends keyof ComponentsAndVariants = 'list
       // below must not transition, as every Box's `all` would have it — the window would slide instead of being there.
       css={{ ...css, overflowAnchor: 'none' }}
       transition="none"
-      style={{ paddingBlockStart: `${offsets[startIndex]}px`, paddingBlockEnd: `${Math.max(0, total - offsets[endIndex])}px` }}
+      style={{
+        paddingBlockStart: `${offsets[startIndex]}px`,
+        // Once the last item is drawn the end is known, and a held height would be blank space under it.
+        paddingBlockEnd: `${Math.max(0, (held && endIndex < items.length ? held.total : total) - offsets[endIndex])}px`,
+      }}
       props={{ ...tagProps, onFocus: handleFocus, onBlur: handleBlur }}
     >
       {rendered}
