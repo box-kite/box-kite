@@ -1964,6 +1964,7 @@ three slots**, and the content is a column of rows:
 | `List.Fields`      | `<dl>`                         | Labelled values, as many to a line as fit at 8rem                                                              |
 | `List.Field`       | `<div>` + `<dt>` + `<dd>`      | `label` and the value                                                                                          |
 | `List.Group`       | `<li>` + `<ul>`                | A section: `label`, `level` (makes the label a heading), `sticky`                                              |
+| `List.Chevron`     | `<span aria-hidden>`           | The chevron `chevron` draws, for an item something else renders                                                |
 
 **One action covers the item.** `List.Action`'s `::after` stretches over the whole `<li>`, so a press
 anywhere on the item is a press on it and the focus ring draws round the item — while its accessible
@@ -2005,6 +2006,81 @@ It is a `<ul role="list">` — the role spelled out because Safari stops reporti
 lost their markers — and **not a composite widget**: each action is a tab stop, Enter follows or presses
 it, and the arrow keys stay the page's. Arrow-key selection among options is a listbox: `Combobox` or
 `Select`.
+
+### Swipe actions, reorder and a long list
+
+Three client-only entries on top of `List`, so `List` itself stays server-safe. Each item they draw is a
+`List.Item` in everything but name — same parts, same sizes, same `list.item` paint.
+
+```tsx
+import SwipeItem from '@box-kite/react/components/swipeItem';
+import SortableList from '@box-kite/react/components/sortableList';
+import VirtualList from '@box-kite/react/components/virtualList';
+
+<SwipeItem
+  fullSwipe
+  startActions={
+    <SwipeItem.Action variant="accent" onClick={pin}>
+      Pin
+    </SwipeItem.Action>
+  }
+  endActions={
+    <SwipeItem.Action variant="danger" onClick={remove}>
+      Delete
+    </SwipeItem.Action>
+  }
+>
+  <List.Content>…</List.Content>
+</SwipeItem>;
+
+<SortableList onOrderChange={(order) => setIds(order)} onOrderCommit={save}>
+  {ids.map((id) => (
+    <SortableList.Item key={id} value={id} label={names[id]}>
+      <List.Content>…</List.Content>
+      <SortableList.Handle />
+    </SortableList.Item>
+  ))}
+</SortableList>;
+
+<VirtualList items={messages} itemKey={(message) => message.id} onRangeChange={loadMore}>
+  {(message) => <List.Item>…</List.Item>}
+</VirtualList>;
+```
+
+| Component             | Props                                                                                                                                                                               |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `SwipeItem`           | `startActions`, `endActions` (the first of each is outermost), `fullSwipe`, `open`/`defaultOpen`/`onOpenChange`, and `List.Item`'s `size`/`wrap`/`selected`/`chevron`               |
+| `SwipeItem.Action`    | A `<button>`: `variant` `accent`/`warning`/`danger` (unset is neutral), `icon`, `onClick`, `closeOnSelect` (default `true`)                                                         |
+| `SortableList`        | Everything `List` takes, `onOrderChange(order, { reason, value, from, to })`, `onOrderCommit` (the drop — the one to save)                                                          |
+| `SortableList.Item`   | Everything `List.Item` takes, `value` (required, unique), `label` (what the handle and announcements call it), `disabled`                                                           |
+| `SortableList.Handle` | The `<button>` a drag starts from; six dots unless given children; named "Move" + the item's `label`                                                                                |
+| `VirtualList`         | Everything `List` takes, `items`, `itemKey`, `children` (a function returning one `<li>`), `estimateSize` (57), `overscan` (6), `initialCount` (20), `onRangeChange`, `scrollerRef` |
+
+**`SwipeItem`'s row slides and a tray opens in the space it leaves** — nothing is under the row, so it
+needs no background. Past half open opens, short of it closes, a flick goes the way it was going, and
+`fullSwipe` carried most of the way across performs the outermost action (it clicks it, so its `onClick`
+is the one place the command lives). A press on an open item closes it instead of following the action.
+The actions are real buttons in the tab order and focus reaching one opens its tray; Escape closes it.
+A swipe is a path gesture (WCAG 2.5.1), so put the same commands somewhere a press reaches too.
+
+**`SortableList`: the app owns the order.** During a drag nothing is reordered — the item follows the
+pointer, its neighbours step aside as inline translates — and `onOrderChange` fires once, on the drop,
+which then glides into place (the Web Animations API, from where it was drawn). The keyboard is a grab,
+DashboardGrid's model: Enter/Space picks up, ArrowUp/ArrowDown/Home/End move (reporting each step),
+Enter drops, Escape puts back. A press on a handle that does not drag also picks the item up, and a
+press on another item then drops it there — the single-pointer way WCAG 2.5.7 asks for. Render the
+items in the order you hold; a refused move is just not applied.
+
+**`VirtualList` measures each item it draws** and keeps the height by `itemKey`, so mixed heights work;
+an undrawn item counts as `estimateSize`. The scroller is the nearest ancestor that scrolls, else the
+page; `scrollerRef` overrides. Each item gets `aria-setsize`/`aria-posinset`, the item focus is in
+stays rendered, and an item above the screen that turns out taller than estimated scrolls the list by
+the difference so nothing on screen moves. Groups and sticky labels need the whole list and do not
+window; find-in-page cannot see an unrendered item.
+
+Styling: `swipeItem.row`/`swipeItem.tray` (`dragging` variants), `swipeItem.action` (the three colour
+variants, `armed`), `sortableList.handle` (`grabbed`), and on `list.item` the `lifted` (dragged),
+`grabbed` (keyboard) and `settling` variants. `List.Chevron` is the item's chevron as a part.
 
 ---
 

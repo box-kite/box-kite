@@ -71,6 +71,9 @@ export const entries = [
   { name: 'Presence', route: '/animation', group: 'feedback', note: 'The ~1 KB that lets a node animate on its way out.' },
 
   { name: 'List', route: '/list', group: 'data', note: 'Rows to read and pick from, one action covering each item.' },
+  { name: 'SwipeItem', route: '/list', group: 'data', note: 'A list item that slides aside to show its commands — here, open.' },
+  { name: 'SortableList', route: '/list', group: 'data', note: 'Items put in order by a handle, or by the keyboard’s grab.' },
+  { name: 'VirtualList', route: '/list', group: 'data', note: 'A thousand items, a dozen of them in the DOM.' },
   { name: 'DataGrid', route: '/datagrid', group: 'data', note: 'Four rows of the grid that does a million.' },
   { name: 'DashboardGrid', route: '/dashboard', group: 'data', note: 'A layout in cells, compacted upward. Add editable for the handles.' },
   { name: 'Widget', route: '/dashboard', group: 'data', note: 'The chrome, and its four states — here: filled, loading, empty.' },

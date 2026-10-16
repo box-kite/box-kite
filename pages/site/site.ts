@@ -274,7 +274,7 @@ export const siteRoutes = [
     path: '/list',
     name: 'List',
     description:
-      'A list of things to read and pick from: rows of leading media, text and trailing values, one action covering each item, and no JavaScript.',
+      'A list of things to read and pick from — one action covering each item — with swipe actions, drag to reorder and a windowed long list.',
   },
   {
     path: '/slider',

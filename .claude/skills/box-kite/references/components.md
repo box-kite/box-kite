@@ -104,6 +104,15 @@ the items as `--list-divider`, `--list-divider-inset`, `--list-item-frame`, `--l
 `--list-sticky-top`, set with `vars`. The tree is paint only (`list`, `list.item`, `list.media`, `list.muted`,
 `list.action`, `list.label`); the spacing is the parts' own default props, which a prop on the part beats.
 
+Three client-only entries build on it. `SwipeItem` (`components/swipeItem`) is a `List.Item` whose row slides aside:
+`startActions`/`endActions` of `SwipeItem.Action` (`variant` `accent`/`warning`/`danger`, `icon`), `fullSwipe` to
+perform the outermost by swiping across, `open`/`onOpenChange`; the actions are tab stops and focus opens their tray.
+`SortableList` (`components/sortableList`) reorders `SortableList.Item`s (`value`, `label`) by a `SortableList.Handle`:
+the app owns the order, `onOrderChange(order, { reason, value, from, to })` fires on the drop and on each keyboard step
+(Enter/Space grabs, arrows move, Escape puts back), `onOrderCommit` once it settles. `VirtualList`
+(`components/virtualList`) windows `items` through a `children(item, index)` that returns one `<li>`, measuring each
+item by `itemKey`; `estimateSize`, `overscan`, `onRangeChange`, `scrollerRef`. `List.Chevron` is the chevron as a part.
+
 ## Slider and Progress
 
 ```tsx

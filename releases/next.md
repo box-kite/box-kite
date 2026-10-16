@@ -10,6 +10,7 @@ _Unreleased. A PR that changes what a consumer sees adds its section here — se
 
 - **[A design can stop at the edge of a subtree](#a-design-can-stop-at-the-edge-of-a-subtree)** — two designs on one page, one stylesheet.
 - **[A list of things to read and pick from](#a-list-of-things-to-read-and-pick-from-list)** — rows of media, text and a value, one action covering each item, rendered on a server.
+- **[A list item can be swiped, a list put in order, and a long list windowed](#a-list-item-can-be-swiped-a-list-put-in-order-and-a-long-list-windowed)** — swipe actions, drag to reorder with a keyboard grab, and a measured window for ten thousand items.
 - **[On a phone, a DataGrid is a list](#on-a-phone-a-datagrid-is-a-list)** — a list item per row, the row in a sheet, sort and filters in sheets.
 - **[Every block has a page of its own](#every-block-has-a-page-of-its-own)** — the block running in light and dark, every file it writes, and a link from `get_blocks`.
 
@@ -61,6 +62,7 @@ Messages, orders, people, settings: most screens are a list of things of one kin
 ```
 
 `List.Action` covers the whole item, so a press anywhere on it follows the link, while a screen reader hears only the title. Given an `htmlFor`, the action is a checkbox's label, and the list becomes a pick-list. A switch or a menu goes in `List.Actions`, above it. There are four looks (divided, `plain`, `card` and `separated`), three item sizes, and groups whose labels can stick to the top as their items scroll. The list renders on a server with no JavaScript, and in any theme, since its lines and tints are mixed from the text colour. It adds 2.2 KB gzipped on top of Box. See [List](https://www.box-kite.dev/list/).
+
 ## On a phone, a DataGrid is a list
 
 A table does not fit a phone, and shrinking one only makes it unreadable. Below 576px of **its own width** the DataGrid now draws each row as a list item: a title with one value opposite it, a line above or under it, and a few labelled values. Pressing an item opens the whole row in a bottom sheet, one row at a time, with a pager you can also swipe. Sort and filters move into sheets behind two buttons, and the filters in force sit under the search as removable chips. Selecting is a mode, with a bar pinned to the bottom of the screen. The list grows twenty items per **Show more**, or pages when you paginate. It is the same grid with the same rows, filters, sort, grouping, tree, selection and edits, and an editable column is edited from the row's sheet through the same `onCellEdit`.
@@ -78,6 +80,62 @@ columns: [
 A column with no `list` role still lands somewhere sensible: the first column is the title, the first end-aligned one sits opposite it, the next four are fields and the rest wait for the row's sheet. The markup is a `<ul>` with a `<dl>` per item, so every value keeps its label for a screen reader. The sheets and the row view are a separate chunk, 7.8 KB gzipped, fetched only when a grid is narrow.
 
 **A grid that is narrower than 576px today will draw a list after this update.** That includes a grid in a sidebar or a dashboard widget on a wide screen, because the switch follows the grid's own width, not the screen's. To keep the table there, set `def.layout: 'table'`. `def.list.breakpoint` moves the switch. Each row is a [`List.Item`](https://www.box-kite.dev/list/), so a `Box.components({ list: … })` of yours styles the grid's rows too. See [On a phone, a list](https://www.box-kite.dev/datagrid/#mobile).
+
+## A list item can be swiped, a list put in order, and a long list windowed
+
+Three components finish what `<List>` started, each its own client-only entry so `List` itself still renders on a server.
+
+**`<SwipeItem>`** is a `List.Item` whose row slides aside to show the commands under it, the way Mail's archive and delete work. `startActions` and `endActions` hold `SwipeItem.Action` buttons; past half open a tray opens, short of it it closes, and a flick goes the way it was going. With `fullSwipe`, carrying it most of the way across performs the outermost action. A press on an open item closes it rather than following its link, and the whole thing mirrors in a right-to-left page.
+
+```tsx
+<SwipeItem
+  fullSwipe
+  endActions={
+    <SwipeItem.Action variant="danger" onClick={() => remove(id)}>
+      Delete
+    </SwipeItem.Action>
+  }
+>
+  <List.Content>
+    <List.Title>
+      <List.Action props={{ href: `/inbox/${id}` }}>Ada Lovelace</List.Action>
+    </List.Title>
+  </List.Content>
+</SwipeItem>
+```
+
+The actions are real buttons in the tab order, and focus reaching one opens its tray, so a keyboard and a screen reader find them without swiping. A swipe is still a shortcut: put the same commands somewhere a press reaches too.
+
+**`<SortableList>`** is a `List` whose items are dragged by a `SortableList.Handle`. The app owns the order: `onOrderChange` reports it as the items' `value`s and the list draws whatever order it is given, so a refused move is simply not applied. During a drag the item follows the pointer and its neighbours step aside; the order changes once, on the drop, which glides into place, and the list scrolls when the drag nears its edge. The keyboard gets DashboardGrid's grab: Enter or Space picks an item up, the arrows move it, Enter drops it and Escape puts it back, each step announced. A press on a handle that does not drag picks the item up too, and a press on another item then drops it there, which is a way to reorder for a pointer that cannot drag.
+
+```tsx
+<SortableList onOrderChange={(order) => setIds(order)} onOrderCommit={save}>
+  {ids.map((id) => (
+    <SortableList.Item key={id} value={id} label={names[id]}>
+      <List.Content>
+        <List.Title>{names[id]}</List.Title>
+      </List.Content>
+      <SortableList.Handle />
+    </SortableList.Item>
+  ))}
+</SortableList>
+```
+
+**`<VirtualList>`** draws a window of a list too long to render whole. Each item drawn is measured and kept by its `itemKey`, so one-line and three-line items mix, and an item not drawn yet counts as `estimateSize`. The scroller is found rather than declared: the nearest ancestor that scrolls, or the page. Each item carries `aria-setsize` and `aria-posinset`, the item focus is in stays rendered, and `onRangeChange` is where an endless list fetches its next page.
+
+```tsx
+<VirtualList items={messages} itemKey={(message) => message.id}>
+  {(message) => (
+    <List.Item>
+      <List.Content>
+        <List.Title lines={1}>{message.subject}</List.Title>
+      </List.Content>
+    </List.Item>
+  )}
+</VirtualList>
+```
+
+`List.Chevron` is new too: the chevron `chevron` ends an item with, for an item something else draws. On top of Box, and counting the `List` each one draws, `SwipeItem` is 5.4 KB gzipped, `SortableList` 5.7 KB and `VirtualList` 4.1 KB. See [Swipe actions, reorder and long lists](https://www.box-kite.dev/list/#swipe).
 
 ## Breaking changes
 

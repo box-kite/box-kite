@@ -25,13 +25,16 @@ import RadioGroup from '../../src/components/radioGroup';
 import { H2 } from '../../src/components/semantics';
 import Skeleton from '../../src/components/skeleton';
 import Slider from '../../src/components/slider';
+import SortableList from '../../src/components/sortableList';
 import { G, Rect, Svg } from '../../src/components/svg';
+import SwipeItem from '../../src/components/swipeItem';
 import Switch from '../../src/components/switch';
 import Tabs from '../../src/components/tabs';
 import Textarea from '../../src/components/textarea';
 import Textbox from '../../src/components/textbox';
 import Toaster, { toast } from '../../src/components/toaster';
 import Tooltip from '../../src/components/tooltip';
+import VirtualList from '../../src/components/virtualList';
 import { DashboardLayout } from '../../src/utils/dashboard/dashboardUtils';
 import Code from '../components/code';
 import Mono from '../components/mono';
@@ -212,6 +215,8 @@ function Half({ name, theme }: { name: ShowcaseName; theme: 'light' | 'dark' }) 
  * `name` in one document are one radio group, so the light half and the dark half would otherwise
  * deselect each other. Everything else ignores it.
  */
+const THOUSAND = Array.from({ length: 1000 }, (_, index) => index);
+
 const demos: Record<ShowcaseName, (scope: string) => ReactNode> = {
   Button: () => (
     <Flex gap={3} flexWrap="wrap">
@@ -408,6 +413,64 @@ const demos: Record<ShowcaseName, (scope: string) => ReactNode> = {
         </List.Item>
       ))}
     </List>
+  ),
+
+  SwipeItem: () => (
+    <List variant="card">
+      <SwipeItem
+        defaultOpen="end"
+        endActions={
+          <>
+            <SwipeItem.Action variant="danger">Delete</SwipeItem.Action>
+            <SwipeItem.Action>Archive</SwipeItem.Action>
+          </>
+        }
+      >
+        <List.Media variant="avatar">AL</List.Media>
+        <List.Content>
+          <List.Title lines={1}>
+            <List.Action>Ada Lovelace</List.Action>
+          </List.Title>
+          <List.Description lines={1}>The engine might compose music.</List.Description>
+        </List.Content>
+      </SwipeItem>
+      <SwipeItem endActions={<SwipeItem.Action variant="danger">Delete</SwipeItem.Action>}>
+        <List.Media variant="avatar">GH</List.Media>
+        <List.Content>
+          <List.Title lines={1}>
+            <List.Action>Grace Hopper</List.Action>
+          </List.Title>
+          <List.Description lines={1}>The compiler ships on Friday.</List.Description>
+        </List.Content>
+      </SwipeItem>
+    </List>
+  ),
+
+  SortableList: () => (
+    <SortableList variant="card">
+      {['Plan', 'Build', 'Ship'].map((step) => (
+        <SortableList.Item key={step} value={step} size="sm">
+          <List.Content>
+            <List.Title>{step}</List.Title>
+          </List.Content>
+          <SortableList.Handle />
+        </SortableList.Item>
+      ))}
+    </SortableList>
+  ),
+
+  VirtualList: () => (
+    <Box maxHeight={40} overflowY="auto" borderRadius={3}>
+      <VirtualList variant="card" items={THOUSAND} itemKey={(index) => index}>
+        {(index) => (
+          <List.Item size="sm">
+            <List.Content>
+              <List.Title>Message {index + 1}</List.Title>
+            </List.Content>
+          </List.Item>
+        )}
+      </VirtualList>
+    </Box>
   ),
 
   DataGrid: () => (
