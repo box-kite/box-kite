@@ -2513,30 +2513,33 @@ named ones carry the reason.
 | `footer`                  | `boolean \| { label? }`               | `false`     | A pinned row of grand totals over every column with an `aggregate`. `label` replaces the default `Total`                                                                                                               |
 | `export`                  | `boolean \| ExportConfig`             | `false`     | Export buttons in the top bar: `{ csv?, xlsx?, fileName? }`. The writers load on the first press                                                                                                                       |
 | `tabNavigation`           | `'none' \| 'cells'`                   | `'none'`    | What Tab does. `'none'` is APG's single tab stop; `'cells'` is the spreadsheet reading                                                                                                                                 |
+| `layout`                  | `'auto' \| 'table' \| 'list'`         | `'auto'`    | A table, or a list once the grid's own width is under `list.breakpoint` (see "On a phone")                                                                                                                             |
+| `list`                    | `ListConfig`                          | —           | `{ breakpoint?, fields?, batchSize?, recordView? }` — the list layout's settings                                                                                                                                       |
 | `rangeSelection`          | `boolean`                             | `false`     | A drag or Shift+arrow marks a block of cells, and `Ctrl+C`/`Ctrl+V` copy and paste it as TSV (see below)                                                                                                               |
 
 ### ColumnType
 
-| Prop                     | Type                                                | Default   | Description                                                                                                                                     |
-| ------------------------ | --------------------------------------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| `key`                    | `Key`                                               | required  | Column identifier (maps to TRow property)                                                                                                       |
-| `header`                 | `string`                                            | —         | Header text                                                                                                                                     |
-| `width`                  | `number`                                            | `200`     | Base width in px                                                                                                                                |
-| `align`                  | `'start' \| 'end' \| 'center' \| 'left' \| 'right'` | `'left'`  | Cell alignment. `start`/`end` follow the reading order; `left`/`right` stay on the screen side they name                                        |
-| `pin`                    | `'START' \| 'END'` (also `'LEFT'`/`'RIGHT'`)        | —         | Pin to an edge of the **inline axis** (sticky on scroll), so it holds under either `dir`. `LEFT`/`RIGHT` are the older spelling of the same two |
-| `columns`                | `ColumnType[]`                                      | —         | Nested columns (grouped header)                                                                                                                 |
-| `Cell`                   | `({ cell }) => ReactNode`                           | —         | Custom renderer. `cell`: `{ value, row, column, grid }`. It redraws when its row changes or the grid does — not when another row is selected    |
-| `sortable` / `resizable` | `boolean`                                           | inherits  | Override grid-level setting                                                                                                                     |
-| `flexible`               | `boolean`                                           | `true`    | Participate in flex width distribution                                                                                                          |
-| `filterable`             | `boolean \| FilterConfig`                           | —         | `true` (text), `{ type: 'number', min?, max? }`, `{ type: 'multiselect', options? }`                                                            |
-| `contextMenu`            | `boolean \| ContextMenuConfig`                      | inherits  | Override grid-level context menu. `false` hides entirely. `{ sort?, pin?, group? }` controls sections                                           |
-| `aggregate`              | `AggregateName \| (values, rows) => value`          | —         | Total this column over each group row, and over the footer. See below                                                                           |
-| `AggregateCell`          | `({ cell }) => ReactNode`                           | —         | Renders the aggregate. `cell`: `{ value, column, rows, scope }`, `scope` being `'group'` or `'footer'`                                          |
-| `editable`               | `boolean \| (row) => boolean`                       | inherits  | Whether this column’s cells can be edited — every row, or the rows a predicate says                                                             |
-| `editor`                 | `CellEditorType \| CellEditorConfig`                | inferred  | `text`/`number`/`checkbox`/`select`. Without one it is read off the value in the cell                                                           |
-| `EditCell`               | `({ cell }) => ReactNode`                           | —         | An editor of your own, bound to `cell.draft` with `cell.commitEdit()`/`cell.cancelEdit()`                                                       |
-| `exportValue`            | `(row: TRow) => value`                              | the field | What this column writes to an exported file — an export runs no React, so a `Cell` renderer needs it                                            |
-| `exportFormat`           | `string`                                            | —         | The number format its cells wear in a workbook, `'#,##0.00'` or `'yyyy-mm-dd'`                                                                  |
+| Prop                     | Type                                                                            | Default   | Description                                                                                                                                     |
+| ------------------------ | ------------------------------------------------------------------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `key`                    | `Key`                                                                           | required  | Column identifier (maps to TRow property)                                                                                                       |
+| `header`                 | `string`                                                                        | —         | Header text                                                                                                                                     |
+| `width`                  | `number`                                                                        | `200`     | Base width in px                                                                                                                                |
+| `align`                  | `'start' \| 'end' \| 'center' \| 'left' \| 'right'`                             | `'left'`  | Cell alignment. `start`/`end` follow the reading order; `left`/`right` stay on the screen side they name                                        |
+| `pin`                    | `'START' \| 'END'` (also `'LEFT'`/`'RIGHT'`)                                    | —         | Pin to an edge of the **inline axis** (sticky on scroll), so it holds under either `dir`. `LEFT`/`RIGHT` are the older spelling of the same two |
+| `columns`                | `ColumnType[]`                                                                  | —         | Nested columns (grouped header)                                                                                                                 |
+| `Cell`                   | `({ cell }) => ReactNode`                                                       | —         | Custom renderer. `cell`: `{ value, row, column, grid }`. It redraws when its row changes or the grid does — not when another row is selected    |
+| `sortable` / `resizable` | `boolean`                                                                       | inherits  | Override grid-level setting                                                                                                                     |
+| `flexible`               | `boolean`                                                                       | `true`    | Participate in flex width distribution                                                                                                          |
+| `filterable`             | `boolean \| FilterConfig`                                                       | —         | `true` (text), `{ type: 'number', min?, max? }`, `{ type: 'multiselect', options? }`                                                            |
+| `contextMenu`            | `boolean \| ContextMenuConfig`                                                  | inherits  | Override grid-level context menu. `false` hides entirely. `{ sort?, pin?, group? }` controls sections                                           |
+| `aggregate`              | `AggregateName \| (values, rows) => value`                                      | —         | Total this column over each group row, and over the footer. See below                                                                           |
+| `AggregateCell`          | `({ cell }) => ReactNode`                                                       | —         | Renders the aggregate. `cell`: `{ value, column, rows, scope }`, `scope` being `'group'` or `'footer'`                                          |
+| `editable`               | `boolean \| (row) => boolean`                                                   | inherits  | Whether this column’s cells can be edited — every row, or the rows a predicate says                                                             |
+| `editor`                 | `CellEditorType \| CellEditorConfig`                                            | inferred  | `text`/`number`/`checkbox`/`select`. Without one it is read off the value in the cell                                                           |
+| `EditCell`               | `({ cell }) => ReactNode`                                                       | —         | An editor of your own, bound to `cell.draft` with `cell.commitEdit()`/`cell.cancelEdit()`                                                       |
+| `exportValue`            | `(row: TRow) => value`                                                          | the field | What this column writes to an exported file — an export runs no React, so a `Cell` renderer needs it                                            |
+| `list`                   | `'title' \| 'kicker' \| 'subtitle' \| 'end' \| 'field' \| 'detail' \| 'hidden'` | inferred  | Where the column goes in a list item, on a phone                                                                                                |
+| `exportFormat`           | `string`                                                                        | —         | The number format its cells wear in a workbook, `'#,##0.00'` or `'yyyy-mm-dd'`                                                                  |
 
 ### Aggregation
 
@@ -2831,6 +2834,65 @@ only gives it a bigger target.
 - **`onPaste({ range, applied, rejected, skipped })`** fires once for the whole block, after the values have
   landed, so `range.values()` reads what the grid now shows. Everything it accepted lands in the same
   stream a typed value does: `onCellEditsChange(edits, { reason: 'paste' })`.
+
+### On a phone: the list layout
+
+Below `def.list.breakpoint` (576px, 36rem) of **the grid's own width** — measured with a `ResizeObserver`, not read off the viewport — the grid draws each row as a list item instead of a table row. Same rows, filters, sort, selection, grouping, tree and edits; a different drawing. `layout: 'table'` or `layout: 'list'` chooses one for good.
+
+```tsx
+<DataGrid
+  data={orders}
+  def={{
+    title: 'Orders',
+    globalFilter: true,
+    rowSelection: true,
+    columns: [
+      { key: 'customer', header: 'Customer', list: 'title' },
+      { key: 'id', header: 'Order', list: 'kicker' },
+      { key: 'total', header: 'Total', align: 'end', list: 'end', filterable: { type: 'number' } },
+      { key: 'status', header: 'Status', Cell: StatusBadge, filterable: { type: 'multiselect' } },
+      { key: 'date', header: 'Date' },
+      { key: 'notes', header: 'Notes', list: 'detail' },
+    ],
+  }}
+/>
+```
+
+| `column.list` | Where the column goes                                                                            |
+| ------------- | ------------------------------------------------------------------------------------------------ |
+| `'title'`     | The item's name, 16px semibold, and the button that opens the record view                        |
+| `'kicker'`    | A small muted line above the title — an id, a date                                               |
+| `'subtitle'`  | A line under the title; several are joined with `·`                                              |
+| `'end'`       | The one value opposite the title, with its column's name under it — a total, a status            |
+| `'field'`     | A labelled value in the two-column `<dl>` under the title                                        |
+| `'detail'`    | Only the record view                                                                             |
+| `'hidden'`    | Nowhere in the list layout                                                                       |
+| (unset)       | First column → title, first end-aligned → end, next `def.list.fields` (4) → field, rest → detail |
+
+| `def.list`   | Default | Description                                                                                        |
+| ------------ | ------- | -------------------------------------------------------------------------------------------------- |
+| `breakpoint` | `576`   | The grid's own width, in px, below which `layout: 'auto'` draws the list                           |
+| `fields`     | `4`     | How many unassigned columns become fields before the rest wait for the record view                 |
+| `batchSize`  | `20`    | How many items one **Show more** adds. A paginated grid draws its page and a compact pager instead |
+| `recordView` | `true`  | Whether pressing an item opens the record view                                                     |
+
+What the list does, in the order a reader meets it:
+
+- **Toolbar**: the title and row count, a full-width search (`globalFilter`), then pills — **Sort** and **Filters** open bottom sheets, **Select** (with `rowSelection`) turns selecting on. The filters in force sit under them as chips, each removable on its own.
+- **Sort sheet**: one radio group of the sortable columns and one of the direction, applied as they are picked.
+- **Filter sheet**: a section per filterable column — a full-width field, the phone's own operator picker for a number, chips for eight options or fewer and a searchable checklist past that. A filter applies as it is set, and the main button reads **Show N rows**.
+- **Item**: a press opens the record view; while selecting it ticks the row instead, a checkbox leads every item and a bar pinned to the bottom of the viewport counts the selection, with **Select all** and **Clear selection**. A tree row carries its chevron before the title, a `rowDetail` row a **Details** toggle, a group is a section header with its count and aggregates.
+- **Record view**: every column of one row in a bottom sheet, with a pager (`3 of 40`) that follows the list's own sort and filters — the arrow buttons, Left/Right, or a sideways swipe. An editable column has an **Edit** button that opens the column's editor through the same `def.onCellEdit`. Closing hands focus to the item of the row on screen.
+- **Footer**: the `def.footer` totals as a summary block, then **Show more** (`20 of 340`) — a button, never an endless scroll, so the totals and the page below stay reachable — or the compact pager when the host paginates.
+
+Four things to know:
+
+1. **It is a list, not a restyled grid.** A `<ul>` of `<li>`s, each value in a `<dl>`, `aria-posinset`/`aria-setsize` on each item; the grid's APG keyboard is the table's alone. Do not reach for `role="grid"` in a list item.
+2. **It is a chunk of its own.** The sheets and the record view load the first time a grid is narrow (and on import, on a phone-width screen); until then the grid goes on drawing its table. In a test, `await loadListLayout()` from `components/dataGrid/useListLayout` before rendering.
+3. **Unmeasured is a table.** A server render cannot know the width, so `layout: 'auto'` prerenders the table and a phone switches before its first paint after hydration. Force `layout: 'list'` where the server knows better.
+4. **The selection bar sticks to the viewport**, so no ancestor of the grid may be a scroll container (`overflow: hidden`/`auto`): `overflow: clip` clips the same corners without being one. The grid itself switches to `clip` in the list layout.
+
+Styling: every row and group header is a `List.Item` (see List), so the `list` tree styles them — the dividers, the hover and pressed tints, `selected`, the muted text. The grid's own is `datagrid.list` > `toolbar` > (`count`, `search`, `button` with an `active` variant, `chip`), `toggle` (a tree's chevron, the Details toggle), `detail`, `button`, `selectionBar`, `sheet` > (`line`, `input`, `chip`, `button`, `primary`). Both trees carry paint only; the geometry is in the list's own chunk.
 
 ### ContextMenuConfig
 

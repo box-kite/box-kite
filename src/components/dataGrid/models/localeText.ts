@@ -113,6 +113,40 @@ export interface DataGridLocaleText {
   nextPage: string;
   lastPage: string;
 
+  // ===== Cards =====
+  /** The sort button before anything is sorted, and the sort sheet's title. */
+  sortBy: string;
+  /** The sort button once a column is sorted: the column and the direction. */
+  sortedBy: (column: string, descending: boolean) => string;
+  ascending: string;
+  descending: string;
+  /** The filters button and the filter sheet's title. */
+  filters: string;
+  /** The filters button's accessible name, with how many are set. */
+  filtersLabel: (count: number) => string;
+  /** The filter sheet's main button: it closes the sheet and says how many rows are left. */
+  showRows: (count: number) => string;
+  /** What closes a sheet or the record view. */
+  close: string;
+  /** The button under the cards: how many the next press adds. */
+  showMore: (count: number) => string;
+  /** Under the cards: how many of the rows are drawn. */
+  shownCount: (shown: number, total: number) => string;
+  /** The record view's pager: "3 of 40". */
+  recordPosition: (position: number, total: number) => string;
+  previousRow: string;
+  nextRow: string;
+  /** The heading over a `rowDetail` panel in the record view. */
+  details: string;
+  /** The toggle that puts the list into selecting, where a press ticks a row rather than opening it. */
+  selectRows: string;
+  clearSearch: string;
+  /** The record view's button beside an editable value; its name is `editCell`. */
+  edit: string;
+  /** The list's selection bar: how many rows are ticked, short enough for a phone's width. */
+  selectedRows: (count: number) => string;
+  selectAll: string;
+
   // ===== Announcements =====
   /** What the live region says when the selection changes. */
   selectionAnnouncement: (selected: number, total: number) => string;
@@ -199,6 +233,26 @@ export const DATA_GRID_LOCALE_TEXT: DataGridLocaleText = {
   previousPage: 'Previous page',
   nextPage: 'Next page',
   lastPage: 'Last page',
+
+  sortBy: 'Sort',
+  sortedBy: (column, descending) => `${column} ${descending ? '↓' : '↑'}`,
+  ascending: 'Ascending',
+  descending: 'Descending',
+  filters: 'Filters',
+  filtersLabel: (count) => (count > 0 ? `Filters, ${count} applied` : 'Filters'),
+  showRows: (count) => (count === 1 ? 'Show 1 row' : `Show ${count} rows`),
+  close: 'Close',
+  showMore: (count) => `Show ${count} more`,
+  shownCount: (shown, total) => `${shown} of ${total}`,
+  recordPosition: (position, total) => `${position} of ${total}`,
+  previousRow: 'Previous row',
+  nextRow: 'Next row',
+  details: 'Details',
+  selectRows: 'Select',
+  clearSearch: 'Clear search',
+  edit: 'Edit',
+  selectedRows: (count) => `${count} selected`,
+  selectAll: 'Select all',
 
   selectionAnnouncement: (selected, total) => (selected === 0 ? 'No rows selected' : `${selected} of ${total} rows selected`),
 };

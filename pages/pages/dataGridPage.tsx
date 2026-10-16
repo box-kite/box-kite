@@ -450,6 +450,74 @@ const deferredFilters = useDeferredValue(filters);
             <FullFeaturedDemo />
           </Code>
 
+          <Section id="mobile" title="On a phone, a list">
+            <Box>
+              A table does not fit a phone, and shrinking one only makes it unreadable. Below <Mono>def.list.breakpoint</Mono> (576px by
+              default) of <b>its own width</b> the grid draws each row as a list item instead: a title with one value opposite it, a line
+              above or under it, and a few labelled values. Pressing an item opens the whole row in a sheet, one row at a time, with a
+              pager. Sort, filters and the search move into a toolbar of bottom sheets. It is the same grid with the same rows, filters,
+              sort, selection and edits, drawn a different way. <Mono>layout: 'table'</Mono> or <Mono>'list'</Mono> chooses one for good.
+            </Box>
+            <Flex d="column" gap={3} mt={4}>
+              <Note icon={Table} title="A column says where it goes in an item">
+                <Mono>list: 'title' | 'kicker' | 'subtitle' | 'end' | 'field' | 'detail' | 'hidden'</Mono> on a column. Left alone, the
+                first column is the title, the first end-aligned one sits opposite it, the next four are fields (
+                <Mono>def.list.fields</Mono>) and the rest wait for the record view. A column's own <Mono>Cell</Mono> draws its value in
+                both layouts, so a badge is a badge in each.
+              </Note>
+              <Note icon={Filter} title="Filters are a sheet, and the button says what you will get">
+                Each filterable column gets a section with a control a finger can use: a full-width field, the phone's own number picker,
+                chips for a few options, a searchable checklist for many. A filter applies as you set it, so the main button already reads
+                “Show 42 rows”. The filters in force sit under the search as chips, each one removable.
+              </Note>
+              <Note icon={Table} title="Selecting is a mode">
+                A checkbox on every item is a target a thumb hits by accident, so <Mono>rowSelection</Mono> adds a Select button: while it
+                is on, a press ticks the row instead of opening it, and a bar pinned to the bottom of the screen counts what is ticked.
+              </Note>
+              <Note icon={Table} title="A list, not a restyled grid">
+                The markup is a <Mono>{'<ul>'}</Mono> of items with a <Mono>{'<dl>'}</Mono> in each, so every value keeps its label for a
+                screen reader, and each item says where it is with <Mono>aria-posinset</Mono>/<Mono>aria-setsize</Mono>. The list grows
+                twenty items per “Show more”, a button rather than an endless scroll, so the totals and the rest of the page stay reachable.
+              </Note>
+            </Flex>
+          </Section>
+
+          <Code
+            id="mobile-demo"
+            defer
+            label="The same grid, at a phone's width"
+            language="jsx"
+            context="declare const people: { first_name: string; last_name: string; job_title: string; email: string; salary: number; country: string; gender: string; age: number; city: string; phone_number: string }[];"
+            code={`<DataGrid
+  data={people}
+  def={{
+    title: 'People',
+    globalFilter: true,
+    rowSelection: true,
+    // 'auto' is the default: a list below 576px of the grid's own width.
+    layout: 'auto',
+    columns: [
+      {
+        key: 'first_name',
+        header: 'Name',
+        list: 'title',
+        Cell: ({ cell }) => \`\${cell.row.data.first_name} \${cell.row.data.last_name}\`,
+      },
+      { key: 'job_title', header: 'Job', list: 'kicker' },
+      { key: 'email', header: 'Email', list: 'subtitle' },
+      { key: 'salary', header: 'Salary', align: 'end', list: 'end', filterable: { type: 'number' } },
+      { key: 'country', header: 'Country', filterable: { type: 'multiselect' } },
+      { key: 'gender', header: 'Gender', filterable: { type: 'multiselect' } },
+      { key: 'age', header: 'Age', filterable: { type: 'number' } },
+      { key: 'city', header: 'City' },
+      { key: 'phone_number', header: 'Phone', list: 'detail' },
+    ],
+  }}
+/>`}
+          >
+            <MobileDemo />
+          </Code>
+
           <Code
             id="basic"
             defer
@@ -1894,6 +1962,59 @@ const LOCALIZED_DEF: GridDefinition<(typeof allData)[0]> = {
     { key: 'country', header: 'Land' },
   ],
 };
+
+const salaryFormat = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+
+function MobileDemo() {
+  const [phone, setPhone] = useState(true);
+
+  const def = useMemo<GridDefinition<(typeof allData)[number]>>(
+    () => ({
+      title: 'People',
+      globalFilter: true,
+      rowSelection: true,
+      topBar: true,
+      bottomBar: true,
+      visibleRowsCount: 8,
+      columns: [
+        {
+          key: 'first_name',
+          header: 'Name',
+          list: 'title',
+          Cell: ({ cell }) => `${cell.row.data.first_name} ${cell.row.data.last_name}`,
+          filterable: true,
+        },
+        { key: 'job_title', header: 'Job', list: 'kicker' },
+        { key: 'email', header: 'Email', list: 'subtitle' },
+        {
+          key: 'salary',
+          header: 'Salary',
+          align: 'end',
+          list: 'end',
+          width: 130,
+          filterable: { type: 'number' },
+          Cell: ({ cell }) => salaryFormat.format(cell.value as number),
+        },
+        { key: 'country', header: 'Country', filterable: { type: 'multiselect' } },
+        { key: 'gender', header: 'Gender', width: 120, filterable: { type: 'multiselect' } },
+        { key: 'age', header: 'Age', width: 90, align: 'end', list: 'field', filterable: { type: 'number' } },
+        { key: 'city', header: 'City' },
+        { key: 'phone_number', header: 'Phone', list: 'detail' },
+        { key: 'company_name', header: 'Company', list: 'detail' },
+      ],
+    }),
+    [],
+  );
+
+  return (
+    <Flex d="column" gap={4} width="fit">
+      <Switch checked={phone} onChange={(event) => setPhone(event.target.checked)} label="Phone width (390px)" />
+      <Box width="fit" maxWidth={phone ? 97.5 : undefined} mx={phone ? 'auto' : undefined}>
+        <DataGrid data={allData} def={def} />
+      </Box>
+    </Flex>
+  );
+}
 
 function ResizeModeDemo() {
   const [resizeMode, setResizeMode] = useState<'smooth' | 'instant'>('smooth');

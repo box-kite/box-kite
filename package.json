@@ -117,7 +117,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "38.44 KB"
+      "limit": "38.86 KB"
     },
     {
       "name": "Box in a Server Component (react-server entry)",
@@ -129,7 +129,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "36.47 KB"
+      "limit": "36.88 KB"
     },
     {
       "name": "Behavior primitives (a11y entry)",
@@ -165,7 +165,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "57.41 KB"
+      "limit": "57.82 KB"
     },
     {
       "name": "Spec renderer (spec entry)",
@@ -195,7 +195,7 @@
       "name": "Core engine (@box-kite/core, no React)",
       "path": "dist-core/core.mjs",
       "gzip": true,
-      "limit": "37.68 KB",
+      "limit": "38.1 KB",
       "ignore": [
         "./diagnostics-*",
         "./themeReveal-*"
@@ -211,7 +211,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "40.52 KB"
+      "limit": "40.93 KB"
     },
     {
       "name": "Popover",
@@ -223,7 +223,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "42.06 KB"
+      "limit": "42.47 KB"
     },
     {
       "name": "Menu",
@@ -235,7 +235,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "44.31 KB"
+      "limit": "44.73 KB"
     },
     {
       "name": "Accordion",
@@ -247,7 +247,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "39.8 KB"
+      "limit": "40.22 KB"
     },
     {
       "name": "Agent",
@@ -259,7 +259,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "40.55 KB"
+      "limit": "40.98 KB"
     },
     {
       "name": "Markdown",
@@ -271,7 +271,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "39.03 KB"
+      "limit": "39.45 KB"
     },
     {
       "name": "List",
@@ -283,7 +283,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "40.28 KB"
+      "limit": "40.69 KB"
     },
     {
       "name": "Skeleton",
@@ -295,7 +295,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "38.35 KB"
+      "limit": "38.76 KB"
     },
     {
       "name": "Tabs",
@@ -307,7 +307,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "40.98 KB"
+      "limit": "41.41 KB"
     },
     {
       "name": "Slider",
@@ -319,7 +319,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "40.15 KB"
+      "limit": "40.57 KB"
     },
     {
       "name": "Progress",
@@ -331,7 +331,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "38.33 KB"
+      "limit": "38.74 KB"
     },
     {
       "name": "Toaster",
@@ -343,7 +343,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "41.77 KB"
+      "limit": "42.18 KB"
     },
     {
       "name": "Combobox",
@@ -355,7 +355,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "47.57 KB"
+      "limit": "48 KB"
     },
     {
       "name": "Dashboard",
@@ -367,7 +367,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "44 KB"
+      "limit": "44.41 KB"
     },
     {
       "name": "DataGrid",
@@ -376,10 +376,11 @@
         "react",
         "react-dom",
         "./diagnostics-*",
-        "./themeReveal-*"
+        "./themeReveal-*",
+        "../dataGridList.mjs"
       ],
       "gzip": true,
-      "limit": "90.71 KB"
+      "limit": "93.05 KB"
     },
     {
       "name": "DataGrid export, the chunk fetched on the first press",
@@ -394,6 +395,20 @@
       "limit": "3.8 KB"
     },
     {
+      "name": "DataGrid list layout, the chunk a narrow grid fetches on top of the grid",
+      "path": "dist/dataGridList.mjs",
+      "ignore": [
+        "react",
+        "react-dom",
+        "./diagnostics-*",
+        "./themeReveal-*",
+        "./box.mjs",
+        "./components/*"
+      ],
+      "gzip": true,
+      "limit": "7.83 KB"
+    },
+    {
       "name": "Full library (Box + ssg + every component)",
       "path": "dev/size-full.mjs",
       "ignore": [
@@ -403,7 +418,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "123.38 KB"
+      "limit": "133.11 KB"
     }
   ],
   "repository": {

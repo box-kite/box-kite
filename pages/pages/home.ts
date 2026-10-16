@@ -17,7 +17,7 @@
  * ledger fails both ways, so a listed violation that stopped firing is a failure too, and an empty ledger
  * means empty.
  */
-export const totals = { props: 235, components: 39, keyboardRows: 107, fixtures: 52, knownViolations: 0 } as const;
+export const totals = { props: 235, components: 39, keyboardRows: 107, fixtures: 54, knownViolations: 0 } as const;
 
 /** The four pillars, in the order the page tells them. The `id` is the anchor its card jumps to. */
 export interface Pillar {
@@ -192,7 +192,7 @@ export interface PatternRow {
 
 export const patternRows: readonly PatternRow[] = [
   { name: 'Dropdown', route: '/dropdown', pattern: 'combobox', keyboard: 18, fixtures: 3 },
-  { name: 'DataGrid', route: '/datagrid', pattern: 'grid', keyboard: 16, fixtures: 6 },
+  { name: 'DataGrid', route: '/datagrid', pattern: 'grid', keyboard: 16, fixtures: 8 },
   { name: 'Menu', route: '/menu', pattern: 'menu-button', keyboard: 7, fixtures: 1 },
   { name: 'Tooltip', route: '/tooltip', pattern: 'tooltip', keyboard: 6, fixtures: 2 },
   { name: 'Slider', route: '/slider', pattern: 'slider', keyboard: 5, fixtures: 1 },
