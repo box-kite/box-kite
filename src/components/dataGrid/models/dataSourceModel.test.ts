@@ -5,6 +5,7 @@ import DetailRowModel from './detailRowModel';
 import GridModel from './gridModel';
 import RowModel from './rowModel';
 import SourceRowModel from './sourceRowModel';
+import ViewportModel from './viewportModel';
 
 interface Order {
   id: number;
@@ -401,6 +402,24 @@ describe('DataSourceModel', () => {
     expect(offsets[2]).toBe(80); // the panel
     expect(offsets[3]).toBe(200); // the row after it, pushed down by the panel's 120
     expect(totalHeight).toBe(TOTAL * 40 + 120);
+  });
+
+  it('windows a million-row layout through those lazy offsets, finding the row under the scroll', async () => {
+    const source = createSource();
+    const grid = createGrid(
+      baseDef({ dataSource: { ...source, blockSize: 10 }, rowDetail: { content: () => null, height: 120 }, rowHeight: 40 }),
+    );
+
+    grid.source.request(0, 10);
+    await flush();
+    grid.toggleDetailRow(orderAt(1).id);
+
+    // Row 500 of the flat list starts 500 rows and one panel down; a pixel short of it is row 499.
+    const top = 499 * 40 + 120;
+    const behind = ViewportModel.ROWS_BEHIND;
+    expect(grid.viewport.window(top, 'down').startIndex).toBe(500 - behind);
+    expect(grid.viewport.window(top - 1, 'down').startIndex).toBe(499 - behind);
+    expect(grid.viewport.window(top, 'down').translateY).toBe(grid.rowOffsets.value.offsets[500 - behind]);
   });
 
   it('refresh() throws the cache away and asks again', async () => {

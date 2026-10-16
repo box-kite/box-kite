@@ -45,6 +45,18 @@ describe('MeasuredWindow', () => {
     expect(MeasuredWindow.measuredWindow({ offsets: long, viewStart: 4000, viewEnd: 4100, overscan: 0, pin: 0 }).startIndex).toBe(400);
   });
 
+  it('starts at a row whose top is exactly the screen’s, and leaves out one that starts at its bottom', () => {
+    // Index 10 is 500 to 700, and index 11 starts at 700.
+    expect(MeasuredWindow.measuredWindow({ offsets, viewStart: 500, viewEnd: 700, overscan: 0 })).toMatchObject({
+      startIndex: 10,
+      endIndex: 11,
+    });
+    expect(MeasuredWindow.measuredWindow({ offsets, viewStart: 499, viewEnd: 701, overscan: 0 })).toMatchObject({
+      startIndex: 9,
+      endIndex: 12,
+    });
+  });
+
   it('renders nothing for an empty list', () => {
     expect(MeasuredWindow.measuredWindow({ offsets: [0], viewStart: 0, viewEnd: 100 })).toEqual({
       startIndex: 0,

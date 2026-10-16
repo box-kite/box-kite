@@ -1,3 +1,4 @@
+import { rowAt } from '../../../utils/virtual/rowSearch';
 import GridModel from './gridModel';
 
 /** Which way the reader is going. The rendered buffer is only worth its cost in the direction of travel. */
@@ -108,23 +109,6 @@ export default class ViewportModel<TRow> {
     return index * this.grid.rowHeight;
   }
 
-  /** Binary search for the first row whose offset is <= scrollTop (variable-height rows). */
-  private findStartIndex(offsets: number[], scrollTop: number): number {
-    let lo = 0;
-    let hi = offsets.length - 1;
-
-    while (lo < hi) {
-      const mid = (lo + hi + 1) >>> 1;
-      if (offsets[mid] <= scrollTop) {
-        lo = mid;
-      } else {
-        hi = mid - 1;
-      }
-    }
-
-    return lo;
-  }
-
   public window(scrollTop: number, direction: ScrollDirection = 'down'): ViewportWindow {
     const length = this.grid.flatRows.value.length;
 
@@ -137,7 +121,7 @@ export default class ViewportModel<TRow> {
     const behind = direction === 'down' ? ROWS_BEHIND : ROWS_AHEAD;
     const { offsets } = this.grid.rowOffsets.value;
 
-    const first = this.hasDetailRows ? this.findStartIndex(offsets, scrollTop) : Math.floor(scrollTop / rowHeight);
+    const first = this.hasDetailRows ? rowAt(offsets, scrollTop) : Math.floor(scrollTop / rowHeight);
     const startIndex = Math.max(0, first - behind);
 
     const translateY = this.hasDetailRows ? (offsets[startIndex] ?? 0) : startIndex * rowHeight;

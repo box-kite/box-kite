@@ -165,7 +165,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "58.02 KB"
+      "limit": "58.70 KB"
     },
     {
       "name": "Spec renderer (spec entry)",
@@ -319,7 +319,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "42.76 KB"
+      "limit": "42.78 KB"
     },
     {
       "name": "Skeleton",

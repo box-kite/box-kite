@@ -1,4 +1,5 @@
 // Type-only: a value from `VirtualUtils` would make it a module two components share, and so one everybody loads.
+import { rowAt } from './rowSearch';
 import type { VirtualWindow } from './virtualUtils';
 
 function clamp(value: number, low: number, high: number): number {
@@ -25,19 +26,6 @@ namespace MeasuredWindow {
     return offsets;
   }
 
-  /** The first row whose bottom edge is below `y`: a binary search, since a long list asks on every frame of a scroll. */
-  function rowAt(offsets: readonly number[], y: number): number {
-    let low = 0;
-    let high = offsets.length - 2;
-    while (low < high) {
-      const mid = (low + high) >> 1;
-      if (offsets[mid + 1] <= y) low = mid + 1;
-      else high = mid;
-    }
-
-    return Math.max(0, low);
-  }
-
   export interface MeasuredWindowOptions {
     /** From `offsetsOf`. */
     offsets: readonly number[];
@@ -56,9 +44,9 @@ namespace MeasuredWindow {
     const totalHeight = offsets[count] ?? 0;
     if (count <= 0) return { startIndex: 0, endIndex: 0, offsetY: 0, totalHeight: 0 };
 
-    let startIndex = clamp(rowAt(offsets, Math.max(0, viewStart)) - overscan, 0, count - 1);
+    let startIndex = clamp(rowAt(offsets, viewStart, count) - overscan, 0, count - 1);
     // The screen's bottom edge is exclusive: a row starting exactly there is not on it.
-    let endIndex = clamp(rowAt(offsets, Math.max(0, viewEnd - 0.5)) + 1 + overscan, startIndex + 1, count);
+    let endIndex = clamp(rowAt(offsets, viewEnd - 0.5, count) + 1 + overscan, startIndex + 1, count);
 
     // Unmounting the row focus is in sends focus to the body, and the next Tab starts from the top of the page.
     if (pin >= 0 && pin < count) {
