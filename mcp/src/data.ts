@@ -4,7 +4,7 @@ import propsApi from '../../api/props.json';
 import { name as libraryName, version as libraryVersion } from '../../package.json';
 import { installCommand, registryItems, RegistryItem } from '../../pages/site/registry';
 import { SITE_URL } from '../../pages/site/site';
-import { blockPath, blocks as blockPages } from '../../pages/site/templates';
+import { blockPath, blocks as blockPages, templatePath, templates as templatePages } from '../../pages/site/templates';
 import { createStyleEngine } from '../../src/core';
 import catalogManifest from '../../src/utils/catalog/catalogManifest';
 
@@ -159,9 +159,11 @@ export const blockInstall = (name: string): string => installCommand(name);
 
 /** The page a registry item is shown on — running in light and dark, with every file — if it has one. */
 export const blockPage = (name: string): string | undefined => {
-  const page = blockPages.find((block) => block.registry === name);
+  const block = blockPages.find((entry) => entry.registry === name);
+  const template = templatePages.find((entry) => entry.registry === name);
+  const path = block ? blockPath(block.slug) : template && templatePath(template.slug);
 
-  return page && `${SITE_URL}${blockPath(page.slug)}/`;
+  return path && `${SITE_URL}${path}/`;
 };
 
 /**

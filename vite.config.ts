@@ -300,6 +300,11 @@ export default defineConfig(({ mode }) => {
       // passing in 4s alone. A hung test still fails, just later.
       testTimeout: 15_000,
       setupFiles: ['./dev/vitest.setup.ts'],
+      // The registry's templates import the package by name, and the axe sweep renders them: the pair `pages.vite.config.ts` carries.
+      alias: [
+        { find: /^@box-kite\/react\/components\//, replacement: `${path.resolve(import.meta.dirname, 'src/components')}/` },
+        { find: /^@box-kite\/react$/, replacement: path.resolve(import.meta.dirname, 'src/box.ts') },
+      ],
       coverage: {
         provider: 'v8',
         // The engine and its React binding are what every other roadmap item builds on, so they

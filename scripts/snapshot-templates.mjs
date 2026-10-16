@@ -93,6 +93,11 @@ async function load(url) {
     await wait(100);
   }
 
+  // The link back to the site is the site's, not the demo's: hidden by a stylesheet, since removing a node React may still be hydrating throws #418.
+  await evaluate(
+    send,
+    'document.head.appendChild(Object.assign(document.createElement("style"), { textContent: "[data-demo-exit]{display:none!important}" })) && true',
+  );
   await evaluate(send, 'new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)))');
   // An image or a lazily measured chart can land a moment after the second frame.
   await wait(400);

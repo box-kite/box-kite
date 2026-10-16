@@ -11,7 +11,7 @@ import SiteLink from '../components/siteLink';
 import useTableOfContents from '../hooks/useTableOfContents';
 import { installCommand, itemPath, REGISTRY_NAMESPACE, registryTemplate } from '../site/registry';
 import { SITE_URL } from '../site/site';
-import { BLOCKS_PATH, blockPath, blocks, registryItemFor } from '../site/templates';
+import { BLOCKS_PATH, blockPath, blocks, registryItemFor, TEMPLATES_PATH } from '../site/templates';
 
 /** The docs site's own prose-link colours, the pair every other page uses. */
 const linkTheme = {
@@ -82,7 +82,11 @@ export default function RegistryPage() {
               <SiteLink to={BLOCKS_PATH} display="inline" theme={linkTheme}>
                 all of them
               </SiteLink>{' '}
-              are in the gallery.
+              are in the gallery. A whole page installs the same way, its design and its blocks with it, from{' '}
+              <SiteLink to={TEMPLATES_PATH} display="inline" theme={linkTheme}>
+                the templates
+              </SiteLink>
+              .
             </Box>
             <Flex d="column" gap={5}>
               {blocks.map((block) => (
@@ -101,7 +105,7 @@ export default function RegistryPage() {
 
           <Section id="how" title="Where the JSON comes from">
             <Box mb={4}>
-              The blocks are ordinary sources in the library&apos;s own repository, under <Mono>registry/blocks/</Mono>. They are
+              The blocks and templates are ordinary sources in the library&apos;s own repository, under <Mono>registry/</Mono>. They are
               type-checked by the same <Mono>tsc</Mono> run as the library, rendered on their pages from those same files, and inlined into{' '}
               <Link props={{ href: itemPath('data-grid'), target: '_blank', rel: 'noreferrer' }} theme={linkTheme}>
                 the item JSON

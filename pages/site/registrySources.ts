@@ -3,7 +3,7 @@ import { registryItems } from './registry';
 // Read at build time, as the release notes are: the blocks are sources in this repository, and the
 // registry JSON is those sources inlined. One reader for the page that shows the code and the build
 // that publishes it, so what a reader copies and what the CLI writes cannot differ.
-const files = import.meta.glob<string>('../../registry/blocks/**/*.{ts,tsx}', { query: '?raw', import: 'default', eager: true });
+const files = import.meta.glob<string>('../../registry/{blocks,designs}/**/*.{ts,tsx}', { query: '?raw', import: 'default', eager: true });
 
 /** Every block file, keyed by its repository path — the same key `RegistryFile.path` uses. */
 export const registrySources: Readonly<Record<string, string>> = Object.fromEntries(

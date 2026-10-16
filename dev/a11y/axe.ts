@@ -21,7 +21,8 @@ function ruleOptions({ disableRules = [] }: AxeOptions = {}): RunOptions {
 
   // Only violations are asked for: `incomplete` needs a human, `passes` and `inapplicable` are
   // noise here, and skipping them keeps a sweep over every component around a second.
-  return { rules, resultTypes: ['violations'] };
+  // `selectors: false`: the report quotes each node's HTML, and building a selector from a class like `colors-amber-400,rose-600` throws in happy-dom.
+  return { rules, resultTypes: ['violations'], selectors: false };
 }
 
 /** Every axe violation in `container`, in axe's own order (most impactful first). */

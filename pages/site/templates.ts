@@ -34,6 +34,8 @@ export interface Block {
 /** A complete page, with a live demo at `/templates/<slug>/demo/`. */
 export interface Template {
   slug: string;
+  /** The registry item holding its page; the design and the blocks come in through its dependencies. */
+  registry: RegistryItemName;
   name: string;
   description: string;
   /** Its blocks, by slug — each one links back here as "used in". */
@@ -64,10 +66,100 @@ export const blocks: readonly Block[] = [
       'The frame an admin app hangs off: a sidebar, a header with search, a theme toggle and an account menu, and a row of stat tiles.',
     wide: true,
   },
+  {
+    slug: 'react-product-grid',
+    registry: 'product-grid',
+    name: 'React product grid with filters',
+    description:
+      'A React product grid with category and colour filters, sorting, an announced result count and cards that are one link each, light and dark.',
+    wide: true,
+  },
+  {
+    slug: 'react-product-image-gallery',
+    registry: 'product-gallery',
+    name: 'React product image gallery',
+    description:
+      'A React product image gallery: one large view and thumbnails that choose it, built as tabs so the arrow keys move between pictures.',
+  },
+  {
+    slug: 'react-product-variant-picker',
+    registry: 'variant-picker',
+    name: 'React product variant picker',
+    description:
+      'Colour swatches and sizes as native radio groups, a quantity stepper and an Add to cart button, styled with :has(:checked) and no state.',
+  },
+  {
+    slug: 'react-cart-items',
+    registry: 'cart-items',
+    name: 'React cart items list',
+    description:
+      'The lines of a React shopping cart: a picture, the options chosen, a quantity stepper, the line price and a remove button.',
+  },
+  {
+    slug: 'react-order-summary',
+    registry: 'order-summary',
+    name: 'React order summary',
+    description:
+      'A React order summary: subtotal, discount, shipping, tax and total from the cart, a discount code field and a free-shipping progress bar.',
+  },
+  {
+    slug: 'react-credit-card-form',
+    registry: 'credit-card-form',
+    name: 'React credit card form',
+    description:
+      'A React credit card form: number, name, expiry and security code, formatted as typed, checked on blur, with a card that fills in above.',
+  },
+  {
+    slug: 'react-address-form',
+    registry: 'address-form',
+    name: 'React address form',
+    description:
+      'A React shipping address form with the autocomplete tokens browsers fill from, a searchable country select and errors read aloud.',
+  },
+  {
+    slug: 'react-shipping-method-selector',
+    registry: 'shipping-method',
+    name: 'React shipping method selector',
+    description:
+      'Delivery options as selectable cards in React: a native radio group, one tab stop, the chosen card styled with :has(:checked).',
+  },
 ];
 
-/** Stage 2 adds the store; until then the gallery is not served at all. */
-export const templates: readonly Template[] = [];
+/** The store: four pages of one design, linked to each other in their demos. */
+export const templates: readonly Template[] = [
+  {
+    slug: 'react-ecommerce-storefront',
+    registry: 'ecommerce-storefront',
+    name: 'React ecommerce storefront template',
+    description:
+      'A store front page in React: a drawn hero, a product grid with filters and sorting, and a story band, in light and dark with no stylesheet.',
+    blocks: ['react-product-grid'],
+  },
+  {
+    slug: 'react-product-page',
+    registry: 'product-page',
+    name: 'React product page template',
+    description:
+      'A React product page: an image gallery, colour and size pickers, a quantity stepper, add to cart, a details accordion and related products.',
+    blocks: ['react-product-image-gallery', 'react-product-variant-picker', 'react-product-grid'],
+  },
+  {
+    slug: 'react-shopping-cart',
+    registry: 'shopping-cart',
+    name: 'React shopping cart page template',
+    description:
+      'A React cart page: editable line items beside an order summary with a discount code, a free-shipping progress bar and an empty state.',
+    blocks: ['react-cart-items', 'react-order-summary'],
+  },
+  {
+    slug: 'react-checkout-page',
+    registry: 'checkout-page',
+    name: 'React checkout page template',
+    description:
+      'A one-page React checkout: contact, shipping address, delivery options and a credit card form beside the order summary, light and dark.',
+    blocks: ['react-address-form', 'react-shipping-method-selector', 'react-credit-card-form', 'react-order-summary'],
+  },
+];
 
 export const blockPath = (slug: string) => `${BLOCKS_PATH}/${slug}`;
 export const templatePath = (slug: string) => `${TEMPLATES_PATH}/${slug}`;
@@ -100,7 +192,10 @@ export const templateFor = (path: string) =>
 /** The templates a block is part of, for its "used in" links. */
 export const templatesUsing = (slug: string) => templates.filter((template) => template.blocks.includes(slug));
 
-export const registryItemFor = (block: Block) => registryItems.find((item) => item.name === block.registry)!;
+export const registryItemFor = (entry: Block | Template) => registryItems.find((item) => item.name === entry.registry)!;
+
+/** Where an entry's files live: one folder, since a design's files import each other. */
+const folderOf = (entry: Block | Template) => registryItemFor(entry).files[0].path.split('/').slice(0, -1).join('/');
 
 const trimmed = (path: string) => (path.length > 1 ? path.replace(/\/+$/, '') : path);
 const absolute = (path: string) => (path === '/' ? `${SITE_URL}/` : `${SITE_URL}${path}/`);
@@ -147,7 +242,7 @@ const BLOCKS_GALLERY = {
   name: 'Blocks',
   title: 'React UI blocks — copy-paste sections in light and dark',
   description:
-    'Finished React sections you copy or install with the shadcn CLI: a data grid, a settings form and a dashboard layout, each in light and dark.',
+    'Finished React sections you copy or install with the shadcn CLI: data grids, forms, a product grid, a checkout and more, each in light and dark.',
 };
 
 const TEMPLATES_GALLERY = {
@@ -185,7 +280,7 @@ export function blockRoutes(list: readonly Block[] = blocks): SiteRoute[] {
         name: block.name,
         description: block.description,
         image: ogImage(block.slug, block.name),
-        jsonLd: [sourceCode(block.name, block.description, blockPath(block.slug), block.slug, `registry/blocks/${block.registry}`)],
+        jsonLd: [sourceCode(block.name, block.description, blockPath(block.slug), block.slug, folderOf(block))],
       },
       demoRoute(blockDemoPath(block.slug), block),
     ]),
@@ -210,15 +305,7 @@ export function templateRoutes(list: readonly Template[] = templates): SiteRoute
         name: template.name,
         description: template.description,
         image: ogImage(template.slug, template.name),
-        jsonLd: [
-          sourceCode(
-            template.name,
-            template.description,
-            templatePath(template.slug),
-            template.slug,
-            `registry/templates/${template.slug}`,
-          ),
-        ],
+        jsonLd: [sourceCode(template.name, template.description, templatePath(template.slug), template.slug, folderOf(template))],
       },
       demoRoute(templateDemoPath(template.slug), template),
     ]),

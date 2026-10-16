@@ -83,4 +83,11 @@ describe('the server', () => {
     expect(await call('get_blocks', { name: 'data-grid' })).toContain('Files:');
     expect(await call('get_blocks', { name: 'data-grid' })).toContain('/blocks/react-invoice-data-grid/');
   });
+
+  it('gives a template its page and the items it stands on', async () => {
+    const checkout = await call('get_blocks', { name: 'checkout-page' });
+
+    expect(checkout).toContain('/templates/react-checkout-page/');
+    expect(checkout).toContain('`store-design`');
+  });
 });

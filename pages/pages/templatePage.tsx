@@ -1,18 +1,23 @@
 import { ExternalLink, LayoutTemplate } from 'lucide-react';
+import { Fragment } from 'react';
 import { useLocation } from 'react-router-dom';
 import Box from '../../src/box';
 import Flex from '../../src/components/flex';
 import Grid from '../../src/components/grid';
 import Icon from '../../src/components/icon';
-import { H2, Li, Ul } from '../../src/components/semantics';
+import { H2, H3, Li, Link, Ul } from '../../src/components/semantics';
 import type { FamilyPageProps } from '../app/routePages';
 import Code from '../components/code';
+import Mono from '../components/mono';
 import PageHeader from '../components/pageHeader';
 import Reveal from '../components/reveal';
 import SiteLink from '../components/siteLink';
 import Snapshot from '../components/snapshot';
 import useTableOfContents from '../hooks/useTableOfContents';
-import { blockPath, blocks, templateDemoPath, templateFor } from '../site/templates';
+import { installCommand, RegistryItem } from '../site/registry';
+import { designsOf } from '../site/routeSources';
+import { REPO_URL } from '../site/site';
+import { blockPath, blocks, registryItemFor, templateDemoPath, templateFor } from '../site/templates';
 import NotFoundPage from './notFoundPage';
 
 const linkTheme = {
@@ -30,11 +35,16 @@ export default function TemplatePage({ sources = {} }: FamilyPageProps) {
 
   useTableOfContents([
     { id: 'preview', label: 'Light and dark' },
+    { id: 'install', label: 'Install' },
     ...(sections.length ? [{ id: 'sections', label: 'Sections' }] : []),
     { id: 'source', label: 'Source' },
+    { id: 'design', label: 'Design' },
   ]);
 
   if (!template) return <NotFoundPage />;
+
+  const item = registryItemFor(template);
+  const designs = designsOf(template);
 
   return (
     <Box>
@@ -83,6 +93,21 @@ export default function TemplatePage({ sources = {} }: FamilyPageProps) {
             </SiteLink>
           </Box>
 
+          <Box id="install">
+            <H2 fontSize={20} fontWeight={600} mb={3} theme={heading}>
+              Install
+            </H2>
+            <Box fontSize={15} lineHeight={26} mb={4} theme={prose}>
+              One command writes the page, its design and its {sections.length} section{sections.length === 1 ? '' : 's'} into your project,
+              as code you then own. It needs a <Mono>components.json</Mono>, and{' '}
+              <SiteLink to="/registry" display="inline" theme={linkTheme}>
+                the shadcn registry page
+              </SiteLink>{' '}
+              has the one-time setup.
+            </Box>
+            <Code language="shell" code={installCommand(item.name)} />
+          </Box>
+
           {sections.length > 0 && (
             <Box id="sections">
               <H2 fontSize={20} fontWeight={600} mb={4} theme={heading}>
@@ -108,17 +133,65 @@ export default function TemplatePage({ sources = {} }: FamilyPageProps) {
               Source
             </H2>
             <Box fontSize={15} lineHeight={26} mb={4} theme={prose}>
-              The whole template, file by file: the design is one set of component styles and variables, and every style is a prop, so there
-              is no stylesheet to copy with it.
+              The page itself. Every style is a prop, so there is no stylesheet to copy with it, and each section it imports is on its own
+              page above.
             </Box>
-            <Flex d="column" gap={4}>
-              {Object.entries(sources).map(([path, code]) => (
-                <Code key={path} language="jsx" code={code} codeOnly label={path.split('/').pop()} />
-              ))}
-            </Flex>
+            <Files item={item} sources={sources} />
+          </Box>
+
+          <Box id="design">
+            <H2 fontSize={20} fontWeight={600} mb={4} theme={heading}>
+              Design
+            </H2>
+            <Box fontSize={15} lineHeight={26} mb={4} theme={prose}>
+              What every page of this template shares: the built-in components restyled with <Mono>Box.createComponents()</Mono>, applied to
+              the subtree with <Mono>&lt;Box.Components&gt;</Mono>, so it stops at the edge of the store and the rest of your app keeps its
+              own look.
+            </Box>
+            {designs.map((design) => (
+              <Box key={design.name} mt={4}>
+                <H3 fontSize={16} fontWeight={600} mb={3} theme={heading}>
+                  {design.title}
+                </H3>
+                <Code
+                  language="jsx"
+                  code={sources[design.files[0].path]}
+                  codeOnly
+                  label={design.files[0].target.replace('@components/', '')}
+                />
+                <Box fontSize={15} lineHeight={26} mt={4} theme={prose}>
+                  The command installs the rest of it beside that file —{' '}
+                  {design.files.slice(1).map((file, index) => (
+                    <Fragment key={file.path}>
+                      {index ? ', ' : ''}
+                      <Mono>{file.path.split('/').pop()}</Mono>
+                    </Fragment>
+                  ))}{' '}
+                  — and{' '}
+                  <Link
+                    props={{ href: `${REPO_URL}/tree/main/${design.files[0].path.split('/').slice(0, -1).join('/')}` }}
+                    display="inline"
+                    theme={linkTheme}
+                  >
+                    the repository
+                  </Link>{' '}
+                  has every file.
+                </Box>
+              </Box>
+            ))}
           </Box>
         </Flex>
       </Reveal>
     </Box>
+  );
+}
+
+function Files({ item, sources }: { item: RegistryItem; sources: Readonly<Record<string, string>> }) {
+  return (
+    <Flex d="column" gap={4}>
+      {item.files.map((file) => (
+        <Code key={file.path} language="jsx" code={sources[file.path]} codeOnly label={file.target.replace('@components/', '')} />
+      ))}
+    </Flex>
   );
 }

@@ -5,7 +5,8 @@ import { H1 } from '../../src/components/semantics';
 import Toaster from '../../src/components/toaster';
 import VisuallyHidden from '../../src/components/visuallyHidden';
 import type { FamilyPageProps } from '../app/routePages';
-import { blockFor } from '../site/templates';
+import DemoExit from '../components/demoExit';
+import { blockFor, blockPath } from '../site/templates';
 import NotFoundPage from './notFoundPage';
 
 /**
@@ -42,6 +43,7 @@ export default function BlockDemoPage({ Content }: FamilyPageProps) {
           <Content />
         </Box>
       </Flex>
+      <DemoExit to={blockPath(block.slug)} name={block.name} />
       <Toaster />
     </Box.Theme>
   );

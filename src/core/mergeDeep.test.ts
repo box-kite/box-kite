@@ -20,6 +20,16 @@ describe('mergeDeep', () => {
     expect(merged).toEqual({ hover: { clean: true, color: 'black' } });
   });
 
+  // A variant's gradient was appended to the base one's stops, so a secondary button wore the primary's colours (bug #265).
+  it('replaces an array rather than appending to it', () => {
+    const merged = mergeDeep(
+      { bgGradient: { linear: 'r', colors: ['orange-700', 'rose-700'] }, scrollbarColor: ['gray-400', 'gray-100'] },
+      { bgGradient: { colors: ['transparent', 'transparent'] }, scrollbarColor: ['sky-500', 'white'] },
+    );
+
+    expect(merged).toEqual({ bgGradient: { linear: 'r', colors: ['transparent', 'transparent'] }, scrollbarColor: ['sky-500', 'white'] });
+  });
+
   it('merges the blocks both sides declare', () => {
     const merged = mergeDeep({ hover: { bgColor: 'gray-600', color: 'white' } }, { hover: { color: 'black' } });
 

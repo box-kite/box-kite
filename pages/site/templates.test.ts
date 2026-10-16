@@ -20,6 +20,7 @@ const root = resolve(import.meta.dirname, '../..');
 
 const store: Template = {
   slug: 'react-checkout-page',
+  registry: 'checkout-page',
   name: 'React checkout page template',
   description: 'A checkout.',
   blocks: ['react-settings-form'],
@@ -50,6 +51,19 @@ describe('the blocks', () => {
       expect(slug).toMatch(/^react-[a-z0-9]+(-[a-z0-9]+)*$/);
       expect(slug).not.toContain(SITE_NAME.toLowerCase().replace(' ', '-'));
     }
+  });
+
+  it('link back only to sections that exist, and keep every description within what a result shows', () => {
+    for (const template of templates) {
+      for (const slug of template.blocks)
+        expect(
+          blocks.map((block) => block.slug),
+          template.slug,
+        ).toContain(slug);
+      expect(existsSync(resolve(root, 'pages/templates', `${template.slug}.tsx`)), template.slug).toBe(true);
+    }
+
+    for (const entry of [...blocks, ...templates]) expect(entry.description.length, entry.slug).toBeLessThanOrEqual(160);
   });
 
   it('answer on their page and their demo, and nowhere else', () => {
