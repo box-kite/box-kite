@@ -24,6 +24,7 @@ const SANCTIONED = {
   // A component rendering a real form control forwards the DOM event rather than inventing a second
   // channel: the event *is* the API, it carries the target, and React's own types already describe it.
   'Button.onClick': 'a native <button>, so the DOM event is the API',
+  'List.Action.onClick': 'a native <button>, <a> or <label>, so the DOM event is the API',
   'Checkbox.onChange': 'a native <input>, so the DOM event is the API',
   'Checkbox.onInput': 'a native <input>, so the DOM event is the API',
   'Switch.onChange': 'a native <input>, so the DOM event is the API',

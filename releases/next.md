@@ -9,6 +9,7 @@ _Unreleased. A PR that changes what a consumer sees adds its section here — se
 <!-- One bullet per section below, linking to it: **[Heading](#heading)** — one line on why it matters. -->
 
 - **[A design can stop at the edge of a subtree](#a-design-can-stop-at-the-edge-of-a-subtree)** — two designs on one page, one stylesheet.
+- **[A list of things to read and pick from](#a-list-of-things-to-read-and-pick-from-list)** — rows of media, text and a value, one action covering each item, rendered on a server.
 - **[Every block has a page of its own](#every-block-has-a-page-of-its-own)** — the block running in light and dark, every file it writes, and a link from `get_blocks`.
 
 <!-- One `##` per change, above Breaking changes: a sentence for the heading, a paragraph on what and why, an example if it helps. -->
@@ -36,6 +37,29 @@ The three registry blocks each have a page at [box-kite.dev/blocks](https://www.
   <DashboardStats />
 </DashboardShell>
 ```
+
+## A list of things to read and pick from: `<List>`
+
+Messages, orders, people, settings: most screens are a list of things of one kind, and until now each one was a `<Ul>` and some flexbox written again. `<List>` is that list. An item is a row of three slots: an icon, an avatar or a thumbnail at the start, the text taking the room, and a value at the end. The text is a column of rows, so the title and its time share a line and a quieter `secondary` row sits under them. A row can `wrap` instead of squeezing, a title or a description stops after `lines={1|2|3}`, and `List.Fields` lays out labelled values two to a line on a phone.
+
+```tsx
+<List>
+  <List.Item chevron>
+    <List.Media variant="avatar">AL</List.Media>
+    <List.Content>
+      <List.Row>
+        <List.Title lines={1}>
+          <List.Action props={{ href: '/inbox/42' }}>Ada Lovelace</List.Action>
+        </List.Title>
+        <List.Meta>9:41</List.Meta>
+      </List.Row>
+      <List.Description lines={2}>The engine might compose elaborate pieces of music.</List.Description>
+    </List.Content>
+  </List.Item>
+</List>
+```
+
+`List.Action` covers the whole item, so a press anywhere on it follows the link, while a screen reader hears only the title. Given an `htmlFor`, the action is a checkbox's label, and the list becomes a pick-list. A switch or a menu goes in `List.Actions`, above it. There are four looks (divided, `plain`, `card` and `separated`), three item sizes, and groups whose labels can stick to the top as their items scroll. The list renders on a server with no JavaScript, and in any theme, since its lines and tints are mixed from the text colour. It adds 2.2 KB gzipped on top of Box. See [List](https://www.box-kite.dev/list/).
 
 ## Breaking changes
 

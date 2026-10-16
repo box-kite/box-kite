@@ -70,6 +70,7 @@ export const entries = [
   { name: 'Skeleton', route: '/agent', group: 'feedback', note: 'Bars with a travelling gloss, aria-hidden unless labelled.' },
   { name: 'Presence', route: '/animation', group: 'feedback', note: 'The ~1 KB that lets a node animate on its way out.' },
 
+  { name: 'List', route: '/list', group: 'data', note: 'Rows to read and pick from, one action covering each item.' },
   { name: 'DataGrid', route: '/datagrid', group: 'data', note: 'Four rows of the grid that does a million.' },
   { name: 'DashboardGrid', route: '/dashboard', group: 'data', note: 'A layout in cells, compacted upward. Add editable for the handles.' },
   { name: 'Widget', route: '/dashboard', group: 'data', note: 'The chrome, and its four states — here: filled, loading, empty.' },

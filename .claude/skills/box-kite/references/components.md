@@ -18,6 +18,7 @@ Which component replaces which `<Box tag>`, and the three that carry a pattern o
 | a menu button and its menu           | `<Menu>`                               | `components/menu`                                                |
 | sections that open one at a time     | `<Accordion>`                          | `components/accordion`                                           |
 | one "show more" disclosure           | `<Collapsible>`                        | `components/accordion`                                           |
+| rows to read and pick from           | `<List>`                               | `components/list`                                                |
 | a value dragged along a track        | `<Slider>`                             | `components/slider`                                              |
 | how far a task has got               | `<Progress>`                           | `components/progress`                                            |
 | a message sent from anywhere         | `<Toaster>` + `toast()`                | `components/toaster`                                             |
@@ -66,6 +67,42 @@ DOM, which is what keeps its state and what gives the exit a value to animate fr
 own tab stop; Down/Up/Home/End are a shortcut. Style the open state with `ariaAttr={{ expanded: … }}`,
 never a variant, and leave `accordion.track`/`accordion.clip` alone: padding on a grid item cannot be
 squeezed, so it floors the `0fr` track — which is why your padded panel sits inside the clip (#142).
+
+## List
+
+```tsx
+import List from '@box-kite/react/components/list';
+
+<List variant="card">
+  <List.Group label="Today" level={3} sticky>
+    <List.Item chevron>
+      <List.Media variant="avatar">AL</List.Media>
+      <List.Content>
+        <List.Row>
+          <List.Title lines={1}>
+            <List.Action props={{ href: '/inbox/42' }}>Ada Lovelace</List.Action>
+          </List.Title>
+          <List.Meta>9:41</List.Meta>
+        </List.Row>
+        <List.Row secondary>Re: the engine</List.Row>
+        <List.Description lines={2}>It might compose elaborate pieces of music.</List.Description>
+      </List.Content>
+    </List.Item>
+  </List.Group>
+</List>;
+```
+
+`List`: `variant` (`plain`, `card`, `separated`; dividers by default), `tag="ol"`. `List.Item`: `size` (`sm` 44px, `md` 56px,
+`lg` 72px), `wrap`, `selected`, `chevron`. `List.Row`: `wrap`, `secondary`. `List.Title`/`Description`/`Overline`: `lines`
+(`1` ellipsis, `2`/`3` clamp). `List.Media`: `variant` `icon`/`avatar`/`image`. `List.Field`: `label`. `List.Group`:
+`label`, `level`, `sticky`. `List.Content`, `List.Meta`, `List.End`, `List.Actions`, `List.Fields`: every Box prop.
+
+`List.Action` goes in the title and covers the item: `props={{ href }}` is a link, `props={{ htmlFor }}` the label of a
+checkbox in `List.Actions` (a pick-list), otherwise a button with `onClick`. Anything else interactive goes in
+`List.Actions`, which sits above the action. No hook and no context — it renders on a server — so the look reaches
+the items as `--list-divider`, `--list-divider-inset`, `--list-item-frame`, `--list-item-radius` and
+`--list-sticky-top`, set with `vars`. The tree is paint only (`list`, `list.item`, `list.media`, `list.muted`,
+`list.action`, `list.label`); the spacing is the parts' own default props, which a prop on the part beats.
 
 ## Slider and Progress
 
