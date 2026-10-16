@@ -1,11 +1,13 @@
 import { forwardRef, Ref, RefAttributes, useImperativeHandle, useLayoutEffect, useRef } from 'react';
 import Box from '../box';
+import { useIsomorphicLayoutEffect } from '../react/effects';
 import DataGridBottomBar from './dataGrid/components/dataGridBottomBar';
 import DataGridContent from './dataGrid/components/dataGridContent';
 import DataGridDataSourceError from './dataGrid/components/dataGridDataSourceError';
 import DataGridTopBar from './dataGrid/components/dataGridTopBar';
 import { DataGridHandle, DataGridProps } from './dataGrid/contracts/dataGridContract';
 import useGrid from './dataGrid/useGrid';
+import useListLayout from './dataGrid/useListLayout';
 import VisuallyHidden from './visuallyHidden';
 
 /**
@@ -120,24 +122,49 @@ function DataGridImpl<TRow extends object>(props: DataGridProps<TRow>, ref: Ref<
     return () => grid.setSizingElement(null);
   }, [grid]);
 
+  // The grid's own width decides between the table and the list — not the viewport's, so a grid in a
+  // narrow column of a wide page is a list too. Measured before paint, so a phone never shows a table first.
+  useIsomorphicLayoutEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    grid.list.setWidth(el.clientWidth);
+    const observer = new ResizeObserver(() => grid.list.setWidth(el.clientWidth));
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [grid]);
+
+  const isList = grid.list.active;
+  // Until the list's chunk has arrived the grid goes on drawing its table, rather than nothing.
+  const List = useListLayout(isList);
+
   return (
     <Box
       ref={containerRef}
       component={grid.componentName as never}
+      variant={{ list: !!List && isList } as never}
       {...boxProps}
       // The column widths are variables the grid writes per layout, so a caller's own style sits on top
       // of them rather than replacing them.
       style={{ ...grid.sizes.value, ...style }}
     >
-      {grid.props.def.topBar && <DataGridTopBar grid={grid} />}
+      {List && isList ? (
+        // eslint-disable-next-line react-hooks/static-components -- one module-level component, the same on every render
+        <List grid={grid} />
+      ) : (
+        <>
+          {grid.props.def.topBar && <DataGridTopBar grid={grid} />}
 
-      {/* Above the rows rather than among them: a failed block is about the query, and inside the
-          scroller the strip sat at the top of a million rows' worth of content. */}
-      <DataGridDataSourceError grid={grid} />
+          {/* Above the rows rather than among them: a failed block is about the query, and inside the
+              scroller the strip sat at the top of a million rows' worth of content. */}
+          <DataGridDataSourceError grid={grid} />
 
-      <DataGridContent grid={grid} />
+          <DataGridContent grid={grid} />
 
-      {grid.props.def.bottomBar && <DataGridBottomBar grid={grid} />}
+          {grid.props.def.bottomBar && <DataGridBottomBar grid={grid} />}
+        </>
+      )}
 
       {/* Selecting a row changes a checkbox somewhere off in the grid and nothing else: without a
           live region the count is invisible unless you go looking for it. */}

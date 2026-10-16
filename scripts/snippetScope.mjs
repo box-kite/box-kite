@@ -43,6 +43,10 @@ export const SNIPPET_SCOPE = {
   Form: { from: '@box-kite/react/components/form', export: 'default' },
   Grid: { from: '@box-kite/react/components/grid', export: 'default' },
   Icon: { from: '@box-kite/react/components/icon', export: 'default' },
+  List: { from: '@box-kite/react/components/list', export: 'default' },
+  SortableList: { from: '@box-kite/react/components/sortableList', export: 'default' },
+  SwipeItem: { from: '@box-kite/react/components/swipeItem', export: 'default' },
+  VirtualList: { from: '@box-kite/react/components/virtualList', export: 'default' },
   Menu: { from: '@box-kite/react/components/menu', export: 'default' },
   Overlay: { from: '@box-kite/react/components/overlay', export: 'default' },
   Popover: { from: '@box-kite/react/components/popover', export: 'default' },
@@ -83,6 +87,7 @@ export const SNIPPET_SCOPE = {
   Li: { from: '@box-kite/react/components/semantics', export: 'Li' },
   Ol: { from: '@box-kite/react/components/semantics', export: 'Ol' },
   P: { from: '@box-kite/react/components/semantics', export: 'P' },
+  Span: { from: '@box-kite/react/components/semantics', export: 'Span' },
   Ul: { from: '@box-kite/react/components/semantics', export: 'Ul' },
   // The chart primitives and the theming container, one entry between them.
   ChartContainer: { from: '@box-kite/react/components/chart', export: 'ChartContainer' },

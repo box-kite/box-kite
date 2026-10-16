@@ -32,6 +32,7 @@ export const SERVER_SAFE_COMPONENTS = [
   'flex',
   'grid',
   'icon',
+  'list',
   'markdown',
   'progress',
   'radioButton',
@@ -64,10 +65,13 @@ export const CLIENT_ONLY_COMPONENTS = [
   'radioGroup',
   'select',
   'slider',
+  'sortableList',
+  'swipeItem',
   'switch',
   'tabs',
   'toaster',
   'tooltip',
+  'virtualList',
 ];
 
 /**

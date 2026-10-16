@@ -271,6 +271,12 @@ export const siteRoutes = [
     description: "APG's accordion and the disclosure under it, whose height animation is a shared class rather than a measured pixel.",
   },
   {
+    path: '/list',
+    name: 'List',
+    description:
+      'A list of things to read and pick from — one action covering each item — with swipe actions, drag to reorder and a windowed long list.',
+  },
+  {
     path: '/slider',
     name: 'Slider',
     description:

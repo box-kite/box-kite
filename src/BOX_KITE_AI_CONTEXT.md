@@ -1921,6 +1921,170 @@ on something at the panel's edge needs, since the clip is permanent.
 
 ---
 
+## List (`components/list`)
+
+```tsx
+import List from '@box-kite/react/components/list';
+
+<List>
+  {people.map((person) => (
+    <List.Item key={person.id} chevron>
+      <List.Media variant="avatar">{person.initials}</List.Media>
+      <List.Content>
+        <List.Row>
+          <List.Title lines={1}>
+            <List.Action props={{ href: `/people/${person.id}` }}>{person.name}</List.Action>
+          </List.Title>
+          <List.Meta>{person.lastSeen}</List.Meta>
+        </List.Row>
+        <List.Description lines={2}>{person.bio}</List.Description>
+      </List.Content>
+    </List.Item>
+  ))}
+</List>;
+```
+
+A list of things to read and pick from — messages, orders, people, settings. **An item is a flex row of
+three slots**, and the content is a column of rows:
+
+| Part               | Element                        | What it is                                                                                                     |
+| ------------------ | ------------------------------ | -------------------------------------------------------------------------------------------------------------- |
+| `List`             | `<ul role="list">`             | `variant`: dividers by default, `plain`, `card` (one framed block), `separated` (a frame per item); `tag="ol"` |
+| `List.Item`        | `<li>`                         | A flex row. `size` `sm`/`md`/`lg` (44/56/72px), `wrap`, `selected` (a tint), `chevron`                         |
+| `List.Media`       | `<div>`                        | Leading: `variant` `icon` (a tinted square), `avatar` (a circle that clips), `image` (a thumbnail)             |
+| `List.Content`     | `<div>`                        | The middle, taking the room; a column                                                                          |
+| `List.Row`         | `<div>`                        | Parts side by side, the last at the end. `secondary` (smaller, muted), `wrap`                                  |
+| `List.Overline`    | `<span>`                       | A small line above the title. `lines`                                                                          |
+| `List.Title`       | `<span>`                       | The name, holding the `List.Action`. `lines` `1` (ellipsis), `2`/`3` (clamp); unset, it wraps                  |
+| `List.Description` | `<span>`                       | Muted supporting text. `lines`                                                                                 |
+| `List.Meta`        | `<span>`                       | A small value that never wraps: a time, a count                                                                |
+| `List.End`         | `<div>`                        | Trailing: a value over its label, aligned to the end in tabular figures                                        |
+| `List.Actions`     | `<div>`                        | Controls of the item's own, lifted above the action                                                            |
+| `List.Action`      | `<a>` / `<label>` / `<button>` | The primary action, covering the item: `href` → link, `htmlFor` → label, otherwise a button                    |
+| `List.Fields`      | `<dl>`                         | Labelled values, as many to a line as fit at 8rem                                                              |
+| `List.Field`       | `<div>` + `<dt>` + `<dd>`      | `label` and the value                                                                                          |
+| `List.Group`       | `<li>` + `<ul>`                | A section: `label`, `level` (makes the label a heading), `sticky`                                              |
+| `List.Chevron`     | `<span aria-hidden>`           | The chevron `chevron` draws, for an item something else renders                                                |
+
+**One action covers the item.** `List.Action`'s `::after` stretches over the whole `<li>`, so a press
+anywhere on the item is a press on it and the focus ring draws round the item — while its accessible
+name is the title alone, not every value in the row. A pick-list is a label: put the checkbox in
+`List.Actions` and give the action its `htmlFor`.
+
+```tsx
+<List.Item selected={picked}>
+  <List.Actions>
+    <Checkbox id="pick-ada" checked={picked} onChange={toggle} />
+  </List.Actions>
+  <List.Title>
+    <List.Action props={{ htmlFor: 'pick-ada' }}>Ada Lovelace</List.Action>
+  </List.Title>
+</List.Item>
+```
+
+Hover, pressed, current (`aria-current` on the action) and disabled are read off the action with
+`:has()`, so an item with no action is plain text and needs no prop to say so.
+
+**It renders on a server**: no hook, no context, no effect. That is why the list's look reaches its
+items as custom properties rather than through React — and they are yours to set with `vars`:
+
+| Variable               | Default               | What it is                                                    |
+| ---------------------- | --------------------- | ------------------------------------------------------------- |
+| `--list-divider`       | `currentColor` at 12% | The line between items; `plain` and `separated` make it clear |
+| `--list-divider-inset` | `0px`                 | Where the line starts — `4.5rem` lines it up with the text    |
+| `--list-item-frame`    | `none`                | The border round each item, which `separated` sets            |
+| `--list-item-radius`   | `0`                   | Each item's corners, which its tint follows                   |
+| `--list-sticky-top`    | `0`                   | How far down a sticky group label stops — an app's header     |
+
+**The style tree is paint only** — `list` (the three variants), `list.item` (the divider colour, the
+states, `selected`), `list.media`, `list.muted`, `list.action` (the focus ring) and `list.label` —
+because every engine entry carries it. The spacing is each part's default props, so a prop on the part
+beats it (`<List.Item py={1}>`) and `Box.components` cannot move it. The hairlines and tints are mixed
+from `currentColor`, so they follow any theme with no rule for it.
+
+It is a `<ul role="list">` — the role spelled out because Safari stops reporting a list whose items have
+lost their markers — and **not a composite widget**: each action is a tab stop, Enter follows or presses
+it, and the arrow keys stay the page's. Arrow-key selection among options is a listbox: `Combobox` or
+`Select`.
+
+### Swipe actions, reorder and a long list
+
+Three client-only entries on top of `List`, so `List` itself stays server-safe. Each item they draw is a
+`List.Item` in everything but name — same parts, same sizes, same `list.item` paint.
+
+```tsx
+import SwipeItem from '@box-kite/react/components/swipeItem';
+import SortableList from '@box-kite/react/components/sortableList';
+import VirtualList from '@box-kite/react/components/virtualList';
+
+<SwipeItem
+  fullSwipe
+  startActions={
+    <SwipeItem.Action variant="accent" onClick={pin}>
+      Pin
+    </SwipeItem.Action>
+  }
+  endActions={
+    <SwipeItem.Action variant="danger" onClick={remove}>
+      Delete
+    </SwipeItem.Action>
+  }
+>
+  <List.Content>…</List.Content>
+</SwipeItem>;
+
+<SortableList onOrderChange={(order) => setIds(order)} onOrderCommit={save}>
+  {ids.map((id) => (
+    <SortableList.Item key={id} value={id} label={names[id]}>
+      <List.Content>…</List.Content>
+      <SortableList.Handle />
+    </SortableList.Item>
+  ))}
+</SortableList>;
+
+<VirtualList items={messages} itemKey={(message) => message.id} onRangeChange={loadMore}>
+  {(message) => <List.Item>…</List.Item>}
+</VirtualList>;
+```
+
+| Component             | Props                                                                                                                                                                               |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `SwipeItem`           | `startActions`, `endActions` (the first of each is outermost), `fullSwipe`, `open`/`defaultOpen`/`onOpenChange`, and `List.Item`'s `size`/`wrap`/`selected`/`chevron`               |
+| `SwipeItem.Action`    | A `<button>`: `variant` `accent`/`warning`/`danger` (unset is neutral), `icon`, `onClick`, `closeOnSelect` (default `true`)                                                         |
+| `SortableList`        | Everything `List` takes, `onOrderChange(order, { reason, value, from, to })`, `onOrderCommit` (the drop — the one to save)                                                          |
+| `SortableList.Item`   | Everything `List.Item` takes, `value` (required, unique), `label` (what the handle and announcements call it), `disabled`                                                           |
+| `SortableList.Handle` | The `<button>` a drag starts from; six dots unless given children; named "Move" + the item's `label`                                                                                |
+| `VirtualList`         | Everything `List` takes, `items`, `itemKey`, `children` (a function returning one `<li>`), `estimateSize` (57), `overscan` (6), `initialCount` (20), `onRangeChange`, `scrollerRef` |
+
+**`SwipeItem`'s row slides and a tray opens in the space it leaves** — nothing is under the row, so it
+needs no background. Past half open opens, short of it closes, a flick goes the way it was going, and
+`fullSwipe` carried most of the way across performs the outermost action (it clicks it, so its `onClick`
+is the one place the command lives). A press on an open item closes it instead of following the action.
+The actions are real buttons in the tab order and focus reaching one opens its tray; Escape closes it.
+A swipe is a path gesture (WCAG 2.5.1), so put the same commands somewhere a press reaches too.
+
+**`SortableList`: the app owns the order.** During a drag nothing is reordered — the item follows the
+pointer, its neighbours step aside as inline translates — and `onOrderChange` fires once, on the drop,
+which then glides into place (the Web Animations API, from where it was drawn). The keyboard is a grab,
+DashboardGrid's model: Enter/Space picks up, ArrowUp/ArrowDown/Home/End move (reporting each step),
+Enter drops, Escape puts back. A press on a handle that does not drag also picks the item up, and a
+press on another item then drops it there — the single-pointer way WCAG 2.5.7 asks for. Render the
+items in the order you hold; a refused move is just not applied.
+
+**`VirtualList` measures each item it draws** and keeps the height by `itemKey`, so mixed heights work;
+an undrawn item counts as the mean of those drawn (`estimateSize` before any is), and the list holds its
+height while it scrolls, since a scrollbar drag loses a move whenever it changes. The scroller is the nearest ancestor that scrolls, else the
+page; `scrollerRef` overrides. Each item gets `aria-setsize`/`aria-posinset`, the item focus is in
+stays rendered, and an item above the screen that turns out taller than estimated scrolls the list by
+the difference so nothing on screen moves. Groups and sticky labels need the whole list and do not
+window; find-in-page cannot see an unrendered item.
+
+Styling: `swipeItem.row`/`swipeItem.tray` (`dragging` variants), `swipeItem.action` (the three colour
+variants, `armed`), `sortableList.handle` (`grabbed`), and on `list.item` the `lifted` (dragged),
+`grabbed` (keyboard) and `settling` variants. `List.Chevron` is the item's chevron as a part.
+
+---
+
 ## Slider & Progress
 
 ```tsx
@@ -2426,30 +2590,33 @@ named ones carry the reason.
 | `footer`                  | `boolean \| { label? }`               | `false`     | A pinned row of grand totals over every column with an `aggregate`. `label` replaces the default `Total`                                                                                                               |
 | `export`                  | `boolean \| ExportConfig`             | `false`     | Export buttons in the top bar: `{ csv?, xlsx?, fileName? }`. The writers load on the first press                                                                                                                       |
 | `tabNavigation`           | `'none' \| 'cells'`                   | `'none'`    | What Tab does. `'none'` is APG's single tab stop; `'cells'` is the spreadsheet reading                                                                                                                                 |
+| `layout`                  | `'auto' \| 'table' \| 'list'`         | `'auto'`    | A table, or a list once the grid's own width is under `list.breakpoint` (see "On a phone")                                                                                                                             |
+| `list`                    | `ListConfig`                          | —           | `{ breakpoint?, fields?, batchSize?, recordView? }` — the list layout's settings                                                                                                                                       |
 | `rangeSelection`          | `boolean`                             | `false`     | A drag or Shift+arrow marks a block of cells, and `Ctrl+C`/`Ctrl+V` copy and paste it as TSV (see below)                                                                                                               |
 
 ### ColumnType
 
-| Prop                     | Type                                                | Default   | Description                                                                                                                                     |
-| ------------------------ | --------------------------------------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| `key`                    | `Key`                                               | required  | Column identifier (maps to TRow property)                                                                                                       |
-| `header`                 | `string`                                            | —         | Header text                                                                                                                                     |
-| `width`                  | `number`                                            | `200`     | Base width in px                                                                                                                                |
-| `align`                  | `'start' \| 'end' \| 'center' \| 'left' \| 'right'` | `'left'`  | Cell alignment. `start`/`end` follow the reading order; `left`/`right` stay on the screen side they name                                        |
-| `pin`                    | `'START' \| 'END'` (also `'LEFT'`/`'RIGHT'`)        | —         | Pin to an edge of the **inline axis** (sticky on scroll), so it holds under either `dir`. `LEFT`/`RIGHT` are the older spelling of the same two |
-| `columns`                | `ColumnType[]`                                      | —         | Nested columns (grouped header)                                                                                                                 |
-| `Cell`                   | `({ cell }) => ReactNode`                           | —         | Custom renderer. `cell`: `{ value, row, column, grid }`. It redraws when its row changes or the grid does — not when another row is selected    |
-| `sortable` / `resizable` | `boolean`                                           | inherits  | Override grid-level setting                                                                                                                     |
-| `flexible`               | `boolean`                                           | `true`    | Participate in flex width distribution                                                                                                          |
-| `filterable`             | `boolean \| FilterConfig`                           | —         | `true` (text), `{ type: 'number', min?, max? }`, `{ type: 'multiselect', options? }`                                                            |
-| `contextMenu`            | `boolean \| ContextMenuConfig`                      | inherits  | Override grid-level context menu. `false` hides entirely. `{ sort?, pin?, group? }` controls sections                                           |
-| `aggregate`              | `AggregateName \| (values, rows) => value`          | —         | Total this column over each group row, and over the footer. See below                                                                           |
-| `AggregateCell`          | `({ cell }) => ReactNode`                           | —         | Renders the aggregate. `cell`: `{ value, column, rows, scope }`, `scope` being `'group'` or `'footer'`                                          |
-| `editable`               | `boolean \| (row) => boolean`                       | inherits  | Whether this column’s cells can be edited — every row, or the rows a predicate says                                                             |
-| `editor`                 | `CellEditorType \| CellEditorConfig`                | inferred  | `text`/`number`/`checkbox`/`select`. Without one it is read off the value in the cell                                                           |
-| `EditCell`               | `({ cell }) => ReactNode`                           | —         | An editor of your own, bound to `cell.draft` with `cell.commitEdit()`/`cell.cancelEdit()`                                                       |
-| `exportValue`            | `(row: TRow) => value`                              | the field | What this column writes to an exported file — an export runs no React, so a `Cell` renderer needs it                                            |
-| `exportFormat`           | `string`                                            | —         | The number format its cells wear in a workbook, `'#,##0.00'` or `'yyyy-mm-dd'`                                                                  |
+| Prop                     | Type                                                                            | Default   | Description                                                                                                                                     |
+| ------------------------ | ------------------------------------------------------------------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `key`                    | `Key`                                                                           | required  | Column identifier (maps to TRow property)                                                                                                       |
+| `header`                 | `string`                                                                        | —         | Header text                                                                                                                                     |
+| `width`                  | `number`                                                                        | `200`     | Base width in px                                                                                                                                |
+| `align`                  | `'start' \| 'end' \| 'center' \| 'left' \| 'right'`                             | `'left'`  | Cell alignment. `start`/`end` follow the reading order; `left`/`right` stay on the screen side they name                                        |
+| `pin`                    | `'START' \| 'END'` (also `'LEFT'`/`'RIGHT'`)                                    | —         | Pin to an edge of the **inline axis** (sticky on scroll), so it holds under either `dir`. `LEFT`/`RIGHT` are the older spelling of the same two |
+| `columns`                | `ColumnType[]`                                                                  | —         | Nested columns (grouped header)                                                                                                                 |
+| `Cell`                   | `({ cell }) => ReactNode`                                                       | —         | Custom renderer. `cell`: `{ value, row, column, grid }`. It redraws when its row changes or the grid does — not when another row is selected    |
+| `sortable` / `resizable` | `boolean`                                                                       | inherits  | Override grid-level setting                                                                                                                     |
+| `flexible`               | `boolean`                                                                       | `true`    | Participate in flex width distribution                                                                                                          |
+| `filterable`             | `boolean \| FilterConfig`                                                       | —         | `true` (text), `{ type: 'number', min?, max? }`, `{ type: 'multiselect', options? }`                                                            |
+| `contextMenu`            | `boolean \| ContextMenuConfig`                                                  | inherits  | Override grid-level context menu. `false` hides entirely. `{ sort?, pin?, group? }` controls sections                                           |
+| `aggregate`              | `AggregateName \| (values, rows) => value`                                      | —         | Total this column over each group row, and over the footer. See below                                                                           |
+| `AggregateCell`          | `({ cell }) => ReactNode`                                                       | —         | Renders the aggregate. `cell`: `{ value, column, rows, scope }`, `scope` being `'group'` or `'footer'`                                          |
+| `editable`               | `boolean \| (row) => boolean`                                                   | inherits  | Whether this column’s cells can be edited — every row, or the rows a predicate says                                                             |
+| `editor`                 | `CellEditorType \| CellEditorConfig`                                            | inferred  | `text`/`number`/`checkbox`/`select`. Without one it is read off the value in the cell                                                           |
+| `EditCell`               | `({ cell }) => ReactNode`                                                       | —         | An editor of your own, bound to `cell.draft` with `cell.commitEdit()`/`cell.cancelEdit()`                                                       |
+| `exportValue`            | `(row: TRow) => value`                                                          | the field | What this column writes to an exported file — an export runs no React, so a `Cell` renderer needs it                                            |
+| `list`                   | `'title' \| 'kicker' \| 'subtitle' \| 'end' \| 'field' \| 'detail' \| 'hidden'` | inferred  | Where the column goes in a list item, on a phone                                                                                                |
+| `exportFormat`           | `string`                                                                        | —         | The number format its cells wear in a workbook, `'#,##0.00'` or `'yyyy-mm-dd'`                                                                  |
 
 ### Aggregation
 
@@ -2744,6 +2911,65 @@ only gives it a bigger target.
 - **`onPaste({ range, applied, rejected, skipped })`** fires once for the whole block, after the values have
   landed, so `range.values()` reads what the grid now shows. Everything it accepted lands in the same
   stream a typed value does: `onCellEditsChange(edits, { reason: 'paste' })`.
+
+### On a phone: the list layout
+
+Below `def.list.breakpoint` (576px, 36rem) of **the grid's own width** — measured with a `ResizeObserver`, not read off the viewport — the grid draws each row as a list item instead of a table row. Same rows, filters, sort, selection, grouping, tree and edits; a different drawing. `layout: 'table'` or `layout: 'list'` chooses one for good.
+
+```tsx
+<DataGrid
+  data={orders}
+  def={{
+    title: 'Orders',
+    globalFilter: true,
+    rowSelection: true,
+    columns: [
+      { key: 'customer', header: 'Customer', list: 'title' },
+      { key: 'id', header: 'Order', list: 'kicker' },
+      { key: 'total', header: 'Total', align: 'end', list: 'end', filterable: { type: 'number' } },
+      { key: 'status', header: 'Status', Cell: StatusBadge, filterable: { type: 'multiselect' } },
+      { key: 'date', header: 'Date' },
+      { key: 'notes', header: 'Notes', list: 'detail' },
+    ],
+  }}
+/>
+```
+
+| `column.list` | Where the column goes                                                                            |
+| ------------- | ------------------------------------------------------------------------------------------------ |
+| `'title'`     | The item's name, 16px semibold, and the button that opens the record view                        |
+| `'kicker'`    | A small muted line above the title — an id, a date                                               |
+| `'subtitle'`  | A line under the title; several are joined with `·`                                              |
+| `'end'`       | The one value opposite the title, with its column's name under it — a total, a status            |
+| `'field'`     | A labelled value in the two-column `<dl>` under the title                                        |
+| `'detail'`    | Only the record view                                                                             |
+| `'hidden'`    | Nowhere in the list layout                                                                       |
+| (unset)       | First column → title, first end-aligned → end, next `def.list.fields` (4) → field, rest → detail |
+
+| `def.list`   | Default | Description                                                                                        |
+| ------------ | ------- | -------------------------------------------------------------------------------------------------- |
+| `breakpoint` | `576`   | The grid's own width, in px, below which `layout: 'auto'` draws the list                           |
+| `fields`     | `4`     | How many unassigned columns become fields before the rest wait for the record view                 |
+| `batchSize`  | `20`    | How many items one **Show more** adds. A paginated grid draws its page and a compact pager instead |
+| `recordView` | `true`  | Whether pressing an item opens the record view                                                     |
+
+What the list does, in the order a reader meets it:
+
+- **Toolbar**: the title and row count, a full-width search (`globalFilter`), then pills — **Sort** and **Filters** open bottom sheets, **Select** (with `rowSelection`) turns selecting on. The filters in force sit under them as chips, each removable on its own.
+- **Sort sheet**: one radio group of the sortable columns and one of the direction, applied as they are picked.
+- **Filter sheet**: a section per filterable column — a full-width field, the phone's own operator picker for a number, chips for eight options or fewer and a searchable checklist past that. A filter applies as it is set, and the main button reads **Show N rows**.
+- **Item**: a press opens the record view; while selecting it ticks the row instead, a checkbox leads every item and a bar pinned to the bottom of the viewport counts the selection, with **Select all** and **Clear selection**. A tree row carries its chevron before the title, a `rowDetail` row a **Details** toggle, a group is a section header with its count and aggregates.
+- **Record view**: every column of one row in a bottom sheet, with a pager (`3 of 40`) that follows the list's own sort and filters — the arrow buttons, Left/Right, or a sideways swipe. An editable column has an **Edit** button that opens the column's editor through the same `def.onCellEdit`. Closing hands focus to the item of the row on screen.
+- **Footer**: the `def.footer` totals as a summary block, then **Show more** (`20 of 340`) — a button, never an endless scroll, so the totals and the page below stay reachable — or the compact pager when the host paginates.
+
+Four things to know:
+
+1. **It is a list, not a restyled grid.** A `<ul>` of `<li>`s, each value in a `<dl>`, `aria-posinset`/`aria-setsize` on each item; the grid's APG keyboard is the table's alone. Do not reach for `role="grid"` in a list item.
+2. **It is a chunk of its own.** The sheets and the record view load the first time a grid is narrow (and on import, on a phone-width screen); until then the grid goes on drawing its table. In a test, `await loadListLayout()` from `components/dataGrid/useListLayout` before rendering.
+3. **Unmeasured is a table.** A server render cannot know the width, so `layout: 'auto'` prerenders the table and a phone switches before its first paint after hydration. Force `layout: 'list'` where the server knows better.
+4. **The selection bar sticks to the viewport**, so no ancestor of the grid may be a scroll container (`overflow: hidden`/`auto`): `overflow: clip` clips the same corners without being one. The grid itself switches to `clip` in the list layout.
+
+Styling: every row and group header is a `List.Item` (see List), so the `list` tree styles them — the dividers, the hover and pressed tints, `selected`, the muted text. The grid's own is `datagrid.list` > `toolbar` > (`count`, `search`, `button` with an `active` variant, `chip`), `toggle` (a tree's chevron, the Details toggle), `detail`, `button`, `selectionBar`, `sheet` > (`line`, `input`, `chip`, `button`, `primary`). Both trees carry paint only; the geometry is in the list's own chunk.
 
 ### ContextMenuConfig
 

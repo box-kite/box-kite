@@ -116,6 +116,53 @@ describe('ViewportModel', () => {
       expect(w.translateY).toBe(offsets[w.startIndex]);
       expect(w.totalHeight).toBe(grid.rowOffsets.value.totalHeight);
     });
+
+    /** A grid with the first row's panel open, so the row after it starts a panel's height further down. */
+    function withPanel(count = 100) {
+      const grid = getGrid({ rowDetail: { content: () => null, height: 300 } }, count);
+      grid.toggleDetailRow(grid.getRowKey(grid.data[0]));
+
+      return grid;
+    }
+
+    /** The row a scroll lands in, read back off the window: its start plus the rows it keeps behind. */
+    const landedIn = (grid: GridModel<Row>, scrollTop: number) =>
+      grid.viewport.window(scrollTop, 'down').startIndex + ViewportModel.ROWS_BEHIND;
+
+    it('finds the row a scroll lands inside, not only one it lands exactly on', () => {
+      const grid = withPanel();
+      const { offsets } = grid.rowOffsets.value;
+
+      // One pixel short of row 40 is still row 39, and halfway down the open panel (index 1) is the panel.
+      expect(landedIn(grid, offsets[40] - 1)).toBe(39);
+      expect(landedIn(grid, offsets[40])).toBe(40);
+      expect(landedIn(grid, (offsets[1] + offsets[2]) / 2)).toBe(Math.max(1, ViewportModel.ROWS_BEHIND));
+      expect(landedIn(grid, offsets[2] + 0.5)).toBe(Math.max(2, ViewportModel.ROWS_BEHIND));
+    });
+
+    it('stops at the last row for a scroll past the end, and at the first for one above it', () => {
+      const grid = withPanel();
+      const last = grid.flatRows.value.length - 1;
+
+      expect(landedIn(grid, grid.rowOffsets.value.totalHeight + 5000)).toBe(last);
+      expect(grid.viewport.window(-50, 'down').startIndex).toBe(0);
+    });
+
+    it('the rendered window covers the viewport wherever the scroll stops, panel and all', () => {
+      const grid = withPanel(400);
+      const { offsets, totalHeight } = grid.rowOffsets.value;
+      const { viewHeight } = grid.viewport;
+      const bottomOf = (index: number) => offsets[index] ?? totalHeight;
+
+      for (let scrollTop = 0; scrollTop < offsets[60]; scrollTop += 17) {
+        for (const direction of ['down', 'up'] as const) {
+          const w = grid.viewport.window(scrollTop, direction);
+
+          expect(w.translateY).toBeLessThanOrEqual(scrollTop);
+          expect(bottomOf(w.startIndex + w.take)).toBeGreaterThanOrEqual(Math.min(totalHeight, scrollTop + viewHeight!));
+        }
+      }
+    });
   });
 
   describe('directionOf', () => {

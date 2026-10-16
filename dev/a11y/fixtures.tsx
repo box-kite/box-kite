@@ -15,12 +15,14 @@ import Checkbox from '../../src/components/checkbox';
 import Combobox from '../../src/components/combobox';
 import DashboardGrid, { Widget } from '../../src/components/dashboard';
 import DataGrid from '../../src/components/dataGrid';
+import { loadListLayout } from '../../src/components/dataGrid/useListLayout';
 import Dialog, { AlertDialog } from '../../src/components/dialog';
 import Dropdown from '../../src/components/dropdown';
 import Flex from '../../src/components/flex';
 import Form from '../../src/components/form';
 import Grid from '../../src/components/grid';
 import Icon from '../../src/components/icon';
+import List from '../../src/components/list';
 import { markdownComponents } from '../../src/components/markdown';
 import Menu from '../../src/components/menu';
 import Overlay from '../../src/components/overlay';
@@ -32,13 +34,16 @@ import Select from '../../src/components/select';
 import { H1, Img, Link, Nav, P } from '../../src/components/semantics';
 import Skeleton from '../../src/components/skeleton';
 import Slider from '../../src/components/slider';
+import SortableList from '../../src/components/sortableList';
 import { Circle, Polyline, Svg, SvgText } from '../../src/components/svg';
+import SwipeItem from '../../src/components/swipeItem';
 import Switch from '../../src/components/switch';
 import Tabs from '../../src/components/tabs';
 import Textarea from '../../src/components/textarea';
 import Textbox from '../../src/components/textbox';
 import Toaster, { createToastStore } from '../../src/components/toaster';
 import Tooltip from '../../src/components/tooltip';
+import VirtualList from '../../src/components/virtualList';
 import VisuallyHidden from '../../src/components/visuallyHidden';
 
 /**
@@ -52,6 +57,8 @@ export interface A11yFixture {
   name: string;
   /** The component the way the docs tell you to use it — what a consumer copy-pastes. */
   render(): React.ReactElement;
+  /** Whatever has to arrive before the render — a chunk the component loads on demand. */
+  prepare?(): Promise<unknown>;
   /** Reach the state under test: open the popup, focus the trigger. Runs after render. */
   setup?(): void;
   /**
@@ -719,6 +726,120 @@ export const fixtures: A11yFixture[] = [
     ),
   },
   {
+    // Every kind of item at once: a link, a label ticking its checkbox, a button beside a switch of its own, the
+    // labelled values, and a group whose label is a heading.
+    name: 'List',
+    render: () => (
+      <List variant="card">
+        <List.Group label="Today" level={2} sticky>
+          <List.Item chevron>
+            <List.Media variant="avatar">AL</List.Media>
+            <List.Content>
+              <List.Row>
+                <List.Title lines={1}>
+                  <List.Action props={{ href: '/inbox/42' }}>Ada Lovelace</List.Action>
+                </List.Title>
+                <List.Meta>9:41</List.Meta>
+              </List.Row>
+              <List.Description lines={2}>The engine might compose elaborate pieces of music.</List.Description>
+            </List.Content>
+          </List.Item>
+          <List.Item>
+            <List.Actions>
+              <Checkbox id="a11y-list-pick" />
+            </List.Actions>
+            <List.Content>
+              <List.Overline>Order 4182</List.Overline>
+              <List.Title>
+                <List.Action props={{ htmlFor: 'a11y-list-pick' }}>Grace Hopper</List.Action>
+              </List.Title>
+              <List.Fields>
+                <List.Field label="Status">Paid</List.Field>
+                <List.Field label="Items">3</List.Field>
+              </List.Fields>
+            </List.Content>
+            <List.End>
+              €42.00
+              <List.Meta>Total</List.Meta>
+            </List.End>
+          </List.Item>
+        </List.Group>
+        <List.Group label="Settings" level={2}>
+          <List.Item size="sm">
+            <List.Content>
+              <List.Title>
+                <List.Action>Notifications</List.Action>
+              </List.Title>
+            </List.Content>
+            <List.Actions>
+              <Switch props={{ 'aria-label': 'Notifications on' }} />
+            </List.Actions>
+          </List.Item>
+        </List.Group>
+      </List>
+    ),
+  },
+  {
+    // Both trays, one open: a closed tray's buttons are clipped to nothing but still in the tree and the tab order.
+    name: 'SwipeItem',
+    render: () => (
+      <List>
+        <SwipeItem
+          defaultOpen="end"
+          startActions={<SwipeItem.Action variant="accent">Pin</SwipeItem.Action>}
+          endActions={
+            <>
+              <SwipeItem.Action variant="danger">Delete</SwipeItem.Action>
+              <SwipeItem.Action>Archive</SwipeItem.Action>
+            </>
+          }
+        >
+          <List.Content>
+            <List.Title>
+              <List.Action props={{ href: '/inbox/42' }}>Ada Lovelace</List.Action>
+            </List.Title>
+          </List.Content>
+        </SwipeItem>
+      </List>
+    ),
+  },
+  {
+    // One item held by the keyboard, so the pressed handle and the announcement are both in the tree.
+    name: 'SortableList',
+    render: () => (
+      <SortableList>
+        {['Ada Lovelace', 'Grace Hopper', 'Alan Turing'].map((name) => (
+          <SortableList.Item key={name} value={name}>
+            <List.Content>
+              <List.Title>{name}</List.Title>
+            </List.Content>
+            <SortableList.Handle />
+          </SortableList.Item>
+        ))}
+      </SortableList>
+    ),
+    setup: () => {
+      const handle = screen.getByRole('button', { name: 'Move Grace Hopper' });
+      act(() => handle.focus());
+      fireEvent.keyDown(handle, { key: 'Enter' });
+    },
+  },
+  {
+    // A window of a long list: every rendered item says where it is in the whole one.
+    name: 'VirtualList',
+    render: () => (
+      <VirtualList items={Array.from({ length: 500 }, (_, index) => index)} itemKey={(index) => index}>
+        {(index) => (
+          <List.Item>
+            <List.Content>
+              <List.Title>Message {index + 1}</List.Title>
+            </List.Content>
+          </List.Item>
+        )}
+      </VirtualList>
+    ),
+  },
+  {
     // Decoration and announcement: the first is out of the tree entirely, the second names what is coming.
     name: 'Skeleton',
     render: () => (
@@ -789,4 +910,67 @@ export const fixtures: A11yFixture[] = [
     { name: `Store cart (${theme})`, render: () => <CartPage theme={theme} /> },
     { name: `Store checkout (${theme})`, render: () => <CheckoutPage theme={theme} /> },
   ]),
+  {
+    // The list a narrow grid draws instead of a table: a `<ul>` of items, each with a `<dl>`, grouped, with a
+    // row detail toggle, while selecting — which is when every item carries a checkbox and the bar is pinned.
+    name: 'DataGrid (list layout, grouped, selecting)',
+    prepare: loadListLayout,
+    render: () => (
+      <DataGrid<Employee>
+        data={employees.slice(0, 30)}
+        def={{
+          rowKey: 'id',
+          title: 'Employees',
+          layout: 'list',
+          globalFilter: true,
+          rowSelection: true,
+          groupBy: ['department'],
+          groupDefaultExpanded: true,
+          footer: true,
+          rowDetail: { content: (row) => `Employee ${row.id}` },
+          columns: [
+            { key: 'name', header: 'Name' },
+            { key: 'department', header: 'Department' },
+            { key: 'salary', header: 'Salary', align: 'end', aggregate: 'sum', filterable: { type: 'number' } },
+          ],
+        }}
+        columnFilters={{ salary: { type: 'number', operator: 'gte', value: 40_000 } }}
+      />
+    ),
+    setup: () => {
+      act(() => void fireEvent.click(screen.getByRole('button', { name: 'Select' })));
+      // A row's checkbox is named by its title, which is the checkbox's label; a group's names the group.
+      act(() => void fireEvent.click(screen.getAllByRole('checkbox').find((checkbox) => checkbox.closest('[data-list-key]'))!));
+    },
+  },
+  {
+    // One row at a time: the record view's sheet, with its pager, an editor open on a field and a tree around it.
+    name: 'DataGrid (list layout, record view)',
+    prepare: loadListLayout,
+    render: () => (
+      <DataGrid<TreeNode>
+        data={tree}
+        def={{
+          rowKey: 'id',
+          title: 'Files',
+          layout: 'list',
+          editable: true,
+          treeData: { childrenKey: 'children', defaultExpanded: true },
+          columns: [
+            { key: 'name', header: 'Name' },
+            { key: 'size', header: 'Size', align: 'end' },
+          ],
+        }}
+      />
+    ),
+    setup: () => {
+      act(
+        () =>
+          void fireEvent.click(
+            screen.getAllByRole('button', { name: /./, expanded: undefined }).find((b) => b.hasAttribute('data-list-action'))!,
+          ),
+      );
+      act(() => void fireEvent.click(screen.getByRole('button', { name: 'Edit Size' })));
+    },
+  },
 ];

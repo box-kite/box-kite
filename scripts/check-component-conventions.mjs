@@ -24,6 +24,8 @@ const SANCTIONED = {
   // A component rendering a real form control forwards the DOM event rather than inventing a second
   // channel: the event *is* the API, it carries the target, and React's own types already describe it.
   'Button.onClick': 'a native <button>, so the DOM event is the API',
+  'List.Action.onClick': 'a native <button>, <a> or <label>, so the DOM event is the API',
+  'SwipeItem.Action.onClick': 'a native <button>, so the DOM event is the API',
   'Checkbox.onChange': 'a native <input>, so the DOM event is the API',
   'Checkbox.onInput': 'a native <input>, so the DOM event is the API',
   'Switch.onChange': 'a native <input>, so the DOM event is the API',
@@ -44,6 +46,7 @@ const SANCTIONED = {
   'Widget.onRefresh': 'a command, not a change: fetch it again — there is no new value and one way to ask',
   'Overlay.onSideChange': 'a report of where the browser put the layer, not a state the caller owns',
   'DataGrid.onPaste': 'a report of what one Ctrl+V did, not a state the caller owns',
+  'VirtualList.onRangeChange': 'a report of which items are drawn, not a state the caller owns',
   // A component rendering no element of its own has nothing for `Box.components()` to reach.
   'Flex.styles': 'Box with one prop set, so the style tree is Box',
   'Grid.styles': 'Box with one prop set, so the style tree is Box',

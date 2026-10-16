@@ -1,0 +1,136 @@
+{
+  "name": "SwipeItem",
+  "route": "/list",
+  "import": "import SwipeItem from '@box-kite/react/components/swipeItem';",
+  "description": "A list item that slides aside to show the commands under it — Mail's archive and delete.",
+  "pattern": null,
+  "props": [
+    {
+      "name": "children",
+      "type": "React.ReactNode",
+      "required": false,
+      "default": null,
+      "description": "The item's parts, exactly as in a `List.Item`: `List.Media`, `List.Content`, `List.End`, `List.Actions`."
+    },
+    {
+      "name": "startActions",
+      "type": "React.ReactNode",
+      "required": false,
+      "default": null,
+      "description": "`SwipeItem.Action`s under the inline start edge — a swipe towards the end of the line reveals them. The first is outermost."
+    },
+    {
+      "name": "endActions",
+      "type": "React.ReactNode",
+      "required": false,
+      "default": null,
+      "description": "`SwipeItem.Action`s under the inline end edge — a swipe towards the start reveals them. The first is outermost."
+    },
+    {
+      "name": "fullSwipe",
+      "type": "boolean",
+      "required": false,
+      "default": "false",
+      "description": "A swipe carried most of the way across performs the outermost action instead of stopping at the tray — iOS's archive."
+    },
+    {
+      "name": "open",
+      "type": "SwipeSide | null",
+      "required": false,
+      "default": null,
+      "description": "Which tray is open. Controlled; `null` is closed."
+    },
+    {
+      "name": "defaultOpen",
+      "type": "SwipeSide | null",
+      "required": false,
+      "default": "null",
+      "description": "Which tray is open to begin with."
+    },
+    {
+      "name": "onOpenChange",
+      "type": "ChangeHandler<SwipeSide | null, SwipeReason>",
+      "required": false,
+      "default": null,
+      "description": "Which tray is open now, and why: a `swipe`, `focus`, an `outside-pointer` press, `escape`, or an `action` chosen."
+    },
+    {
+      "name": "size",
+      "type": "ListItemSize",
+      "required": false,
+      "default": "'md'",
+      "description": "The item's spacing, as on `List.Item`."
+    },
+    {
+      "name": "wrap",
+      "type": "boolean",
+      "required": false,
+      "default": "false",
+      "description": "Lets the item's parts wrap onto a second line, as on `List.Item`."
+    },
+    {
+      "name": "selected",
+      "type": "boolean",
+      "required": false,
+      "default": "false",
+      "description": "Tints the item as chosen, as on `List.Item`."
+    },
+    {
+      "name": "chevron",
+      "type": "boolean",
+      "required": false,
+      "default": "false",
+      "description": "Ends the item with a chevron, as on `List.Item`."
+    }
+  ],
+  "parts": [
+    {
+      "name": "SwipeItem.Action",
+      "description": "One command in a tray: a label, and an icon over it if there is one.",
+      "props": [
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": false,
+          "default": null,
+          "description": "What it does, in a word: \"Archive\", \"Delete\". It is the button's name."
+        },
+        {
+          "name": "icon",
+          "type": "React.ReactNode",
+          "required": false,
+          "default": null,
+          "description": "An icon over the label. Decoration — the label names the button."
+        },
+        {
+          "name": "onClick",
+          "type": "(event: React.MouseEvent<HTMLButtonElement>) => void",
+          "required": false,
+          "default": null,
+          "description": "Runs the command. The tray closes after it unless `closeOnSelect` is `false`."
+        },
+        {
+          "name": "closeOnSelect",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "Whether choosing the action closes the tray. Default `true`."
+        }
+      ]
+    }
+  ],
+  "keyboard": [
+    { "mode": null, "keys": "Tab", "action": "Reaches the tray's actions after the item's own, opening the tray they are in." },
+    { "mode": null, "keys": "Escape", "action": "Closes an open tray and returns focus to the item's action." }
+  ],
+  "a11y": [
+    "A swipe is a shortcut, not the only way in. The actions are real buttons in the tab order, after the item's own action, and focus reaching one opens its tray — so a keyboard and a screen reader find them without swiping. A path-based gesture still needs a non-path way for a pointer (WCAG 2.5.1): offer the same commands where a press reaches them too, on the item's own page or in a `Menu` in `List.Actions`."
+  ],
+  "axe": { "fixtures": ["SwipeItem"], "knownViolations": [] },
+  "styleTree": [
+    { "path": "swipeItem", "depth": 0, "extends": null, "variants": [] },
+    { "path": "swipeItem.row", "depth": 1, "extends": null, "variants": ["dragging"] },
+    { "path": "swipeItem.tray", "depth": 1, "extends": null, "variants": ["dragging"] },
+    { "path": "swipeItem.action", "depth": 1, "extends": null, "variants": ["accent", "warning", "danger", "armed"] }
+  ]
+}

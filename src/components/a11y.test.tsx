@@ -20,6 +20,7 @@ describe('Component accessibility (axe)', () => {
   it.each(fixtures)(
     '$name',
     async (fixture) => {
+      await fixture.prepare?.();
       const warn = vi.spyOn(console, 'warn');
       render(fixture.render());
       fixture.setup?.();

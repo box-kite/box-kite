@@ -41,6 +41,8 @@ function DataGridDetailRowImpl<TRow>(props: Props<TRow>) {
     <Flex
       ref={rowRef}
       component={`${grid.componentName}.body.detailRow` as never}
+      // The height is the one virtualization counts, so it must not slide towards it the way every Box's `all` would.
+      transition="none"
       props={{ role: 'row', 'aria-rowindex': navRow + 1 }}
       style={{
         gridColumn: '1 / -1',
@@ -54,6 +56,9 @@ function DataGridDetailRowImpl<TRow>(props: Props<TRow>) {
         insetStart={0}
         overflowX="auto"
         overflowY="hidden"
+        // A width that slid to the viewport's would resize a grid inside the panel every frame, its scrollbar
+        // blinking on and off as its columns caught up (bug #270).
+        transition="none"
         // One cell across every column: the panel is what the row holds, and a row may hold
         // nothing but cells.
         props={{ role: 'gridcell', 'aria-colindex': 1, 'aria-colspan': navigation?.columnCount, tabIndex, onFocus }}

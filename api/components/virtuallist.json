@@ -1,0 +1,88 @@
+{
+  "name": "VirtualList",
+  "route": "/list",
+  "import": "import VirtualList from '@box-kite/react/components/virtualList';",
+  "description": "A list too long to render whole — a mailbox, a contact book, a log. Only the items near the screen are in the DOM; the rest is space.",
+  "pattern": null,
+  "props": [
+    {
+      "name": "items",
+      "type": "readonly TItem[]",
+      "required": true,
+      "default": null,
+      "description": "Every item, however many — only the ones near the screen are rendered."
+    },
+    {
+      "name": "itemKey",
+      "type": "(item: TItem, index: number) => Key",
+      "required": true,
+      "default": null,
+      "description": "Who an item is: stable across renders, since an item's measured height is kept under it."
+    },
+    {
+      "name": "children",
+      "type": "(item: TItem, index: number) => React.ReactNode",
+      "required": true,
+      "default": null,
+      "description": "Draws one item: a `List.Item`, a `SwipeItem` — one `<li>` per item, and nothing around it."
+    },
+    {
+      "name": "estimateSize",
+      "type": "number",
+      "required": false,
+      "default": "57",
+      "description": "What an item counts as until one has been drawn, in px — then the mean of those drawn. Default 57, a `md` item."
+    },
+    {
+      "name": "overscan",
+      "type": "number",
+      "required": false,
+      "default": "6",
+      "description": "Items kept either side of what is on screen, so a fast scroll has something to show. Default 6."
+    },
+    {
+      "name": "initialCount",
+      "type": "number",
+      "required": false,
+      "default": "20",
+      "description": "How many items render before anything is measured — on a server, and in the first frame. Default 20."
+    },
+    {
+      "name": "onRangeChange",
+      "type": "(range: VirtualListRange) => void",
+      "required": false,
+      "default": null,
+      "description": "Fires when the rendered range moves. The way to fetch more: load the next page when `endIndex` nears the end."
+    },
+    {
+      "name": "scrollerRef",
+      "type": "React.RefObject<HTMLElement | null>",
+      "required": false,
+      "default": null,
+      "description": "What scrolls the list, when it is not the nearest scrolling ancestor — or, with none, the page."
+    },
+    {
+      "name": "tag",
+      "type": "'ul' | 'ol'",
+      "required": false,
+      "default": null,
+      "description": "`ol` when the order means something — steps, a ranking. Default `ul`."
+    }
+  ],
+  "parts": [],
+  "keyboard": [],
+  "a11y": [
+    "Each rendered item carries `aria-setsize` and `aria-posinset`, so a screen reader says \"12 of 4,000\" rather than counting the twenty in the DOM.",
+    "The item focus is in stays rendered while the list scrolls away from it, so Tab carries on from where it was; and since Tab scrolls its target into view, the window follows the keyboard down the list.",
+    "Find-in-page cannot see an item that is not rendered. A list that has to be searchable that way is one to render whole — or to give a search field of its own."
+  ],
+  "axe": { "fixtures": ["VirtualList"], "knownViolations": [] },
+  "styleTree": [
+    { "path": "list", "depth": 0, "extends": null, "variants": ["plain", "card", "separated"] },
+    { "path": "list.item", "depth": 1, "extends": null, "variants": ["selected", "lifted", "grabbed", "settling"] },
+    { "path": "list.media", "depth": 1, "extends": null, "variants": ["icon", "avatar", "image"] },
+    { "path": "list.muted", "depth": 1, "extends": null, "variants": [] },
+    { "path": "list.action", "depth": 1, "extends": null, "variants": [] },
+    { "path": "list.label", "depth": 1, "extends": null, "variants": [] }
+  ]
+}

@@ -18,6 +18,15 @@ export type Components = Record<string, BoxComponent>;
  */
 const FONT_MONO = 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace';
 
+/** A list's hairline — its divider and a separated item's frame — mixed from the text, so it follows any theme. */
+const HAIRLINE = 'color-mix(in oklab, currentColor 12%, transparent)';
+
+/** What a list item's icon, avatar or thumbnail sits on. */
+const MEDIA_FILL: BoxComponentStyles = { bgColor: 'currentColor/6' };
+
+/** The keyboard's mark on a control in the DataGrid's list layout. */
+const FOCUS_RING: BoxComponentStyles = { outline: 2, outlineStyle: 'solid', outlineOffset: 2, outlineColor: 'indigo-500' };
+
 /**
  * The DataGrid bottom bar's buttons. Quiet rather than links: they change the view, they do not go
  * anywhere — grey until hovered, so they sit beside the counts without shouting over them.
@@ -50,7 +59,7 @@ const BAR_BUTTON: BoxComponentStyles = {
   },
 };
 
-const boxComponents = {
+const baseComponents = {
   h1: {
     styles: { fontSize: 14 * 2.5 },
   },
@@ -2031,6 +2040,11 @@ const boxComponents = {
         },
       },
     },
+    variants: {
+      // `clip` rather than `hidden`: the corners still clip, but the grid stops being a scroll container, so the
+      // list's selection bar can stick to the bottom of the viewport.
+      list: { css: { overflow: 'clip' } },
+    },
     children: {
       content: {
         styles: {},
@@ -3439,6 +3453,132 @@ const boxComponents = {
           },
         },
       },
+      // The grid on a phone: a row is a list item, divided rather than carded (NN/g, "Cards"). Only the paint is
+      // here, because every engine entry carries this tree; the layout is in the list's own chunk.
+      list: {
+        styles: {},
+        children: {
+          toolbar: {
+            styles: { bb: 1, borderColor: 'gray-200', theme: { dark: { borderColor: 'gray-800' } } },
+            children: {
+              count: { styles: { color: 'gray-500', theme: { dark: { color: 'gray-400' } } } },
+              search: {
+                styles: {
+                  bgColor: 'gray-100',
+                  focus: { outline: 2, outlineStyle: 'solid', outlineColor: 'indigo-500', bgColor: 'white' },
+                  theme: { dark: { bgColor: 'gray-800', focus: { bgColor: 'gray-900' } } },
+                },
+              },
+              button: {
+                clean: true,
+                styles: {
+                  b: 1,
+                  borderColor: 'gray-200',
+                  color: 'gray-700',
+                  active: { bgColor: 'gray-100' },
+                  focusVisible: FOCUS_RING,
+                  theme: { dark: { borderColor: 'gray-700', color: 'gray-200', active: { bgColor: 'gray-800' } } },
+                },
+                variants: {
+                  active: {
+                    bgColor: 'indigo-50',
+                    borderColor: 'indigo-200',
+                    color: 'indigo-700',
+                    theme: { dark: { bgColor: 'indigo-500/15', borderColor: 'indigo-500/40', color: 'indigo-300' } },
+                  },
+                },
+              },
+              chip: { styles: { bgColor: 'gray-100', theme: { dark: { bgColor: 'gray-800' } } } },
+            },
+          },
+          // The rows themselves are `List.Item`s, styled by the `list` tree. These are the grid's own inside one: a tree's
+          // chevron and the row-detail toggle, and the detail panel under it.
+          toggle: {
+            clean: true,
+            styles: { color: 'indigo-600', focusVisible: FOCUS_RING, theme: { dark: { color: 'indigo-300' } } },
+          },
+          detail: { styles: { bgColor: 'gray-50', theme: { dark: { bgColor: 'gray-800/60' } } } },
+          button: {
+            clean: true,
+            styles: {
+              b: 1,
+              borderColor: 'gray-200',
+              color: 'gray-700',
+              active: { bgColor: 'gray-100' },
+              disabled: { opacity: 0.4 },
+              focusVisible: FOCUS_RING,
+              theme: { dark: { borderColor: 'gray-700', color: 'gray-200', active: { bgColor: 'gray-800' } } },
+            },
+          },
+          // What a selection is for sits where a thumb is: pinned to the bottom of the screen while rows are ticked.
+          selectionBar: {
+            styles: { bgColor: 'gray-900', color: 'white', theme: { dark: { bgColor: 'gray-100', color: 'gray-900' } } },
+          },
+          // The sort, the filters and the record view: a modal `<dialog>` docked to the bottom edge, where a thumb
+          // is, that slides up as it opens and back down as it closes.
+          sheet: {
+            styles: {
+              m: 0,
+              mt: 'auto',
+              p: 0,
+              width: 'fit',
+              b: 0,
+              borderRadiusTop: 5,
+              bgColor: 'white',
+              color: 'gray-900',
+              shadow: 'large',
+              css: { maxWidth: 'none', maxHeight: 'calc(100dvh - 2rem)' },
+              startingStyle: { translateY: '1/1' },
+              transitionBehavior: 'allow-discrete',
+              not: { open: { translateY: '1/1', display: 'none' } },
+              backdrop: { bgColor: 'black/40', transition: 'opacity', startingStyle: { opacity: 0 }, not: { open: { opacity: 0 } } },
+              theme: { dark: { bgColor: 'gray-900', color: 'gray-100' } },
+            },
+            children: {
+              line: { styles: { borderColor: 'gray-100', theme: { dark: { borderColor: 'gray-800' } } } },
+              input: {
+                styles: {
+                  b: 1,
+                  borderColor: 'gray-300',
+                  bgColor: 'white',
+                  focus: { outline: 2, outlineStyle: 'solid', outlineOffset: -1, outlineColor: 'indigo-500' },
+                  theme: { dark: { bgColor: 'gray-800', borderColor: 'gray-700' } },
+                },
+              },
+              chip: {
+                clean: true,
+                styles: {
+                  b: 1,
+                  borderColor: 'gray-300',
+                  focusVisible: FOCUS_RING,
+                  ariaAttr: { pressed: { bgColor: 'indigo-600', borderColor: 'indigo-600', color: 'white' } },
+                  theme: { dark: { borderColor: 'gray-600', ariaAttr: { pressed: { bgColor: 'indigo-500', borderColor: 'indigo-500' } } } },
+                },
+              },
+              button: {
+                clean: true,
+                styles: {
+                  color: 'gray-700',
+                  active: { bgColor: 'gray-100' },
+                  disabled: { opacity: 0.3 },
+                  focusVisible: FOCUS_RING,
+                  theme: { dark: { color: 'gray-200', active: { bgColor: 'gray-800' } } },
+                },
+              },
+              primary: {
+                clean: true,
+                styles: {
+                  bgColor: 'indigo-600',
+                  color: 'white',
+                  active: { bgColor: 'indigo-700' },
+                  focusVisible: FOCUS_RING,
+                  theme: { dark: { bgColor: 'indigo-500', active: { bgColor: 'indigo-600' } } },
+                },
+              },
+            },
+          },
+        },
+      },
     },
   },
   // A dashboard is a CSS grid and nothing else: a widget's place is `grid-column`/`grid-row`, which is a
@@ -4190,5 +4330,117 @@ const boxComponents = {
     },
   },
 } satisfies Components;
+
+// The list family, in an object of its own. One literal holding every tree is a type too long for the
+// declaration emitter to write out (TS7056), so the export is two named halves rather than one.
+const listComponents = {
+  // A list of things a person reads and picks from. Paint only, since every engine entry carries this tree: the
+  // geometry is the parts' own default props. Most of it is mixed from `currentColor`, so it follows any theme
+  // without a second rule, and the look reaches the items as custom properties — a list has no context to pass.
+  list: {
+    styles: {},
+    variants: {
+      plain: { vars: { 'list-divider': 'transparent' } },
+      card: {
+        b: 1,
+        borderColor: 'currentColor/12',
+        borderRadius: 3,
+        bgColor: 'white',
+        // `clip`, not `hidden`: the corners clip and the list is still no scroll container, so a sticky label sticks.
+        css: { overflow: 'clip' },
+        theme: { dark: { bgColor: 'gray-900' } },
+      },
+      separated: {
+        display: 'flex',
+        d: 'column',
+        gap: 2,
+        vars: { 'list-divider': 'transparent', 'list-item-frame': `1px solid ${HAIRLINE}`, 'list-item-radius': '0.75rem' },
+      },
+    },
+    children: {
+      item: {
+        styles: {
+          // The line between items is the component's `::before`; this is its colour, which `plain` and `separated`
+          // take away from up the tree.
+          before: { css: { backgroundColor: `var(--list-divider, ${HAIRLINE})` } },
+          // Pressable when it holds a `List.Action`, so the states are read off that rather than a prop.
+          has: {
+            '[data-list-action]:active': { bgColor: 'currentColor/8' },
+            '[data-list-action][aria-current]:not([aria-current=false])': { bgColor: 'indigo-500/15' },
+            '[data-list-action]:disabled': { opacity: 0.5 },
+          },
+          pointerFine: { has: { '[data-list-action]:hover': { bgColor: 'currentColor/4' } } },
+        },
+        variants: {
+          // Its own hover too, or the item's hover tint would replace the selection while the pointer is on it.
+          selected: { bgColor: 'indigo-500/10', pointerFine: { has: { '[data-list-action]:hover': { bgColor: 'indigo-500/15' } } } },
+          // A `SortableList` item under the pointer: lifted over its neighbours and following the pointer with no lag.
+          lifted: { zIndex: 2, bgColor: 'white', shadow: 'lg', transition: 'none', theme: { dark: { bgColor: 'gray-900' } } },
+          // One the keyboard picked up.
+          grabbed: { zIndex: 1, bgColor: 'indigo-500/10', ring: 2, ringColor: 'indigo-500' },
+          // The commit a drop lands in: the items' offsets go back to zero there, and must not transition from them.
+          settling: { transition: 'none' },
+        },
+      },
+      media: { styles: {}, variants: { icon: MEDIA_FILL, avatar: MEDIA_FILL, image: MEDIA_FILL } },
+      // The quieter half of an item: an overline, a description, a secondary row, a meta value, a field's label, a
+      // chevron. A palette pair rather than a mix, since a mix inside a mix would fade twice.
+      muted: { styles: { color: 'gray-500', theme: { dark: { color: 'gray-400' } } } },
+      // The item's one primary action: the ring round the item it covers. `disabled` here is the state; as a part's
+      // default prop it would be the attribute.
+      action: {
+        styles: {
+          disabled: { cursor: 'not-allowed' },
+          focusVisible: { after: { outline: 2, outlineStyle: 'solid', outlineOffset: -2, outlineColor: 'indigo-500' } },
+        },
+      },
+      // A group's label, opaque so a sticky one hides the items scrolling under it.
+      label: { styles: { color: 'gray-600', bgColor: 'gray-50', theme: { dark: { color: 'gray-300', bgColor: 'gray-800' } } } },
+    },
+  },
+  // A list item that slides aside to show the commands under it. Paint only, for the reason `list` is.
+  swipeItem: {
+    styles: {},
+    children: {
+      // Under the finger exactly while it is held: a transition would trail every frame of the drag.
+      row: { styles: {}, variants: { dragging: { transition: 'none', userSelect: 'none' } } },
+      tray: { styles: {}, variants: { dragging: { transition: 'none' } } },
+      action: {
+        styles: {
+          color: 'white',
+          bgColor: 'gray-500',
+          focusVisible: { outline: 2, outlineStyle: 'solid', outlineOffset: -4, outlineColor: 'white' },
+          forcedColors: { b: 1, borderColor: 'ButtonText' },
+        },
+        variants: {
+          accent: { bgColor: 'blue-600' },
+          warning: { bgColor: 'amber-700' },
+          danger: { bgColor: 'red-600' },
+          // Carried far enough that letting go performs it: the outermost action takes the whole tray.
+          armed: { nth: { first: { flexGrow: 1000 } } },
+        },
+      },
+    },
+  },
+  // A list whose items are put in order by hand. The handle is the one part of its own.
+  sortableList: {
+    styles: {},
+    children: {
+      handle: {
+        styles: {
+          color: 'gray-500',
+          cursor: 'grab',
+          borderRadius: 2,
+          theme: { dark: { color: 'gray-400' } },
+          pointerFine: { hover: { bgColor: 'currentColor/8' } },
+          focusVisible: FOCUS_RING,
+        },
+        variants: { grabbed: { cursor: 'grabbing', color: 'indigo-600', theme: { dark: { color: 'indigo-400' } } } },
+      },
+    },
+  },
+} satisfies Components;
+
+const boxComponents: typeof baseComponents & typeof listComponents = { ...baseComponents, ...listComponents };
 
 export default boxComponents;

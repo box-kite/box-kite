@@ -1,0 +1,258 @@
+{
+  "name": "List",
+  "route": "/list",
+  "import": "import List from '@box-kite/react/components/list';",
+  "description": "A list of things to read and pick from — messages, orders, people, settings.",
+  "pattern": null,
+  "props": [
+    {
+      "name": "children",
+      "type": "React.ReactNode",
+      "required": false,
+      "default": null,
+      "description": "The items: `List.Item`s, and `List.Group`s for sections."
+    },
+    {
+      "name": "tag",
+      "type": "'ul' | 'ol'",
+      "required": false,
+      "default": null,
+      "description": "`ol` when the order means something — steps, a ranking. Default `ul`."
+    }
+  ],
+  "parts": [
+    {
+      "name": "List.Item",
+      "description": "One thing in the list: a flex row of its parts.",
+      "props": [
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": false,
+          "default": null,
+          "description": "The item's parts: `List.Media`, `List.Content`, `List.End`, `List.Actions` — or anything at all, in one row."
+        },
+        {
+          "name": "size",
+          "type": "ListItemSize",
+          "required": false,
+          "default": "'md'",
+          "description": "The item's spacing. Default `md`, at least 56px tall; `sm` is 44px, still a finger's width; `lg` is 72px."
+        },
+        {
+          "name": "wrap",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Lets the item's parts wrap onto a second line when they do not fit, instead of squeezing."
+        },
+        {
+          "name": "selected",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Tints the item as chosen. The state a reader hears belongs on the control that chose it — a checkbox, `aria-pressed`."
+        },
+        {
+          "name": "chevron",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Ends the item with a chevron: pressing it goes somewhere with more. Decoration, so `aria-hidden`."
+        }
+      ]
+    },
+    {
+      "name": "List.Media",
+      "description": "The leading slot: an icon, an avatar, a thumbnail — `variant` is `icon`, `avatar` or `image`, or none for a bare icon.",
+      "props": [{ "name": "children", "type": "React.ReactNode", "required": false, "default": null, "description": "What goes in it." }]
+    },
+    {
+      "name": "List.Content",
+      "description": "The middle of an item, taking the room: a column of rows and text, which may shrink past its content.",
+      "props": [{ "name": "children", "type": "React.ReactNode", "required": false, "default": null, "description": "What goes in it." }]
+    },
+    {
+      "name": "List.Row",
+      "description": "A row inside `List.Content`: its parts side by side, the last at the end.",
+      "props": [
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": false,
+          "default": null,
+          "description": "What sits side by side: a title and its time, a status and a count. The first takes the room, the last sits at the end."
+        },
+        {
+          "name": "wrap",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Lets the row's parts wrap onto a new line — a set of tags — instead of pushing the last to the end."
+        },
+        {
+          "name": "secondary",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "The quieter line under the main one: smaller and muted."
+        }
+      ]
+    },
+    {
+      "name": "List.Overline",
+      "description": "A small line above the title: an id, a date, a category.",
+      "props": [
+        { "name": "children", "type": "React.ReactNode", "required": false, "default": null, "description": "The text." },
+        {
+          "name": "lines",
+          "type": "ListLines",
+          "required": false,
+          "default": null,
+          "description": "How many lines it runs to before it stops: `1` ends in an ellipsis, `2` and `3` are clamped. Unset, it wraps."
+        }
+      ]
+    },
+    {
+      "name": "List.Title",
+      "description": "The item's name, and where its `List.Action` goes.",
+      "props": [
+        { "name": "children", "type": "React.ReactNode", "required": false, "default": null, "description": "The text." },
+        {
+          "name": "lines",
+          "type": "ListLines",
+          "required": false,
+          "default": null,
+          "description": "How many lines it runs to before it stops: `1` ends in an ellipsis, `2` and `3` are clamped. Unset, it wraps."
+        }
+      ]
+    },
+    {
+      "name": "List.Description",
+      "description": "Muted supporting text under the title.",
+      "props": [
+        { "name": "children", "type": "React.ReactNode", "required": false, "default": null, "description": "The text." },
+        {
+          "name": "lines",
+          "type": "ListLines",
+          "required": false,
+          "default": null,
+          "description": "How many lines it runs to before it stops: `1` ends in an ellipsis, `2` and `3` are clamped. Unset, it wraps."
+        }
+      ]
+    },
+    {
+      "name": "List.Meta",
+      "description": "A small muted value that never wraps — a time, a count — in tabular figures.",
+      "props": [{ "name": "children", "type": "React.ReactNode", "required": false, "default": null, "description": "What goes in it." }]
+    },
+    {
+      "name": "List.End",
+      "description": "The trailing slot: a value and its label, stacked and aligned to the end so a column of them lines up.",
+      "props": [{ "name": "children", "type": "React.ReactNode", "required": false, "default": null, "description": "What goes in it." }]
+    },
+    {
+      "name": "List.Actions",
+      "description": "Controls of the item's own — a switch, a menu, a checkbox — lifted above the action that covers the item.",
+      "props": [{ "name": "children", "type": "React.ReactNode", "required": false, "default": null, "description": "What goes in it." }]
+    },
+    {
+      "name": "List.Action",
+      "description": "The item's one primary action, stretched over the whole item.",
+      "props": [
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": false,
+          "default": null,
+          "description": "What the action is called: the item's title, and nothing else, since it is the name a reader hears."
+        },
+        {
+          "name": "props",
+          "type": "ListActionTagProps",
+          "required": false,
+          "default": null,
+          "description": "The element's attributes. An `href` makes it an `<a>`, an `htmlFor` a `<label>`; neither, a `<button type=\"button\">`."
+        },
+        {
+          "name": "tag",
+          "type": "'button' | 'a' | 'label'",
+          "required": false,
+          "default": null,
+          "description": "The element, when what `props` holds does not already say: `a` with no `href` is a placeholder link."
+        },
+        {
+          "name": "onClick",
+          "type": "(event: React.MouseEvent<HTMLElement>) => void",
+          "required": false,
+          "default": null,
+          "description": "Fires on a press anywhere on the item — and on Enter, and on Space for a button."
+        }
+      ]
+    },
+    {
+      "name": "List.Fields",
+      "description": "A `<dl>` of `List.Field`s, as many to a line as fit at 8rem each.",
+      "props": [{ "name": "children", "type": "React.ReactNode", "required": false, "default": null, "description": "What goes in it." }]
+    },
+    {
+      "name": "List.Field",
+      "description": "A labelled value: a `<dt>` and a `<dd>` in a `<div>`, which is the one wrapper a `<dl>` allows.",
+      "props": [
+        { "name": "label", "type": "React.ReactNode", "required": true, "default": null, "description": "What the value is: the `<dt>`." },
+        { "name": "children", "type": "React.ReactNode", "required": false, "default": null, "description": "The value: the `<dd>`." }
+      ]
+    },
+    {
+      "name": "List.Group",
+      "description": "A section of the list: its label, then its own `<ul>` of items.",
+      "props": [
+        {
+          "name": "label",
+          "type": "React.ReactNode",
+          "required": true,
+          "default": null,
+          "description": "What the items have in common: \"Today\", \"A\", \"Unread\"."
+        },
+        { "name": "children", "type": "React.ReactNode", "required": false, "default": null, "description": "The group's items." },
+        {
+          "name": "level",
+          "type": "ListGroupLevel",
+          "required": false,
+          "default": null,
+          "description": "Makes the label a heading of this level, so a screen reader can jump between groups. Unset, it is plain text."
+        },
+        {
+          "name": "sticky",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Keeps the label at the top of the screen while its items scroll under it, until the next group's pushes it off."
+        }
+      ]
+    },
+    {
+      "name": "List.Chevron",
+      "description": "The chevron that ends a drill-in item, pointing along the reading order. Decoration, so `aria-hidden`.",
+      "props": [{ "name": "children", "type": "React.ReactNode", "required": false, "default": null, "description": "What goes in it." }]
+    }
+  ],
+  "keyboard": [
+    { "mode": null, "keys": "Tab", "action": "Each item's action, then each control in its `List.Actions`." },
+    { "mode": null, "keys": "Enter", "action": "Follows the action's link or presses its button; Space presses a button." }
+  ],
+  "a11y": [
+    "A `<ul role=\"list\">`: the role is spelled out because Safari drops a list's semantics once its items lose their markers. `tag=\"ol\"` makes it an ordered one.",
+    "`List.Action`'s name is its own text, not the whole item's — a reader hears \"Ada Lovelace, link\", not every value in the row.",
+    "A list is not a composite widget: every action is its own tab stop and the arrow keys stay the page's. For arrow-key selection among options, that is a listbox — `Combobox` or `Select`."
+  ],
+  "axe": { "fixtures": ["List"], "knownViolations": [] },
+  "styleTree": [
+    { "path": "list", "depth": 0, "extends": null, "variants": ["plain", "card", "separated"] },
+    { "path": "list.item", "depth": 1, "extends": null, "variants": ["selected", "lifted", "grabbed", "settling"] },
+    { "path": "list.media", "depth": 1, "extends": null, "variants": ["icon", "avatar", "image"] },
+    { "path": "list.muted", "depth": 1, "extends": null, "variants": [] },
+    { "path": "list.action", "depth": 1, "extends": null, "variants": [] },
+    { "path": "list.label", "depth": 1, "extends": null, "variants": [] }
+  ]
+}

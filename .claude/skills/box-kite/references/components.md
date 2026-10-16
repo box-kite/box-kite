@@ -18,6 +18,7 @@ Which component replaces which `<Box tag>`, and the three that carry a pattern o
 | a menu button and its menu           | `<Menu>`                               | `components/menu`                                                |
 | sections that open one at a time     | `<Accordion>`                          | `components/accordion`                                           |
 | one "show more" disclosure           | `<Collapsible>`                        | `components/accordion`                                           |
+| rows to read and pick from           | `<List>`                               | `components/list`                                                |
 | a value dragged along a track        | `<Slider>`                             | `components/slider`                                              |
 | how far a task has got               | `<Progress>`                           | `components/progress`                                            |
 | a message sent from anywhere         | `<Toaster>` + `toast()`                | `components/toaster`                                             |
@@ -66,6 +67,51 @@ DOM, which is what keeps its state and what gives the exit a value to animate fr
 own tab stop; Down/Up/Home/End are a shortcut. Style the open state with `ariaAttr={{ expanded: … }}`,
 never a variant, and leave `accordion.track`/`accordion.clip` alone: padding on a grid item cannot be
 squeezed, so it floors the `0fr` track — which is why your padded panel sits inside the clip (#142).
+
+## List
+
+```tsx
+import List from '@box-kite/react/components/list';
+
+<List variant="card">
+  <List.Group label="Today" level={3} sticky>
+    <List.Item chevron>
+      <List.Media variant="avatar">AL</List.Media>
+      <List.Content>
+        <List.Row>
+          <List.Title lines={1}>
+            <List.Action props={{ href: '/inbox/42' }}>Ada Lovelace</List.Action>
+          </List.Title>
+          <List.Meta>9:41</List.Meta>
+        </List.Row>
+        <List.Row secondary>Re: the engine</List.Row>
+        <List.Description lines={2}>It might compose elaborate pieces of music.</List.Description>
+      </List.Content>
+    </List.Item>
+  </List.Group>
+</List>;
+```
+
+`List`: `variant` (`plain`, `card`, `separated`; dividers by default), `tag="ol"`. `List.Item`: `size` (`sm` 44px, `md` 56px,
+`lg` 72px), `wrap`, `selected`, `chevron`. `List.Row`: `wrap`, `secondary`. `List.Title`/`Description`/`Overline`: `lines`
+(`1` ellipsis, `2`/`3` clamp). `List.Media`: `variant` `icon`/`avatar`/`image`. `List.Field`: `label`. `List.Group`:
+`label`, `level`, `sticky`. `List.Content`, `List.Meta`, `List.End`, `List.Actions`, `List.Fields`: every Box prop.
+
+`List.Action` goes in the title and covers the item: `props={{ href }}` is a link, `props={{ htmlFor }}` the label of a
+checkbox in `List.Actions` (a pick-list), otherwise a button with `onClick`. Anything else interactive goes in
+`List.Actions`, which sits above the action. No hook and no context — it renders on a server — so the look reaches
+the items as `--list-divider`, `--list-divider-inset`, `--list-item-frame`, `--list-item-radius` and
+`--list-sticky-top`, set with `vars`. The tree is paint only (`list`, `list.item`, `list.media`, `list.muted`,
+`list.action`, `list.label`); the spacing is the parts' own default props, which a prop on the part beats.
+
+Three client-only entries build on it. `SwipeItem` (`components/swipeItem`) is a `List.Item` whose row slides aside:
+`startActions`/`endActions` of `SwipeItem.Action` (`variant` `accent`/`warning`/`danger`, `icon`), `fullSwipe` to
+perform the outermost by swiping across, `open`/`onOpenChange`; the actions are tab stops and focus opens their tray.
+`SortableList` (`components/sortableList`) reorders `SortableList.Item`s (`value`, `label`) by a `SortableList.Handle`:
+the app owns the order, `onOrderChange(order, { reason, value, from, to })` fires on the drop and on each keyboard step
+(Enter/Space grabs, arrows move, Escape puts back), `onOrderCommit` once it settles. `VirtualList`
+(`components/virtualList`) windows `items` through a `children(item, index)` that returns one `<li>`, measuring each
+item by `itemKey`; `estimateSize`, `overscan`, `onRangeChange`, `scrollerRef`. `List.Chevron` is the chevron as a part.
 
 ## Slider and Progress
 
@@ -229,12 +275,12 @@ import DataGrid from '@box-kite/react/components/dataGrid';
 
 **DataGridProps**: `data`, `def`, `component` (default `'datagrid'`), `loading`, `filters` (predicate[]), `page`/`onPageChange`, `onSortChange`, `onServerStateChange` (`{ page, pageSize, sortColumn, sortDirection, columnFilters, globalFilterValue }`), `onSelectionChange` (`{ action, selectedRowKeys, affectedRowKeys, isAllSelected }`), `expandedRowKeys`/`onExpandedRowKeysChange`, `globalFilterValue`/`onGlobalFilterChange`, `columnFilters`/`onColumnFiltersChange`, `onCellEditsChange` (`edit`/`paste`/`clear`), `onRangeChange` (`(range, { reason })` with `select`/`extend`/`clear`; `range` is `{ startRow, endRow, columns, values() }` or `undefined`), `onPaste` (`{ range, applied, rejected, skipped }`, once per Ctrl+V).
 
-**GridDefinition**: `columns` (required), `rowKey`, `rowHeight` (px, default 48), `visibleRowsCount` (number/`'all'`), `showRowNumber` (bool/`{ pinned?, width? }`), `rowSelection` (bool/`{ pinned? }` — the header checkbox acts on the rows the filters leave on screen, and the bottom bar counts selected rows the filters hide, with Show selected and Clear selection), `rowDetail` (`{ content, height?, expandOnRowClick?, pinned?, expandColumnWidth?, expandColumnHeader? }`), `pagination` (`{ totalCount, pageSize? }`), `topBar`/`bottomBar`, `title`/`topBarContent`, `globalFilter`, `globalFilterKeys`, `sortable`/`resizable` (default true), `contextMenu` (bool/`{ sort?, pin?, group? }`, default true), `resizerStyle` (`'visible'`/`'hover'`/`'hidden'`), `headerHover` (`'static'` — an inset pill per sortable cell — or `'sliding'`, one pill that flows between cells), `localeText` (any subset of `DataGridLocaleText` — every word the grid writes, for a translation; values with a number or a name in them are functions, and `DATA_GRID_LOCALE_TEXT` is the English to spread over), `noDataComponent`, `editable`/`onCellEdit`, `tabNavigation` (`'none'` default — APG's single tab stop — or `'cells'`, the spreadsheet reading), `rangeSelection` (a drag or Shift+arrow marks a block of cells; `Ctrl+C` copies it as TSV and `Ctrl+V` fills it back through `onCellEdit`, one judgement per cell — both need no opt-in for the current cell alone).
+**GridDefinition**: `columns` (required), `rowKey`, `rowHeight` (px, default 48), `visibleRowsCount` (number/`'all'`), `showRowNumber` (bool/`{ pinned?, width? }`), `rowSelection` (bool/`{ pinned? }` — the header checkbox acts on the rows the filters leave on screen, and the bottom bar counts selected rows the filters hide, with Show selected and Clear selection), `rowDetail` (`{ content, height?, expandOnRowClick?, pinned?, expandColumnWidth?, expandColumnHeader? }`), `pagination` (`{ totalCount, pageSize? }`), `topBar`/`bottomBar`, `title`/`topBarContent`, `globalFilter`, `globalFilterKeys`, `sortable`/`resizable` (default true), `contextMenu` (bool/`{ sort?, pin?, group? }`, default true), `resizerStyle` (`'visible'`/`'hover'`/`'hidden'`), `headerHover` (`'static'` — an inset pill per sortable cell — or `'sliding'`, one pill that flows between cells), `localeText` (any subset of `DataGridLocaleText` — every word the grid writes, for a translation; values with a number or a name in them are functions, and `DATA_GRID_LOCALE_TEXT` is the English to spread over), `noDataComponent`, `editable`/`onCellEdit`, `tabNavigation` (`'none'` default — APG's single tab stop — or `'cells'`, the spreadsheet reading), `layout` (`'auto'` default — a list item per row once the grid's own width is under `list.breakpoint`, 576px; `'table'`/`'list'` choose for good — rule 51), `list` (`{ breakpoint?, fields?, batchSize?, recordView? }`), `rangeSelection` (a drag or Shift+arrow marks a block of cells; `Ctrl+C` copies it as TSV and `Ctrl+V` fills it back through `onCellEdit`, one judgement per cell — both need no opt-in for the current cell alone).
 
-**ColumnType**: `key`, `header`, `width` (px, default 200), `align` (`'start'`/`'end'`/`'center'`, or the physical `'left'`/`'right'`), `pin` (`'START'`/`'END'` — an edge of the **inline axis**, so a pinned column holds under either `dir`; `'LEFT'`/`'RIGHT'` are the older spelling of the same two), `columns` (grouped headers), `Cell` (`({ cell }) => ReactNode`), `sortable`/`resizable` (override grid), `flexible`, `filterable` (`true`=text, `{ type: 'number' }`, `{ type: 'multiselect' }`), `contextMenu` (override grid).
+**ColumnType**: `key`, `header`, `width` (px, default 200), `align` (`'start'`/`'end'`/`'center'`, or the physical `'left'`/`'right'`), `pin` (`'START'`/`'END'` — an edge of the **inline axis**, so a pinned column holds under either `dir`; `'LEFT'`/`'RIGHT'` are the older spelling of the same two), `columns` (grouped headers), `Cell` (`({ cell }) => ReactNode`), `sortable`/`resizable` (override grid), `flexible`, `filterable` (`true`=text, `{ type: 'number' }`, `{ type: 'multiselect' }`), `contextMenu` (override grid), `list` (`'title'`/`'kicker'`/`'subtitle'`/`'end'`/`'field'`/`'detail'`/`'hidden'` — where it goes in a list item).
 
 **Server-side**: `def={{ pagination: { totalCount }, bottomBar: true }}` + `page={page}` + `onServerStateChange={fetchData}`.
 
 **Accessibility (A7, A10)**: the APG grid pattern, over a virtualized body — supplied whole, so add no roles and no `tabIndex`. The scrolling element is `role="grid"` (header and body are `rowgroup`s, rows `role="row"`, cells `role="gridcell"`/`columnheader`, scroll spacers `presentation`). `aria-rowcount`/`-colcount` describe the _whole_ grid and `aria-rowindex`/`-colindex` place each rendered cell in it, header rows first. Also `aria-sort` on sortable headers, `aria-selected` on rows only with `rowSelection`, `aria-busy` while `loading`, `aria-expanded` on group and expanded rows, and a live region announcing the selection count. Keyboard: one cell in the tab order; arrows move it, Home/End along the row, Ctrl+Home/End to the corners (scrolling to unrendered rows), PageUp/Down by a screenful, Enter/Space sorts a header or steps into the cell’s control, F2 always steps in, Escape steps back out. Down/Up keep the _column_ rather than the cell ordinal, so they land under where they started even through a grouped header. The column resizer is APG's window splitter — `role="separator"` with `aria-valuenow`/`-valuemin`/`-valuemax` in pixels; Tab or F2 reaches it, the arrows move it 16px, Home/End go to the narrowest the grid allows and to the grid's own width. Space on any cell selects its row, and on the header cell the select-all box sits in it toggles every row the filters leave on screen. Every cell carries the **current-cell mark**, which survives the grid losing focus so `Ctrl+C` has something to act on; with `def.rangeSelection` the cells of a marked block carry `aria-selected` and the grid is `aria-multiselectable`, while a lone current cell carries neither. Every control the grid draws names itself after what it acts on ("Select row 4", "Column options for Age"); the column menu is the APG menu button. **Give it `def.title`** — a grid is not named by its rows. Every widget a cell holds is out of the page tab sequence, so the grid is one tab stop: Enter or F2 steps in, Tab walks the widgets **within that cell** and wraps, and Escape is the way out.
 
-**Style tree**: `datagrid` > `content`, `topBar` > (`globalFilter` > `stats`, `columnGroups` > `icon`|`separator`|`item` > `icon`, `columnVisibility` > `badge`|`panel`|`search`|`searchIcon`|`searchInput`|`toolbar`|`count`|`action`|`list`|`section`|`group`|`item`|`empty`), `filter` > `cell` > `input`, `header` > `cell` > (`contextMenu` > `icon`|`tooltip` > `item` > `icon`|`separator`, `resizer`), `body` > (`cell` > `text`|`rowDetail`, `row`, `groupRow` > `expandButton`, `detailRow`, `empty`), `emptyColumns`, `bottomBar` > (`info`, `clearFilters`, `pagination` > `button`|`info`).
+**Style tree**: `datagrid` > `content`, `topBar` > (`globalFilter` > `stats`, `columnGroups` > `icon`|`separator`|`item` > `icon`, `columnVisibility` > `badge`|`panel`|`search`|`searchIcon`|`searchInput`|`toolbar`|`count`|`action`|`list`|`section`|`group`|`item`|`empty`), `filter` > `cell` > `input`, `header` > `cell` > (`contextMenu` > `icon`|`tooltip` > `item` > `icon`|`separator`, `resizer`), `body` > (`cell` > `text`|`rowDetail`, `row`, `groupRow` > `expandButton`, `detailRow`, `empty`), `emptyColumns`, `list` > (`toolbar`, `toggle`, `detail`, `button`, `selectionBar`, `sheet`) — its rows are `List.Item`s, styled by the `list` tree, `bottomBar` > (`info`, `clearFilters`, `pagination` > `button`|`info`).
