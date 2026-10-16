@@ -65,10 +65,13 @@ export const CLIENT_ONLY_COMPONENTS = [
   'radioGroup',
   'select',
   'slider',
+  'sortableList',
+  'swipeItem',
   'switch',
   'tabs',
   'toaster',
   'tooltip',
+  'virtualList',
 ];
 
 /**

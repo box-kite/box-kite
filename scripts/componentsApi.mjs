@@ -20,6 +20,7 @@ export const API_DIR = 'api/components';
 /** The axe sweep's fixtures, and the style tree every `component` key below is a node of. */
 const FIXTURES = 'dev/a11y/fixtures.tsx';
 const COMPONENT_STYLES = 'src/core/extends/boxComponents.ts';
+const STYLE_HALVES = ['baseComponents', 'listComponents'];
 
 const PACKAGE_NAME = '@box-kite/react';
 
@@ -143,7 +144,37 @@ const CONFIG = [
       { name: 'List.Fields', props: 'ListPartProps', doc: 'ListFields' },
       { name: 'List.Field', props: 'ListFieldProps', doc: 'ListField' },
       { name: 'List.Group', props: 'ListGroupProps', doc: 'ListGroup' },
+      { name: 'List.Chevron', props: 'ListPartProps', doc: 'ListChevronImpl' },
     ],
+  },
+  {
+    name: 'SwipeItem',
+    route: '/list',
+    file: 'src/components/swipeItem.tsx',
+    props: 'SwipeItemProps',
+    doc: 'SwipeItemImpl',
+    styles: 'swipeItem',
+    parts: [{ name: 'SwipeItem.Action', props: 'SwipeActionProps', doc: 'SwipeAction' }],
+  },
+  {
+    name: 'SortableList',
+    route: '/list',
+    file: 'src/components/sortableList.tsx',
+    props: 'SortableListProps',
+    doc: 'SortableListImpl',
+    styles: 'sortableList',
+    parts: [
+      { name: 'SortableList.Item', props: 'SortableItemProps', doc: 'SortableItem' },
+      { name: 'SortableList.Handle', props: 'SortableHandleProps', doc: 'SortableHandle' },
+    ],
+  },
+  {
+    name: 'VirtualList',
+    route: '/list',
+    file: 'src/components/virtualList.tsx',
+    props: 'VirtualListProps',
+    doc: 'VirtualListImpl',
+    styles: 'list',
   },
   {
     name: 'Slider',
@@ -563,9 +594,6 @@ const styleNodes = new Map();
 /** `boxComponents` as a flat list of dotted paths — the node names a `Box.components()` override needs. */
 function styleTreeOf(key) {
   if (!styleNodes.size) {
-    const declaration = declarationOf(COMPONENT_STYLES, 'boxComponents');
-    const literal = declaration.declarationList.declarations[0].initializer;
-    const root = ts.isSatisfiesExpression(literal) || ts.isAsExpression(literal) ? literal.expression : literal;
 
     const walk = (object, path, depth) => {
       for (const property of object.properties) {
@@ -590,7 +618,11 @@ function styleTreeOf(key) {
       }
     };
 
-    walk(root, '', 0);
+    // The tree is two literals spread into one export, because one would be a type too long to declare (TS7056).
+    for (const name of STYLE_HALVES) {
+      const literal = declarationOf(COMPONENT_STYLES, name).declarationList.declarations[0].initializer;
+      walk(ts.isSatisfiesExpression(literal) || ts.isAsExpression(literal) ? literal.expression : literal, '', 0);
+    }
   }
 
   if (!key) return [];

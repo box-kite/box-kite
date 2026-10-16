@@ -230,6 +230,11 @@
           "description": "Keeps the label at the top of the screen while its items scroll under it, until the next group's pushes it off."
         }
       ]
+    },
+    {
+      "name": "List.Chevron",
+      "description": "The chevron that ends a drill-in item, pointing along the reading order. Decoration, so `aria-hidden`.",
+      "props": [{ "name": "children", "type": "React.ReactNode", "required": false, "default": null, "description": "What goes in it." }]
     }
   ],
   "keyboard": [
@@ -244,7 +249,7 @@
   "axe": { "fixtures": ["List"], "knownViolations": [] },
   "styleTree": [
     { "path": "list", "depth": 0, "extends": null, "variants": ["plain", "card", "separated"] },
-    { "path": "list.item", "depth": 1, "extends": null, "variants": ["selected"] },
+    { "path": "list.item", "depth": 1, "extends": null, "variants": ["selected", "lifted", "grabbed", "settling"] },
     { "path": "list.media", "depth": 1, "extends": null, "variants": ["icon", "avatar", "image"] },
     { "path": "list.muted", "depth": 1, "extends": null, "variants": [] },
     { "path": "list.action", "depth": 1, "extends": null, "variants": [] },

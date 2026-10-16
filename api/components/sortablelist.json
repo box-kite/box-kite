@@ -1,0 +1,128 @@
+{
+  "name": "SortableList",
+  "route": "/list",
+  "import": "import SortableList from '@box-kite/react/components/sortableList';",
+  "description": "A list put in order by hand — a playlist, the columns of a report, a set of priorities.",
+  "pattern": null,
+  "props": [
+    {
+      "name": "children",
+      "type": "React.ReactNode",
+      "required": false,
+      "default": null,
+      "description": "The items: `SortableList.Item`s, each with a `value`, rendered in the order the app holds."
+    },
+    {
+      "name": "onOrderChange",
+      "type": "ChangeHandler<string[], SortableReason, SortableChangeDetails>",
+      "required": false,
+      "default": null,
+      "description": "The new order, as the items' `value`s. Fires once for a drop and on every step the keyboard takes, so the list moves as the arrows do. The app owns the order: render the items in it and the list follows."
+    },
+    {
+      "name": "onOrderCommit",
+      "type": "ChangeHandler<string[], SortableReason, SortableChangeDetails>",
+      "required": false,
+      "default": null,
+      "description": "The order once it has settled — a drop, or Enter after the arrows. The one to save."
+    },
+    {
+      "name": "tag",
+      "type": "'ul' | 'ol'",
+      "required": false,
+      "default": null,
+      "description": "`ol` when the order means something — steps, a ranking. Default `ul`."
+    }
+  ],
+  "parts": [
+    {
+      "name": "SortableList.Item",
+      "description": "One item in the order: a `List.Item` that knows who it is.",
+      "props": [
+        {
+          "name": "value",
+          "type": "string",
+          "required": true,
+          "default": null,
+          "description": "Who the item is in the order `onOrderChange` reports. Unique within the list."
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "What the handle and the announcements call the item: \"Move Ada Lovelace\". Defaults to `value`."
+        },
+        {
+          "name": "disabled",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Leaves the item where it is: its handle is disabled. Others may still move past it."
+        },
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": false,
+          "default": null,
+          "description": "The item's parts: `List.Media`, `List.Content`, `List.End`, `List.Actions` — or anything at all, in one row."
+        },
+        {
+          "name": "size",
+          "type": "ListItemSize",
+          "required": false,
+          "default": null,
+          "description": "The item's spacing. Default `md`, at least 56px tall; `sm` is 44px, still a finger's width; `lg` is 72px."
+        },
+        {
+          "name": "wrap",
+          "type": "boolean",
+          "required": false,
+          "default": null,
+          "description": "Lets the item's parts wrap onto a second line when they do not fit, instead of squeezing."
+        },
+        {
+          "name": "selected",
+          "type": "boolean",
+          "required": false,
+          "default": null,
+          "description": "Tints the item as chosen. The state a reader hears belongs on the control that chose it — a checkbox, `aria-pressed`."
+        },
+        {
+          "name": "chevron",
+          "type": "boolean",
+          "required": false,
+          "default": null,
+          "description": "Ends the item with a chevron: pressing it goes somewhere with more. Decoration, so `aria-hidden`."
+        }
+      ]
+    },
+    {
+      "name": "SortableList.Handle",
+      "description": "",
+      "props": [
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": false,
+          "default": null,
+          "description": "What the handle shows. Six dots unless given something else; its name is \"Move\" and the item's `label` either way."
+        }
+      ]
+    }
+  ],
+  "keyboard": [
+    { "mode": null, "keys": "Enter, Space", "action": "Picks the item up, and drops it again." },
+    { "mode": null, "keys": "ArrowUp, ArrowDown", "action": "Moves a held item one place. Home and End move it to either end." },
+    { "mode": null, "keys": "Escape", "action": "Puts a held item back where it was picked up from." }
+  ],
+  "a11y": [
+    "Dragging is not a keyboard gesture, so the keyboard gets a **grab**: Enter or Space on a handle picks the item up, the arrows move it, Enter drops it and Escape puts it back — DashboardGrid's model. Every step is announced in a polite live region that is there before there is anything to say.",
+    "A press on a handle that does not drag picks the item up too, and while one is held a press on any other item drops it there — the single-pointer way to reorder that WCAG 2.5.7 asks a drag to have."
+  ],
+  "axe": { "fixtures": ["SortableList"], "knownViolations": [] },
+  "styleTree": [
+    { "path": "sortableList", "depth": 0, "extends": null, "variants": [] },
+    { "path": "sortableList.handle", "depth": 1, "extends": null, "variants": ["grabbed"] }
+  ]
+}

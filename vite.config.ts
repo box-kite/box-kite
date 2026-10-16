@@ -249,6 +249,9 @@ export default defineConfig(({ mode }) => {
                   // reason `identity` has one: left in `client` the /a11y entry would import the styling binding, the theme
                   // provider and the engine behind them to answer which item a letter points at.
                   if (module.startsWith('src/utils/keyboard/')) return 'keyboard';
+                  // What scrolls a list and which row a scroll lands in, asked by `VirtualList`, `SortableList` and `DataGrid`
+                  // between them. In `platform` or `client` every component would carry them.
+                  if (module.startsWith('src/utils/scroll/') || module === 'src/utils/virtual/rowSearch.ts') return 'scrolling';
                   // The Popover API glue `Popover` and `Menu` share — the open state, the platform mirror and the two
                   // primitives the portal path needs. Two components reach it, so it is neither private to one nor
                   // something the box entry should carry.

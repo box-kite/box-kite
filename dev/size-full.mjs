@@ -41,6 +41,9 @@ import * as radioGroup from '../dist/components/radioGroup.mjs';
 import * as select from '../dist/components/select.mjs';
 import * as slider from '../dist/components/slider.mjs';
 import * as list from '../dist/components/list.mjs';
+import * as sortableList from '../dist/components/sortableList.mjs';
+import * as swipeItem from '../dist/components/swipeItem.mjs';
+import * as virtualList from '../dist/components/virtualList.mjs';
 import * as semantics from '../dist/components/semantics.mjs';
 import * as skeleton from '../dist/components/skeleton.mjs';
 import * as svg from '../dist/components/svg.mjs';
@@ -84,6 +87,9 @@ console.log(
   select,
   slider,
   list,
+  sortableList,
+  swipeItem,
+  virtualList,
   semantics,
   skeleton,
   svg,

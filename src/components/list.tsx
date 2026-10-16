@@ -1,13 +1,13 @@
 import { Ref, RefAttributes } from 'react';
 import { BoxProps, BoxTagProps, useBoxElement } from '../box';
-import { classNames, mergeDeep } from '../core';
+import { classNames } from '../core';
 import boxComponent from '../react/boxComponent';
 import { ExtractElementFromTag } from '../react/reactTypes';
 import { BoxComponentStyles, ComponentsAndVariants } from '../types';
+import { ITEM_FRAME, ITEM_ROW, ITEM_SIZES, ListItemSize, withDefaults } from './list/listItemParts';
 import { Path, Svg } from './svg';
 
-/** How an item's spacing is set: `md` by default, `sm` for a dense list, `lg` for one with room to breathe. */
-export type ListItemSize = 'sm' | 'md' | 'lg';
+export type { ListItemSize };
 
 /** How many lines a text part runs to: `1` ends in an ellipsis, `2` and `3` are clamped. Unset, it wraps. */
 export type ListLines = 1 | 2 | 3;
@@ -20,32 +20,6 @@ const HEADINGS = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'] as const;
 // The geometry is each part's default props rather than its node in the style tree: the tree ships in every
 // engine entry, this file only where a list is drawn. A prop on the part still beats any of it.
 const TABULAR = { fontVariantNumeric: 'tabular-nums' } as const;
-
-const ITEM: BoxComponentStyles = {
-  position: 'relative',
-  display: 'flex',
-  ai: 'center',
-  gap: 3,
-  px: 4,
-  py: 3,
-  minHeight: 14,
-  css: { borderRadius: 'var(--list-item-radius, 0)' },
-  // The line above every item but the first: a pseudo-element, so `--list-divider-inset` can start it at the text.
-  before: { position: 'absolute', top: 0, insetEnd: 0, css: { insetInlineStart: 'var(--list-divider-inset, 0px)', height: '1px' } },
-  // The frame a `separated` list draws round each item, which a border would take from the item's own props.
-  after: {
-    position: 'absolute',
-    inset: 0,
-    pointerEvents: 'none',
-    css: { border: 'var(--list-item-frame, none)', borderRadius: 'inherit' },
-  },
-  nth: { first: { before: { display: 'none' } } },
-};
-const ITEM_SIZES: Record<ListItemSize, BoxComponentStyles> = {
-  sm: { gap: 2, py: 2, minHeight: 11 },
-  md: {},
-  lg: { gap: 4, py: 4, minHeight: 18 },
-};
 
 const MEDIA: BoxComponentStyles = { display: 'flex', ai: 'center', jc: 'center', flexShrink: 0 };
 const MEDIA_SHAPES: Record<string, BoxComponentStyles> = {
@@ -103,21 +77,6 @@ const PARTS = {
     css: { gridTemplateColumns: 'repeat(auto-fill, minmax(min(8rem, 100%), 1fr))' },
   },
 } satisfies Record<string, BoxComponentStyles>;
-
-/** The style objects a default and a prop both write into, merged rather than replaced — a clamp is in `css`, a divider in `before`. */
-const NESTED = ['css', 'before', 'after', 'nth'] as const;
-
-/** A part's defaults under the props it was given. */
-function withDefaults<T extends object>(defaults: BoxComponentStyles, props: T): T {
-  const merged: Record<string, unknown> = { ...defaults, ...props };
-  const base = defaults as Record<string, object | undefined>;
-  for (const key of NESTED) {
-    const own = (props as Record<string, object | undefined>)[key];
-    if (base[key] && own) merged[key] = mergeDeep(base[key], own);
-  }
-
-  return merged as T;
-}
 
 type Part<TTag extends keyof React.JSX.IntrinsicElements, TKey extends keyof ComponentsAndVariants> = BoxProps<TTag, TKey> &
   RefAttributes<ExtractElementFromTag<TTag>>;
@@ -267,7 +226,7 @@ function ListItem<TKey extends keyof ComponentsAndVariants = 'list.item'>(props:
     {
       tag: 'li',
       component: 'list.item',
-      ...withDefaults({ ...ITEM, ...ITEM_SIZES[size], ...(wrap ? { flexWrap: 'wrap' } : {}) }, restProps),
+      ...withDefaults({ ...ITEM_FRAME, ...ITEM_ROW, ...ITEM_SIZES[size], ...(wrap ? { flexWrap: 'wrap' } : {}) }, restProps),
       variant: [variant, { selected }],
       children: chevron ? (
         <>
@@ -282,23 +241,29 @@ function ListItem<TKey extends keyof ComponentsAndVariants = 'list.item'>(props:
   );
 }
 
-/** The chevron that ends a drill-in item, pointing along the reading order. */
-function ListChevron() {
-  return useBoxElement({
-    tag: 'span',
-    component: 'list.muted',
-    display: 'flex',
-    flexShrink: 0,
-    alignSelf: 'center',
-    rtl: { flip: 'xAxis' },
-    props: { 'aria-hidden': true },
-    children: (
-      <Svg viewBox="0 0 16 16" width="1rem" fill="none" stroke="currentColor" strokeWidth={1.75}>
-        <Path d="M6 3.5 10.5 8 6 12.5" strokeLinecap="round" strokeLinejoin="round" />
-      </Svg>
-    ),
-  } as never);
+/** The chevron that ends a drill-in item, pointing along the reading order. Decoration, so `aria-hidden`. */
+function ListChevronImpl(props: BoxProps<'span'>, ref: Ref<HTMLSpanElement>) {
+  return useBoxElement<'span'>(
+    {
+      tag: 'span',
+      component: 'list.muted',
+      display: 'flex',
+      flexShrink: 0,
+      alignSelf: 'center',
+      rtl: { flip: 'xAxis' },
+      ...props,
+      props: { 'aria-hidden': true, ...props.props },
+      children: (
+        <Svg viewBox="0 0 16 16" width="1rem" fill="none" stroke="currentColor" strokeWidth={1.75}>
+          <Path d="M6 3.5 10.5 8 6 12.5" strokeLinecap="round" strokeLinejoin="round" />
+        </Svg>
+      ),
+    } as never,
+    ref,
+  );
 }
+
+const ListChevron = boxComponent(ListChevronImpl, 'List.Chevron');
 
 /** The leading slot: its shape is the size its `variant` names. */
 function ListMediaImpl<TKey extends keyof ComponentsAndVariants = 'list.media'>(props: ListPartProps<TKey>, ref: Ref<HTMLDivElement>) {
@@ -476,6 +441,8 @@ interface ListType {
   Fields: <TKey extends keyof ComponentsAndVariants = never>(props: Part<'dl', TKey>) => React.ReactNode;
   /** One labelled value. */
   Field: <TKey extends keyof ComponentsAndVariants = never>(props: ListFieldProps<TKey> & RefAttributes<HTMLDivElement>) => React.ReactNode;
+  /** The chevron `chevron` ends an item with, for an item drawn by something else — a `SwipeItem` has the prop too. */
+  Chevron: <TKey extends keyof ComponentsAndVariants = never>(props: Part<'span', TKey>) => React.ReactNode;
   /** A labelled section of items. */
   Group: <TKey extends keyof ComponentsAndVariants = never>(props: ListGroupProps<TKey> & RefAttributes<HTMLLIElement>) => React.ReactNode;
   displayName?: string;
@@ -523,5 +490,6 @@ List.Action = boxComponent(ListAction, 'List.Action') as ListType['Action'];
 List.Fields = ListFields as ListType['Fields'];
 List.Field = boxComponent(ListField, 'List.Field') as ListType['Field'];
 List.Group = boxComponent(ListGroup, 'List.Group') as ListType['Group'];
+List.Chevron = ListChevron as ListType['Chevron'];
 
 export default List;

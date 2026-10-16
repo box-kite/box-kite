@@ -12,7 +12,11 @@ export interface ChangeDetails<TReason extends string = string> {
   event?: Event | React.SyntheticEvent;
 }
 
-export type ChangeHandler<T, TReason extends string = string> = (value: T, details: ChangeDetails<TReason>) => void;
+/** `TDetails` is for a change that says more than its reason — which item moved, and from where. */
+export type ChangeHandler<T, TReason extends string = string, TDetails extends ChangeDetails<TReason> = ChangeDetails<TReason>> = (
+  value: T,
+  details: TDetails,
+) => void;
 
 export interface ControllableStateOptions<T, TReason extends string = string> {
   /** Present (not `undefined`) means the consumer owns the value: state here is ignored. */

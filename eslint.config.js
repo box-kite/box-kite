@@ -7,9 +7,9 @@ import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
-  // Build output, ours and Next's: `.next/types/**` and `next-env.d.ts` are generated files the
-  // Next.js example rewrites on every build.
-  { ignores: ['dist', 'dist-core', 'dist-mcp', '**/.next/**', '**/next-env.d.ts'] },
+  // Build output, ours and Next's (`.next/types/**` and `next-env.d.ts` the Next.js example rewrites on every
+  // build), and `.playwright-mcp`, the browser tool's gitignored scratch.
+  { ignores: ['dist', 'dist-core', 'dist-mcp', '**/.next/**', '**/next-env.d.ts', '.playwright-mcp'] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ['**/*.{ts,tsx}'],

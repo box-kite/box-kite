@@ -1,6 +1,9 @@
-import { Bell, Hand, Keyboard, List as ListIcon, Moon, MousePointerClick, Server, Wifi } from 'lucide-react';
+import { Archive, Bell, Hand, Keyboard, List as ListIcon, Moon, MousePointerClick, Pin, Server, Trash2, Wifi } from 'lucide-react';
 import { ReactNode, useState } from 'react';
 import listApi from '../../api/components/list.json';
+import sortableListApi from '../../api/components/sortablelist.json';
+import swipeItemApi from '../../api/components/swipeitem.json';
+import virtualListApi from '../../api/components/virtuallist.json';
 import Box from '../../src/box';
 import Button from '../../src/components/button';
 import Checkbox from '../../src/components/checkbox';
@@ -9,7 +12,10 @@ import Grid from '../../src/components/grid';
 import Icon from '../../src/components/icon';
 import List from '../../src/components/list';
 import { H2, Span } from '../../src/components/semantics';
+import SortableList from '../../src/components/sortableList';
+import SwipeItem from '../../src/components/swipeItem';
 import Switch from '../../src/components/switch';
+import VirtualList from '../../src/components/virtualList';
 import ApiReference from '../components/apiReference';
 import Code from '../components/code';
 import Mono from '../components/mono';
@@ -548,6 +554,118 @@ const toggleNotifications = () => {};`}
             </Code>
           </Section>
 
+          <Section id="swipe" title="Swipe an item for its commands">
+            <Box>
+              <Mono>SwipeItem</Mono> (<Mono>@box-kite/react/components/swipeItem</Mono>) is a <Mono>List.Item</Mono> whose row slides along
+              the line while a tray of <Mono>SwipeItem.Action</Mono>s opens in the space it leaves — <Mono>startActions</Mono> under the
+              start edge, <Mono>endActions</Mono> under the end, the first of each outermost. Past half open it opens, short of it it
+              closes, and a flick goes the way it was going; with <Mono>fullSwipe</Mono>, carrying it most of the way across performs the
+              outermost action. Nothing is drawn under the row, so it keeps whatever the list paints. Try it with a finger, a pen or a mouse
+              — or Tab to the actions, which opens the tray they are in.
+            </Box>
+            <Code
+              language="jsx"
+              mt={4}
+              code={`<List>
+  <SwipeItem
+    fullSwipe
+    startActions={<SwipeItem.Action variant="accent" onClick={pin}>Pin</SwipeItem.Action>}
+    endActions={
+      <>
+        <SwipeItem.Action variant="danger" onClick={remove}>Delete</SwipeItem.Action>
+        <SwipeItem.Action onClick={snooze}>Snooze</SwipeItem.Action>
+      </>
+    }
+  >
+    <List.Content>
+      <List.Title lines={1}>
+        <List.Action props={{ href: '#ada' }}>Ada Lovelace</List.Action>
+      </List.Title>
+    </List.Content>
+  </SwipeItem>
+</List>`}
+              context={`const pin = () => {}; const remove = () => {}; const snooze = () => {};`}
+            >
+              <SwipeDemo />
+            </Code>
+            <Grid gridTemplateColumns={1} md={{ gridTemplateColumns: 2 }} gap={3} mt={4}>
+              <Note icon={Keyboard} title="A swipe is a shortcut, not the only way in">
+                The actions are real buttons in the tab order, and focus reaching one opens its tray. A path-based gesture still wants a way
+                in for a pointer that cannot drag: put the same commands on the item&apos;s own page, or in a <Mono>Menu</Mono> in{' '}
+                <Mono>List.Actions</Mono>.
+              </Note>
+              <Note icon={MousePointerClick} title="An open item closes before it opens">
+                A press on an open item closes it rather than following its action, and a press anywhere else closes it too — the press was
+                most likely aimed at the tray.
+              </Note>
+            </Grid>
+          </Section>
+
+          <Section id="sortable" title="Put the items in order by hand">
+            <Box>
+              <Mono>SortableList</Mono> (<Mono>@box-kite/react/components/sortableList</Mono>) is a <Mono>List</Mono> whose items are
+              dragged by a <Mono>SortableList.Handle</Mono>. The app owns the order: <Mono>onOrderChange</Mono> reports it as the
+              items&apos; <Mono>value</Mono>s, and the list draws whatever order it is rendered in. During a drag nothing is reordered — the
+              item follows the pointer and its neighbours step aside — and the order changes once, on the drop, which glides into place.{' '}
+              <Mono>onOrderCommit</Mono> is the one to save.
+            </Box>
+            <Code
+              language="jsx"
+              mt={4}
+              code={`<SortableList onOrderChange={(order) => setIds(order)}>
+  {ids.map((id) => (
+    <SortableList.Item key={id} value={id} label={names[id]}>
+      <List.Content>
+        <List.Title>{names[id]}</List.Title>
+      </List.Content>
+      <SortableList.Handle />
+    </SortableList.Item>
+  ))}
+</SortableList>`}
+              context={`const ids = ['ada']; const setIds = (order: string[]) => {}; const names: Record<string, string> = { ada: 'Ada Lovelace' };`}
+            >
+              <SortableDemo />
+            </Code>
+            <Grid gridTemplateColumns={1} md={{ gridTemplateColumns: 2 }} gap={3} mt={4}>
+              <Note icon={Keyboard} title="The keyboard gets a grab">
+                Enter or Space on a handle picks the item up, the arrows move it, Enter drops it and Escape puts it back — every step
+                announced in a live region.
+              </Note>
+              <Note icon={Hand} title="Or press, then press where it goes">
+                A press on a handle that does not drag picks the item up too, and a press on another item then drops it there: the way to
+                reorder with a pointer that cannot drag.
+              </Note>
+            </Grid>
+          </Section>
+
+          <Section id="virtual" title="A list too long to render whole">
+            <Box>
+              <Mono>VirtualList</Mono> (<Mono>@box-kite/react/components/virtualList</Mono>) renders the items near the screen and makes the
+              rest space. Each item drawn is measured and kept by its <Mono>itemKey</Mono>, so items of different heights mix; one not drawn
+              yet counts as the mean of those that have been, and the list holds its height while it scrolls, so a dragged scrollbar thumb
+              stays under the pointer. The scroller is found rather than declared — the nearest one that scrolls, or the page — and each
+              item carries <Mono>aria-setsize</Mono> and <Mono>aria-posinset</Mono>, so a reader hears &quot;12 of 10,000&quot;.{' '}
+              <Mono>onRangeChange</Mono> is where an endless list fetches its next page.
+            </Box>
+            <Code
+              language="jsx"
+              mt={4}
+              code={`<VirtualList items={messages} itemKey={(message) => message.id}>
+  {(message) => (
+    <List.Item>
+      <List.Content>
+        <List.Title lines={1}>{message.subject}</List.Title>
+        <List.Description lines={message.long ? 2 : 1}>{message.text}</List.Description>
+      </List.Content>
+    </List.Item>
+  )}
+</VirtualList>`}
+              context={`const messages = [{ id: 1, subject: 'Hello', text: 'A message', long: false }];`}
+            >
+              <VirtualDemo />
+            </Code>
+          </Section>
+
           <Section id="accessibility" title="What a reader hears">
             <Box>
               A <Mono>&lt;ul role=&quot;list&quot;&gt;</Mono> — the role spelled out, because Safari stops reporting a list once its items
@@ -585,6 +703,9 @@ const toggleNotifications = () => {};`}
           </Section>
 
           <ApiReference api={listApi} />
+          <ApiReference api={swipeItemApi} />
+          <ApiReference api={sortableListApi} />
+          <ApiReference api={virtualListApi} />
         </Flex>
       </Reveal>
     </Box>
@@ -601,10 +722,127 @@ const sidebarLinks = [
   { id: 'looks', label: 'Looks and sizes' },
   { id: 'fields', label: 'Labelled values' },
   { id: 'groups', label: 'Groups' },
+  { id: 'swipe', label: 'Swipe actions' },
+  { id: 'sortable', label: 'Drag to reorder' },
+  { id: 'virtual', label: 'A long list' },
   { id: 'accessibility', label: 'What a reader hears' },
   { id: 'styling', label: 'Styling' },
   ...apiSections(listApi),
+  ...apiSections(swipeItemApi),
+  ...apiSections(sortableListApi),
+  ...apiSections(virtualListApi),
 ];
+
+/** An inbox to swipe through: the actions really do what they say. */
+function SwipeDemo() {
+  const [people, setPeople] = useState(PEOPLE);
+  const [pinned, setPinned] = useState<string[]>([]);
+  const [archived, setArchived] = useState<string[]>([]);
+  const remove = (id: string) => setPeople((current) => current.filter((person) => person.id !== id));
+  const togglePin = (id: string) =>
+    setPinned((current) => (current.includes(id) ? current.filter((value) => value !== id) : [...current, id]));
+
+  return (
+    <Frame>
+      <List variant="card">
+        {people.map((person) => (
+          <SwipeItem
+            key={person.id}
+            fullSwipe
+            startActions={
+              <SwipeItem.Action variant="accent" icon={<Pin size={18} />} onClick={() => togglePin(person.id)}>
+                {pinned.includes(person.id) ? 'Unpin' : 'Pin'}
+              </SwipeItem.Action>
+            }
+            endActions={
+              <>
+                <SwipeItem.Action variant="danger" icon={<Trash2 size={18} />} onClick={() => remove(person.id)}>
+                  Delete
+                </SwipeItem.Action>
+                <SwipeItem.Action icon={<Archive size={18} />} onClick={() => setArchived((current) => [...current, person.id])}>
+                  {archived.includes(person.id) ? 'Archived' : 'Archive'}
+                </SwipeItem.Action>
+              </>
+            }
+          >
+            <List.Media variant="avatar">{person.initials}</List.Media>
+            <List.Content>
+              <List.Row>
+                <List.Title lines={1}>
+                  <List.Action props={{ href: `#${person.id}` }}>{person.name}</List.Action>
+                </List.Title>
+                <List.Meta>{pinned.includes(person.id) ? 'Pinned' : person.time}</List.Meta>
+              </List.Row>
+              <List.Description lines={1}>{person.text}</List.Description>
+            </List.Content>
+          </SwipeItem>
+        ))}
+      </List>
+      {people.length < PEOPLE.length && (
+        <Flex jc="center" mt={3}>
+          <Button onClick={() => setPeople(PEOPLE)}>Bring them back</Button>
+        </Flex>
+      )}
+    </Frame>
+  );
+}
+
+const TASKS = ['Write the release notes', 'Measure the bundle', 'Check it at 390px', 'Open the pull request', 'Merge it'];
+
+/** A to-do list put in order by hand. */
+function SortableDemo() {
+  const [order, setOrder] = useState(TASKS);
+
+  return (
+    <Frame>
+      <SortableList variant="card" onOrderChange={setOrder}>
+        {order.map((task, index) => (
+          <SortableList.Item key={task} value={task}>
+            <List.Media variant="icon" fontSize={14} fontWeight={600}>
+              {index + 1}
+            </List.Media>
+            <List.Content>
+              <List.Title lines={1}>{task}</List.Title>
+            </List.Content>
+            <SortableList.Handle />
+          </SortableList.Item>
+        ))}
+      </SortableList>
+    </Frame>
+  );
+}
+
+const MESSAGES = Array.from({ length: 10_000 }, (_, index) => ({
+  id: index,
+  subject: `Message ${(index + 1).toLocaleString('en')}`,
+  text: PEOPLE[index % 3].text,
+  long: index % 4 === 0,
+}));
+
+/** Ten thousand items, a couple of dozen of them in the DOM. */
+function VirtualDemo() {
+  const [range, setRange] = useState({ startIndex: 0, endIndex: 0 });
+
+  return (
+    <Frame>
+      <Box maxHeight={100} overflowY="auto" borderRadius={3}>
+        <VirtualList variant="card" items={MESSAGES} itemKey={(message) => message.id} onRangeChange={setRange}>
+          {(message) => (
+            <List.Item>
+              <List.Content>
+                <List.Title lines={1}>{message.subject}</List.Title>
+                <List.Description lines={message.long ? 2 : 1}>{message.text}</List.Description>
+              </List.Content>
+            </List.Item>
+          )}
+        </VirtualList>
+      </Box>
+      <Box mt={2} fontSize={13} textAlign="center" css={{ fontVariantNumeric: 'tabular-nums' }}>
+        Rendering items {range.startIndex + 1}–{range.endIndex} of {MESSAGES.length.toLocaleString('en')}
+      </Box>
+    </Frame>
+  );
+}
 
 /** The demo's own width: a list is read at a phone's, even on a wide page. */
 function Frame({ children }: { children: ReactNode }) {

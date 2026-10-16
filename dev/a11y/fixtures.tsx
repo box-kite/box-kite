@@ -30,13 +30,16 @@ import Select from '../../src/components/select';
 import { H1, Img, Link, Nav, P } from '../../src/components/semantics';
 import Skeleton from '../../src/components/skeleton';
 import Slider from '../../src/components/slider';
+import SortableList from '../../src/components/sortableList';
 import { Circle, Polyline, Svg, SvgText } from '../../src/components/svg';
+import SwipeItem from '../../src/components/swipeItem';
 import Switch from '../../src/components/switch';
 import Tabs from '../../src/components/tabs';
 import Textarea from '../../src/components/textarea';
 import Textbox from '../../src/components/textbox';
 import Toaster, { createToastStore } from '../../src/components/toaster';
 import Tooltip from '../../src/components/tooltip';
+import VirtualList from '../../src/components/virtualList';
 import VisuallyHidden from '../../src/components/visuallyHidden';
 
 /**
@@ -770,6 +773,66 @@ export const fixtures: A11yFixture[] = [
           </List.Item>
         </List.Group>
       </List>
+    ),
+  },
+  {
+    // Both trays, one open: a closed tray's buttons are clipped to nothing but still in the tree and the tab order.
+    name: 'SwipeItem',
+    render: () => (
+      <List>
+        <SwipeItem
+          defaultOpen="end"
+          startActions={<SwipeItem.Action variant="accent">Pin</SwipeItem.Action>}
+          endActions={
+            <>
+              <SwipeItem.Action variant="danger">Delete</SwipeItem.Action>
+              <SwipeItem.Action>Archive</SwipeItem.Action>
+            </>
+          }
+        >
+          <List.Content>
+            <List.Title>
+              <List.Action props={{ href: '/inbox/42' }}>Ada Lovelace</List.Action>
+            </List.Title>
+          </List.Content>
+        </SwipeItem>
+      </List>
+    ),
+  },
+  {
+    // One item held by the keyboard, so the pressed handle and the announcement are both in the tree.
+    name: 'SortableList',
+    render: () => (
+      <SortableList>
+        {['Ada Lovelace', 'Grace Hopper', 'Alan Turing'].map((name) => (
+          <SortableList.Item key={name} value={name}>
+            <List.Content>
+              <List.Title>{name}</List.Title>
+            </List.Content>
+            <SortableList.Handle />
+          </SortableList.Item>
+        ))}
+      </SortableList>
+    ),
+    setup: () => {
+      const handle = screen.getByRole('button', { name: 'Move Grace Hopper' });
+      act(() => handle.focus());
+      fireEvent.keyDown(handle, { key: 'Enter' });
+    },
+  },
+  {
+    // A window of a long list: every rendered item says where it is in the whole one.
+    name: 'VirtualList',
+    render: () => (
+      <VirtualList items={Array.from({ length: 500 }, (_, index) => index)} itemKey={(index) => index}>
+        {(index) => (
+          <List.Item>
+            <List.Content>
+              <List.Title>Message {index + 1}</List.Title>
+            </List.Content>
+          </List.Item>
+        )}
+      </VirtualList>
     ),
   },
   {

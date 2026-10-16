@@ -99,6 +99,23 @@ describe('DataGrid interactions (component → model → re-render)', () => {
     scrollIntoView.mockRestore();
   });
 
+  it('sizes a panel at once rather than sliding it, so a grid inside it never resizes frame by frame', () => {
+    renderGrid({
+      contextMenu: false,
+      rowDetail: { content: (row) => <div data-testid="detail">Detail {row.firstName}</div> },
+    });
+    fireEvent.click(screen.getAllByRole('button')[0]);
+
+    const css = document.getElementById('box-kite-styles')?.textContent ?? '';
+    const noTransition = (element: Element) =>
+      Array.from(element.classList).some((name) => css.includes(`.${name}{transition-property:none}`));
+    const content = screen.getAllByTestId('detail')[0].closest('[role="gridcell"]')!;
+
+    // Every Box transitions `all`: a width chasing the viewport's flashed the scrollbars for its 250ms (bug #270).
+    expect(noTransition(content)).toBe(true);
+    expect(noTransition(content.closest('[role="row"]')!)).toBe(true);
+  });
+
   it('leaves the scroll alone when rowDetail opts out', () => {
     const scrollIntoView = vi.spyOn(Element.prototype, 'scrollIntoView').mockImplementation(() => {});
     renderGrid({

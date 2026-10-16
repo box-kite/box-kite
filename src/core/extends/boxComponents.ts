@@ -59,7 +59,7 @@ const BAR_BUTTON: BoxComponentStyles = {
   },
 };
 
-const boxComponents = {
+const baseComponents = {
   h1: {
     styles: { fontSize: 14 * 2.5 },
   },
@@ -4251,64 +4251,6 @@ const boxComponents = {
       },
     },
   },
-  // A list of things a person reads and picks from. Paint only, since every engine entry carries this tree: the
-  // geometry is the parts' own default props. Most of it is mixed from `currentColor`, so it follows any theme
-  // without a second rule, and the look reaches the items as custom properties — a list has no context to pass.
-  list: {
-    styles: {},
-    variants: {
-      plain: { vars: { 'list-divider': 'transparent' } },
-      card: {
-        b: 1,
-        borderColor: 'currentColor/12',
-        borderRadius: 3,
-        bgColor: 'white',
-        // `clip`, not `hidden`: the corners clip and the list is still no scroll container, so a sticky label sticks.
-        css: { overflow: 'clip' },
-        theme: { dark: { bgColor: 'gray-900' } },
-      },
-      separated: {
-        display: 'flex',
-        d: 'column',
-        gap: 2,
-        vars: { 'list-divider': 'transparent', 'list-item-frame': `1px solid ${HAIRLINE}`, 'list-item-radius': '0.75rem' },
-      },
-    },
-    children: {
-      item: {
-        styles: {
-          // The line between items is the component's `::before`; this is its colour, which `plain` and `separated`
-          // take away from up the tree.
-          before: { css: { backgroundColor: `var(--list-divider, ${HAIRLINE})` } },
-          // Pressable when it holds a `List.Action`, so the states are read off that rather than a prop.
-          has: {
-            '[data-list-action]:active': { bgColor: 'currentColor/8' },
-            '[data-list-action][aria-current]:not([aria-current=false])': { bgColor: 'indigo-500/15' },
-            '[data-list-action]:disabled': { opacity: 0.5 },
-          },
-          pointerFine: { has: { '[data-list-action]:hover': { bgColor: 'currentColor/4' } } },
-        },
-        variants: {
-          // Its own hover too, or the item's hover tint would replace the selection while the pointer is on it.
-          selected: { bgColor: 'indigo-500/10', pointerFine: { has: { '[data-list-action]:hover': { bgColor: 'indigo-500/15' } } } },
-        },
-      },
-      media: { styles: {}, variants: { icon: MEDIA_FILL, avatar: MEDIA_FILL, image: MEDIA_FILL } },
-      // The quieter half of an item: an overline, a description, a secondary row, a meta value, a field's label, a
-      // chevron. A palette pair rather than a mix, since a mix inside a mix would fade twice.
-      muted: { styles: { color: 'gray-500', theme: { dark: { color: 'gray-400' } } } },
-      // The item's one primary action: the ring round the item it covers. `disabled` here is the state; as a part's
-      // default prop it would be the attribute.
-      action: {
-        styles: {
-          disabled: { cursor: 'not-allowed' },
-          focusVisible: { after: { outline: 2, outlineStyle: 'solid', outlineOffset: -2, outlineColor: 'indigo-500' } },
-        },
-      },
-      // A group's label, opaque so a sticky one hides the items scrolling under it.
-      label: { styles: { color: 'gray-600', bgColor: 'gray-50', theme: { dark: { color: 'gray-300', bgColor: 'gray-800' } } } },
-    },
-  },
   // What the agent is saying, as it arrives. Two children and no third: the settled text is a bare text
   // node, because wrapping it would be an element that grows without bound.
   streamingText: {
@@ -4388,5 +4330,117 @@ const boxComponents = {
     },
   },
 } satisfies Components;
+
+// The list family, in an object of its own. One literal holding every tree is a type too long for the
+// declaration emitter to write out (TS7056), so the export is two named halves rather than one.
+const listComponents = {
+  // A list of things a person reads and picks from. Paint only, since every engine entry carries this tree: the
+  // geometry is the parts' own default props. Most of it is mixed from `currentColor`, so it follows any theme
+  // without a second rule, and the look reaches the items as custom properties — a list has no context to pass.
+  list: {
+    styles: {},
+    variants: {
+      plain: { vars: { 'list-divider': 'transparent' } },
+      card: {
+        b: 1,
+        borderColor: 'currentColor/12',
+        borderRadius: 3,
+        bgColor: 'white',
+        // `clip`, not `hidden`: the corners clip and the list is still no scroll container, so a sticky label sticks.
+        css: { overflow: 'clip' },
+        theme: { dark: { bgColor: 'gray-900' } },
+      },
+      separated: {
+        display: 'flex',
+        d: 'column',
+        gap: 2,
+        vars: { 'list-divider': 'transparent', 'list-item-frame': `1px solid ${HAIRLINE}`, 'list-item-radius': '0.75rem' },
+      },
+    },
+    children: {
+      item: {
+        styles: {
+          // The line between items is the component's `::before`; this is its colour, which `plain` and `separated`
+          // take away from up the tree.
+          before: { css: { backgroundColor: `var(--list-divider, ${HAIRLINE})` } },
+          // Pressable when it holds a `List.Action`, so the states are read off that rather than a prop.
+          has: {
+            '[data-list-action]:active': { bgColor: 'currentColor/8' },
+            '[data-list-action][aria-current]:not([aria-current=false])': { bgColor: 'indigo-500/15' },
+            '[data-list-action]:disabled': { opacity: 0.5 },
+          },
+          pointerFine: { has: { '[data-list-action]:hover': { bgColor: 'currentColor/4' } } },
+        },
+        variants: {
+          // Its own hover too, or the item's hover tint would replace the selection while the pointer is on it.
+          selected: { bgColor: 'indigo-500/10', pointerFine: { has: { '[data-list-action]:hover': { bgColor: 'indigo-500/15' } } } },
+          // A `SortableList` item under the pointer: lifted over its neighbours and following the pointer with no lag.
+          lifted: { zIndex: 2, bgColor: 'white', shadow: 'lg', transition: 'none', theme: { dark: { bgColor: 'gray-900' } } },
+          // One the keyboard picked up.
+          grabbed: { zIndex: 1, bgColor: 'indigo-500/10', ring: 2, ringColor: 'indigo-500' },
+          // The commit a drop lands in: the items' offsets go back to zero there, and must not transition from them.
+          settling: { transition: 'none' },
+        },
+      },
+      media: { styles: {}, variants: { icon: MEDIA_FILL, avatar: MEDIA_FILL, image: MEDIA_FILL } },
+      // The quieter half of an item: an overline, a description, a secondary row, a meta value, a field's label, a
+      // chevron. A palette pair rather than a mix, since a mix inside a mix would fade twice.
+      muted: { styles: { color: 'gray-500', theme: { dark: { color: 'gray-400' } } } },
+      // The item's one primary action: the ring round the item it covers. `disabled` here is the state; as a part's
+      // default prop it would be the attribute.
+      action: {
+        styles: {
+          disabled: { cursor: 'not-allowed' },
+          focusVisible: { after: { outline: 2, outlineStyle: 'solid', outlineOffset: -2, outlineColor: 'indigo-500' } },
+        },
+      },
+      // A group's label, opaque so a sticky one hides the items scrolling under it.
+      label: { styles: { color: 'gray-600', bgColor: 'gray-50', theme: { dark: { color: 'gray-300', bgColor: 'gray-800' } } } },
+    },
+  },
+  // A list item that slides aside to show the commands under it. Paint only, for the reason `list` is.
+  swipeItem: {
+    styles: {},
+    children: {
+      // Under the finger exactly while it is held: a transition would trail every frame of the drag.
+      row: { styles: {}, variants: { dragging: { transition: 'none', userSelect: 'none' } } },
+      tray: { styles: {}, variants: { dragging: { transition: 'none' } } },
+      action: {
+        styles: {
+          color: 'white',
+          bgColor: 'gray-500',
+          focusVisible: { outline: 2, outlineStyle: 'solid', outlineOffset: -4, outlineColor: 'white' },
+          forcedColors: { b: 1, borderColor: 'ButtonText' },
+        },
+        variants: {
+          accent: { bgColor: 'blue-600' },
+          warning: { bgColor: 'amber-700' },
+          danger: { bgColor: 'red-600' },
+          // Carried far enough that letting go performs it: the outermost action takes the whole tray.
+          armed: { nth: { first: { flexGrow: 1000 } } },
+        },
+      },
+    },
+  },
+  // A list whose items are put in order by hand. The handle is the one part of its own.
+  sortableList: {
+    styles: {},
+    children: {
+      handle: {
+        styles: {
+          color: 'gray-500',
+          cursor: 'grab',
+          borderRadius: 2,
+          theme: { dark: { color: 'gray-400' } },
+          pointerFine: { hover: { bgColor: 'currentColor/8' } },
+          focusVisible: FOCUS_RING,
+        },
+        variants: { grabbed: { cursor: 'grabbing', color: 'indigo-600', theme: { dark: { color: 'indigo-400' } } } },
+      },
+    },
+  },
+} satisfies Components;
+
+const boxComponents: typeof baseComponents & typeof listComponents = { ...baseComponents, ...listComponents };
 
 export default boxComponents;
