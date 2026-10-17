@@ -5,6 +5,7 @@ The release notes live in [`releases/`](releases/), one file per version, and ea
 
 | Version                    | Date       | In one line                                                                                                                                  |
 | -------------------------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| [2.2.5](releases/2.2.5.md) | 2026-10-17 | Release 2.2.5.                                                                                                                               |
 | [2.2.4](releases/2.2.4.md) | 2026-10-13 | A Server Component page no longer sends the base stylesheet once per Box.                                                                    |
 | [2.2.3](releases/2.2.3.md) | 2026-10-13 | Box Kite is the only name the package carries.                                                                                               |
 | [2.2.2](releases/2.2.2.md) | 2026-10-12 | A theme switch that settles at once on any page, and a DataGrid column chooser you can read.                                                 |
