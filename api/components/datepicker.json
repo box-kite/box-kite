@@ -1,0 +1,264 @@
+{
+  "name": "DatePicker",
+  "route": "/date-picker",
+  "import": "import DatePicker from '@box-kite/react/components/datePicker';",
+  "description": "A field with a calendar, a list of times, or both, behind a button inside it — type the value or pick it.",
+  "pattern": "https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/",
+  "props": [
+    {
+      "name": "type",
+      "type": "'date' | 'time' | 'datetime'",
+      "required": false,
+      "default": "'date'",
+      "description": "A day (`'date'`, default), a time of day (`'time'`), or both (`'datetime'`)."
+    },
+    {
+      "name": "value",
+      "type": "string | null",
+      "required": false,
+      "default": null,
+      "description": "Controlled value, an ISO string of the picker's kind — see `DateField`."
+    },
+    {
+      "name": "defaultValue",
+      "type": "string | null",
+      "required": false,
+      "default": "null",
+      "description": "The value it starts with when the picker owns its state."
+    },
+    {
+      "name": "onValueChange",
+      "type": "ChangeHandler<string | null, DateChangeReason, DateChangeDetails>",
+      "required": false,
+      "default": null,
+      "description": "Fires with the value and its readings — `utc`, the reader's `local` wall clock, a `Date`."
+    },
+    {
+      "name": "zone",
+      "type": "ZoneInput | 'none'",
+      "required": false,
+      "default": null,
+      "description": "Whose wall clock a date-time is on. Default `'local'`; `'none'` for no zone at all."
+    },
+    {
+      "name": "hourCycle",
+      "type": "12 | 24",
+      "required": false,
+      "default": null,
+      "description": "A 12- or 24-hour clock, in the field and the list of times. Default the locale's."
+    },
+    {
+      "name": "granularity",
+      "type": "FieldGranularity",
+      "required": false,
+      "default": null,
+      "description": "Whether a time is edited to the minute (default) or the second."
+    },
+    {
+      "name": "disambiguation",
+      "type": "Disambiguation",
+      "required": false,
+      "default": null,
+      "description": "What a wall-clock time a zone skips or repeats means. Default `'compatible'`."
+    },
+    { "name": "name", "type": "string", "required": false, "default": null, "description": "What the value posts under in a form." },
+    {
+      "name": "step",
+      "type": "number",
+      "required": false,
+      "default": "30",
+      "description": "Minutes between the times the list offers. Default 30."
+    },
+    {
+      "name": "defaultTime",
+      "type": "string",
+      "required": false,
+      "default": "'00:00'",
+      "description": "The time a day picked before any time takes. Default `'00:00'`."
+    },
+    {
+      "name": "presets",
+      "type": "readonly DatePreset[]",
+      "required": false,
+      "default": null,
+      "description": "Shortcuts beside the calendar — `{ label: 'Today', value: today() }`."
+    },
+    {
+      "name": "showZone",
+      "type": "boolean",
+      "required": false,
+      "default": null,
+      "description": "Whether a date-time names its zone after the time. Default: when the zone is not the reader's own."
+    },
+    {
+      "name": "locale",
+      "type": "string",
+      "required": false,
+      "default": null,
+      "description": "The language of the field, the calendar and the times. Default the reader's."
+    },
+    {
+      "name": "min",
+      "type": "string | null",
+      "required": false,
+      "default": null,
+      "description": "The earliest value that is valid, and the first day the calendar offers."
+    },
+    { "name": "max", "type": "string | null", "required": false, "default": null, "description": "The latest." },
+    {
+      "name": "isDateUnavailable",
+      "type": "(date: string) => boolean",
+      "required": false,
+      "default": null,
+      "description": "Days nobody can choose."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "required": false,
+      "default": "false",
+      "description": "Not editable, not focusable and not openable."
+    },
+    {
+      "name": "readOnly",
+      "type": "boolean",
+      "required": false,
+      "default": "false",
+      "description": "Focusable and read out, but not editable, and the button does not open."
+    },
+    {
+      "name": "required",
+      "type": "boolean",
+      "required": false,
+      "default": null,
+      "description": "The form is not valid until it is filled in — the browser's own check."
+    },
+    {
+      "name": "invalid",
+      "type": "boolean",
+      "required": false,
+      "default": null,
+      "description": "Marks the value invalid whatever the bounds say. Default: invalid when out of bounds or unavailable."
+    },
+    {
+      "name": "label",
+      "type": "React.ReactNode",
+      "required": false,
+      "default": null,
+      "description": "The picker's visible name, above the field."
+    },
+    {
+      "name": "labelledBy",
+      "type": "string",
+      "required": false,
+      "default": null,
+      "description": "Names the field after an element already on the page, instead of `label`."
+    },
+    {
+      "name": "describedBy",
+      "type": "string",
+      "required": false,
+      "default": null,
+      "description": "An element that describes the field — a hint, an error."
+    },
+    { "name": "open", "type": "boolean", "required": false, "default": null, "description": "Whether the panel is open. Controlled." },
+    {
+      "name": "defaultOpen",
+      "type": "boolean",
+      "required": false,
+      "default": null,
+      "description": "Whether it starts open, when the picker owns that itself."
+    },
+    {
+      "name": "onOpenChange",
+      "type": "ChangeHandler<boolean, DatePickerOpenReason>",
+      "required": false,
+      "default": null,
+      "description": "Fires with the new state and why — the layer's four reasons, and `'select'` when choosing closed it."
+    },
+    {
+      "name": "closeOnSelect",
+      "type": "boolean",
+      "required": false,
+      "default": "true",
+      "description": "Whether choosing closes the panel. Default `true`; a date-time closes once its time is chosen."
+    },
+    {
+      "name": "firstDayOfWeek",
+      "type": "number",
+      "required": false,
+      "default": null,
+      "description": "The day the week starts on, 0 for Sunday. Default the locale's."
+    },
+    {
+      "name": "weekNumbers",
+      "type": "boolean",
+      "required": false,
+      "default": null,
+      "description": "ISO week numbers down the calendar's side."
+    },
+    {
+      "name": "side",
+      "type": "AnchorSide",
+      "required": false,
+      "default": "'bottom'",
+      "description": "Which side of the field the panel opens on. Default `'bottom'`."
+    },
+    {
+      "name": "align",
+      "type": "AnchorAlign",
+      "required": false,
+      "default": "'start'",
+      "description": "Which of the field's edges it lines up with. Default `'start'`."
+    },
+    {
+      "name": "clearable",
+      "type": "boolean",
+      "required": false,
+      "default": "false",
+      "description": "A button inside the field that empties it."
+    },
+    {
+      "name": "triggerLabel",
+      "type": "string",
+      "required": false,
+      "default": null,
+      "description": "The calendar button's name. Default `'Choose date'`, or `'Choose time'`."
+    },
+    {
+      "name": "clearLabel",
+      "type": "string",
+      "required": false,
+      "default": "'Clear'",
+      "description": "The clear button's name. Default `'Clear'`."
+    },
+    {
+      "name": "tabIndex",
+      "type": "number",
+      "required": false,
+      "default": null,
+      "description": "Every segment's and button's tab index. Default `0`; `-1` keeps the picker out of the page's tab order, which a grid cell wants."
+    }
+  ],
+  "parts": [],
+  "keyboard": [
+    { "mode": null, "keys": "Enter / Space", "action": "On the button, opens the panel." },
+    { "mode": null, "keys": "Escape", "action": "Closes it and returns focus to the button." },
+    { "mode": null, "keys": "Up / Down", "action": "In the list of times, the time before or after." }
+  ],
+  "a11y": [
+    "The button says what it does and what is chosen — `Choose date, Oct 19, 2026` — and carries `aria-expanded` and `aria-haspopup=\"dialog\"`; the panel is a `role=\"dialog\"` named by the picker's label.",
+    "Opening puts focus on the chosen day (or today) in the calendar, or on the chosen time in the list."
+  ],
+  "axe": { "fixtures": ["DatePicker"], "knownViolations": [] },
+  "styleTree": [
+    { "path": "datePicker", "depth": 0, "extends": null, "variants": [] },
+    { "path": "datePicker.part", "depth": 1, "extends": null, "variants": [] },
+    { "path": "datePicker.trigger", "depth": 1, "extends": null, "variants": [] },
+    { "path": "datePicker.clear", "depth": 1, "extends": null, "variants": [] },
+    { "path": "datePicker.presets", "depth": 1, "extends": null, "variants": [] },
+    { "path": "datePicker.preset", "depth": 1, "extends": null, "variants": ["selected"] },
+    { "path": "datePicker.times", "depth": 1, "extends": null, "variants": [] },
+    { "path": "datePicker.time", "depth": 1, "extends": null, "variants": ["selected"] }
+  ]
+}

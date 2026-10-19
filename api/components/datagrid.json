@@ -256,6 +256,7 @@
     "fixtures": [
       "DataGrid",
       "DataGrid (editing, with a refused value)",
+      "DataGrid (dates, editing)",
       "DataGrid (paginated)",
       "DataGrid (virtualized, grouped, selectable)",
       "DataGrid (grouped, expanded)",

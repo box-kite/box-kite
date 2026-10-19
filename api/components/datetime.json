@@ -1,0 +1,49 @@
+{
+  "name": "DateTime",
+  "route": "/dates",
+  "import": "import DateTime from '@box-kite/react/components/dateTime';",
+  "description": "A date or a time, written for whoever is reading: in their language and on their wall clock, inside a real `<time datetime>` that keeps the exact value for a machine.",
+  "pattern": null,
+  "props": [
+    {
+      "name": "value",
+      "type": "string | number | Date | null | undefined",
+      "required": true,
+      "default": null,
+      "description": "What to show: any ISO string, a `Date` or epoch milliseconds. Nothing is rendered for a non-value."
+    },
+    {
+      "name": "zone",
+      "type": "ZoneInput",
+      "required": false,
+      "default": null,
+      "description": "Whose wall clock an instant is shown on. Default `'local'`, the reader's. A date or a time has no zone."
+    },
+    {
+      "name": "locale",
+      "type": "string",
+      "required": false,
+      "default": null,
+      "description": "The reader's language. Default the reader's own."
+    },
+    {
+      "name": "format",
+      "type": "Omit<FormatOptions, 'locale' | 'zone'>",
+      "required": false,
+      "default": null,
+      "description": "How to write it — `{ dateStyle: 'long' }`, `{ month: 'short', day: 'numeric' }`. Default by kind."
+    },
+    {
+      "name": "relative",
+      "type": "boolean | Omit<RelativeOptions, 'locale' | 'zone'>",
+      "required": false,
+      "default": null,
+      "description": "`3 minutes ago`, `tomorrow` instead of the date. An object passes `now`, `numeric` and `style`."
+    }
+  ],
+  "parts": [],
+  "keyboard": [],
+  "a11y": ["The text is what is read out; `datetime` carries the canonical value for anything that parses the page."],
+  "axe": { "fixtures": ["DateTime"], "knownViolations": [] },
+  "styleTree": []
+}

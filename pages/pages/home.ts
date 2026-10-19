@@ -17,7 +17,7 @@
  * ledger fails both ways, so a listed violation that stopped firing is a failure too, and an empty ledger
  * means empty.
  */
-export const totals = { props: 235, components: 42, keyboardRows: 112, fixtures: 57, knownViolations: 0 } as const;
+export const totals = { props: 235, components: 48, keyboardRows: 135, fixtures: 64, knownViolations: 0 } as const;
 
 /** The four pillars, in the order the page tells them. The `id` is the anchor its card jumps to. */
 export interface Pillar {
@@ -192,14 +192,19 @@ export interface PatternRow {
 
 export const patternRows: readonly PatternRow[] = [
   { name: 'Dropdown', route: '/dropdown', pattern: 'combobox', keyboard: 18, fixtures: 3 },
-  { name: 'DataGrid', route: '/datagrid', pattern: 'grid', keyboard: 16, fixtures: 8 },
+  { name: 'DataGrid', route: '/datagrid', pattern: 'grid', keyboard: 16, fixtures: 9 },
+  { name: 'DateField', route: '/date-field', pattern: 'spinbutton', keyboard: 8, fixtures: 1 },
   { name: 'Menu', route: '/menu', pattern: 'menu-button', keyboard: 7, fixtures: 1 },
+  { name: 'Calendar', route: '/calendar', pattern: 'grid', keyboard: 6, fixtures: 1 },
   { name: 'Tooltip', route: '/tooltip', pattern: 'tooltip', keyboard: 6, fixtures: 2 },
   { name: 'Slider', route: '/slider', pattern: 'slider', keyboard: 5, fixtures: 1 },
   { name: 'Tabs', route: '/tabs', pattern: 'tabs', keyboard: 5, fixtures: 3 },
   { name: 'Accordion', route: '/accordion', pattern: 'accordion', keyboard: 4, fixtures: 1 },
+  { name: 'TimeZoneSelect', route: '/date-picker', pattern: 'combobox', keyboard: 4, fixtures: 1 },
   { name: 'RadioGroup', route: '/radiobutton', pattern: 'radio', keyboard: 4, fixtures: 1 },
   { name: 'Switch', route: '/switch', pattern: 'switch', keyboard: 3, fixtures: 1 },
+  { name: 'DatePicker', route: '/date-picker', pattern: 'dialog-modal', keyboard: 3, fixtures: 1 },
+  { name: 'DateRangePicker', route: '/date-picker', pattern: 'dialog-modal', keyboard: 2, fixtures: 1 },
   { name: 'Checkbox', route: '/checkbox', pattern: 'checkbox', keyboard: 2, fixtures: 2 },
 ];
 

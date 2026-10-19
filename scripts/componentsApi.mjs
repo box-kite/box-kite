@@ -20,7 +20,7 @@ export const API_DIR = 'api/components';
 /** The axe sweep's fixtures, and the style tree every `component` key below is a node of. */
 const FIXTURES = 'dev/a11y/fixtures.tsx';
 const COMPONENT_STYLES = 'src/core/extends/boxComponents.ts';
-const STYLE_HALVES = ['baseComponents', 'listComponents'];
+const STYLE_HALVES = ['baseComponents', 'listComponents', 'dateComponents'];
 
 const PACKAGE_NAME = '@box-kite/react';
 
@@ -208,6 +208,58 @@ const CONFIG = [
     doc: 'DropdownImpl',
     styles: 'dropdown',
     parts: [{ name: 'Dropdown.Display', props: 'DropdownDisplayProps', doc: 'DropdownDisplayProps' }],
+  },
+  {
+    name: 'DateField',
+    route: '/date-field',
+    file: 'src/components/dateField.tsx',
+    props: 'DateFieldProps',
+    doc: 'DateFieldImpl',
+    styles: 'dateField',
+  },
+  {
+    name: 'Calendar',
+    route: '/calendar',
+    file: 'src/components/calendar.tsx',
+    // The shared half, as Combobox does: the exported props are an intersection with a union, which has no members.
+    props: 'BaseProps',
+    doc: 'CalendarImpl',
+    styles: 'calendar',
+    parts: [
+      { name: 'Calendar (one day)', props: 'SingleProps', doc: 'SingleProps' },
+      { name: 'Calendar (range)', props: 'RangeProps', doc: 'RangeProps' },
+    ],
+  },
+  {
+    name: 'DatePicker',
+    route: '/date-picker',
+    file: 'src/components/datePicker.tsx',
+    props: 'DatePickerProps',
+    doc: 'DatePickerImpl',
+    styles: 'datePicker',
+  },
+  {
+    name: 'DateRangePicker',
+    route: '/date-picker',
+    file: 'src/components/datePicker.tsx',
+    props: 'DateRangePickerProps',
+    doc: 'DateRangePickerImpl',
+    styles: 'datePicker',
+  },
+  {
+    name: 'TimeZoneSelect',
+    route: '/date-picker',
+    file: 'src/components/timeZoneSelect.tsx',
+    props: 'TimeZoneSelectProps',
+    doc: 'TimeZoneSelectImpl',
+    styles: 'combobox',
+  },
+  {
+    name: 'DateTime',
+    route: '/dates',
+    file: 'src/components/dateTime.tsx',
+    props: 'DateTimeProps',
+    doc: 'DateTimeImpl',
   },
   {
     name: 'Combobox',
@@ -594,7 +646,6 @@ const styleNodes = new Map();
 /** `boxComponents` as a flat list of dotted paths — the node names a `Box.components()` override needs. */
 function styleTreeOf(key) {
   if (!styleNodes.size) {
-
     const walk = (object, path, depth) => {
       for (const property of object.properties) {
         if (!ts.isPropertyAssignment(property) || !ts.isObjectLiteralExpression(property.initializer)) continue;

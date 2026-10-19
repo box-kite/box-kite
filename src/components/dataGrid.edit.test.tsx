@@ -231,6 +231,17 @@ describe('DataGrid cell editing', () => {
     expect(screen.queryByRole('spinbutton', { name: 'Edit Age' })).toBeNull();
   });
 
+  it('writes a boolean as a mark with its word, and the new one once edited', () => {
+    renderGrid({ columns: [...baseDef.columns.slice(0, 2), { key: 'active', header: 'Active', editable: true }] });
+    const cell = focusCell(1, 2);
+    expect(cell).toHaveTextContent('Yes');
+    expect(cell.querySelector('svg')).toBeTruthy();
+
+    fireEvent.keyDown(cell, { key: 'Enter' });
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Edit Active' }));
+    expect(focusCell(1, 2)).toHaveTextContent('No');
+  });
+
   it('a checkbox column commits on the change', () => {
     const onCellEdit = vi.fn();
     renderGrid({ onCellEdit, columns: [...baseDef.columns.slice(0, 2), { key: 'active', header: 'Active', editable: true }] });

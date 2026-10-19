@@ -15,15 +15,20 @@ import * as a11y from '../dist/a11y.mjs';
 import * as anchor from '../dist/anchor.mjs';
 import * as core from '@box-kite/core';
 import * as ssg from '../dist/ssg.mjs';
+import * as date from '../dist/date.mjs';
 import * as accordion from '../dist/components/accordion.mjs';
 import * as agent from '../dist/components/agent.mjs';
 import * as combobox from '../dist/components/combobox.mjs';
 import * as baseSvg from '../dist/components/baseSvg.mjs';
 import * as button from '../dist/components/button.mjs';
+import * as calendar from '../dist/components/calendar.mjs';
 import * as chart from '../dist/components/chart.mjs';
 import * as checkbox from '../dist/components/checkbox.mjs';
 import * as dashboard from '../dist/components/dashboard.mjs';
 import * as dataGrid from '../dist/components/dataGrid.mjs';
+import * as dateField from '../dist/components/dateField.mjs';
+import * as datePicker from '../dist/components/datePicker.mjs';
+import * as dateTime from '../dist/components/dateTime.mjs';
 import * as dialog from '../dist/components/dialog.mjs';
 import * as dropdown from '../dist/components/dropdown.mjs';
 import * as flex from '../dist/components/flex.mjs';
@@ -51,6 +56,7 @@ import * as switchControl from '../dist/components/switch.mjs';
 import * as tabs from '../dist/components/tabs.mjs';
 import * as textarea from '../dist/components/textarea.mjs';
 import * as textbox from '../dist/components/textbox.mjs';
+import * as timeZoneSelect from '../dist/components/timeZoneSelect.mjs';
 import * as toaster from '../dist/components/toaster.mjs';
 import * as tooltip from '../dist/components/tooltip.mjs';
 import * as visuallyHidden from '../dist/components/visuallyHidden.mjs';
@@ -61,15 +67,20 @@ console.log(
   anchor,
   core,
   ssg,
+  date,
   accordion,
   agent,
   combobox,
   baseSvg,
   button,
+  calendar,
   chart,
   checkbox,
   dashboard,
   dataGrid,
+  dateField,
+  datePicker,
+  dateTime,
   dialog,
   dropdown,
   flex,
@@ -97,6 +108,7 @@ console.log(
   tabs,
   textarea,
   textbox,
+  timeZoneSelect,
   toaster,
   tooltip,
   visuallyHidden,

@@ -10,12 +10,17 @@ import Accordion, { Collapsible } from '../../src/components/accordion';
 import { ApprovalCard, Reasoning, StreamingText, ToolCallCard } from '../../src/components/agent';
 import BaseSvg from '../../src/components/baseSvg';
 import Button from '../../src/components/button';
+import Calendar from '../../src/components/calendar';
 import { ChartContainer, Gauge, MiniDonut, ProgressRing, Sparkline } from '../../src/components/chart';
 import Checkbox from '../../src/components/checkbox';
 import Combobox from '../../src/components/combobox';
 import DashboardGrid, { Widget } from '../../src/components/dashboard';
 import DataGrid from '../../src/components/dataGrid';
+import { loadDateParts } from '../../src/components/dataGrid/useDateParts';
 import { loadListLayout } from '../../src/components/dataGrid/useListLayout';
+import DateField from '../../src/components/dateField';
+import DatePicker, { DateRangePicker } from '../../src/components/datePicker';
+import DateTime from '../../src/components/dateTime';
 import Dialog, { AlertDialog } from '../../src/components/dialog';
 import Dropdown from '../../src/components/dropdown';
 import Flex from '../../src/components/flex';
@@ -41,6 +46,7 @@ import Switch from '../../src/components/switch';
 import Tabs from '../../src/components/tabs';
 import Textarea from '../../src/components/textarea';
 import Textbox from '../../src/components/textbox';
+import TimeZoneSelect from '../../src/components/timeZoneSelect';
 import Toaster, { createToastStore } from '../../src/components/toaster';
 import Tooltip from '../../src/components/tooltip';
 import VirtualList from '../../src/components/virtualList';
@@ -476,6 +482,70 @@ export const fixtures: A11yFixture[] = [
     ),
   },
   {
+    // Every shape a field takes: a date, a 12-hour time, a zoned date-time naming its zone, an empty required one,
+    // and one out of bounds — the segments are spin buttons, and each has to be named and valued.
+    name: 'DateField',
+    render: () => (
+      <>
+        <DateField label="Due" defaultValue="2026-10-19" />
+        <DateField type="time" label="Opens" hourCycle={12} defaultValue="09:30" />
+        <DateField type="datetime" zone="Asia/Tokyo" label="Call at" defaultValue="2026-10-19T11:30:00Z" />
+        <DateField label="Start" name="start" required />
+        <DateField label="Late" min="2027-01-01" defaultValue="2026-10-19" />
+      </>
+    ),
+  },
+  {
+    name: 'Calendar',
+    render: () => (
+      <>
+        <Calendar label="Due" defaultValue="2026-10-21" min="2026-10-05" isDateUnavailable={(day) => day.endsWith('-25')} />
+        <Calendar label="Stay" mode="range" months={2} weekNumbers defaultValue={{ start: '2026-10-19', end: '2026-11-03' }} />
+      </>
+    ),
+  },
+  {
+    // Open, since the panel is the half with a pattern of its own: a named dialog, a grid and a list of times.
+    name: 'DatePicker',
+    render: () => (
+      <DatePicker
+        type="datetime"
+        label="Publish at"
+        defaultValue="2026-10-21T09:30:00Z"
+        clearable
+        presets={[{ label: 'Now', value: '2026-10-19T12:00:00Z' }]}
+      />
+    ),
+    setup: () => {
+      act(() => {
+        fireEvent.click(screen.getByRole('button', { name: /^Choose date/ }));
+      });
+    },
+  },
+  {
+    name: 'DateRangePicker',
+    render: () => <DateRangePicker label="Stay" defaultValue={{ start: '2026-10-19', end: '2026-10-23' }} startName="from" endName="to" />,
+    setup: () => {
+      act(() => {
+        fireEvent.click(screen.getByRole('button', { name: /^Choose dates/ }));
+      });
+    },
+  },
+  {
+    name: 'TimeZoneSelect',
+    render: () => (
+      <TimeZoneSelect label="Time zone" zones={['UTC', 'Europe/Chisinau', 'America/New_York']} defaultValue="Europe/Chisinau" />
+    ),
+  },
+  {
+    name: 'DateTime',
+    render: () => (
+      <P>
+        Placed <DateTime value="2026-10-19T11:30:00Z" /> and due <DateTime value="2026-10-23" format={{ dateStyle: 'long' }} />.
+      </P>
+    ),
+  },
+  {
     // The indeterminate one is the fixture that matters: a bar reporting a position it never measured
     // is the violation waiting to happen.
     name: 'Progress',
@@ -576,6 +646,33 @@ export const fixtures: A11yFixture[] = [
       act(() => void fireEvent.keyDown(cell!, { key: 'Enter' }));
       act(() => void fireEvent.change(screen.getByRole('textbox', { name: 'Edit Name' }), { target: { value: 'Grace' } }));
       act(() => void fireEvent.keyDown(screen.getByRole('textbox', { name: 'Edit Name' }), { key: 'Enter' }));
+    },
+  },
+  {
+    // Date columns: written in the reader's words, a date filter in the filter row, and a DateField open as the
+    // editor — the grid's date chunk, fetched before the render the way a column showing dates would.
+    name: 'DataGrid (dates, editing)',
+    prepare: loadDateParts,
+    render: () => (
+      <DataGrid<{ id: number; due: string; placed: Date }>
+        data={[
+          { id: 1, due: '2026-10-19', placed: new Date(Date.UTC(2026, 9, 19, 11, 30)) },
+          { id: 2, due: '2026-11-02', placed: new Date(Date.UTC(2026, 10, 2, 8, 0)) },
+        ]}
+        def={{
+          rowKey: 'id',
+          columns: [
+            { key: 'due', header: 'Due', editable: true, editor: 'date', filterable: { type: 'date' } },
+            { key: 'placed', header: 'Placed' },
+          ],
+        }}
+      />
+    ),
+    setup: () => {
+      const cell = document.querySelector<HTMLElement>('[role="row"]:last-child [role="gridcell"]');
+
+      act(() => cell?.focus());
+      act(() => void fireEvent.keyDown(cell!, { key: 'Enter' }));
     },
   },
   {

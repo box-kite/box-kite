@@ -52,9 +52,13 @@ export const CLIENT_ONLY_COMPONENTS = [
   'accordion',
   'agent',
   'checkbox',
+  'calendar',
   'combobox',
   'dashboard',
   'dataGrid',
+  'dateField',
+  'datePicker',
+  'dateTime',
   'dialog',
   'dropdown',
   'form',
@@ -69,6 +73,7 @@ export const CLIENT_ONLY_COMPONENTS = [
   'swipeItem',
   'switch',
   'tabs',
+  'timeZoneSelect',
   'toaster',
   'tooltip',
   'virtualList',
@@ -202,9 +207,16 @@ export function componentPrivateModules() {
   ]);
 
   const reachedBy = new Map();
+  const entries = componentEntries();
+  const entryFiles = entries.map((name) => `src/components/${name}.tsx`);
 
-  for (const name of componentEntries()) {
-    for (const path of componentGraph(name).modules.keys()) {
+  for (const name of entries) {
+    // Stopped at every other component entry, which is a chunk of its own: `TimeZoneSelect` reaches the combobox's
+    // leaves by importing `Combobox`, so counting it as a second owner sent them to `client` and taxed every entry.
+    const own = `src/components/${name}.tsx`;
+    const stopAt = new Set([BOX_ENTRY, ...entryFiles.filter((file) => file !== own)]);
+
+    for (const path of moduleGraph(own, stopAt).modules.keys()) {
       // A component's own file is already its own chunk; only its private leaves are in question.
       if (path.startsWith('src/components/')) continue;
 

@@ -48,6 +48,21 @@ export const DEFAULT_ROW_NUMBER_COLUMN_WIDTH = 70;
 /** What `def.export: true` means, as one record: every option at its default. */
 const DEFAULT_EXPORT: ExportConfig = {};
 
+/**
+ * The day a cell's value falls on, on the runtime's calendar — the reader's, in a browser. A `YYYY-MM-DD` is that
+ * day wherever it is read; anything else is a moment, placed by the platform's own clock rather than a date library.
+ */
+function calendarDay(value: unknown): string | null {
+  if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
+  if (!(value instanceof Date) && typeof value !== 'string' && typeof value !== 'number') return null;
+
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  const pad = (n: number) => String(n).padStart(2, '0');
+
+  return `${String(date.getFullYear()).padStart(4, '0')}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
 export default class GridModel<TRow> {
   constructor(
     public props: DataGridProps<TRow>,
@@ -474,6 +489,24 @@ export default class GridModel<TRow> {
             return filter.valueTo !== undefined ? numValue >= filter.value && numValue <= filter.valueTo : numValue >= filter.value;
           default:
             return true;
+        }
+      }
+
+      case 'date': {
+        if (!filter.value) return true;
+        const day = calendarDay(cellValue);
+        if (!day) return false;
+
+        // `YYYY-MM-DD` sorts as text, so the day compares as one.
+        switch (filter.operator) {
+          case 'on':
+            return day === filter.value;
+          case 'before':
+            return day < filter.value;
+          case 'after':
+            return day > filter.value;
+          default:
+            return day >= filter.value && (!filter.valueTo || day <= filter.valueTo);
         }
       }
 

@@ -4,11 +4,15 @@ import Box from '../../src/box';
 import Accordion, { Collapsible } from '../../src/components/accordion';
 import { ApprovalCard, Reasoning, StreamingText, ToolCallCard } from '../../src/components/agent';
 import Button from '../../src/components/button';
+import Calendar from '../../src/components/calendar';
 import { ChartContainer, Gauge, MiniDonut, ProgressRing, Sparkline } from '../../src/components/chart';
 import Checkbox from '../../src/components/checkbox';
 import Combobox from '../../src/components/combobox';
 import DashboardGrid, { Widget } from '../../src/components/dashboard';
 import DataGrid from '../../src/components/dataGrid';
+import DateField from '../../src/components/dateField';
+import DatePicker, { DateRangePicker } from '../../src/components/datePicker';
+import DateTime from '../../src/components/dateTime';
 import Dialog, { AlertDialog } from '../../src/components/dialog';
 import Dropdown from '../../src/components/dropdown';
 import Flex from '../../src/components/flex';
@@ -32,6 +36,7 @@ import Switch from '../../src/components/switch';
 import Tabs from '../../src/components/tabs';
 import Textarea from '../../src/components/textarea';
 import Textbox from '../../src/components/textbox';
+import TimeZoneSelect from '../../src/components/timeZoneSelect';
 import Toaster, { toast } from '../../src/components/toaster';
 import Tooltip from '../../src/components/tooltip';
 import VirtualList from '../../src/components/virtualList';
@@ -266,6 +271,28 @@ const demos: Record<ShowcaseName, (scope: string) => ReactNode> = {
     <Flex d="column" gap={8}>
       <Slider label="Volume" defaultValue={40} />
       <Slider label="Price" defaultValue={[20, 80]} thumbLabels={['Lowest', 'Highest']} />
+    </Flex>
+  ),
+
+  DateField: () => (
+    <Flex d="column" gap={3} ai="start">
+      <DateField label="Due" defaultValue="2026-10-19" />
+      <DateField type="time" label="Opens at" defaultValue="09:30" />
+    </Flex>
+  ),
+
+  DatePicker: () => <DatePicker type="datetime" label="Publish at" defaultValue="2026-10-19T09:30:00Z" clearable />,
+
+  DateRangePicker: () => <DateRangePicker label="Stay" defaultValue={{ start: '2026-10-19', end: '2026-10-23' }} />,
+
+  Calendar: () => <Calendar label="Delivery" defaultValue="2026-10-21" defaultFocusedDate="2026-10-21" />,
+
+  TimeZoneSelect: () => <TimeZoneSelect label="Time zone" defaultValue="Europe/Chisinau" />,
+
+  DateTime: () => (
+    <Flex d="column" gap={1}>
+      <DateTime value="2026-10-19T11:30:00Z" format={{ dateStyle: 'full', timeStyle: 'short' }} />
+      <DateTime value="2026-10-19T11:30:00Z" zone="utc" format={{ timeStyle: 'short', timeZoneName: 'short' }} />
     </Flex>
   ),
 

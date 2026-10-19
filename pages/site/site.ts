@@ -283,6 +283,27 @@ export const siteRoutes = [
       "APG's slider and its multi-thumb sibling: the value's own shape decides how many thumbs there are, and the geometry is logical.",
   },
   {
+    path: '/dates',
+    name: 'Dates and times',
+    description:
+      'Dates, times and zones with no dependency: an ISO string per kind, conversions that say what they mean, and a server that renders.',
+  },
+  {
+    path: '/date-field',
+    name: 'DateField',
+    description: "A date, a time or both, typed a segment at a time in the reader's own order, with the value's UTC reading beside it.",
+  },
+  {
+    path: '/calendar',
+    name: 'Calendar',
+    description: "A month on APG's grid keys: one day or a range, the reader's week and names, and a day that is a string, not a Date.",
+  },
+  {
+    path: '/date-picker',
+    name: 'DatePicker',
+    description: 'A date field with a calendar, a list of times or both behind it, a range picker on two months, and a time zone select.',
+  },
+  {
     path: '/progress',
     name: 'Progress',
     description:

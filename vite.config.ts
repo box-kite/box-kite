@@ -42,6 +42,8 @@ const entry = {
   // The agentic runtimes' shapes, mapped onto this library's — see src/interop.ts. Framework-free and
   // engine-free: a route handler and a client both import from it.
   interop: path.resolve(import.meta.dirname, './src/interop.ts'),
+  // Dates, times and zones with no React and no engine — see src/date.ts. A server formats with it as readily as a client.
+  date: path.resolve(import.meta.dirname, './src/date.ts'),
   ...componentsEntry,
 };
 
@@ -215,7 +217,7 @@ export default defineConfig(({ mode }) => {
 
                   // Entry modules stay their own chunks — grouping them would drag one entry's
                   // imports (`react-dom/server`, say) into every other entry that shares the group.
-                  if (!source.includes('/src/') || /^src\/(a11y|anchor|box|catalog|core|interop|rsc|spec|ssg)\.ts$/.test(module))
+                  if (!source.includes('/src/') || /^src\/(a11y|anchor|box|catalog|core|date|interop|rsc|spec|ssg)\.ts$/.test(module))
                     return null;
                   // The catalog's generated prose, 15 KB gzipped of it. Inlined into the one entry that
                   // imports it: grouped by the rules below it would land in `client`, and every component
@@ -261,6 +263,15 @@ export default defineConfig(({ mode }) => {
                   // something everybody imports, so a private leaf in one is paid for by consumers who cannot reach it.
                   // Rolldown inlines what it is not told to group, which is what `null` asks for.
                   if (componentPrivate.has(module)) return null;
+
+                  // The date layer, reached by the `/date` entry and by every date component: framework-free and
+                  // engine-free, so in `client` it would tax every component and put the engine behind `/date`.
+                  // Split three ways, so a component that only writes a date out loads no arithmetic and no parser.
+                  if (module === 'src/utils/date/dateTime.ts') return 'date-math';
+                  if (module === 'src/utils/date/parse.ts' || module === 'src/utils/date/fieldModel.ts') return 'date-input';
+                  if (module.startsWith('src/utils/date/')) return 'dates';
+                  // The reader's zone and language, and the change details, which the date components share.
+                  if (module.startsWith('src/react/date/')) return 'date-environment';
 
                   // The markup the form controls share. Server-safe, but not part of `react-shared`: it is the one shared
                   // module that imports a *component* entry (`Flex`), and in `react-shared` that edge is a cycle — it left

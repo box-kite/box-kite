@@ -6,6 +6,7 @@ import {
   ColumnFilterConfig,
   ColumnType,
   ContextMenuConfig,
+  DateFilterValue,
   FilterValue,
   Key,
   NumberFilterValue,
@@ -231,6 +232,19 @@ export default class ColumnModel<TRow> {
       const numValTo = typeof valueTo === 'number' ? valueTo : parseFloat(String(valueTo));
       if (!isNaN(numValTo)) filter.valueTo = numValTo;
     }
+
+    this.grid.setColumnFilter(this.key, filter);
+  }
+
+  /** A day, before or after one, or a span — `null` for a value still being typed, which is no filter yet. */
+  public setDateFilter(operator: DateFilterValue['operator'], value: string | null, valueTo?: string | null): void {
+    if (!value) {
+      this.grid.setColumnFilter(this.key, undefined);
+      return;
+    }
+
+    const filter: DateFilterValue = { type: 'date', operator, value };
+    if (operator === 'between' && valueTo) filter.valueTo = valueTo;
 
     this.grid.setColumnFilter(this.key, filter);
   }

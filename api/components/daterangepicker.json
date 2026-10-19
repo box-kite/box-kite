@@ -1,0 +1,232 @@
+{
+  "name": "DateRangePicker",
+  "route": "/date-picker",
+  "import": "import { DateRangePicker } from '@box-kite/react/components/datePicker';",
+  "description": "Two dates that make a span — a stay, a reporting period — typed into two fields or picked on a range calendar.",
+  "pattern": "https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/",
+  "props": [
+    {
+      "name": "value",
+      "type": "DateRange | null",
+      "required": false,
+      "default": null,
+      "description": "Controlled value: both ends, `YYYY-MM-DD`, or `null`."
+    },
+    {
+      "name": "defaultValue",
+      "type": "DateRange | null",
+      "required": false,
+      "default": "null",
+      "description": "The span it starts with when the picker owns its value."
+    },
+    {
+      "name": "onValueChange",
+      "type": "ChangeHandler<DateRange | null, DateChangeReason>",
+      "required": false,
+      "default": null,
+      "description": "Fires once both ends are filled in and in order, and with `null` when either is emptied."
+    },
+    { "name": "startName", "type": "string", "required": false, "default": null, "description": "What the start posts under in a form." },
+    { "name": "endName", "type": "string", "required": false, "default": null, "description": "What the end posts under." },
+    {
+      "name": "startLabel",
+      "type": "string",
+      "required": false,
+      "default": "'Start date'",
+      "description": "The names a screen reader gives the two fields. Default `'Start date'` and `'End date'`."
+    },
+    {
+      "name": "endLabel",
+      "type": "string",
+      "required": false,
+      "default": "'End date'",
+      "description": "The end field's name. Default `'End date'`."
+    },
+    {
+      "name": "months",
+      "type": "1 | 2 | 3",
+      "required": false,
+      "default": "2",
+      "description": "Months side by side in the panel. Default 2."
+    },
+    {
+      "name": "presets",
+      "type": "readonly DatePreset<DateRange>[]",
+      "required": false,
+      "default": null,
+      "description": "Shortcuts beside the calendar — `{ label: 'This week', value: { start, end } }`."
+    },
+    {
+      "name": "locale",
+      "type": "string",
+      "required": false,
+      "default": null,
+      "description": "The language of the field, the calendar and the times. Default the reader's."
+    },
+    {
+      "name": "min",
+      "type": "string | null",
+      "required": false,
+      "default": null,
+      "description": "The earliest value that is valid, and the first day the calendar offers."
+    },
+    { "name": "max", "type": "string | null", "required": false, "default": null, "description": "The latest." },
+    {
+      "name": "isDateUnavailable",
+      "type": "(date: string) => boolean",
+      "required": false,
+      "default": null,
+      "description": "Days nobody can choose."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "required": false,
+      "default": "false",
+      "description": "Not editable, not focusable and not openable."
+    },
+    {
+      "name": "readOnly",
+      "type": "boolean",
+      "required": false,
+      "default": "false",
+      "description": "Focusable and read out, but not editable, and the button does not open."
+    },
+    {
+      "name": "required",
+      "type": "boolean",
+      "required": false,
+      "default": null,
+      "description": "The form is not valid until it is filled in — the browser's own check."
+    },
+    {
+      "name": "invalid",
+      "type": "boolean",
+      "required": false,
+      "default": null,
+      "description": "Marks the value invalid whatever the bounds say. Default: invalid when out of bounds or unavailable."
+    },
+    {
+      "name": "label",
+      "type": "React.ReactNode",
+      "required": false,
+      "default": null,
+      "description": "The picker's visible name, above the field."
+    },
+    {
+      "name": "labelledBy",
+      "type": "string",
+      "required": false,
+      "default": null,
+      "description": "Names the field after an element already on the page, instead of `label`."
+    },
+    {
+      "name": "describedBy",
+      "type": "string",
+      "required": false,
+      "default": null,
+      "description": "An element that describes the field — a hint, an error."
+    },
+    { "name": "open", "type": "boolean", "required": false, "default": null, "description": "Whether the panel is open. Controlled." },
+    {
+      "name": "defaultOpen",
+      "type": "boolean",
+      "required": false,
+      "default": null,
+      "description": "Whether it starts open, when the picker owns that itself."
+    },
+    {
+      "name": "onOpenChange",
+      "type": "ChangeHandler<boolean, DatePickerOpenReason>",
+      "required": false,
+      "default": null,
+      "description": "Fires with the new state and why — the layer's four reasons, and `'select'` when choosing closed it."
+    },
+    {
+      "name": "closeOnSelect",
+      "type": "boolean",
+      "required": false,
+      "default": "true",
+      "description": "Whether choosing closes the panel. Default `true`; a date-time closes once its time is chosen."
+    },
+    {
+      "name": "firstDayOfWeek",
+      "type": "number",
+      "required": false,
+      "default": null,
+      "description": "The day the week starts on, 0 for Sunday. Default the locale's."
+    },
+    {
+      "name": "weekNumbers",
+      "type": "boolean",
+      "required": false,
+      "default": null,
+      "description": "ISO week numbers down the calendar's side."
+    },
+    {
+      "name": "side",
+      "type": "AnchorSide",
+      "required": false,
+      "default": "'bottom'",
+      "description": "Which side of the field the panel opens on. Default `'bottom'`."
+    },
+    {
+      "name": "align",
+      "type": "AnchorAlign",
+      "required": false,
+      "default": "'start'",
+      "description": "Which of the field's edges it lines up with. Default `'start'`."
+    },
+    {
+      "name": "clearable",
+      "type": "boolean",
+      "required": false,
+      "default": "false",
+      "description": "A button inside the field that empties it."
+    },
+    {
+      "name": "triggerLabel",
+      "type": "string",
+      "required": false,
+      "default": "'Choose dates'",
+      "description": "The calendar button's name. Default `'Choose date'`, or `'Choose time'`."
+    },
+    {
+      "name": "clearLabel",
+      "type": "string",
+      "required": false,
+      "default": "'Clear'",
+      "description": "The clear button's name. Default `'Clear'`."
+    },
+    {
+      "name": "tabIndex",
+      "type": "number",
+      "required": false,
+      "default": null,
+      "description": "Every segment's and button's tab index. Default `0`; `-1` keeps the picker out of the page's tab order, which a grid cell wants."
+    }
+  ],
+  "parts": [],
+  "keyboard": [
+    {
+      "mode": null,
+      "keys": "Enter / Space",
+      "action": "On the button, opens the panel; in the calendar, anchors and then ends the range."
+    },
+    { "mode": null, "keys": "Escape", "action": "Drops a half-picked range, then closes the panel." }
+  ],
+  "a11y": [
+    "The two fields are named `startLabel` and `endLabel` and grouped under the picker's label; the calendar marks every day of the span `aria-selected`."
+  ],
+  "axe": { "fixtures": ["DateRangePicker"], "knownViolations": [] },
+  "styleTree": [
+    { "path": "datePicker", "depth": 0, "extends": null, "variants": [] },
+    { "path": "datePicker.part", "depth": 1, "extends": null, "variants": [] },
+    { "path": "datePicker.trigger", "depth": 1, "extends": null, "variants": [] },
+    { "path": "datePicker.clear", "depth": 1, "extends": null, "variants": [] },
+    { "path": "datePicker.presets", "depth": 1, "extends": null, "variants": [] },
+    { "path": "datePicker.preset", "depth": 1, "extends": null, "variants": ["selected"] },
+    { "path": "datePicker.times", "depth": 1, "extends": null, "variants": [] },
+    { "path": "datePicker.time", "depth": 1, "extends": null, "variants": ["selected"] }
+  ]
+}

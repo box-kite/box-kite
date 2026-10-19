@@ -2,6 +2,8 @@ import type { BoxProps } from '../../../box';
 import type { ChangeHandler } from '../../../react/a11y/useControllableState';
 import { ComponentsAndVariants } from '../../../types';
 import type { SortDirection } from '../../../utils/array/arrayUtils';
+import type { FormatOptions } from '../../../utils/date/format';
+import type { ZoneInput } from '../../../utils/date/zones';
 import AggregateCellModel from '../models/aggregateCellModel';
 import CellModel from '../models/cellModel';
 import type { DataGridLocaleText } from '../models/localeText';
@@ -180,7 +182,7 @@ export interface DataGridPagination {
 // ========== Filter Types ==========
 
 /** Filter type for column-level filtering */
-export type ColumnFilterType = 'text' | 'number' | 'multiselect';
+export type ColumnFilterType = 'text' | 'number' | 'multiselect' | 'date';
 
 /** Text filter configuration (fuzzy search) */
 export interface TextFilterValue {
@@ -202,8 +204,20 @@ export interface MultiselectFilterValue {
   values: (string | number | boolean | null)[];
 }
 
+/**
+ * Date filter: one day, before or after one, or a span of days, each `YYYY-MM-DD` — compared on the reader's
+ * calendar, so an instant late on the 19th in their zone is on the 19th whatever UTC says.
+ */
+export interface DateFilterValue {
+  type: 'date';
+  operator: 'on' | 'before' | 'after' | 'between';
+  value: string;
+  /** For 'between': the last day, included. */
+  valueTo?: string;
+}
+
 /** Union type for all filter values */
-export type FilterValue = TextFilterValue | NumberFilterValue | MultiselectFilterValue;
+export type FilterValue = TextFilterValue | NumberFilterValue | MultiselectFilterValue | DateFilterValue;
 
 /** Column filters record - maps column key to filter value */
 export type ColumnFilters<TRow> = Partial<Record<keyof TRow | Key, FilterValue>>;
@@ -217,10 +231,10 @@ export interface ColumnFilterConfig {
   options?: { label: string; value: string | number | boolean | null }[];
   /** For number: step value for input */
   step?: number;
-  /** For number: min value */
-  min?: number;
-  /** For number: max value */
-  max?: number;
+  /** For number: min value. For date: the earliest day, `YYYY-MM-DD`. */
+  min?: number | string;
+  /** For number: max value. For date: the latest day. */
+  max?: number | string;
 }
 
 // ========== Row Detail ==========
@@ -300,10 +314,11 @@ export interface TreeDataConfig<TRow> {
 // ========== Cell Editing ==========
 
 /**
- * The four editors the grid draws for itself. A column wanting anything else — a date picker, a colour,
- * a lookup against a table — declares `EditCell` instead and renders it, driven by the same model.
+ * The editors the grid draws for itself — `date`, `time` and `datetime` are a `DateField` in the cell. A column
+ * wanting anything else — a colour, a lookup against a table — declares `EditCell` instead and renders it,
+ * driven by the same model.
  */
-export type CellEditorType = 'text' | 'number' | 'checkbox' | 'select';
+export type CellEditorType = 'text' | 'number' | 'checkbox' | 'select' | 'date' | 'time' | 'datetime';
 
 /** One option of a `select` editor. `value` is what the cell holds; `label` is what the list shows. */
 export interface CellEditorOption {
@@ -320,9 +335,18 @@ export interface CellEditorConfig<TRow> {
   placeholder?: string;
   /** `number` only, handed to the input as it stands. */
   step?: number;
-  min?: number;
-  max?: number;
+  /** A number for `number`; an ISO string for the date editors, whose value outside it is marked invalid. */
+  min?: number | string;
+  max?: number | string;
+  /** `datetime` only: whose wall clock it is typed on. Default the reader's; `'none'` for no zone. */
+  zone?: ZoneInput | 'none';
 }
+
+/**
+ * How a column writes a date: `'date'`, `'time'`, `'datetime'`, `'relative'` (`3 days ago`), or `Intl` options
+ * with a `zone`. In the reader's language and on their wall clock, like `<DateTime>`.
+ */
+export type ColumnDateFormat = 'date' | 'time' | 'datetime' | 'relative' | Omit<FormatOptions, 'locale'>;
 
 /** Whether a column can be edited: every row of it, or the rows a predicate says. */
 export type ColumnEditable<TRow> = boolean | ((row: TRow) => boolean);
@@ -589,6 +613,11 @@ export interface ColumnType<TRow> {
    * numbers gets a numeric keypad without being told.
    */
   editor?: CellEditorType | CellEditorConfig<TRow>;
+  /**
+   * Writes the column's values as dates, in the reader's language and zone — an ISO string or a `Date`. A `Date`
+   * is written as a date-time without being told, since it cannot be rendered as it stands.
+   */
+  dateFormat?: ColumnDateFormat;
   /**
    * An editor of your own, for what the four built-in ones do not cover. It is handed the cell, and the
    * cell carries the draft value and the two ways out (`commitEdit`, `cancelEdit`) — so a custom editor
