@@ -80,6 +80,8 @@ interface SharedProps<TKey extends keyof ComponentsAndVariants> extends PickerBo
   triggerLabel?: string;
   /** The clear button's name. Default `'Clear'`. */
   clearLabel?: string;
+  /** Every segment's and button's tab index. Default `0`; `-1` keeps the picker out of the page's tab order, which a grid cell wants. */
+  tabIndex?: number;
 }
 
 export interface DatePickerProps<TKey extends keyof ComponentsAndVariants = 'dateField'> extends SharedProps<TKey> {
@@ -410,6 +412,7 @@ function DatePickerImpl<TKey extends keyof ComponentsAndVariants = 'dateField'>(
     clearable = false,
     triggerLabel,
     clearLabel = 'Clear',
+    tabIndex,
     step = 30,
     defaultTime = '00:00',
     presets,
@@ -483,7 +486,7 @@ function DatePickerImpl<TKey extends keyof ComponentsAndVariants = 'dateField'>(
       me={-1.5}
       borderRadius={1.5}
       disabled={disabled || readOnly}
-      props={{ type: 'button', 'aria-label': shown ? `${buttonName}, ${shown}` : buttonName, ...triggerAttributes }}
+      props={{ type: 'button', 'aria-label': shown ? `${buttonName}, ${shown}` : buttonName, tabIndex, ...triggerAttributes }}
     >
       {type === 'time' ? <ClockIcon /> : <CalendarIcon />}
     </Box>
@@ -503,6 +506,7 @@ function DatePickerImpl<TKey extends keyof ComponentsAndVariants = 'dateField'>(
       props={{
         type: 'button',
         'aria-label': clearLabel,
+        tabIndex,
         onClick: (event: React.MouseEvent) => setCurrent(null, { reason: 'clear', event }),
       }}
     >
@@ -535,6 +539,7 @@ function DatePickerImpl<TKey extends keyof ComponentsAndVariants = 'dateField'>(
         labelledBy={labelledBy}
         describedBy={describedBy}
         showZone={showZone}
+        tabIndex={tabIndex}
         end={
           <>
             {clear}
@@ -631,6 +636,7 @@ function DateRangePickerImpl<TKey extends keyof ComponentsAndVariants = 'dateFie
     clearable = false,
     triggerLabel = 'Choose dates',
     clearLabel = 'Clear',
+    tabIndex,
     presets,
     props: tagProps,
     ...restProps
@@ -681,6 +687,7 @@ function DateRangePickerImpl<TKey extends keyof ComponentsAndVariants = 'dateFie
     component: 'datePicker.part' as const,
     px: 0,
     py: 0,
+    tabIndex,
   };
 
   return (
@@ -737,7 +744,12 @@ function DateRangePickerImpl<TKey extends keyof ComponentsAndVariants = 'dateFie
             width={6}
             height={6}
             borderRadius={999}
-            props={{ type: 'button', 'aria-label': clearLabel, onClick: (event: React.MouseEvent) => update(null, null, 'clear', event) }}
+            props={{
+              type: 'button',
+              'aria-label': clearLabel,
+              tabIndex,
+              onClick: (event: React.MouseEvent) => update(null, null, 'clear', event),
+            }}
           >
             <ClearIcon />
           </Box>
@@ -754,7 +766,7 @@ function DateRangePickerImpl<TKey extends keyof ComponentsAndVariants = 'dateFie
           me={-1.5}
           borderRadius={1.5}
           disabled={disabled || readOnly}
-          props={{ type: 'button', 'aria-label': shown ? `${triggerLabel}, ${shown}` : triggerLabel, ...triggerAttributes }}
+          props={{ type: 'button', 'aria-label': shown ? `${triggerLabel}, ${shown}` : triggerLabel, tabIndex, ...triggerAttributes }}
         >
           <CalendarIcon />
         </Box>

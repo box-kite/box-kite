@@ -229,14 +229,8 @@ function NumberFilter<TRow>({ column }: Props<TRow>) {
 /** The date filter, out of the grid's date chunk: nothing until it has arrived. */
 function DateFilter<TRow>({ column }: Props<TRow>) {
   const parts = useDateParts(true);
-  const columnName = String(column.header ?? column.key);
 
-  return parts ? (
-    <parts.DateFilter
-      column={column}
-      clearButton={(onClear) => <ClearFilterButton label={column.grid.localeText.clearFilter(columnName)} onClear={onClear} />}
-    />
-  ) : null;
+  return parts ? <parts.DateFilter column={column} /> : null;
 }
 
 /**

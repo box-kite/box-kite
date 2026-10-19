@@ -170,7 +170,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "61.09 KB"
+      "limit": "61.11 KB"
     },
     {
       "name": "Spec renderer (spec entry)",
@@ -228,7 +228,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "41.53 KB"
+      "limit": "41.54 KB"
     },
     {
       "name": "Popover",
@@ -288,7 +288,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "40.03 KB"
+      "limit": "40.04 KB"
     },
     {
       "name": "List",
@@ -300,7 +300,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "41.35 KB"
+      "limit": "41.36 KB"
     },
     {
       "name": "SwipeItem",
@@ -348,7 +348,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "39.38 KB"
+      "limit": "39.39 KB"
     },
     {
       "name": "Tabs",
@@ -360,7 +360,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "41.98 KB"
+      "limit": "41.99 KB"
     },
     {
       "name": "Slider",
@@ -372,7 +372,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "41.15 KB"
+      "limit": "41.16 KB"
     },
     {
       "name": "Progress",
@@ -396,7 +396,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "42.76 KB"
+      "limit": "42.77 KB"
     },
     {
       "name": "DateField",
@@ -432,7 +432,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "60.01 KB"
+      "limit": "60.04 KB"
     },
     {
       "name": "DateTime",
@@ -456,7 +456,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "50.5 KB"
+      "limit": "50.51 KB"
     },
     {
       "name": "Combobox",
@@ -534,7 +534,7 @@
         "./components/*"
       ],
       "gzip": true,
-      "limit": "7.27 KB"
+      "limit": "7.36 KB"
     },
     {
       "name": "Full library (Box + ssg + every component)",

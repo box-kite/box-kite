@@ -19,6 +19,7 @@ import Grid from '../../src/components/grid';
 import RadioGroup from '../../src/components/radioGroup';
 import { H2 } from '../../src/components/semantics';
 import Switch from '../../src/components/switch';
+import { add } from '../../src/date';
 import ApiReference from '../components/apiReference';
 import Code from '../components/code';
 import Mono from '../components/mono';
@@ -1694,6 +1695,40 @@ const dataSource = useMemo(() => ({
             <PasteDemo />
           </Code>
 
+          <Section id="dates" title="Dates, written in the reader's words and filtered on a calendar">
+            <Box>
+              A column of ISO strings or <Mono>Date</Mono>s is a date column: <Mono>dateFormat</Mono> writes it in the reader's language and
+              zone, the editor is a <Mono>DateField</Mono>, and{' '}
+              <Mono>
+                filterable: {'{'} type: 'date' {'}'}
+              </Mono>{' '}
+              puts a <Mono>DatePicker</Mono> in the filter row — a day typed in the reader's order or picked on a calendar, on it, before
+              it, after it, or between two. A date-time column is filtered by the day on the reader's calendar.
+            </Box>
+          </Section>
+
+          <Code
+            id="dates-demo"
+            defer
+            label="Date columns"
+            language="jsx"
+            check={false}
+            code={`<DataGrid
+  data={orders}
+  def={{
+    rowKey: 'id',
+    columns: [
+      { key: 'id', header: 'Order' },
+      { key: 'customer', header: 'Customer' },
+      { key: 'due', header: 'Due', dateFormat: 'date', editable: true, filterable: { type: 'date' } },
+      { key: 'placed', header: 'Placed', dateFormat: 'datetime', filterable: { type: 'date' } },
+    ],
+  }}
+/>`}
+          >
+            <DatesDemo />
+          </Code>
+
           <Code
             id="disable-sort"
             defer
@@ -2751,6 +2786,34 @@ function PasteDemo() {
   );
 }
 
+/** Fixed rather than built from today, so the prerendered page and the browser hold the same rows. */
+const ORDERS = allData.slice(0, 40).map((person, index) => {
+  const due = add('2026-10-01', { days: (index * 7) % 61 });
+
+  return {
+    id: 4100 + index,
+    customer: `${person.first_name} ${person.last_name}`,
+    due,
+    placed: add(`${due}T08:00:00Z`, { days: -(index % 6) - 1, minutes: ((index * 97) % 600) - 300 }),
+  };
+});
+
+const DATES_DEF = {
+  rowKey: 'id' as const,
+  rowHeight: 40,
+  visibleRowsCount: 7,
+  columns: [
+    { key: 'id' as const, header: 'Order', width: 100 },
+    { key: 'customer' as const, header: 'Customer', width: 200 },
+    { key: 'due' as const, header: 'Due', width: 220, dateFormat: 'date' as const, editable: true, filterable: { type: 'date' as const } },
+    { key: 'placed' as const, header: 'Placed', width: 240, dateFormat: 'datetime' as const, filterable: { type: 'date' as const } },
+  ],
+};
+
+function DatesDemo() {
+  return <DataGrid data={ORDERS} def={DATES_DEF} />;
+}
+
 function TabNavigationDemo() {
   const [tabNavigation, setTabNavigation] = useState<'none' | 'cells'>('cells');
 
@@ -2983,6 +3046,7 @@ const sidebarLinks = [
   { id: 'tab-navigation', label: 'Spreadsheet tab mode' },
   { id: 'range-selection', label: 'Range selection and copy' },
   { id: 'paste', label: 'Paste into a block' },
+  { id: 'dates', label: 'Dates' },
   { id: 'disable-sort', label: 'Disable Sort' },
   { id: 'context-menu', label: 'Context Menu' },
   { id: 'resizer-style', label: 'Resizer Style' },

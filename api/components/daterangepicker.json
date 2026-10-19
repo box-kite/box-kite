@@ -197,6 +197,13 @@
       "required": false,
       "default": "'Clear'",
       "description": "The clear button's name. Default `'Clear'`."
+    },
+    {
+      "name": "tabIndex",
+      "type": "number",
+      "required": false,
+      "default": null,
+      "description": "Every segment's and button's tab index. Default `0`; `-1` keeps the picker out of the page's tab order, which a grid cell wants."
     }
   ],
   "parts": [],

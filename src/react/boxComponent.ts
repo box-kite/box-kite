@@ -12,7 +12,9 @@ type Render = (props: any, ref: any) => React.ReactNode;
  * React 19. React 18 needs a `forwardRef` under the `memo`, which makes it two.
  */
 export default function boxComponent(render: Render, displayName: string) {
-  const inner = REF_IS_A_PROP ? (props: { ref?: Ref<unknown> }) => render(props, props.ref ?? null) : forwardRef(render);
+  // `ref` comes out of the props as `forwardRef` takes it out on 18: left in, a `...rest` spread after a component's own
+  // `ref={…}` replaced it with the caller's, and the component lost its element (bug #273).
+  const inner = REF_IS_A_PROP ? ({ ref, ...props }: { ref?: Ref<unknown> }) => render(props, ref ?? null) : forwardRef(render);
   const component = memo(inner);
 
   (inner as { displayName?: string }).displayName = displayName;

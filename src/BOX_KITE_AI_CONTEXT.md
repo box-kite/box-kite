@@ -2271,7 +2271,7 @@ paint that is already right. **`name` posts the canonical string** (and `require
 browser validates), so a server reads `2026-10-19` whatever the reader's locale. And in a **DataGrid**, a
 column takes `editor: 'date' | 'time' | 'datetime'` (inferred from an ISO string or a `Date`),
 `dateFormat: 'date' | 'time' | 'datetime' | 'relative' | Intl options` and `filterable: { type: 'date' }`
-(`on`/`before`/`after`/`between`); those parts are a chunk the grid fetches only when it shows a date.
+(`on`/`before`/`after`/`between`, each day a `DatePicker`); those parts are a chunk the grid fetches only when it shows a date.
 Styling: `dateField` (extends `textbox`; `segment`, `literal`, `zone`, `label`; `compact`, `invalid`,
 `disabled`), `calendar` (`nav`, `title`, `weekday`, `weekNumber`, `cell` with the range band, `day` with
 `today`/`selected`/`outside`/`blocked`/`unavailable`, `zoomItem`) and `datePicker` (`trigger`, `clear`,

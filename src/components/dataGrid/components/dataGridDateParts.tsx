@@ -5,6 +5,7 @@ import { normalize } from '../../../utils/date/dateTime';
 import { format, FormatOptions, formatRange, formatRelative } from '../../../utils/date/format';
 import { parse } from '../../../utils/date/parse';
 import DateField from '../../dateField';
+import DatePicker, { DateChangeHandler } from '../../datePicker';
 import Dropdown from '../../dropdown';
 import Flex from '../../flex';
 import { CellEditorConfig, ColumnDateFormat, DateFilterValue } from '../contracts/dataGridContract';
@@ -110,24 +111,43 @@ const OPERATORS: { value: DateFilterValue['operator']; label: string }[] = [
   { value: 'between', label: '↔' },
 ];
 
+/** The bounds each end of a span may be picked in: the column's own, narrowed by the other end. */
+function boundsOf<TRow>(column: ColumnModel<TRow>, state: ReturnType<typeof useDateFilterState<TRow>>) {
+  const config = column.filterConfig;
+  const min = typeof config?.min === 'string' ? config.min : undefined;
+  const max = typeof config?.max === 'string' ? config.max : undefined;
+  const between = state.operator === 'between';
+
+  return { from: { min, max: (between && state.valueTo) || max }, to: { min: state.value ?? min, max } };
+}
+
 /**
- * The filter row's date filter: a comparison and a day, or two for a span. A field holds what is half typed
- * itself, and a day is only ever whole or absent, so each one commits as it completes rather than after a pause.
+ * The filter row's date filter: a comparison and a day, or two for a span, each a `DatePicker` — typed or picked.
+ * A day is only ever whole or absent, so each one commits as it completes rather than after a pause.
  */
-function DateFilter<TRow>(props: { column: ColumnModel<TRow>; clearButton: (onClear: () => void) => React.ReactNode }) {
-  const { column, clearButton } = props;
+function DateFilter<TRow>(props: { column: ColumnModel<TRow> }) {
+  const { column } = props;
   const columnName = String(column.header ?? column.key);
   const text = column.grid.localeText;
-  const config = column.filterConfig;
   const state = useDateFilterState(column);
-  const field = (current: string | null, label: string, onChange: (next: string | null) => void) => (
-    <DateField
-      min={typeof config?.min === 'string' ? config.min : undefined}
-      max={typeof config?.max === 'string' ? config.max : undefined}
+  const bounds = boundsOf(column, state);
+  const picker = (
+    current: string | null,
+    label: string,
+    onChange: DateChangeHandler,
+    range: { min?: string; max?: string },
+    clearable = false,
+  ) => (
+    <DatePicker
       value={current}
       onValueChange={onChange}
+      min={range.min}
+      max={range.max}
+      clearable={clearable}
+      clearLabel={text.clearFilter(columnName)}
       variant="compact"
       width="fit"
+      minWidth={0}
       b={0}
       bgColor="transparent"
       focus={{ outline: 0 }}
@@ -159,22 +179,28 @@ function DateFilter<TRow>(props: { column: ColumnModel<TRow>; clearButton: (onCl
           </Dropdown.Item>
         ))}
       </Dropdown>
-      <Flex d="column" gap={1} flex1 position="relative">
-        {field(state.value, state.operator === 'between' ? text.filterFrom(columnName) : text.filterColumn(columnName), state.setValue)}
-        {state.operator === 'between' && field(state.valueTo, text.filterTo(columnName), state.setValueTo)}
-        {state.value && clearButton(state.clear)}
+      <Flex d="column" gap={1} flex1 minWidth={0}>
+        {picker(
+          state.value,
+          state.operator === 'between' ? text.filterFrom(columnName) : text.filterColumn(columnName),
+          (next, details) => (details.reason === 'clear' ? state.clear() : state.setValue(next)),
+          bounds.from,
+          true,
+        )}
+        {state.operator === 'between' && picker(state.valueTo, text.filterTo(columnName), state.setValueTo, bounds.to)}
       </Flex>
     </Flex>
   );
 }
 
-/** The list layout's date filter: the field a finger types into, and the platform's own picker for the comparison. */
+/** The list layout's date filter: a `DatePicker` per end, and the platform's own picker for the comparison. */
 function ListDateFilter<TRow>(props: { column: ColumnModel<TRow> }) {
   const { column } = props;
   const name = column.grid.componentName;
   const text = column.grid.localeText;
   const columnName = String(column.header ?? column.key);
   const state = useDateFilterState(column);
+  const bounds = boundsOf(column, state);
 
   return (
     <Flex gap={2} ai="center" flexWrap="wrap">
@@ -196,14 +222,23 @@ function ListDateFilter<TRow>(props: { column: ColumnModel<TRow> }) {
           </option>
         ))}
       </Box>
-      <DateField
+      <DatePicker
         value={state.value}
         onValueChange={state.setValue}
+        min={bounds.from.min}
+        max={bounds.from.max}
         flex1
         props={{ 'aria-label': state.operator === 'between' ? text.filterFrom(columnName) : text.filterColumn(columnName) }}
       />
       {state.operator === 'between' && (
-        <DateField value={state.valueTo} onValueChange={state.setValueTo} flex1 props={{ 'aria-label': text.filterTo(columnName) }} />
+        <DatePicker
+          value={state.valueTo}
+          onValueChange={state.setValueTo}
+          min={bounds.to.min}
+          max={bounds.to.max}
+          flex1
+          props={{ 'aria-label': text.filterTo(columnName) }}
+        />
       )}
     </Flex>
   );

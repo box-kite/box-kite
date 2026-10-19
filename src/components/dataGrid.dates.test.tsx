@@ -98,4 +98,38 @@ describe('DataGrid dates', () => {
     expect(rows.map((row) => row.querySelector('[role="gridcell"]')?.textContent)).toContain('Nov 2, 2026');
     expect(rows.map((row) => row.querySelector('[role="gridcell"]')?.textContent)).not.toContain('Oct 19, 2026');
   });
+
+  it('picks the filter day on a calendar, out of the page tab order, and clears it', () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(Date.UTC(2026, 9, 19, 12));
+    render(<DataGrid data={data} def={def} />);
+    const dueColumn = () => screen.getAllByRole('row').map((row) => row.querySelector('[role="gridcell"]')?.textContent);
+
+    const button = screen.getByRole('button', { name: 'Choose date' });
+    expect(button).toHaveAttribute('tabindex', '-1');
+    fireEvent.click(button);
+    fireEvent.click(document.querySelector<HTMLElement>('[data-date="2026-10-19"]')!);
+    expect(dueColumn()).toContain('Oct 19, 2026');
+    expect(dueColumn()).not.toContain('Nov 2, 2026');
+
+    // Clearing empties the whole filter, not only the field it sits in.
+    fireEvent.click(screen.getByRole('button', { name: 'Clear the Due filter' }));
+    expect(dueColumn()).toEqual(expect.arrayContaining(['Oct 19, 2026', 'Nov 2, 2026']));
+    vi.useRealTimers();
+  });
+
+  it('bounds each end of a span by the other', () => {
+    render(<DataGrid data={data} def={{ ...def, columns: [{ ...def.columns[0], filterable: { type: 'date', min: '2026-01-01' } }] }} />);
+
+    fireEvent.click(screen.getByLabelText('Comparison for Due'));
+    fireEvent.click(screen.getByRole('option', { name: '↔' }));
+    const from = screen.getByRole('group', { name: 'Filter Due from' });
+    act(() => from.querySelector<HTMLElement>('[role="spinbutton"]')!.focus());
+    for (const key of '10192026') fireEvent.keyDown(document.activeElement!, { key });
+
+    const to = screen.getByRole('group', { name: 'Filter Due to' });
+    act(() => to.querySelector<HTMLElement>('[role="spinbutton"]')!.focus());
+    for (const key of '10012026') fireEvent.keyDown(document.activeElement!, { key });
+    expect(to).toHaveAttribute('aria-invalid', 'true');
+  });
 });

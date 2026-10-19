@@ -49,6 +49,17 @@ describe('DatePicker', () => {
     expect(day('2026-10-20').closest('td')).toHaveAttribute('aria-selected', 'true');
   });
 
+  it('moves on segment by segment as a date is typed, and takes a ref', () => {
+    const ref = { current: null as HTMLDivElement | null };
+    const onValueChange = vi.fn();
+    render(<DatePicker ref={ref} label="Check-in" onValueChange={onValueChange} />);
+
+    act(() => segments()[0].focus());
+    for (const key of '10232026') fireEvent.keyDown(document.activeElement!, { key });
+    expect(onValueChange).toHaveBeenLastCalledWith('2026-10-23', expect.objectContaining({ reason: 'keyboard' }));
+    expect(ref.current).toHaveAttribute('role', 'group');
+  });
+
   it('picks a time from a list of slots', () => {
     const onValueChange = vi.fn();
     render(<DatePicker type="time" label="Pickup" step={15} onValueChange={onValueChange} />);
