@@ -5,6 +5,7 @@ The release notes live in [`releases/`](releases/), one file per version, and ea
 
 | Version                    | Date       | In one line                                                                                                                                                               |
 | -------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [2.2.6](releases/2.2.6.md) | 2026-10-19 | Release 2.2.6.                                                                                                                                                            |
 | [2.2.5](releases/2.2.5.md) | 2026-10-17 | Lists, for the screens that are mostly lists: `<List>`, with swipe actions, drag to reorder and a windowed list on top of it, and a DataGrid that becomes one on a phone. |
 | [2.2.4](releases/2.2.4.md) | 2026-10-13 | A Server Component page no longer sends the base stylesheet once per Box.                                                                                                 |
 | [2.2.3](releases/2.2.3.md) | 2026-10-13 | Box Kite is the only name the package carries.                                                                                                                            |
