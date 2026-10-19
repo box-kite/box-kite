@@ -268,7 +268,7 @@ describe('List', () => {
 
       const [small, large] = screen.getAllByRole('listitem');
       expect(small.className).toContain('minHeight-11');
-      expect(small.className).toContain('bgColor-indigo-500/10');
+      expect(small.className).toContain('bgColor-accent-500/10');
       expect(large.className).toContain('minHeight-18');
       expect(screen.getByText('Muted').className).toContain('fontSize-14');
     });

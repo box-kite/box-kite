@@ -134,8 +134,8 @@ function PaginationButton(props: {
       p={1}
       borderRadius={4}
       opacity={disabled ? 0.3 : 0.7}
-      hover={disabled ? undefined : { opacity: 1, bgColor: 'gray-100' }}
-      theme={{ dark: { hover: disabled ? undefined : { bgColor: 'gray-700' } } }}
+      hover={disabled ? undefined : { opacity: 1, bgColor: 'base-100' }}
+      theme={{ dark: { hover: disabled ? undefined : { bgColor: 'base-700' } } }}
       transitionDuration={150}
     >
       {children}

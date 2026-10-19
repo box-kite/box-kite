@@ -108,8 +108,8 @@ function TrapsSection() {
             b={1}
             borderRadius={3}
             theme={{
-              dark: { bgColor: 'slate-900', borderColor: 'slate-800' },
-              light: { bgColor: 'white', borderColor: 'slate-200' },
+              dark: { bgColor: 'base-900', borderColor: 'base-800' },
+              light: { bgColor: 'white', borderColor: 'base-200' },
             }}
           >
             <Flex gap={3} ai="baseline">
@@ -136,17 +136,17 @@ function TrapsSection() {
                   textTransform="uppercase"
                   letterSpacing={0.6}
                   mb={1}
-                  theme={{ dark: { color: 'slate-500' }, light: { color: 'slate-500' } }}
+                  theme={{ dark: { color: 'base-500' }, light: { color: 'base-500' } }}
                 >
                   You might expect · {trap.guess}
                 </Box>
-                <Box fontSize={16} fontWeight={600} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }}>
+                <Box fontSize={16} fontWeight={600} theme={{ dark: { color: 'white' }, light: { color: 'base-900' } }}>
                   {trap.title}
                 </Box>
               </Box>
             </Flex>
 
-            <Box fontSize={15} lineHeight={26} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
+            <Box fontSize={15} lineHeight={26} theme={{ dark: { color: 'base-400' }, light: { color: 'base-600' } }}>
               {trap.answer}
             </Box>
 
@@ -162,7 +162,7 @@ function TrapsSection() {
                   to={trap.more.to}
                   display="inline"
                   textDecoration="underline"
-                  theme={{ dark: { color: 'violet-400' }, light: { color: 'violet-600' } }}
+                  theme={{ dark: { color: 'accent-400' }, light: { color: 'accent-600' } }}
                 >
                   {trap.more.label}
                 </SiteLink>
@@ -180,7 +180,7 @@ function Verdict({ kind, children }: { kind: 'wrong' | 'right'; children: string
   const isRight = kind === 'right';
 
   return (
-    <Flex gap={3} ai="center" px={3} py={2} borderRadius={2} theme={{ dark: { bgColor: 'slate-950' }, light: { bgColor: 'slate-50' } }}>
+    <Flex gap={3} ai="center" px={3} py={2} borderRadius={2} theme={{ dark: { bgColor: 'base-950' }, light: { bgColor: 'base-50' } }}>
       <Icon
         size={4}
         flexShrink={0}
@@ -197,7 +197,7 @@ function Verdict({ kind, children }: { kind: 'wrong' | 'right'; children: string
         fontSize={13}
         lineHeight={20}
         whiteSpace="pre-wrap"
-        theme={{ dark: { color: 'slate-300' }, light: { color: 'slate-700' } }}
+        theme={{ dark: { color: 'base-300' }, light: { color: 'base-700' } }}
       >
         {children}
       </Box>
@@ -219,7 +219,7 @@ function NumbersSection() {
     >
       <Flex d="column" gap={5}>
         <Flex gap={3} ai="center" flexWrap="wrap" props={{ 'data-md': 'skip' }}>
-          <Box fontSize={14} fontWeight={500} theme={{ dark: { color: 'slate-300' }, light: { color: 'slate-700' } }}>
+          <Box fontSize={14} fontWeight={500} theme={{ dark: { color: 'base-300' }, light: { color: 'base-700' } }}>
             The number you write:
           </Box>
           <Textbox
@@ -243,14 +243,14 @@ function NumbersSection() {
               onClick={() => setValue(preset)}
               theme={{
                 dark: {
-                  bgColor: value === preset ? 'violet-950' : 'slate-800',
-                  borderColor: value === preset ? 'violet-500' : 'slate-700',
-                  color: 'slate-200',
+                  bgColor: value === preset ? 'accent-950' : 'base-800',
+                  borderColor: value === preset ? 'accent-500' : 'base-700',
+                  color: 'base-200',
                 },
                 light: {
-                  bgColor: value === preset ? 'violet-50' : 'white',
-                  borderColor: value === preset ? 'violet-400' : 'slate-200',
-                  color: 'slate-800',
+                  bgColor: value === preset ? 'accent-50' : 'white',
+                  borderColor: value === preset ? 'accent-400' : 'base-200',
+                  color: 'base-800',
                 },
               }}
             >
@@ -290,24 +290,24 @@ function NumbersSection() {
 
         <Flex gap={6} flexWrap="wrap" ai="flex-end" props={{ 'data-md': 'skip' }}>
           <ScaleSample label={`p={${value}}`}>
-            <Box p={value} bgColor="violet-500" borderRadius={1}>
-              <Box width={8} height={8} borderRadius={1} theme={{ dark: { bgColor: 'slate-900' }, light: { bgColor: 'white' } }} />
+            <Box p={value} bgColor="accent-500" borderRadius={1}>
+              <Box width={8} height={8} borderRadius={1} theme={{ dark: { bgColor: 'base-900' }, light: { bgColor: 'white' } }} />
             </Box>
           </ScaleSample>
           <ScaleSample label={`b={${value}}`}>
-            <Box width={16} height={16} b={value} borderColor="violet-500" borderRadius={1} />
+            <Box width={16} height={16} b={value} borderColor="accent-500" borderRadius={1} />
           </ScaleSample>
           <ScaleSample label={`borderRadius={${value}}`}>
-            <Box width={16} height={16} bgColor="violet-500" borderRadius={value} />
+            <Box width={16} height={16} bgColor="accent-500" borderRadius={value} />
           </ScaleSample>
           <ScaleSample label={`fontSize={${value}}`}>
-            <Box fontSize={value} lineHeight={value + 4} theme={{ dark: { color: 'slate-200' }, light: { color: 'slate-800' } }}>
+            <Box fontSize={value} lineHeight={value + 4} theme={{ dark: { color: 'base-200' }, light: { color: 'base-800' } }}>
               Aa
             </Box>
           </ScaleSample>
         </Flex>
 
-        <Box fontSize={14} lineHeight={24} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
+        <Box fontSize={14} lineHeight={24} theme={{ dark: { color: 'base-400' }, light: { color: 'base-600' } }}>
           A value a prop does not accept writes <strong>nothing</strong> — no rule and no class name — rather than a broken declaration.
           That is why the reference below prints the CSS each prop really emits: a typed prop is a promise that what typechecks works.
         </Box>
@@ -519,10 +519,10 @@ function BuildSection() {
 function Step({ title, note, children }: { title: string; note: string; children: ReactNode }) {
   return (
     <Flex d="column" gap={3}>
-      <H3 fontSize={16} fontWeight={600} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }}>
+      <H3 fontSize={16} fontWeight={600} theme={{ dark: { color: 'white' }, light: { color: 'base-900' } }}>
         {title}
       </H3>
-      <Box fontSize={14} lineHeight={24} maxWidth={200} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
+      <Box fontSize={14} lineHeight={24} maxWidth={200} theme={{ dark: { color: 'base-400' }, light: { color: 'base-600' } }}>
         {note}
       </Box>
       {children}
@@ -602,7 +602,7 @@ function NestingSection() {
                           display="inline"
                           whiteSpace="nowrap"
                           textDecoration="underline"
-                          theme={{ dark: { color: 'violet-400' }, light: { color: 'violet-600' } }}
+                          theme={{ dark: { color: 'accent-400' }, light: { color: 'accent-600' } }}
                         >
                           {key.more.label}
                         </SiteLink>
@@ -696,7 +696,7 @@ function FinderSection() {
       <Flex d="column" gap={5}>
         <Flex d="column" gap={3} props={{ 'data-md': 'skip' }}>
           <Flex ai="center" gap={3} position="relative">
-            <Box position="absolute" left={3} display="flex" theme={{ dark: { color: 'slate-500' }, light: { color: 'slate-400' } }}>
+            <Box position="absolute" left={3} display="flex" theme={{ dark: { color: 'base-500' }, light: { color: 'base-400' } }}>
               <Icon size={4}>
                 <Search />
               </Icon>
@@ -729,25 +729,25 @@ function FinderSection() {
           </Flex>
 
           {active && (
-            <Box fontSize={14} lineHeight={24} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
+            <Box fontSize={14} lineHeight={24} theme={{ dark: { color: 'base-400' }, light: { color: 'base-600' } }}>
               {active.blurb}
             </Box>
           )}
 
-          <Box fontSize={13} theme={{ dark: { color: 'slate-500' }, light: { color: 'slate-500' } }} props={{ role: 'status' }}>
+          <Box fontSize={13} theme={{ dark: { color: 'base-500' }, light: { color: 'base-500' } }} props={{ role: 'status' }}>
             {found.length === propCount ? `${propCount} props` : `${found.length} of ${propCount} props`}
           </Box>
         </Flex>
 
         {found.length === 0 ? (
-          <Box fontSize={15} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
+          <Box fontSize={15} theme={{ dark: { color: 'base-400' }, light: { color: 'base-600' } }}>
             Nothing matches that. If the property genuinely has no prop, <Mono>css</Mono> is the one-off and <Mono>Box.extend()</Mono> is
             the answer for anything you will write twice —{' '}
             <SiteLink
               to="/escape-hatch"
               display="inline"
               textDecoration="underline"
-              theme={{ dark: { color: 'violet-400' }, light: { color: 'violet-600' } }}
+              theme={{ dark: { color: 'accent-400' }, light: { color: 'accent-600' } }}
             >
               both are here
             </SiteLink>
@@ -771,7 +771,7 @@ function FinderSection() {
                   <TableRow key={prop.name}>
                     <Cell whiteSpace="nowrap" css={{ verticalAlign: 'top' }}>
                       <Mono>{prop.name}</Mono>
-                      <Box fontSize={11} mt={1} theme={{ dark: { color: 'slate-600' }, light: { color: 'slate-400' } }}>
+                      <Box fontSize={11} mt={1} theme={{ dark: { color: 'base-600' }, light: { color: 'base-400' } }}>
                         {categoryOf(prop).label}
                       </Box>
                     </Cell>
@@ -786,7 +786,7 @@ function FinderSection() {
                     <Cell css={{ verticalAlign: 'top' }}>
                       <Prose text={prop.description} />
                       {namedValues(prop) && (
-                        <Box fontSize={12} mt={2} theme={{ dark: { color: 'slate-500' }, light: { color: 'slate-500' } }}>
+                        <Box fontSize={12} mt={2} theme={{ dark: { color: 'base-500' }, light: { color: 'base-500' } }}>
                           {namedValues(prop)}
                         </Box>
                       )}
@@ -798,14 +798,14 @@ function FinderSection() {
           </Box>
         )}
 
-        <Box fontSize={14} lineHeight={24} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
+        <Box fontSize={14} lineHeight={24} theme={{ dark: { color: 'base-400' }, light: { color: 'base-600' } }}>
           The same table as one file, for an editor or an agent, is{' '}
           <Box
             tag="a"
             display="inline"
             props={{ href: '/props.md' }}
             textDecoration="underline"
-            theme={{ dark: { color: 'violet-400' }, light: { color: 'violet-600' } }}
+            theme={{ dark: { color: 'accent-400' }, light: { color: 'accent-600' } }}
           >
             /props.md
           </Box>
@@ -815,7 +815,7 @@ function FinderSection() {
             to="/box-functions"
             display="inline"
             textDecoration="underline"
-            theme={{ dark: { color: 'violet-400' }, light: { color: 'violet-600' } }}
+            theme={{ dark: { color: 'accent-400' }, light: { color: 'accent-600' } }}
           >
             Box functions
           </SiteLink>
@@ -840,20 +840,20 @@ function FilterChip({ active, count, onClick, children }: { active: boolean; cou
       props={{ 'aria-pressed': active }}
       theme={{
         dark: {
-          bgColor: active ? 'violet-950' : 'slate-800',
-          borderColor: active ? 'violet-500' : 'slate-700',
-          color: active ? 'violet-200' : 'slate-300',
+          bgColor: active ? 'accent-950' : 'base-800',
+          borderColor: active ? 'accent-500' : 'base-700',
+          color: active ? 'accent-200' : 'base-300',
         },
         light: {
-          bgColor: active ? 'violet-50' : 'white',
-          borderColor: active ? 'violet-400' : 'slate-200',
-          color: active ? 'violet-700' : 'slate-700',
+          bgColor: active ? 'accent-50' : 'white',
+          borderColor: active ? 'accent-400' : 'base-200',
+          color: active ? 'accent-700' : 'base-700',
         },
       }}
     >
       <Flex ai="center" gap={2}>
         {children}
-        <Span display="inline" fontSize={11} theme={{ dark: { color: 'slate-500' }, light: { color: 'slate-400' } }}>
+        <Span display="inline" fontSize={11} theme={{ dark: { color: 'base-500' }, light: { color: 'base-400' } }}>
           {count}
         </Span>
       </Flex>
@@ -881,15 +881,15 @@ function Prose({ text }: { text: string }) {
 function Section({ id, title, lead, children }: { id: string; title: string; lead?: string; children: ReactNode }) {
   return (
     <Box id={id}>
-      <H2 fontSize={22} fontWeight={600} mb={lead ? 3 : 5} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }}>
+      <H2 fontSize={22} fontWeight={600} mb={lead ? 3 : 5} theme={{ dark: { color: 'white' }, light: { color: 'base-900' } }}>
         {title}
       </H2>
       {lead && (
-        <Box fontSize={15} lineHeight={26} mb={5} maxWidth={220} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
+        <Box fontSize={15} lineHeight={26} mb={5} maxWidth={220} theme={{ dark: { color: 'base-400' }, light: { color: 'base-600' } }}>
           {lead}
         </Box>
       )}
-      <Box fontSize={15} lineHeight={26} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
+      <Box fontSize={15} lineHeight={26} theme={{ dark: { color: 'base-400' }, light: { color: 'base-600' } }}>
         {children}
       </Box>
     </Box>

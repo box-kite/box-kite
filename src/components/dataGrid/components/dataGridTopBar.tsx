@@ -22,7 +22,7 @@ export default function DataGridTopBar<TRow>(props: Props<TRow>) {
           {title && (
             // The grid points `aria-labelledby` here: a grid is named by its title, never by the
             // rows inside it.
-            <Box id={grid.titleId} fontWeight={600} fontSize={16} color="gray-800" theme={{ dark: { color: 'gray-100' } }}>
+            <Box id={grid.titleId} fontWeight={600} fontSize={16} color="base-800" theme={{ dark: { color: 'base-100' } }}>
               {title}
             </Box>
           )}

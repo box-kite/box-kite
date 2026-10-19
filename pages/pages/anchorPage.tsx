@@ -181,7 +181,7 @@ const { anchorProps, layerProps } = useAnchorPosition({ side, align, offset: 2, 
 function Options<TValue extends string>(props: { label: string; values: TValue[]; value: TValue; onSelect: (value: TValue) => void }) {
   return (
     <Flex gap={2} ai="center">
-      <Box theme={{ dark: { color: 'slate-500' }, light: { color: 'slate-400' } }}>{props.label}</Box>
+      <Box theme={{ dark: { color: 'base-500' }, light: { color: 'base-400' } }}>{props.label}</Box>
       {props.values.map((value) => (
         <Button
           key={value}
@@ -191,7 +191,7 @@ function Options<TValue extends string>(props: { label: string; values: TValue[]
           py={1}
           borderRadius={2}
           b={1}
-          borderColor={props.value === value ? 'indigo-500' : 'slate-300'}
+          borderColor={props.value === value ? 'accent-500' : 'base-300'}
           onClick={() => props.onSelect(value)}
           props={{ 'aria-pressed': props.value === value }}
         >
@@ -205,10 +205,10 @@ function Options<TValue extends string>(props: { label: string; values: TValue[]
 function Section({ id, title, children }: { id: string; title: string; children: ReactNode }) {
   return (
     <Box id={id}>
-      <H2 fontSize={20} fontWeight={600} mb={4} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }}>
+      <H2 fontSize={20} fontWeight={600} mb={4} theme={{ dark: { color: 'white' }, light: { color: 'base-900' } }}>
         {title}
       </H2>
-      <Box fontSize={15} lineHeight={26} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
+      <Box fontSize={15} lineHeight={26} theme={{ dark: { color: 'base-400' }, light: { color: 'base-600' } }}>
         {children}
       </Box>
     </Box>
@@ -218,7 +218,7 @@ function Section({ id, title, children }: { id: string; title: string; children:
 function Bullet({ children }: { children: ReactNode }) {
   return (
     <Flex tag="li" gap={3} ai="baseline">
-      <Box width={1} height={1} borderRadius={10} bgColor="indigo-400" mt={2} />
+      <Box width={1} height={1} borderRadius={10} bgColor="accent-400" mt={2} />
       <Box flex1>{children}</Box>
     </Flex>
   );

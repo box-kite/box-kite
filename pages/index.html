@@ -1,10 +1,11 @@
 <!doctype html>
-<html lang="en" class="light" data-theme="light">
+<html lang="en" class="light" data-theme="light" data-design="classic">
   <head>
     <meta charset="UTF-8" />
     <link href="/fonts/Roboto/index.css" rel="stylesheet" />
     <!-- <link href="/fonts/Source_Code_Pro/index.css" rel="stylesheet" /> -->
     <link href="/fonts/Inter/font.css" rel="stylesheet" />
+    <link href="/fonts/Fraunces/font.css" rel="stylesheet" />
 
     <link rel="icon" type="image/svg+xml" href="/logo.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -18,13 +19,19 @@
     -->
     <script>
       try {
-        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-          document.documentElement.classList.remove('light');
-          document.documentElement.classList.add('dark');
-          document.documentElement.setAttribute('data-theme', 'dark');
+        var root = document.documentElement;
+        var stored = localStorage.getItem('box-kite-theme');
+        var theme = stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        if (theme !== 'light') {
+          root.classList.remove('light');
+          root.classList.add(theme);
+          root.setAttribute('data-theme', theme);
         }
+        // The design the header's picker stored (pages/designs/designs.ts): CSS selects it, so writing it here is all a reload needs.
+        var design = localStorage.getItem('box-kite-design');
+        if (design) root.setAttribute('data-design', design);
       } catch (error) {
-        // No matchMedia: the light theme the document already carries.
+        // No storage or no matchMedia: the light theme and the design the document already carries.
       }
     </script>
 

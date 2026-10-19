@@ -38,10 +38,10 @@ export default function BlogPage() {
         return (
           <Reveal key={level} delay={0.1 + index * 0.05}>
             <Box mb={12} maxWidth={210}>
-              <H2 fontSize={22} fontWeight={600} mb={2} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }}>
+              <H2 fontSize={22} fontWeight={600} mb={2} theme={{ dark: { color: 'white' }, light: { color: 'base-900' } }}>
                 {title}
               </H2>
-              <P fontSize={15} lineHeight={26} mb={5} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
+              <P fontSize={15} lineHeight={26} mb={5} theme={{ dark: { color: 'base-400' }, light: { color: 'base-600' } }}>
                 {description}
               </P>
               <Flex d="column" gap={4}>
@@ -66,17 +66,17 @@ function PostCard({ post }: { post: Post }) {
         p={6}
         transitionDuration={150}
         theme={{
-          dark: { borderColor: 'slate-800', bgColor: 'slate-900', hover: { borderColor: 'slate-600' } },
-          light: { borderColor: 'slate-200', bgColor: 'white', hover: { borderColor: 'slate-400' } },
+          dark: { borderColor: 'base-800', bgColor: 'base-900', hover: { borderColor: 'base-600' } },
+          light: { borderColor: 'base-200', bgColor: 'white', hover: { borderColor: 'base-400' } },
         }}
       >
-        <Box fontSize={20} fontWeight={600} mb={1} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }}>
+        <Box fontSize={20} fontWeight={600} mb={1} theme={{ dark: { color: 'white' }, light: { color: 'base-900' } }}>
           {post.title}
         </Box>
-        <Box fontSize={13} mb={3} color="slate-500">
+        <Box fontSize={13} mb={3} color="base-500">
           {post.date} · {post.readingTime} min read
         </Box>
-        <P fontSize={15} lineHeight={26} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
+        <P fontSize={15} lineHeight={26} theme={{ dark: { color: 'base-400' }, light: { color: 'base-600' } }}>
           {post.summary}
         </P>
         <Flex
@@ -85,7 +85,7 @@ function PostCard({ post }: { post: Post }) {
           mt={4}
           fontSize={14}
           fontWeight={500}
-          theme={{ dark: { color: 'sky-400' }, light: { color: 'indigo-600' } }}
+          theme={{ dark: { color: 'sky-400' }, light: { color: 'accent-600' } }}
         >
           Read the article
           <Icon size={4}>

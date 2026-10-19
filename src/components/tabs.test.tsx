@@ -322,7 +322,7 @@ describe('Tabs', () => {
       render(<Example defaultValue="overview" />);
 
       expect(indicator()).toBeNull();
-      expect(tab('Overview').className).toContain('selected-borderColor-indigo-500');
+      expect(tab('Overview').className).toContain('selected-borderColor-accent-500');
     });
 
     it('hands it to one element, measured against the list rather than the page', () => {
@@ -341,7 +341,7 @@ describe('Tabs', () => {
       render(<Example defaultValue="overview" indicator="sliding" />);
 
       expect(indicator()).toBeNull();
-      expect(tab('Overview').className).toContain('selected-borderColor-indigo-500');
+      expect(tab('Overview').className).toContain('selected-borderColor-accent-500');
     });
 
     it('moves the one element rather than replacing it, which is what animates it', async () => {

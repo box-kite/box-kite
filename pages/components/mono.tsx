@@ -16,7 +16,7 @@ export default function Mono({ children, ...props }: BoxProps<'code'>) {
       borderRadius={1}
       fontSize={13}
       whiteSpace="nowrap"
-      theme={{ dark: { bgColor: 'slate-800', color: 'slate-200' }, light: { bgColor: 'slate-100', color: 'slate-800' } }}
+      theme={{ dark: { bgColor: 'base-800', color: 'base-200' }, light: { bgColor: 'base-100', color: 'base-800' } }}
       {...props}
     >
       {children}

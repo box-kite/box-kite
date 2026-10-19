@@ -98,8 +98,8 @@ export default function DataGridListSheet<TRow>(props: Props<TRow>) {
           mt={2}
           mx="auto"
           borderRadius={999}
-          bgColor="gray-300"
-          theme={{ dark: { bgColor: 'gray-600' } }}
+          bgColor="base-300"
+          theme={{ dark: { bgColor: 'base-600' } }}
           props={{ 'aria-hidden': true }}
         />
         <Flex component={`${line}` as never} ai="center" gap={2} ps={4} pe={2} py={2} bb={1}>

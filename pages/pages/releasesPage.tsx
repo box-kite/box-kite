@@ -27,20 +27,20 @@ export default function ReleasesPage() {
                 p={6}
                 transitionDuration={150}
                 theme={{
-                  dark: { borderColor: 'slate-800', bgColor: 'slate-900', hover: { borderColor: 'slate-600' } },
-                  light: { borderColor: 'slate-200', bgColor: 'white', hover: { borderColor: 'slate-400' } },
+                  dark: { borderColor: 'base-800', bgColor: 'base-900', hover: { borderColor: 'base-600' } },
+                  light: { borderColor: 'base-200', bgColor: 'white', hover: { borderColor: 'base-400' } },
                 }}
               >
                 <Flex ai="center" gap={3} mb={2} flexWrap="wrap">
-                  <Box fontSize={22} fontWeight={600} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }}>
+                  <Box fontSize={22} fontWeight={600} theme={{ dark: { color: 'white' }, light: { color: 'base-900' } }}>
                     Box Kite {release.version}
                   </Box>
                   {index === 0 && <Box component="badge">Latest</Box>}
-                  <Box fontSize={13} ms="auto" color="slate-500">
+                  <Box fontSize={13} ms="auto" color="base-500">
                     {release.date}
                   </Box>
                 </Flex>
-                <P fontSize={15} lineHeight={26} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
+                <P fontSize={15} lineHeight={26} theme={{ dark: { color: 'base-400' }, light: { color: 'base-600' } }}>
                   {release.summary}
                 </P>
                 <Flex
@@ -49,7 +49,7 @@ export default function ReleasesPage() {
                   mt={4}
                   fontSize={14}
                   fontWeight={500}
-                  theme={{ dark: { color: 'sky-400' }, light: { color: 'indigo-600' } }}
+                  theme={{ dark: { color: 'sky-400' }, light: { color: 'accent-600' } }}
                 >
                   Read the notes
                   <Icon size={4}>
@@ -63,13 +63,13 @@ export default function ReleasesPage() {
       </Reveal>
 
       <Reveal delay={0.2}>
-        <P fontSize={14} lineHeight={24} color="slate-500">
+        <P fontSize={14} lineHeight={24} color="base-500">
           Releases before 1.0.0, under the library&apos;s previous name, are on the{' '}
           <Link
             props={{ href: 'https://github.com/box-kite/box-kite/releases', target: '_blank', rel: 'noopener noreferrer' }}
             display="inline"
             textDecoration="underline"
-            theme={{ dark: { color: 'sky-400' }, light: { color: 'indigo-600' } }}
+            theme={{ dark: { color: 'sky-400' }, light: { color: 'accent-600' } }}
           >
             GitHub releases page
           </Link>

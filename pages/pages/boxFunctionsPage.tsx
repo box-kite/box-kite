@@ -48,7 +48,7 @@ export default function BoxFunctionsPage() {
                             display="inline"
                             props={{ href: `#${member.id}` }}
                             hover={{ textDecoration: 'underline' }}
-                            theme={{ dark: { color: 'violet-400' }, light: { color: 'violet-600' } }}
+                            theme={{ dark: { color: 'accent-400' }, light: { color: 'accent-600' } }}
                           >
                             <Mono>{member.name}</Mono>
                           </Box>
@@ -532,15 +532,15 @@ function Member({ id, more, children }: { id: string; more?: { label: string; to
 
   return (
     <Box id={id}>
-      <H2 fontSize={22} fontWeight={600} mb={2} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }}>
+      <H2 fontSize={22} fontWeight={600} mb={2} theme={{ dark: { color: 'white' }, light: { color: 'base-900' } }}>
         {member.name}
       </H2>
       <Box mb={5} fontSize={14}>
-        <Mono whiteSpace="normal" theme={{ dark: { color: 'violet-300' }, light: { color: 'violet-700' } }}>
+        <Mono whiteSpace="normal" theme={{ dark: { color: 'accent-300' }, light: { color: 'accent-700' } }}>
           {member.signature}
         </Mono>
       </Box>
-      <Flex d="column" gap={5} fontSize={15} lineHeight={26} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
+      <Flex d="column" gap={5} fontSize={15} lineHeight={26} theme={{ dark: { color: 'base-400' }, light: { color: 'base-600' } }}>
         {children}
         {more && (
           <Box fontSize={14}>
@@ -549,7 +549,7 @@ function Member({ id, more, children }: { id: string; more?: { label: string; to
               to={more.to}
               display="inline"
               textDecoration="underline"
-              theme={{ dark: { color: 'violet-400' }, light: { color: 'violet-600' } }}
+              theme={{ dark: { color: 'accent-400' }, light: { color: 'accent-600' } }}
             >
               {more.label}
             </SiteLink>
@@ -570,12 +570,12 @@ function Callout({ title, children }: { title: string; children: ReactNode }) {
       borderRadius={2}
       bs={3}
       borderColor="amber-400"
-      theme={{ dark: { bgColor: 'slate-900' }, light: { bgColor: 'amber-50' } }}
+      theme={{ dark: { bgColor: 'base-900' }, light: { bgColor: 'amber-50' } }}
     >
       <H3 fontSize={14} fontWeight={600} theme={{ dark: { color: 'amber-300' }, light: { color: 'amber-800' } }}>
         {title}
       </H3>
-      <Box fontSize={14} lineHeight={24} theme={{ dark: { color: 'slate-300' }, light: { color: 'amber-900' } }}>
+      <Box fontSize={14} lineHeight={24} theme={{ dark: { color: 'base-300' }, light: { color: 'amber-900' } }}>
         {children}
       </Box>
     </Flex>
@@ -585,10 +585,10 @@ function Callout({ title, children }: { title: string; children: ReactNode }) {
 function Section({ id, title, children }: { id: string; title: string; children: ReactNode }) {
   return (
     <Box id={id}>
-      <H2 fontSize={22} fontWeight={600} mb={5} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }}>
+      <H2 fontSize={22} fontWeight={600} mb={5} theme={{ dark: { color: 'white' }, light: { color: 'base-900' } }}>
         {title}
       </H2>
-      <Box fontSize={15} lineHeight={26} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
+      <Box fontSize={15} lineHeight={26} theme={{ dark: { color: 'base-400' }, light: { color: 'base-600' } }}>
         {children}
       </Box>
     </Box>

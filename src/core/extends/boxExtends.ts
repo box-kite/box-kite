@@ -1,6 +1,7 @@
 import { BoxStyle } from '../coreTypes';
 import getDefaultEngine from '../engine/defaultEngine';
 import { Keyframes } from '../engine/keyframes';
+import Palette from '../palette';
 import { Components } from './boxComponents';
 import createComponentsRegistry from './componentsRegistry';
 
@@ -23,9 +24,12 @@ namespace BoxExtends {
     return getDefaultEngine().getComponentsStyles();
   }
 
-  export function components<T extends Components>(components: T) {
-    return getDefaultEngine().components(components);
+  export function components<T extends Components>(components: T, options?: { design?: string }) {
+    return getDefaultEngine().components(components, options);
   }
+
+  /** `vars={Box.palette({ accent: 'orange', base: 'stone' })}`: the components' two colour families, pointed elsewhere. */
+  export const palette = Palette.point;
 
   /** A design for one subtree: registered nowhere, applied by `<Box.Components value>` or `<Box.Theme components>`. */
   export const createComponents = createComponentsRegistry;

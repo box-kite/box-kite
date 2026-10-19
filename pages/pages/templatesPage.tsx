@@ -9,7 +9,7 @@ import { BLOCKS_PATH, templatePath, templates } from '../site/templates';
 
 const linkTheme = {
   dark: { color: 'sky-400', hover: { color: 'sky-300' } },
-  light: { color: 'indigo-600', hover: { color: 'indigo-500' } },
+  light: { color: 'accent-600', hover: { color: 'accent-500' } },
 } as const;
 
 /** `/templates/`: every template, as the snapshot its own page approved. */
@@ -23,7 +23,7 @@ export default function TemplatesPage() {
       />
 
       <Reveal delay={0.1}>
-        <Box fontSize={15} lineHeight={26} mb={8} maxWidth={210} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
+        <Box fontSize={15} lineHeight={26} mb={8} maxWidth={210} theme={{ dark: { color: 'base-400' }, light: { color: 'base-600' } }}>
           Every template is one design — a set of component styles and a handful of variables — over the same components, so none of them
           ships a stylesheet. The sections they are made of are{' '}
           <SiteLink to={BLOCKS_PATH} display="inline" theme={linkTheme}>

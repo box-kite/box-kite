@@ -26,7 +26,7 @@ export default function ReleasePage() {
 
   const linkTheme = {
     dark: { color: 'sky-400', hover: { color: 'sky-300' } },
-    light: { color: 'indigo-600', hover: { color: 'indigo-500' } },
+    light: { color: 'accent-600', hover: { color: 'accent-500' } },
   } as const;
 
   return (
@@ -74,7 +74,7 @@ export default function ReleasePage() {
           bt={1}
           fontSize={14}
           flexWrap="wrap"
-          theme={{ dark: { borderColor: 'slate-800' }, light: { borderColor: 'slate-200' } }}
+          theme={{ dark: { borderColor: 'base-800' }, light: { borderColor: 'base-200' } }}
         >
           <SiteLink to={RELEASES_PATH} textDecoration="underline" theme={linkTheme}>
             All releases

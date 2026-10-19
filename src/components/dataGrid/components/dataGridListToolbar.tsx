@@ -25,7 +25,7 @@ function Search<TRow>({ grid }: Props<TRow>) {
 
   return (
     <Flex position="relative" ai="center">
-      <Flex position="absolute" insetStart={3.5} pointerEvents="none" color="gray-500" props={{ 'aria-hidden': true }}>
+      <Flex position="absolute" insetStart={3.5} pointerEvents="none" color="base-500" props={{ 'aria-hidden': true }}>
         <SearchIcon fill="currentColor" width="16px" />
       </Flex>
       <Textbox

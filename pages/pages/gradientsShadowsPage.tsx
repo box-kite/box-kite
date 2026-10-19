@@ -402,7 +402,7 @@ function Swatch({ caption, ...boxProps }: { caption: string } & Parameters<typeo
   return (
     <Flex d="column" gap={2}>
       <Box width={40} height={28} borderRadius={2} {...boxProps} />
-      <Box fontSize={12} color="slate-500">
+      <Box fontSize={12} color="base-500">
         {caption}
       </Box>
     </Flex>
@@ -414,7 +414,7 @@ function Band({ caption, ...boxProps }: { caption: string } & Parameters<typeof 
   return (
     <Flex d="column" gap={1}>
       <Box width={120} height={10} borderRadius={2} {...boxProps} />
-      <Box fontSize={12} color="slate-500">
+      <Box fontSize={12} color="base-500">
         {caption}
       </Box>
     </Flex>
@@ -425,8 +425,8 @@ function Band({ caption, ...boxProps }: { caption: string } & Parameters<typeof 
 function Tile({ caption, ...boxProps }: { caption: string } & Parameters<typeof Box>[0]) {
   return (
     <Flex d="column" gap={2}>
-      <Box width={28} height={18} borderRadius={3} theme={{ dark: { bgColor: 'slate-800' }, light: { bgColor: 'white' } }} {...boxProps} />
-      <Box fontSize={12} color="slate-500">
+      <Box width={28} height={18} borderRadius={3} theme={{ dark: { bgColor: 'base-800' }, light: { bgColor: 'white' } }} {...boxProps} />
+      <Box fontSize={12} color="base-500">
         {caption}
       </Box>
     </Flex>
@@ -441,12 +441,12 @@ function Shape({ caption, ...svgProps }: { caption: string } & Parameters<typeof
         viewBox="0 0 64 56"
         width="64px"
         height="56px"
-        theme={{ dark: { fill: 'indigo-400' }, light: { fill: 'indigo-500' } }}
+        theme={{ dark: { fill: 'accent-400' }, light: { fill: 'accent-500' } }}
         {...svgProps}
       >
         <Polygon points="32,4 60,52 4,52" />
       </Svg>
-      <Box fontSize={12} color="slate-500">
+      <Box fontSize={12} color="base-500">
         {caption}
       </Box>
     </Flex>
@@ -481,8 +481,8 @@ function Glass({ caption, ...boxProps }: { caption: string } & BoxProps) {
 function Faded({ caption, ...boxProps }: { caption: string } & BoxProps) {
   return (
     <Flex d="column" gap={2}>
-      <Box width={36} height={24} borderRadius={2} bgGradient={{ linear: 'r', colors: ['sky-500', 'indigo-600'] }} {...boxProps} />
-      <Box fontSize={12} color="slate-500">
+      <Box width={36} height={24} borderRadius={2} bgGradient={{ linear: 'r', colors: ['sky-500', 'accent-600'] }} {...boxProps} />
+      <Box fontSize={12} color="base-500">
         {caption}
       </Box>
     </Flex>
@@ -492,10 +492,10 @@ function Faded({ caption, ...boxProps }: { caption: string } & BoxProps) {
 function Section({ id, title, children }: { id: string; title: string; children: ReactNode }) {
   return (
     <Box id={id}>
-      <H2 fontSize={20} fontWeight={600} mb={4} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }}>
+      <H2 fontSize={20} fontWeight={600} mb={4} theme={{ dark: { color: 'white' }, light: { color: 'base-900' } }}>
         {title}
       </H2>
-      <P fontSize={15} lineHeight={26} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
+      <P fontSize={15} lineHeight={26} theme={{ dark: { color: 'base-400' }, light: { color: 'base-600' } }}>
         {children}
       </P>
     </Box>

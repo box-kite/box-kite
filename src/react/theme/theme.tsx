@@ -1,7 +1,8 @@
-import React, { useCallback, useContext, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import Box from '../../box';
 import {
+  applyDesignToElement,
   applyThemeToElement,
   clearStoredTheme,
   ComponentsRegistry,
@@ -50,6 +51,13 @@ interface ThemeProps {
    * since one wrapper holding a design in both light and dark is what a themed section usually is.
    */
   components?: ComponentsRegistry;
+  /**
+   * The design this subtree is drawn in — a name given to `Box.components(styles, { design })` — written as
+   * `data-design` on `<html>` (`use="global"`) or on the wrapper. `Box.useDesign()` reads and sets it.
+   */
+  design?: string;
+  /** When provided, persists the design `Box.useDesign()` sets to localStorage under this key. */
+  designStorageKey?: string;
 }
 
 /**
@@ -59,7 +67,7 @@ interface ThemeProps {
  * and context around it.
  */
 function Theme(props: ThemeProps) {
-  const { theme, use = 'local', storageKey, globalStyles, viewTransition, components } = props;
+  const { theme, use = 'local', storageKey, globalStyles, viewTransition, components, design, designStorageKey } = props;
   const children = components ? <Components value={components}>{props.children}</Components> : props.children;
 
   // In element mode the global rules come back as `<style>` elements to render: they target `html`,
@@ -73,12 +81,30 @@ function Theme(props: ThemeProps) {
   const resolvingRef = useRef<string | null>(null);
   const committedRef = useRef(themeName);
   const resumeTransitionsRef = useRef<((after?: PromiseLike<unknown>) => void) | null>(null);
+  // A design change pauses them the same way, and resumes once its own attribute is written.
+  const resumeDesignRef = useRef<((after?: PromiseLike<unknown>) => void) | null>(null);
   // The running view transition: transitions stay paused until it is over, so their resumption costs it no frame.
   const transitionRef = useRef<PromiseLike<unknown> | undefined>(undefined);
 
+  // `flushSync` is the whole point of the prop: the transition screenshots the page when this callback
+  // returns, so an unflushed `setState` is captured as the theme that was already there.
+  const transition = useCallback(
+    (apply: () => void) => {
+      if (!viewTransition) return apply();
+
+      const handle = transitionTheme(() => flushSync(apply), viewTransition === 'reveal' ? 'reveal' : 'fade');
+      transitionRef.current = handle.finished;
+      handle.finished.then(
+        () => (transitionRef.current = undefined),
+        () => (transitionRef.current = undefined),
+      );
+    },
+    [viewTransition],
+  );
+
   const handleSetTheme = useCallback(
-    (value: string | null) => {
-      const apply = () => {
+    (value: string | null) =>
+      transition(() => {
         if (value === null) {
           if (storageKey) clearStoredTheme(storageKey);
           setIsUserOverride(false);
@@ -87,21 +113,53 @@ function Theme(props: ThemeProps) {
           setThemeName(value);
           setIsUserOverride(true);
         }
-      };
-
-      // `flushSync` is the whole point of the prop: the transition screenshots the page when this callback
-      // returns, so an unflushed `setState` is captured as the theme that was already there.
-      if (viewTransition) {
-        const handle = transitionTheme(() => flushSync(apply), viewTransition === 'reveal' ? 'reveal' : 'fade');
-        transitionRef.current = handle.finished;
-        handle.finished.then(
-          () => (transitionRef.current = undefined),
-          () => (transitionRef.current = undefined),
-        );
-      } else apply();
-    },
-    [storageKey, viewTransition],
+      }),
+    [storageKey, transition],
   );
+
+  // The design is read after hydration too, so the server and the first client render agree on it.
+  const [designName, setDesignName] = useState(design);
+  const [prevDesign, setPrevDesign] = useState(design);
+  if (design !== prevDesign) {
+    setPrevDesign(design);
+    setDesignName(design);
+  }
+
+  const handleSetDesign = useCallback(
+    (value: string | null) =>
+      transition(() => {
+        resumeDesignRef.current ??= pauseTransitions();
+        if (designStorageKey) (value === null ? clearStoredTheme : writeStoredTheme)(designStorageKey, value!);
+        setDesignName(value ?? design);
+      }),
+    [design, designStorageKey, transition],
+  );
+
+  // The stored design the effect below just queued a render for: writing the default first would flip a root
+  // a pre-paint script already set, the same full restyle the theme avoids (bug #204).
+  const designResolvingRef = useRef<string | null>(null);
+
+  /* eslint-disable react-hooks/set-state-in-effect */
+  useLayoutEffect(() => {
+    const stored = designStorageKey ? readStoredTheme(designStorageKey) : null;
+    if (!stored) return;
+
+    designResolvingRef.current = stored;
+    setDesignName(stored);
+  }, [designStorageKey]);
+  /* eslint-enable react-hooks/set-state-in-effect */
+
+  useLayoutEffect(() => {
+    if (designResolvingRef.current !== null && designResolvingRef.current !== designName) return;
+    designResolvingRef.current = null;
+
+    const root = use === 'global' && designName ? documentRoot() : null;
+    const removeDesign = root ? applyDesignToElement(root, designName!) : undefined;
+    resumeDesignRef.current?.(transitionRef.current);
+    resumeDesignRef.current = null;
+
+    return removeDesign;
+  }, [designName, use]);
 
   const revealing = viewTransition === 'reveal';
   useEffect(() => (revealing ? prepareReveal() : undefined), [revealing]);
@@ -160,11 +218,16 @@ function Theme(props: ThemeProps) {
     return removeTheme;
   }, [themeName, use]);
 
+  const context = useMemo(
+    () => ({ theme: themeName, setTheme: handleSetTheme, design: designName, setDesign: handleSetDesign }),
+    [themeName, handleSetTheme, designName, handleSetDesign],
+  );
+
   if (use === 'local') {
     return (
-      <ThemeContext.Provider value={{ theme: themeName, setTheme: handleSetTheme }}>
+      <ThemeContext.Provider value={context}>
         {globalStyleElements}
-        <Box className={themeName} props={{ 'data-theme': themeName }}>
+        <Box className={themeName} props={{ 'data-theme': themeName, 'data-design': designName }}>
           {children}
         </Box>
       </ThemeContext.Provider>
@@ -172,7 +235,7 @@ function Theme(props: ThemeProps) {
   }
 
   return (
-    <ThemeContext.Provider value={{ theme: themeName, setTheme: handleSetTheme }}>
+    <ThemeContext.Provider value={context}>
       {globalStyleElements}
       {children}
     </ThemeContext.Provider>
@@ -184,6 +247,13 @@ namespace Theme {
     const { theme, setTheme } = useContext(ThemeContext);
 
     return [theme, setTheme];
+  }
+
+  /** The design the nearest provider is drawing, and the setter; null goes back to its `design` prop. */
+  export function useDesign(): [string | undefined, (design: string | null) => void] {
+    const { design, setDesign } = useContext(ThemeContext);
+
+    return [design, setDesign];
   }
 }
 

@@ -10,7 +10,7 @@ import { blockPath, blocks } from '../site/templates';
 
 const linkTheme = {
   dark: { color: 'sky-400', hover: { color: 'sky-300' } },
-  light: { color: 'indigo-600', hover: { color: 'indigo-500' } },
+  light: { color: 'accent-600', hover: { color: 'accent-500' } },
 } as const;
 
 /** `/blocks/`: every block, as the snapshot its own page approved. */
@@ -24,7 +24,7 @@ export default function BlocksPage() {
       />
 
       <Reveal delay={0.1}>
-        <Box fontSize={15} lineHeight={26} mb={8} maxWidth={210} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
+        <Box fontSize={15} lineHeight={26} mb={8} maxWidth={210} theme={{ dark: { color: 'base-400' }, light: { color: 'base-600' } }}>
           A block is a composition of the components, not a component: the part of a page that is always half yours. Each one installs with{' '}
           <Mono>npx shadcn add</Mono> as files you then edit —{' '}
           <SiteLink to="/registry" display="inline" theme={linkTheme}>

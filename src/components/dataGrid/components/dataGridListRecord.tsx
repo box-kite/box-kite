@@ -160,7 +160,7 @@ export default function DataGridListRecord<TRow>(props: Props<TRow>) {
       >
         <ExpandIcon width="18px" height="18px" rotate={90} rtl={{ rotate: -90 }} />
       </Button>
-      <Box fontSize={13} color="gray-500" textWrap="nowrap" css={{ fontVariantNumeric: 'tabular-nums' }} props={{ 'aria-live': 'polite' }}>
+      <Box fontSize={13} color="base-500" textWrap="nowrap" css={{ fontVariantNumeric: 'tabular-nums' }} props={{ 'aria-live': 'polite' }}>
         {text.recordPosition(position.position, position.total)}
       </Box>
       <Button

@@ -27,7 +27,7 @@ export default function PostPage() {
 
   const linkTheme = {
     dark: { color: 'sky-400', hover: { color: 'sky-300' } },
-    light: { color: 'indigo-600', hover: { color: 'indigo-500' } },
+    light: { color: 'accent-600', hover: { color: 'accent-500' } },
   } as const;
 
   return (
@@ -49,9 +49,9 @@ export default function PostPage() {
           b={1}
           borderRadius={3}
           maxWidth={210}
-          theme={{ dark: { borderColor: 'slate-800', bgColor: 'slate-800/40' }, light: { borderColor: 'slate-200', bgColor: 'slate-50' } }}
+          theme={{ dark: { borderColor: 'base-800', bgColor: 'base-800/40' }, light: { borderColor: 'base-200', bgColor: 'base-50' } }}
         >
-          <Box fontSize={15} lineHeight={24} theme={{ dark: { color: 'slate-300' }, light: { color: 'slate-700' } }}>
+          <Box fontSize={15} lineHeight={24} theme={{ dark: { color: 'base-300' }, light: { color: 'base-700' } }}>
             Found this useful? A star on GitHub is how other people find Box Kite.
           </Box>
           <Link
@@ -69,8 +69,8 @@ export default function PostPage() {
             cursor="pointer"
             transition="colors"
             theme={{
-              dark: { bgColor: 'white', color: 'slate-900', hover: { bgColor: 'slate-200' } },
-              light: { bgColor: 'slate-900', color: 'white', hover: { bgColor: 'slate-700' } },
+              dark: { bgColor: 'white', color: 'base-900', hover: { bgColor: 'base-200' } },
+              light: { bgColor: 'base-900', color: 'white', hover: { bgColor: 'base-700' } },
             }}
           >
             <Icon size={4}>
@@ -87,7 +87,7 @@ export default function PostPage() {
           bt={1}
           fontSize={14}
           flexWrap="wrap"
-          theme={{ dark: { borderColor: 'slate-800' }, light: { borderColor: 'slate-200' } }}
+          theme={{ dark: { borderColor: 'base-800' }, light: { borderColor: 'base-200' } }}
         >
           <SiteLink to={POSTS_PATH} textDecoration="underline" theme={linkTheme}>
             All articles

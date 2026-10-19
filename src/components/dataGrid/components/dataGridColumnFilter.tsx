@@ -37,7 +37,7 @@ function ClearFilterButton(props: { label: string; onClear: () => void }) {
       onClick={onClear}
       props={{ tabIndex: -1, 'aria-label': label }}
     >
-      <Box fontSize={10} color="gray-400" hover={{ color: 'gray-600' }}>
+      <Box fontSize={10} color="base-400" hover={{ color: 'base-600' }}>
         ✕
       </Box>
     </Button>
@@ -272,7 +272,7 @@ function MultiselectFilter<TRow>({ column }: Props<TRow>) {
           {(vals: (string | number | boolean | null)[]) => {
             if (vals.length === 0)
               return (
-                <Box tag="span" color="gray-400">
+                <Box tag="span" color="base-400">
                   {column.filterConfig?.placeholder ?? text.filterSelectPlaceholder}
                 </Box>
               );

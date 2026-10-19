@@ -23,17 +23,17 @@ export default function InstallationPage() {
 
           <Code language="shell" label="Or with pnpm" code="pnpm add @box-kite/react" />
 
-          <Box fontSize={14} lineHeight={22} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
+          <Box fontSize={14} lineHeight={22} theme={{ dark: { color: 'base-400' }, light: { color: 'base-600' } }}>
             React 16.14 or newer is the peer range; 18 and 19 are the versions CI runs the whole test suite against. Nothing else is needed
             — no bundler plugin, no PostCSS step, no stylesheet to import.
           </Box>
 
-          <Box fontSize={14} lineHeight={22} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
+          <Box fontSize={14} lineHeight={22} theme={{ dark: { color: 'base-400' }, light: { color: 'base-600' } }}>
             Starting from an empty folder with an AI agent?{' '}
             <SiteLink
               to="/start-with-ai"
               display="inline"
-              theme={{ dark: { color: 'violet-400' }, light: { color: 'violet-600' } }}
+              theme={{ dark: { color: 'accent-400' }, light: { color: 'accent-600' } }}
               hover={{ textDecoration: 'underline' }}
             >
               Start with AI
@@ -57,10 +57,10 @@ export default function InstallationPage() {
           <Box width={16} height={16} display="flex" ai="center" jc="center" bgColor="emerald-500" borderRadius={10} color="white" mb={6}>
             <CheckCircle2 size={32} />
           </Box>
-          <Box tag="h2" fontSize={28} fontWeight={700} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }} mb={3}>
+          <Box tag="h2" fontSize={28} fontWeight={700} theme={{ dark: { color: 'white' }, light: { color: 'base-900' } }} mb={3}>
             That's it!
           </Box>
-          <Box fontSize={16} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }} maxWidth={120}>
+          <Box fontSize={16} theme={{ dark: { color: 'base-400' }, light: { color: 'base-600' } }} maxWidth={120}>
             You're ready to start building beautiful interfaces.
           </Box>
         </Flex>
@@ -69,7 +69,7 @@ export default function InstallationPage() {
       {/* Next Steps */}
       <Reveal delay={0.5}>
         <Box mt={12}>
-          <Box tag="h3" fontSize={20} fontWeight={600} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }} mb={6}>
+          <Box tag="h3" fontSize={20} fontWeight={600} theme={{ dark: { color: 'white' }, light: { color: 'base-900' } }} mb={6}>
             Next Steps
           </Box>
           <Flex d="column" gap={4}>
@@ -103,8 +103,8 @@ function StepCard({ icon, title, description }: StepCardProps) {
       gap={4}
       p={4}
       theme={{
-        dark: { bgColor: 'slate-800', borderColor: 'slate-700', hover: { borderColor: 'indigo-500' } },
-        light: { bgColor: 'white', borderColor: 'slate-200', hover: { borderColor: 'indigo-200' } },
+        dark: { bgColor: 'base-800', borderColor: 'base-700', hover: { borderColor: 'accent-500' } },
+        light: { bgColor: 'white', borderColor: 'base-200', hover: { borderColor: 'accent-200' } },
       }}
       b={1}
       borderRadius={2}
@@ -124,10 +124,10 @@ function StepCard({ icon, title, description }: StepCardProps) {
         {icon}
       </Box>
       <Box>
-        <Box fontSize={15} fontWeight={600} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }} mb={1}>
+        <Box fontSize={15} fontWeight={600} theme={{ dark: { color: 'white' }, light: { color: 'base-900' } }} mb={1}>
           {title}
         </Box>
-        <Box fontSize={14} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
+        <Box fontSize={14} theme={{ dark: { color: 'base-400' }, light: { color: 'base-600' } }}>
           {description}
         </Box>
       </Box>

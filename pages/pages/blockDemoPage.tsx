@@ -25,7 +25,7 @@ export default function BlockDemoPage({ Content }: FamilyPageProps) {
         minHeight="fit-screen"
         p={6}
         md={{ p: 12 }}
-        theme={{ dark: { bgColor: 'slate-950', color: 'slate-100' }, light: { bgColor: 'slate-100', color: 'slate-900' } }}
+        theme={{ dark: { bgColor: 'base-950', color: 'base-100' }, light: { bgColor: 'base-100', color: 'base-900' } }}
       >
         <VisuallyHidden>
           <H1>{block.name}</H1>

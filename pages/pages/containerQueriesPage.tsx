@@ -252,15 +252,15 @@ function DemoCard() {
       width="fit"
       borderRadius={3}
       b={1}
-      borderColor="slate-300"
-      theme={{ dark: { borderColor: 'slate-700', bgColor: 'slate-900' }, light: { bgColor: 'white' } }}
+      borderColor="base-300"
+      theme={{ dark: { borderColor: 'base-700', bgColor: 'base-900' }, light: { bgColor: 'white' } }}
     >
-      <Box width={12} height={12} borderRadius={12} bgColor="indigo-500" flexShrink={0} />
+      <Box width={12} height={12} borderRadius={12} bgColor="accent-500" flexShrink={0} />
       <Box flexGrow={1}>
-        <Box fontWeight={600} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }}>
+        <Box fontWeight={600} theme={{ dark: { color: 'white' }, light: { color: 'base-900' } }}>
           Container queries
         </Box>
-        <Box fontSize={13} color="slate-500">
+        <Box fontSize={13} color="base-500">
           This card becomes a row once its container passes 24rem.
         </Box>
       </Box>
@@ -272,10 +272,10 @@ function DemoCard() {
 function Section({ id, title, children }: { id: string; title: string; children: ReactNode }) {
   return (
     <Box id={id}>
-      <H2 fontSize={20} fontWeight={600} mb={4} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }}>
+      <H2 fontSize={20} fontWeight={600} mb={4} theme={{ dark: { color: 'white' }, light: { color: 'base-900' } }}>
         {title}
       </H2>
-      <P fontSize={15} lineHeight={26} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
+      <P fontSize={15} lineHeight={26} theme={{ dark: { color: 'base-400' }, light: { color: 'base-600' } }}>
         {children}
       </P>
     </Box>

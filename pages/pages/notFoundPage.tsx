@@ -39,7 +39,7 @@ export default function NotFoundPage() {
             py={3}
             borderRadius={2}
             b={1}
-            theme={{ dark: { borderColor: 'slate-700', color: 'slate-200' }, light: { borderColor: 'slate-300', color: 'slate-700' } }}
+            theme={{ dark: { borderColor: 'base-700', color: 'base-200' }, light: { borderColor: 'base-300', color: 'base-700' } }}
             fontWeight={600}
             cursor="pointer"
           >

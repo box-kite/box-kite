@@ -47,7 +47,7 @@ export default function TableOfContents({ entries }: { entries: TocEntry[] }) {
 
   return (
     <Flex d="column" minHeight={0} gap={3}>
-      <Box fontSize={12} fontWeight={600} theme={{ dark: { color: 'slate-200' }, light: { color: 'slate-900' } }}>
+      <Box fontSize={12} fontWeight={600} theme={{ dark: { color: 'base-200' }, light: { color: 'base-900' } }}>
         On this page
       </Box>
       <Box
@@ -73,7 +73,7 @@ export default function TableOfContents({ entries }: { entries: TocEntry[] }) {
             bottom={0}
             insetStart={0}
             width={0.25}
-            theme={{ dark: { bgColor: 'slate-800' }, light: { bgColor: 'slate-200' } }}
+            theme={{ dark: { bgColor: 'base-800' }, light: { bgColor: 'base-200' } }}
           />
           <Box
             position="absolute"
@@ -81,7 +81,7 @@ export default function TableOfContents({ entries }: { entries: TocEntry[] }) {
             insetStart={0}
             width={0.5}
             borderRadius={1}
-            bgColor="violet-500"
+            bgColor="accent-500"
             opacity={marker ? 1 : 0}
             css={{ transitionProperty: 'translate, height, opacity' }}
             transitionDuration={200}
@@ -101,7 +101,7 @@ export default function TableOfContents({ entries }: { entries: TocEntry[] }) {
                 ps={3}
                 mt={4}
                 mb={1}
-                theme={{ dark: { color: 'slate-500' }, light: { color: 'slate-400' } }}
+                theme={{ dark: { color: 'base-500' }, light: { color: 'base-400' } }}
               >
                 {entry.label}
               </Box>
@@ -128,8 +128,8 @@ export default function TableOfContents({ entries }: { entries: TocEntry[] }) {
                 textDecoration="none"
                 transition="colors"
                 theme={{
-                  dark: { color: 'slate-400', hover: { color: 'slate-100' }, ariaAttr: { 'current=location': { color: 'violet-300' } } },
-                  light: { color: 'slate-500', hover: { color: 'slate-900' }, ariaAttr: { 'current=location': { color: 'violet-600' } } },
+                  dark: { color: 'base-400', hover: { color: 'base-100' }, ariaAttr: { 'current=location': { color: 'accent-300' } } },
+                  light: { color: 'base-500', hover: { color: 'base-900' }, ariaAttr: { 'current=location': { color: 'accent-600' } } },
                 }}
               >
                 {entry.label}

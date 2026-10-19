@@ -718,11 +718,11 @@ function SpringCurve({ name }: { name: Springs.PresetName }) {
   return (
     <Flex d="column" gap={2}>
       <Svg viewBox="0 0 100 100" width={132} height={132} label={`The ${name} curve`}>
-        <Line x1={2} y1={28} x2={98} y2={28} stroke="slate-400" strokeWidth={0.6} strokeDasharray="3 3" />
-        <Line x1={2} y1={88} x2={98} y2={88} stroke="slate-400" strokeWidth={0.6} />
+        <Line x1={2} y1={28} x2={98} y2={28} stroke="base-400" strokeWidth={0.6} strokeDasharray="3 3" />
+        <Line x1={2} y1={88} x2={98} y2={88} stroke="base-400" strokeWidth={0.6} />
         <Path d={d} fill="none" stroke="sky-500" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />
       </Svg>
-      <Box fontSize={12} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
+      <Box fontSize={12} theme={{ dark: { color: 'base-400' }, light: { color: 'base-600' } }}>
         {name} · {duration}ms
       </Box>
     </Flex>
@@ -732,10 +732,10 @@ function SpringCurve({ name }: { name: Springs.PresetName }) {
 function Section({ id, title, children }: { id: string; title: string; children: ReactNode }) {
   return (
     <Box id={id}>
-      <H2 fontSize={20} fontWeight={600} mb={4} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }}>
+      <H2 fontSize={20} fontWeight={600} mb={4} theme={{ dark: { color: 'white' }, light: { color: 'base-900' } }}>
         {title}
       </H2>
-      <Box fontSize={15} lineHeight={26} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
+      <Box fontSize={15} lineHeight={26} theme={{ dark: { color: 'base-400' }, light: { color: 'base-600' } }}>
         {children}
       </Box>
     </Box>

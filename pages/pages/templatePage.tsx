@@ -22,11 +22,11 @@ import NotFoundPage from './notFoundPage';
 
 const linkTheme = {
   dark: { color: 'sky-400', hover: { color: 'sky-300' } },
-  light: { color: 'indigo-600', hover: { color: 'indigo-500' } },
+  light: { color: 'accent-600', hover: { color: 'accent-500' } },
 } as const;
 
-const prose = { dark: { color: 'slate-400' }, light: { color: 'slate-600' } } as const;
-const heading = { dark: { color: 'white' }, light: { color: 'slate-900' } } as const;
+const prose = { dark: { color: 'base-400' }, light: { color: 'base-600' } } as const;
+const heading = { dark: { color: 'white' }, light: { color: 'base-900' } } as const;
 
 /** One template: `/templates/<slug>/`, the search target. Its files arrive as text from the route's loader. */
 export default function TemplatePage({ sources = {} }: FamilyPageProps) {
@@ -63,7 +63,7 @@ export default function TemplatePage({ sources = {} }: FamilyPageProps) {
                   b={1}
                   borderRadius={3}
                   overflow="hidden"
-                  theme={{ dark: { borderColor: 'slate-700' }, light: { borderColor: 'slate-200' } }}
+                  theme={{ dark: { borderColor: 'base-700' }, light: { borderColor: 'base-200' } }}
                 >
                   <Snapshot slug={template.slug} name={template.name} theme={theme} />
                 </Box>
@@ -82,8 +82,8 @@ export default function TemplatePage({ sources = {} }: FamilyPageProps) {
               fontWeight={600}
               textDecoration="none"
               theme={{
-                dark: { bgColor: 'white', color: 'slate-900', hover: { bgColor: 'slate-200' } },
-                light: { bgColor: 'slate-900', color: 'white', hover: { bgColor: 'slate-700' } },
+                dark: { bgColor: 'white', color: 'base-900', hover: { bgColor: 'base-200' } },
+                light: { bgColor: 'base-900', color: 'white', hover: { bgColor: 'base-700' } },
               }}
             >
               Live demo

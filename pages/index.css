@@ -28,3 +28,18 @@ html {
   background-color: rgba(99, 102, 241, 0.2);
   color: inherit;
 }
+
+/* The Ember design (pages/designs/): warm ink and paper for the root text, and a vermilion selection. */
+[data-design='ember'].dark,
+[data-design='ember'] .dark {
+  color: oklch(96.6% 0.006 72);
+}
+
+[data-design='ember'].light,
+[data-design='ember'] .light {
+  color: oklch(21.2% 0.008 52);
+}
+
+[data-design='ember'] ::selection {
+  background-color: oklch(75.6% 0.162 48 / 0.28);
+}

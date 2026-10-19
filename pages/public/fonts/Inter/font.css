@@ -1,16 +1,15 @@
 /* Inter Variable Regular + Weight axis */
 @font-face {
-  font-family: "InterVariable";
-  src: url("./Inter-VariableFont_opsz,wght.ttf") format("truetype-variations");
+  font-family: 'InterVariable';
+  src: url('./Inter-VariableFont_opsz,wght.ttf') format('truetype-variations');
   font-weight: 100 900;
   font-display: swap;
 }
 
 /* Inter Variable Italic */
 @font-face {
-  font-family: "InterVariable";
-  src: url("./Inter-Italic-VariableFont_opsz,wght.ttf")
-    format("truetype-variations");
+  font-family: 'InterVariable';
+  src: url('./Inter-Italic-VariableFont_opsz,wght.ttf') format('truetype-variations');
   font-weight: 100 900;
   font-style: italic;
   font-display: swap;

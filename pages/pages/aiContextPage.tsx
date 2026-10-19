@@ -293,15 +293,15 @@ const sidebarLinks = [
   { id: 'faq', label: 'Questions' },
 ];
 
-const headingTheme = { dark: { color: 'white' }, light: { color: 'slate-900' } } as const;
-const textTheme = { dark: { color: 'slate-400' }, light: { color: 'slate-600' } } as const;
+const headingTheme = { dark: { color: 'white' }, light: { color: 'base-900' } } as const;
+const textTheme = { dark: { color: 'base-400' }, light: { color: 'base-600' } } as const;
 const cardTheme = {
-  dark: { bgColor: 'slate-800', borderColor: 'slate-700' },
-  light: { bgColor: 'white', borderColor: 'slate-200' },
+  dark: { bgColor: 'base-800', borderColor: 'base-700' },
+  light: { bgColor: 'white', borderColor: 'base-200' },
 } as const;
 const linkStyles = {
   display: 'inline',
-  theme: { dark: { color: 'violet-400' }, light: { color: 'violet-600' } },
+  theme: { dark: { color: 'accent-400' }, light: { color: 'accent-600' } },
   hover: { textDecoration: 'underline' },
 } as const;
 const ctaStyles = { display: 'inline-flex', ai: 'center', jc: 'center', gap: 2, px: 5, py: 2.5, fontSize: 15 } as const;
@@ -322,7 +322,7 @@ function Hero() {
           borderRadius={10}
           fontSize={13}
           fontWeight={500}
-          theme={{ dark: { bgColor: 'slate-800', color: 'indigo-300' }, light: { bgColor: 'indigo-50', color: 'indigo-700' } }}
+          theme={{ dark: { bgColor: 'base-800', color: 'accent-300' }, light: { bgColor: 'accent-50', color: 'accent-700' } }}
         >
           <Icon size={3.5}>
             <Bot />
@@ -348,7 +348,7 @@ function Hero() {
           <Box
             tag="span"
             display="inline"
-            bgGradient={{ linear: 'r', colors: ['indigo-500', 'violet-500', 'pink-500'] }}
+            bgGradient={{ linear: 'r', colors: ['accent-500', 'accent-500', 'pink-500'] }}
             bgClip="text"
             color="transparent"
           >
@@ -509,7 +509,7 @@ function StyleChecker() {
         px={4}
         py={3}
         bb={1}
-        theme={{ dark: { borderColor: 'slate-700' }, light: { borderColor: 'slate-200' } }}
+        theme={{ dark: { borderColor: 'base-700' }, light: { borderColor: 'base-200' } }}
       >
         <Flex ai="center" gap={2} fontSize={13} fontWeight={600} theme={headingTheme}>
           <Icon size={4}>
@@ -527,7 +527,7 @@ function StyleChecker() {
               fontSize={13}
               borderRadius={10}
               props={{ 'aria-pressed': source === example.source }}
-              ariaAttr={{ pressed: { borderColor: 'indigo-500', bgColor: 'indigo-500/10' } }}
+              ariaAttr={{ pressed: { borderColor: 'accent-500', bgColor: 'accent-500/10' } }}
               onClick={() => setSource(example.source)}
             >
               {example.label}
@@ -576,8 +576,8 @@ function StyleChecker() {
         bt={1}
         fontSize={13}
         theme={{
-          dark: { borderColor: 'slate-700', bgColor: 'slate-900', color: 'slate-400' },
-          light: { borderColor: 'slate-200', bgColor: 'slate-50', color: 'slate-600' },
+          dark: { borderColor: 'base-700', bgColor: 'base-900', color: 'base-400' },
+          light: { borderColor: 'base-200', bgColor: 'base-50', color: 'base-600' },
         }}
       >
         <Box>
@@ -605,7 +605,7 @@ function CheckRow({ check }: { check: PropCheck }) {
       ai="flex-start"
       p={3}
       borderRadius={2}
-      theme={{ dark: { bgColor: 'slate-900' }, light: { bgColor: 'slate-50' } }}
+      theme={{ dark: { bgColor: 'base-900' }, light: { bgColor: 'base-50' } }}
     >
       <Flex
         flexShrink={0}
@@ -663,7 +663,7 @@ function ClosingCta() {
       p={6}
       borderRadius={4}
       color="white"
-      bgGradient={{ linear: 'r', colors: ['indigo-600', 'violet-600'] }}
+      bgGradient={{ linear: 'r', colors: ['accent-600', 'accent-600'] }}
     >
       <Box>
         <H2 fontSize={22} fontWeight={700} mb={2}>

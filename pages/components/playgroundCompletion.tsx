@@ -35,11 +35,11 @@ const KINDS: Record<SuggestionKind, { icon: LucideIcon; label: string; bg: Color
   component: { icon: Component, label: 'Component', bg: 'pink-500/15', fg: 'pink-300' },
   prop: { icon: Settings2, label: 'Component prop', bg: 'emerald-500/15', fg: 'emerald-300' },
   style: { icon: Paintbrush, label: 'Style prop', bg: 'sky-500/15', fg: 'sky-300' },
-  nesting: { icon: Layers, label: 'Nested styles', bg: 'violet-500/15', fg: 'violet-300' },
+  nesting: { icon: Layers, label: 'Nested styles', bg: 'accent-500/15', fg: 'accent-300' },
   event: { icon: Zap, label: 'Event', bg: 'amber-500/15', fg: 'amber-300' },
-  reserved: { icon: Braces, label: 'Box prop', bg: 'slate-500/20', fg: 'slate-300' },
+  reserved: { icon: Braces, label: 'Box prop', bg: 'base-500/20', fg: 'base-300' },
   value: { icon: Hash, label: 'Value', bg: 'teal-500/15', fg: 'teal-300' },
-  color: { icon: Hash, label: 'Colour', bg: 'transparent', fg: 'slate-300' },
+  color: { icon: Hash, label: 'Colour', bg: 'transparent', fg: 'base-300' },
 };
 
 const NOUNS: Record<Completion['context']['kind'], string> = { tag: 'components', attribute: 'props', key: 'keys', value: 'values' };
@@ -71,12 +71,12 @@ export default function PlaygroundCompletion({ id, completion, active, anchor, m
       maxWidth={tooltip ? 90 : undefined}
       borderRadius={3}
       overflow="hidden"
-      bgColor="slate-900/95"
+      bgColor="base-900/95"
       backdropBlur="md"
       ring={1}
-      ringColor="slate-700"
+      ringColor="base-700"
       shadow="xl"
-      color="slate-200"
+      color="base-200"
       fontSize={13}
       transition="opacity"
       transitionDuration={120}
@@ -88,22 +88,22 @@ export default function PlaygroundCompletion({ id, completion, active, anchor, m
         <TypeCard entry={entry!} shape={shape!} typed={completion.typed} measure={measure} />
       ) : (
         <Flex d="column">
-          <Flex ai="center" gap={2} px={3} py={2} bb={1} borderColor="slate-800">
-            <Icon size={3.5} color="slate-500">
+          <Flex ai="center" gap={2} px={3} py={2} bb={1} borderColor="base-800">
+            <Icon size={3.5} color="base-500">
               <Search />
             </Icon>
             <Flex flex1 minWidth={0} gap={1} {...mono} whiteSpace="nowrap" overflow="hidden">
               {context.kind === 'value' && entry ? (
                 <Box color="sky-300">
                   {entry.name}
-                  <Box tag="span" display="inline" color="slate-600">
+                  <Box tag="span" display="inline" color="base-600">
                     {' ='}
                   </Box>
                 </Box>
               ) : null}
-              <Box color={context.query ? 'slate-100' : 'slate-500'}>{context.query || 'type to filter'}</Box>
+              <Box color={context.query ? 'base-100' : 'base-500'}>{context.query || 'type to filter'}</Box>
             </Flex>
-            <Box fontSize={11} color="slate-500" whiteSpace="nowrap">
+            <Box fontSize={11} color="base-500" whiteSpace="nowrap">
               {suggestions.length} {NOUNS[context.kind]}
             </Box>
           </Flex>
@@ -118,20 +118,20 @@ export default function PlaygroundCompletion({ id, completion, active, anchor, m
                 maxHeight={72}
                 overflowY="auto"
                 bl={1}
-                borderColor="slate-800"
+                borderColor="base-800"
                 p={4}
-                bgColor="slate-950/40"
+                bgColor="base-950/40"
               >
                 {current ? <Details completion={completion} suggestion={current} measure={measure} /> : null}
               </Box>
             </Flex>
           ) : (
-            <Box px={3} py={4} color="slate-500" width={72}>
+            <Box px={3} py={4} color="base-500" width={72}>
               Nothing matches <Code>{context.query}</Code>.
             </Box>
           )}
 
-          <Flex ai="center" gap={3} px={3} py={1.5} bt={1} borderColor="slate-800" fontSize={11} color="slate-500">
+          <Flex ai="center" gap={3} px={3} py={1.5} bt={1} borderColor="base-800" fontSize={11} color="base-500">
             <Hint keys="↑↓">choose</Hint>
             <Hint keys={<CornerDownLeft size={10} />}>or</Hint>
             <Hint keys="Tab">insert</Hint>
@@ -175,7 +175,7 @@ function List({ id, completion, active, measure, onActiveChange, onPick }: Omit<
         />
       ))}
       {suggestions.length > shown.length ? (
-        <Box px={2} py={1.5} fontSize={11} color="slate-500">
+        <Box px={2} py={1.5} fontSize={11} color="base-500">
           {suggestions.length - shown.length} more — keep typing to narrow the list.
         </Box>
       ) : null}
@@ -217,7 +217,7 @@ function Row({ id, suggestion, selected, detail, onHover, onPick }: RowProps) {
       bgColor={selected ? 'sky-500/15' : 'transparent'}
       ring={selected ? 1 : 0}
       ringColor="sky-400/30"
-      hover={{ bgColor: selected ? 'sky-500/15' : 'slate-800/60' }}
+      hover={{ bgColor: selected ? 'sky-500/15' : 'base-800/60' }}
       props={{ role: 'option', 'aria-selected': selected, onMouseMove: onHover, onClick: onPick }}
     >
       {suggestion.kind === 'color' ? <Swatch token={String(suggestion.value)} size={4.5} /> : <KindBadge kind={suggestion.kind} />}
@@ -228,19 +228,19 @@ function Row({ id, suggestion, selected, detail, onHover, onPick }: RowProps) {
         whiteSpace="nowrap"
         overflow="hidden"
         textOverflow="ellipsis"
-        color={deprecated ? 'slate-500' : 'slate-200'}
+        color={deprecated ? 'base-500' : 'base-200'}
         textDecoration={deprecated ? 'line-through' : undefined}
       >
         <Highlighted label={suggestion.label} indices={suggestion.indices} />
         {suggestion.alias ? (
-          <Box tag="span" display="inline" color="slate-500" fontSize={11} ml={2}>
+          <Box tag="span" display="inline" color="base-500" fontSize={11} ml={2}>
             {suggestion.alias}
           </Box>
         ) : null}
       </Box>
       <Box
         fontSize={11}
-        color={selected ? 'sky-200/80' : 'slate-500'}
+        color={selected ? 'sky-200/80' : 'base-500'}
         whiteSpace="nowrap"
         overflow="hidden"
         textOverflow="ellipsis"
@@ -383,7 +383,7 @@ function TypeCard({ entry, shape, typed, measure }: { entry: Entry; shape: Value
                   <Box tag="td" display="table-cell" {...mono} py={0.5} pr={3} color="sky-300" whiteSpace="nowrap">
                     {sample}
                   </Box>
-                  <Box tag="td" display="table-cell" {...mono} py={0.5} color="slate-300">
+                  <Box tag="td" display="table-cell" {...mono} py={0.5} color="base-300">
                     {declaredValue(measure(entry.name, sample)) || '—'}
                   </Box>
                 </Box>
@@ -413,7 +413,7 @@ function Takes({ shape }: { shape: ValueShape }) {
     <Section title="Takes">
       <Flex gap={1.5} flexWrap="wrap">
         {chips.map((chip) => (
-          <Box key={chip} px={2} py={0.5} borderRadius={10} bgColor="slate-800" color="slate-300" fontSize={11} whiteSpace="nowrap">
+          <Box key={chip} px={2} py={0.5} borderRadius={10} bgColor="base-800" color="base-300" fontSize={11} whiteSpace="nowrap">
             {chip}
           </Box>
         ))}
@@ -424,8 +424,8 @@ function Takes({ shape }: { shape: ValueShape }) {
 
 function Written({ text, css }: { text: string; css: string }) {
   return (
-    <Box borderRadius={2} bgColor="black/30" ring={1} ringColor="slate-800" p={2.5} {...mono} fontSize={12}>
-      <Box color="slate-100" css={{ overflowWrap: 'anywhere' }}>
+    <Box borderRadius={2} bgColor="black/30" ring={1} ringColor="base-800" p={2.5} {...mono} fontSize={12}>
+      <Box color="base-100" css={{ overflowWrap: 'anywhere' }}>
         {text}
       </Box>
       <Box color={css ? 'emerald-300' : 'rose-300'} mt={1} css={{ overflowWrap: 'anywhere' }}>
@@ -443,7 +443,7 @@ function Heading({ kind, name, tag }: { kind: SuggestionKind; name: string; tag?
         {name}
       </Box>
       {tag ? (
-        <Box ml="auto" px={2} py={0.5} borderRadius={10} bgColor="slate-800" color="slate-400" fontSize={11} whiteSpace="nowrap">
+        <Box ml="auto" px={2} py={0.5} borderRadius={10} bgColor="base-800" color="base-400" fontSize={11} whiteSpace="nowrap">
           {tag}
         </Box>
       ) : null}
@@ -454,7 +454,7 @@ function Heading({ kind, name, tag }: { kind: SuggestionKind; name: string; tag?
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <Flex d="column" gap={1.5}>
-      <Box fontSize={10} fontWeight={600} textTransform="uppercase" color="slate-500">
+      <Box fontSize={10} fontWeight={600} textTransform="uppercase" color="base-500">
         {title}
       </Box>
       {children}
@@ -464,7 +464,7 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 
 function Prose({ children }: { children: ReactNode }) {
   return (
-    <Box fontSize={12} lineHeight={18} color="slate-400">
+    <Box fontSize={12} lineHeight={18} color="base-400">
       {children}
     </Box>
   );
@@ -472,7 +472,7 @@ function Prose({ children }: { children: ReactNode }) {
 
 function Code({ children }: { children: ReactNode }) {
   return (
-    <Box tag="code" display="inline" {...mono} fontSize={12} color="slate-200" bgColor="slate-800" px={1} borderRadius={1}>
+    <Box tag="code" display="inline" {...mono} fontSize={12} color="base-200" bgColor="base-800" px={1} borderRadius={1}>
       {children}
     </Box>
   );
@@ -481,7 +481,7 @@ function Code({ children }: { children: ReactNode }) {
 function Hint({ keys, children }: { keys: ReactNode; children: ReactNode }) {
   return (
     <Flex ai="center" gap={1}>
-      <Flex ai="center" px={1} minWidth={4} jc="center" borderRadius={1} bgColor="slate-800" color="slate-300" {...mono} fontSize={10}>
+      <Flex ai="center" px={1} minWidth={4} jc="center" borderRadius={1} bgColor="base-800" color="base-300" {...mono} fontSize={10}>
         {keys}
       </Flex>
       {children}

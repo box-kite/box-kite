@@ -377,10 +377,10 @@ const sidebarLinks: TocEntry[] = [
 function Section({ id, title, children }: { id: string; title: string; children: ReactNode }) {
   return (
     <Box id={id}>
-      <H2 fontSize={20} fontWeight={600} mb={4} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }}>
+      <H2 fontSize={20} fontWeight={600} mb={4} theme={{ dark: { color: 'white' }, light: { color: 'base-900' } }}>
         {title}
       </H2>
-      <Box fontSize={15} lineHeight={26} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
+      <Box fontSize={15} lineHeight={26} theme={{ dark: { color: 'base-400' }, light: { color: 'base-600' } }}>
         {children}
       </Box>
     </Box>
@@ -394,13 +394,13 @@ function Note({ icon: Icon, title, children }: { icon: typeof Tags; title: strin
       p={4}
       borderRadius={2}
       b={1}
-      theme={{ dark: { bgColor: 'slate-900', borderColor: 'slate-800' }, light: { bgColor: 'slate-50', borderColor: 'slate-200' } }}
+      theme={{ dark: { bgColor: 'base-900', borderColor: 'base-800' }, light: { bgColor: 'base-50', borderColor: 'base-200' } }}
     >
-      <Box theme={{ dark: { color: 'indigo-400' }, light: { color: 'indigo-500' } }} pt={0.5}>
+      <Box theme={{ dark: { color: 'accent-400' }, light: { color: 'accent-500' } }} pt={0.5}>
         <Icon size={16} />
       </Box>
       <Box>
-        <Box fontSize={14} fontWeight={600} mb={1} theme={{ dark: { color: 'slate-200' }, light: { color: 'slate-800' } }}>
+        <Box fontSize={14} fontWeight={600} mb={1} theme={{ dark: { color: 'base-200' }, light: { color: 'base-800' } }}>
           {title}
         </Box>
         <Box fontSize={14}>{children}</Box>
