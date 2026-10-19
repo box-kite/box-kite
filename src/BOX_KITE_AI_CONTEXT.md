@@ -307,6 +307,19 @@ Any colour value takes a slash and a percentage:
 - A token the palette does not have, or a percentage outside 0–100, produces **no rule and no class
   name** — the same silence every unmatched value gets.
 
+**Two more families, `accent` and `base`, are what every built-in component is drawn in.** They start as
+copies of `indigo` and `gray`, so nothing changes until one is pointed somewhere. `Box.palette()` returns the
+`vars` record that does it, for an element and its subtree — a family by name, or a ramp of your own:
+
+```tsx
+<Box vars={Box.palette({ accent: 'orange', base: 'stone' })} />           // every Button inside is orange
+<Box vars={Box.palette({ accent: { 500: 'oklch(68% .19 42)' } })} />     // a step left out keeps its default
+<Box theme={{ dark: { vars: Box.palette({ accent: 'amber' }) } }} />     // nests like any vars
+```
+
+Write `accent-*`/`base-*` in your own components when they should follow a design, and a named family when the
+colour is the content (a status, a chart series). A class built from them reads `bgColor-accent-500`.
+
 ### Gradients, shadows and rings
 
 A gradient is a **value**, written as a record — so its stops are palette tokens, it takes the opacity
@@ -330,7 +343,10 @@ modifier, it is themed, and two elements asking for the same one share a class.
 - A stop is any colour value — a token, `blue-500/40`, a system colour, `var(--chart-1)` — or a
   `[colour, position]` pair. **Two stops minimum**, and the record is judged whole: one bad stop, one
   unknown key, two kinds at once, and the whole value emits no rule and no class name.
-- It writes `background-image`, so `bgGradient` and `bgImage` are the same property.
+- It writes `background-image`, so `bgGradient` and `bgImage` are the same property. `bgGradient` is declared
+  later and wins, so a variant or a design takes a gradient off with `bgGradient: 'none'`, never `bgImage: 'none'`.
+- `letterSpacing` is pixels as a number, and Tailwind's tracking names in `em` — `'tighter'` (-0.05em), `'tight'`,
+  `'normal'`, `'wide'`, `'wider'`, `'widest'` (0.1em) — which is what a display heading wants at every size.
 
 **Four shadows stack**, because each sets its own custom property and all four write one composed
 `box-shadow`. A ring and an elevation coexist instead of the last one winning:
@@ -1093,6 +1109,40 @@ const harbor = Box.createComponents({ button: { styles: { borderRadius: 0 } } },
 - **`<Box.Components>` renders no element.** `value={undefined}` hands a subtree back to the app's design.
 - **A Server Component cannot read the provider.** A client component under it can.
 - **Types for two designs that both name a component**: `interface ComponentsTypes extends MergeComponentsAndVariants<[typeof aurora, typeof harbor]> {}` (from `@box-kite/core/types`). Extending two `ExtractComponentsAndVariants` that disagree on `button` is an interface conflict.
+
+### Box.components(styles, { design }) — A Design Chosen in CSS
+
+A registry is chosen by React context, so a prerendered page can only switch to it after hydration — a flash, and a
+hydration mismatch if the client renders it first. A **named design** is chosen by an attribute instead: its styles are
+merged over the app's components and applied wherever an ancestor carries `data-design="<name>"`, so a stored choice
+written onto `<html>` before the first paint is the whole fix.
+
+```tsx
+Box.components({ button: { styles: { borderRadius: 2.5 } }, dialog: { styles: { borderRadius: 5, p: 7 } } }, { design: 'ember' });
+
+<Box.Theme
+  use="global"
+  design="classic"
+  designStorageKey="design"
+  globalStyles={{ dataAttr: { 'design=ember': { vars: Box.palette({ accent: 'orange', base: 'stone' }) } } }}
+>
+  <App />
+</Box.Theme>;
+
+const [design, setDesign] = Box.useDesign(); // setDesign(null) goes back to the design prop
+```
+
+- **Both designs are in the CSS.** A Box whose component a design changes carries the design's whole class list beside its
+  own, each rule one class more specific — so every state the app's design styles (a theme, a hover, a variant) is
+  outranked by the same state of the design. A component the design leaves alone costs nothing.
+- **To take something back off, write its `none`** (`shadow: 'none'`, `bgGradient: 'none'`): a design merges, it cannot delete a key.
+- **A design nested in another stops the outer one** — a `data-design="classic"` preview inside an Ember page is Classic.
+  The palette is `vars`, which inherit, so that wrapper declares its own `Box.palette()` too.
+- **Props still win**, and a Box under `<Box.Components value>` resolves against that registry and no named design.
+- `Box.Theme` writes `data-design` on `<html>` (`use="global"`) or on its wrapper, restores `designStorageKey` after
+  hydration without writing the default over a value a pre-paint script set, and pauses transitions for the switch.
+  `applyDesignToElement` is the framework-free half, in `@box-kite/core`.
+- **A part can `extends` too**: `trigger: { extends: 'button' }` or `'dialog.title'`. It used to be silently ignored.
 
 ---
 
@@ -2564,7 +2614,7 @@ function TrendCell({ cell }: { cell: CellModel<Row> }) {
 4. **fontSize divider is 16** (not 4). `fontSize={14}` → 14px
 5. **Spacing divider is 4**. `p={4}` → 16px (1rem)
 6. **Border width and lineHeight are direct px**. `b={1}` → 1px. **borderRadius uses divider 4**: `borderRadius={2}` → 8px
-7. **Colors are Tailwind's OKLCH palette**: `'gray-500'`, `'blue-600'` — 26 families × 11 steps, and an opacity modifier on any of them: `bgColor="blue-500/40"` (a `color-mix`, not `opacity`)
+7. **Colors are Tailwind's OKLCH palette**: `'gray-500'`, `'blue-600'` — 26 families × 11 steps, and an opacity modifier on any of them: `bgColor="blue-500/40"` (a `color-mix`, not `opacity`). The built-in components are drawn in two more, `accent` and `base`, which `Box.palette()` repoints
 8. **Breakpoints are mobile-first**: base → sm → md → lg → xl → xxl
 9. **Theme styles nest**: `theme={{ dark: { hover: { ... } } }}`
 10. **HTML attributes go in `props` prop**: `<Link props={{ href: '/about' }}>` not `<Link href>`. `data-*` and `aria-*` go there too — a `data-state` written at the top level typechecks and is then dropped

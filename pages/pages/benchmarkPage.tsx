@@ -44,7 +44,7 @@ export default function BenchmarkPage() {
 
       <Reveal delay={0.1}>
         <Flex d="column" gap={10}>
-          <Box fontSize={15} lineHeight={26} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
+          <Box fontSize={15} lineHeight={26} theme={{ dark: { color: 'base-400' }, light: { color: 'base-600' } }}>
             Every grid claims to be fast. This page is the claim with an instrument attached: it generates{' '}
             {rowChoices[1].toLocaleString('en-US')} rows of {BENCH_COLUMN_COUNT} columns in your browser, drives the grid through five
             operations and reports what it measured — on your machine, in your browser, at your window size. The numbers below are from one
@@ -65,7 +65,7 @@ export default function BenchmarkPage() {
               <Results runs={referenceResults.runs} />
             </Box>
             {referenceResults.note && (
-              <Box mt={4} fontSize={13} theme={{ dark: { color: 'slate-500' }, light: { color: 'slate-500' } }}>
+              <Box mt={4} fontSize={13} theme={{ dark: { color: 'base-500' }, light: { color: 'base-500' } }}>
                 {referenceResults.note}
               </Box>
             )}
@@ -97,7 +97,7 @@ export default function BenchmarkPage() {
                 <TableBody>
                   {scenarios.map((scenario) => (
                     <TableRow key={scenario.id}>
-                      <Cell width={44} theme={{ dark: { color: 'slate-200' }, light: { color: 'slate-800' } }}>
+                      <Cell width={44} theme={{ dark: { color: 'base-200' }, light: { color: 'base-800' } }}>
                         {scenario.label}
                       </Cell>
                       <Cell>{scenario.what}</Cell>
@@ -301,7 +301,7 @@ function Runner() {
       {/* Development only. The published site measures this grid and ranks nobody — see benchmark/impls.ts. */}
       {HAS_COMPARISON && (
         <Box mt={5} props={{ role: 'group', 'aria-label': 'Grids' }}>
-          <Box fontSize={13} fontWeight={600} mb={2} theme={{ dark: { color: 'slate-300' }, light: { color: 'slate-700' } }}>
+          <Box fontSize={13} fontWeight={600} mb={2} theme={{ dark: { color: 'base-300' }, light: { color: 'base-700' } }}>
             Grids — each one is downloaded when you pick it, and measured one after another
           </Box>
           <Flex gap={6} flexWrap="wrap">
@@ -326,7 +326,7 @@ function Runner() {
         </Box>
       )}
 
-      <Box mt={4} minHeight={6} fontSize={13} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-500' } }}>
+      <Box mt={4} minHeight={6} fontSize={13} theme={{ dark: { color: 'base-400' }, light: { color: 'base-500' } }}>
         <Box props={{ role: 'status' }}>{status ?? doneLabel(results)}</Box>
       </Box>
 
@@ -337,7 +337,7 @@ function Runner() {
       )}
 
       {results && results.length > 0 && stage.impl && (
-        <Box mt={6} fontSize={13} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-500' } }}>
+        <Box mt={6} fontSize={13} theme={{ dark: { color: 'base-400' }, light: { color: 'base-500' } }}>
           {stage.impl.label}, still on the page with the rows the run measured — {rows.toLocaleString('en-US')} of them,{' '}
           {BENCH_COLUMN_COUNT} columns. Scroll it.
         </Box>
@@ -382,7 +382,7 @@ function Results({ runs }: { runs: BenchRun[] }) {
 function ComparisonTable({ runs }: { runs: BenchRun[] }) {
   return (
     <Box>
-      <Box mb={3} fontSize={13} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-500' } }}>
+      <Box mb={3} fontSize={13} theme={{ dark: { color: 'base-400' }, light: { color: 'base-500' } }}>
         <Mono>{runs.map((run) => `${run.label} ${run.version}`).join(' · ')}</Mono> · {runs[0].rows.toLocaleString('en-US')} rows ×{' '}
         {runs[0].columns} columns · median of {runs[0].runs} · lower is better. The scroll is what one frame cost the grid, with the frames
         a second the display allowed beside it.
@@ -401,7 +401,7 @@ function ComparisonTable({ runs }: { runs: BenchRun[] }) {
         <TableBody>
           {scenarios.map((scenario) => (
             <TableRow key={scenario.id}>
-              <Cell theme={{ dark: { color: 'slate-200' }, light: { color: 'slate-800' } }}>{scenario.label}</Cell>
+              <Cell theme={{ dark: { color: 'base-200' }, light: { color: 'base-800' } }}>{scenario.label}</Cell>
               {runs.map((run) => (
                 <Cell key={run.impl} textAlign="end" textWrap="nowrap">
                   {figure(
@@ -439,7 +439,7 @@ function doneLabel(runs: BenchRun[] | undefined): string {
 function ResultTable({ run }: { run: BenchRun }) {
   return (
     <Box>
-      <Box mb={3} fontSize={13} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-500' } }}>
+      <Box mb={3} fontSize={13} theme={{ dark: { color: 'base-400' }, light: { color: 'base-500' } }}>
         <Mono>
           {run.label} {run.version}
         </Mono>{' '}
@@ -463,7 +463,7 @@ function ResultTable({ run }: { run: BenchRun }) {
 
             return (
               <TableRow key={scenario.scenario}>
-                <Cell theme={{ dark: { color: 'slate-200' }, light: { color: 'slate-800' } }}>{info?.label ?? scenario.scenario}</Cell>
+                <Cell theme={{ dark: { color: 'base-200' }, light: { color: 'base-800' } }}>{info?.label ?? scenario.scenario}</Cell>
                 <Cell textAlign="end" textWrap="nowrap">
                   {ms(scenario.ms)}
                 </Cell>
@@ -572,10 +572,10 @@ const sidebarLinks = [
 function Section({ id, title, children }: { id: string; title: string; children: ReactNode }) {
   return (
     <Box id={id}>
-      <H2 fontSize={20} fontWeight={600} mb={4} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }}>
+      <H2 fontSize={20} fontWeight={600} mb={4} theme={{ dark: { color: 'white' }, light: { color: 'base-900' } }}>
         {title}
       </H2>
-      <Box fontSize={15} lineHeight={26} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
+      <Box fontSize={15} lineHeight={26} theme={{ dark: { color: 'base-400' }, light: { color: 'base-600' } }}>
         {children}
       </Box>
     </Box>
@@ -589,13 +589,13 @@ function Note({ icon: NoteIcon, title, children }: { icon: typeof Gauge; title: 
       p={4}
       borderRadius={2}
       b={1}
-      theme={{ dark: { bgColor: 'slate-900', borderColor: 'slate-800' }, light: { bgColor: 'slate-50', borderColor: 'slate-200' } }}
+      theme={{ dark: { bgColor: 'base-900', borderColor: 'base-800' }, light: { bgColor: 'base-50', borderColor: 'base-200' } }}
     >
-      <Box pt={0.5} theme={{ dark: { color: 'indigo-400' }, light: { color: 'indigo-500' } }}>
+      <Box pt={0.5} theme={{ dark: { color: 'accent-400' }, light: { color: 'accent-500' } }}>
         <NoteIcon size={16} />
       </Box>
       <Box>
-        <Box fontSize={14} fontWeight={600} mb={1} theme={{ dark: { color: 'slate-200' }, light: { color: 'slate-800' } }}>
+        <Box fontSize={14} fontWeight={600} mb={1} theme={{ dark: { color: 'base-200' }, light: { color: 'base-800' } }}>
           {title}
         </Box>
         <Box fontSize={14} lineHeight={24}>

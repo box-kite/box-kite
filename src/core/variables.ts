@@ -21,7 +21,7 @@ namespace Variables {
     'gradient-accent': 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 50%, #6366f1 100%)',
     // checkbox/radio images
     'bg-img-checked': `url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='100%' viewBox='0 0 20 20'><path fill='none' stroke='#FFF' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 10l3 3l6-6'/></svg>`)}")`,
-    'bg-img-indeterminate': `url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='100%' viewBox='0 0 20 20'><line stroke='${colors['violet-400']}' x1='4' y1='10' x2='16' y2='10' stroke-width='1' /></svg>`)}")`,
+    'bg-img-indeterminate': `url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='100%' viewBox='0 0 20 20'><line stroke='#FFF' stroke-linecap='round' x1='6' y1='10' x2='14' y2='10' stroke-width='2' /></svg>`)}")`,
     'bg-img-radio': `url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='100%' viewBox='0 0 20 20'><circle fill='#FFF' cx='10' cy='10' r='5'/></svg>`)}")`,
   };
 

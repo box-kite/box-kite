@@ -1124,4 +1124,79 @@ describe('Theme', () => {
       expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
     });
   });
+
+  // A design is the second axis: data-design on the root, persisted like the theme, and read after hydration.
+  describe('design', () => {
+    afterEach(() => {
+      localStorage.clear();
+      document.documentElement.removeAttribute('data-design');
+    });
+
+    it('writes data-design on the document root in global mode, and on the wrapper in local mode', () => {
+      const { unmount } = render(
+        <Theme use="global" design="ember">
+          <Box id={testId}>Content</Box>
+        </Theme>,
+      );
+
+      expect(document.documentElement.getAttribute('data-design')).toBe('ember');
+      unmount();
+      expect(document.documentElement.getAttribute('data-design')).toBeNull();
+
+      render(
+        <Theme design="ember">
+          <Box id={testId}>Content</Box>
+        </Theme>,
+      );
+
+      expect(document.getElementById(testId)!.parentElement?.getAttribute('data-design')).toBe('ember');
+    });
+
+    it('switches and persists through Box.useDesign(), and null goes back to the prop', () => {
+      let setDesign: ((design: string | null) => void) | undefined;
+      let current: string | undefined;
+
+      function Picker() {
+        [current, setDesign] = Theme.useDesign();
+
+        return null;
+      }
+
+      render(
+        <Theme use="global" design="classic" designStorageKey="design">
+          <Picker />
+        </Theme>,
+      );
+
+      act(() => setDesign!('ember'));
+      expect(current).toBe('ember');
+      expect(localStorage.getItem('design')).toBe('ember');
+      expect(document.documentElement.getAttribute('data-design')).toBe('ember');
+
+      act(() => setDesign!(null));
+      expect(current).toBe('classic');
+      expect(localStorage.getItem('design')).toBeNull();
+      expect(document.documentElement.getAttribute('data-design')).toBe('classic');
+    });
+
+    it('restores the stored design without writing the default over a root a pre-paint script set', () => {
+      localStorage.setItem('design', 'ember');
+      document.documentElement.setAttribute('data-design', 'ember');
+      const writes: (string | null)[] = [];
+      const observer = new MutationObserver(() => writes.push(document.documentElement.getAttribute('data-design')));
+      observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-design'] });
+
+      render(
+        <Theme use="global" design="classic" designStorageKey="design">
+          <Box id={testId}>Content</Box>
+        </Theme>,
+      );
+
+      return Promise.resolve().then(() => {
+        observer.disconnect();
+        expect(writes).toEqual([]);
+        expect(document.documentElement.getAttribute('data-design')).toBe('ember');
+      });
+    });
+  });
 });

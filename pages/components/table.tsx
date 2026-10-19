@@ -51,7 +51,7 @@ export function HeadCell({ children, ...props }: BoxProps<'th'>) {
       py={2}
       pr={6}
       bb={1}
-      theme={{ dark: { color: 'slate-300', borderColor: 'slate-700' }, light: { color: 'slate-700', borderColor: 'slate-200' } }}
+      theme={{ dark: { color: 'base-300', borderColor: 'base-700' }, light: { color: 'base-700', borderColor: 'base-200' } }}
       {...props}
     >
       {children}
@@ -69,7 +69,7 @@ export function Cell({ children, ...props }: BoxProps<'td'>) {
       py={2}
       pr={6}
       bb={1}
-      theme={{ dark: { color: 'slate-400', borderColor: 'slate-800' }, light: { color: 'slate-600', borderColor: 'slate-100' } }}
+      theme={{ dark: { color: 'base-400', borderColor: 'base-800' }, light: { color: 'base-600', borderColor: 'base-100' } }}
       {...props}
     >
       {children}

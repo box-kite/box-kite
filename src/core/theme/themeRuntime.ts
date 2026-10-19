@@ -94,6 +94,17 @@ export function setThemeAttribute(element: Element, themeName: string): void {
   element.setAttribute('data-theme', themeName);
 }
 
+/**
+ * Mark `element` as drawn in `design` — the `data-design` attribute `Box.components(…, { design })` rules
+ * match on. Returns the cleanup, which puts back whatever the element carried before (a pre-paint script's).
+ */
+export function applyDesignToElement(element: Element, design: string): () => void {
+  const previous = element.getAttribute('data-design');
+  if (previous !== design) element.setAttribute('data-design', design);
+
+  return () => (previous === null ? element.removeAttribute('data-design') : element.setAttribute('data-design', previous));
+}
+
 /** The persisted theme name, or `null` when nothing is stored or storage is unavailable. */
 export function readStoredTheme(storageKey: string): string | null {
   try {

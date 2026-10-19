@@ -28,3 +28,57 @@ html {
   background-color: rgba(99, 102, 241, 0.2);
   color: inherit;
 }
+
+/* The Ember design (pages/designs/): warm ink and paper for the root text, and a vermilion selection. */
+[data-design='ember'].dark,
+[data-design='ember'] .dark {
+  color: oklch(96.6% 0.006 72);
+}
+
+[data-design='ember'].light,
+[data-design='ember'] .light {
+  color: oklch(21.2% 0.008 52);
+}
+
+[data-design='ember'] ::selection {
+  background-color: oklch(75.6% 0.162 48 / 0.28);
+}
+
+/* The Azure design (pages/designs/): cool ink on paper, starlight on the night, and a sky-blue selection. */
+[data-design='azure'].dark,
+[data-design='azure'] .dark {
+  color: oklch(96.4% 0.007 242);
+}
+
+[data-design='azure'].light,
+[data-design='azure'] .light {
+  color: oklch(21.4% 0.024 258);
+}
+
+[data-design='azure'] ::selection {
+  background-color: oklch(73.2% 0.145 242 / 0.28);
+}
+
+/* The Mono design (pages/designs/): Roboto throughout, the ink #16191e on white, and a grey selection. */
+[data-design='mono'] {
+  font-family: 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+}
+
+[data-design='mono'].dark,
+[data-design='mono'] .dark {
+  color: #eff1f3;
+}
+
+[data-design='mono'].light,
+[data-design='mono'] .light {
+  color: #16191e;
+}
+
+[data-design='mono'] ::selection {
+  background-color: rgba(22, 25, 30, 0.14);
+}
+
+[data-design='mono'].dark ::selection,
+[data-design='mono'] .dark ::selection {
+  background-color: rgba(239, 241, 243, 0.22);
+}

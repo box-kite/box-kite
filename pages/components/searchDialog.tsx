@@ -111,12 +111,12 @@ export default function SearchDialog({ open, onOpenChange }: SearchDialogProps) 
       borderRadius={4}
       overflow="hidden"
       theme={{
-        dark: { bgColor: 'slate-900', borderColor: 'slate-700', color: 'slate-100' },
-        light: { bgColor: 'white', borderColor: 'slate-200', color: 'slate-900' },
+        dark: { bgColor: 'base-900', borderColor: 'base-700', color: 'base-100' },
+        light: { bgColor: 'white', borderColor: 'base-200', color: 'base-900' },
       }}
     >
-      <Flex ai="center" gap={3} px={4} py={3} bb={1} theme={{ dark: { borderColor: 'slate-800' }, light: { borderColor: 'slate-100' } }}>
-        <Icon size={4.5} theme={{ dark: { color: 'slate-500' }, light: { color: 'slate-400' } }}>
+      <Flex ai="center" gap={3} px={4} py={3} bb={1} theme={{ dark: { borderColor: 'base-800' }, light: { borderColor: 'base-100' } }}>
+        <Icon size={4.5} theme={{ dark: { color: 'base-500' }, light: { color: 'base-400' } }}>
           <Search />
         </Icon>
         <Textbox
@@ -128,7 +128,7 @@ export default function SearchDialog({ open, onOpenChange }: SearchDialogProps) 
           fontSize={16}
           bgColor="transparent"
           focus={{ outline: 0 }}
-          theme={{ dark: { bgColor: 'transparent', color: 'slate-100' }, light: { bgColor: 'transparent', color: 'slate-900' } }}
+          theme={{ dark: { bgColor: 'transparent', color: 'base-100' }, light: { bgColor: 'transparent', color: 'base-900' } }}
           placeholder="Search the docs — a page, a prop, a sentence"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
@@ -174,7 +174,7 @@ export default function SearchDialog({ open, onOpenChange }: SearchDialogProps) 
         bt={1}
         fontSize={12}
         flexWrap="wrap"
-        theme={{ dark: { borderColor: 'slate-800', color: 'slate-500' }, light: { borderColor: 'slate-100', color: 'slate-400' } }}
+        theme={{ dark: { borderColor: 'base-800', color: 'base-500' }, light: { borderColor: 'base-100', color: 'base-400' } }}
       >
         <Flex gap={2} ai="center">
           <Hint>↑</Hint>
@@ -226,20 +226,20 @@ function Result({ row, id, active, rowRef, onHover, onSelect }: ResultProps) {
       py={2.5}
       cursor="pointer"
       theme={{
-        dark: { bgColor: active ? 'slate-800' : 'transparent' },
-        light: { bgColor: active ? 'slate-100' : 'transparent' },
+        dark: { bgColor: active ? 'base-800' : 'transparent' },
+        light: { bgColor: active ? 'base-100' : 'transparent' },
       }}
     >
       <Flex ai="baseline" gap={2} flexWrap="wrap">
-        <Box fontSize={14} fontWeight={600} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }}>
+        <Box fontSize={14} fontWeight={600} theme={{ dark: { color: 'white' }, light: { color: 'base-900' } }}>
           {row.title}
         </Box>
-        <Box fontSize={11} theme={{ dark: { color: 'slate-500' }, light: { color: 'slate-400' } }}>
+        <Box fontSize={11} theme={{ dark: { color: 'base-500' }, light: { color: 'base-400' } }}>
           {KIND_LABEL[row.kind]} · {row.page}
         </Box>
       </Flex>
       {row.excerpt && (
-        <Box fontSize={13} lineHeight={20} mt={0.5} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
+        <Box fontSize={13} lineHeight={20} mt={0.5} theme={{ dark: { color: 'base-400' }, light: { color: 'base-600' } }}>
           <Highlighted text={row.excerpt} ranges={row.ranges} />
         </Box>
       )}
@@ -261,7 +261,7 @@ function Highlighted({ text, ranges }: { text: string; ranges: Row['ranges'] }) 
         display="inline"
         bgColor="transparent"
         fontWeight={600}
-        theme={{ dark: { color: 'violet-300' }, light: { color: 'violet-700' } }}
+        theme={{ dark: { color: 'accent-300' }, light: { color: 'accent-700' } }}
       >
         {text.slice(start, end)}
       </Mark>,
@@ -282,7 +282,7 @@ function Empty({ failed, loading, query }: { failed: boolean; loading: boolean; 
       : `Nothing matches “${query.trim()}”. Every prop is on the Box page, and every page is at /llms.txt.`;
 
   return (
-    <Box px={4} py={6} fontSize={14} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }} props={{ role: 'status' }}>
+    <Box px={4} py={6} fontSize={14} theme={{ dark: { color: 'base-400' }, light: { color: 'base-600' } }} props={{ role: 'status' }}>
       {message}
     </Box>
   );

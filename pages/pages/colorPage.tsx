@@ -1,6 +1,7 @@
 import { Palette as PaletteIcon } from 'lucide-react';
 import { ReactNode } from 'react';
 import Box from '../../src/box';
+import Button from '../../src/components/button';
 import Flex from '../../src/components/flex';
 import { H2, P } from '../../src/components/semantics';
 import Palette from '../../src/core/palette';
@@ -62,6 +63,27 @@ export default function ColorPage() {
             and the seventeen hues. Hover a swatch for the value behind it.
           </Section>
 
+          <Section id="aliases" title="Two families a design repoints">
+            The last two, <Mono>accent</Mono> and <Mono>base</Mono>, are not colours of their own: every built-in component is drawn in
+            them, and they start as copies of <Mono>indigo</Mono> and <Mono>gray</Mono>. <Mono>Box.palette()</Mono> is the <Mono>vars</Mono>{' '}
+            record that points them somewhere else for an element and everything inside it — a family by name, or eleven colours of your own
+            — so a brand colour is one declaration rather than a restyle of every component. The two rows above are whatever the design you
+            are reading in says they are.
+          </Section>
+
+          <Code
+            id="aliases-code"
+            label="Every component, in orange on stone"
+            language="jsx"
+            code={`<Box vars={Box.palette({ accent: 'orange', base: 'stone' })} theme={{ dark: { vars: Box.palette({ accent: 'amber' }) } }}>
+  <Button>Save</Button>
+</Box>`}
+          >
+            <Box vars={Box.palette({ accent: 'orange', base: 'stone' })} theme={{ dark: { vars: Box.palette({ accent: 'amber' }) } }}>
+              <Button>Save</Button>
+            </Box>
+          </Code>
+
           <Flex d="column" gap={6}>
             {Object.entries(groups).map(([family, tokens]) => (
               <Box key={family}>
@@ -71,7 +93,7 @@ export default function ColorPage() {
                   fontWeight={600}
                   textTransform="capitalize"
                   mb={2}
-                  theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-500' } }}
+                  theme={{ dark: { color: 'base-400' }, light: { color: 'base-500' } }}
                 >
                   {family}
                 </Box>
@@ -86,10 +108,10 @@ export default function ColorPage() {
                         borderRadius={2}
                         bgColor={token as Palette.Token}
                         b={1}
-                        theme={{ dark: { borderColor: 'slate-700' }, light: { borderColor: 'slate-200' } }}
+                        theme={{ dark: { borderColor: 'base-700' }, light: { borderColor: 'base-200' } }}
                         mb={1}
                       />
-                      <Box fontSize={10} theme={{ dark: { color: 'slate-500' }, light: { color: 'slate-500' } }}>
+                      <Box fontSize={10} theme={{ dark: { color: 'base-500' }, light: { color: 'base-500' } }}>
                         {token.replace(`${family}-`, '')}
                       </Box>
                     </Box>
@@ -176,10 +198,10 @@ Box.extend({ brand: 'oklch(62% 0.19 264)' });
 function Section({ id, title, children }: { id: string; title: string; children: ReactNode }) {
   return (
     <Box id={id}>
-      <H2 fontSize={20} fontWeight={600} mb={4} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }}>
+      <H2 fontSize={20} fontWeight={600} mb={4} theme={{ dark: { color: 'white' }, light: { color: 'base-900' } }}>
         {title}
       </H2>
-      <P fontSize={15} lineHeight={26} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
+      <P fontSize={15} lineHeight={26} theme={{ dark: { color: 'base-400' }, light: { color: 'base-600' } }}>
         {children}
       </P>
     </Box>
@@ -189,6 +211,7 @@ function Section({ id, title, children }: { id: string; title: string; children:
 const sidebarLinks = [
   { id: 'tokens', label: 'A colour is a variable' },
   { id: 'families', label: 'The families' },
+  { id: 'aliases', label: 'Accent and base' },
   { id: 'alpha', label: 'An opacity modifier' },
   { id: 'mix', label: 'Where the alpha lands' },
   { id: 'extend', label: 'Your own colours' },

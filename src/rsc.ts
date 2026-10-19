@@ -57,6 +57,8 @@ interface RscBoxType {
   ): React.ReactNode;
   extend: typeof BoxExtends.extend;
   components: typeof BoxExtends.components;
+  /** The `vars` record that points the components' `accent` and `base` families at others, for an element and its subtree. */
+  palette: typeof BoxExtends.palette;
   /** A design for one subtree. A Server Component cannot read the provider that applies it; a client one under `<Box.Components>` can. */
   createComponents: typeof BoxExtends.createComponents;
   keyframes: typeof BoxExtends.keyframes;
@@ -76,6 +78,7 @@ const RscBox = Box as RscBoxType;
 
 RscBox.extend = BoxExtends.extend;
 RscBox.components = BoxExtends.components;
+RscBox.palette = BoxExtends.palette;
 RscBox.createComponents = BoxExtends.createComponents;
 RscBox.keyframes = BoxExtends.keyframes;
 RscBox.spring = Springs.spring;

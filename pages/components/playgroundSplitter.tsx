@@ -48,8 +48,8 @@ export default function PlaygroundSplitter({ split, onSplitChange, container, co
       outlineStyle="none"
       transition="colors"
       color="transparent"
-      hover={{ color: 'indigo-400' }}
-      focusVisible={{ color: 'indigo-500' }}
+      hover={{ color: 'accent-400' }}
+      focusVisible={{ color: 'accent-500' }}
       // A touch on the handle is a drag, not a scroll of the page under it.
       css={{ touchAction: 'none' }}
       props={{

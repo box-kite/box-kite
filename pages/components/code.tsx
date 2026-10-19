@@ -91,7 +91,7 @@ export default function Code(props: Props) {
         <Box
           fontSize={15}
           fontWeight={600}
-          theme={{ dark: { color: 'slate-200' }, light: { color: 'slate-700' } }}
+          theme={{ dark: { color: 'base-200' }, light: { color: 'base-700' } }}
           mb={3}
           props={{ 'data-md': 'label' }}
         >
@@ -104,7 +104,7 @@ export default function Code(props: Props) {
         shadow="large"
         borderRadius={3}
         b={1}
-        theme={{ dark: { borderColor: 'slate-700' }, light: { borderColor: 'slate-200' } }}
+        theme={{ dark: { borderColor: 'base-700' }, light: { borderColor: 'base-200' } }}
         contentVisibility="auto"
         // `clip`, not `hidden`: a scroll container would hold a demo's sticky bar inside the block instead of the viewport.
         css={{ overflow: 'clip', containIntrinsicSize: `auto ${Math.round(estimate / 20) * 20}px` }}
@@ -119,7 +119,7 @@ export default function Code(props: Props) {
             p={6}
             // Reserved while the demo is held back, so the page does not jump as it fills in.
             minHeight={demoReady ? undefined : DEMO_HEIGHT / 4}
-            theme={{ dark: { bgColor: 'slate-900', borderColor: 'slate-700' }, light: { bgColor: 'slate-50', borderColor: 'slate-200' } }}
+            theme={{ dark: { bgColor: 'base-900', borderColor: 'base-700' }, light: { bgColor: 'base-50', borderColor: 'base-200' } }}
             bb={1}
           >
             {demoReady ? children : null}

@@ -1,6 +1,6 @@
 import Box from '../src/box';
 import Variables from '../src/core/variables';
-import type { BoxComponentStyles } from '../src/types';
+import { token } from './designs/codeToken';
 
 export const { extendedProps, extendedPropTypes } = Box.extend(
   {
@@ -91,20 +91,6 @@ export const { extendedProps, extendedPropTypes } = Box.extend(
   },
 );
 
-/** One token's colour, per theme. Inline, because every Box class carries the base `display: block`. */
-function token(dark: string, light: string, { theme, ...rest }: BoxComponentStyles = {}) {
-  return {
-    styles: {
-      display: 'inline',
-      ...rest,
-      theme: {
-        dark: { ...theme?.dark, css: { ...theme?.dark?.css, color: dark } },
-        light: { ...theme?.light, css: { ...theme?.light?.css, color: light } },
-      },
-    } satisfies BoxComponentStyles,
-  };
-}
-
 export const components = Box.components({
   button: {
     children: {
@@ -128,15 +114,187 @@ export const components = Box.components({
             },
           },
           secondary: {
-            bgColor: 'indigo-400',
+            bgColor: 'accent-400',
             hover: {
-              bgColor: 'indigo-500',
+              bgColor: 'accent-500',
             },
           },
         },
       },
     },
   },
+  // A display heading — the hero, a page title, a dialog's — so a design can give the site its own typeface.
+  display: {
+    styles: { fontWeight: 700 },
+    variants: { hero: { fontWeight: 800, letterSpacing: -1 } },
+  },
+  // The hero's second line: the library's own gradient-on-text, inert without the transparent colour beside it.
+  heroAccent: {
+    styles: {
+      width: 'fit-content',
+      mx: 'auto',
+      bgGradient: { linear: 'r', colors: ['accent-500', 'accent-500', 'pink-500'] },
+      bgClip: 'text',
+      color: 'transparent',
+    },
+  },
+
+  // The header's appearance dialog (`pages/components/designPicker.tsx`). A dialog, so every design's dialog reaches it.
+  designPicker: {
+    extends: 'dialog',
+    styles: { width: 'fit', maxWidth: 225, p: 6, sm: { p: 7 } },
+    children: {
+      trigger: {
+        styles: {
+          display: 'inline-flex',
+          ai: 'center',
+          gap: 2,
+          borderRadius: 2,
+          cursor: 'pointer',
+          transition: 'colors',
+          focusVisible: { outline: 2, outlineStyle: 'solid', outlineOffset: 2, outlineColor: 'accent-500' },
+          px: 3,
+          py: 1.5,
+          fontSize: 13,
+          fontWeight: 500,
+          b: 1,
+          bgColor: 'transparent',
+          color: 'base-600',
+          borderColor: 'base-200',
+          hover: { bgColor: 'base-100', color: 'base-900' },
+          active: { bgColor: 'base-200' },
+          theme: {
+            dark: { bgColor: 'transparent', color: 'base-400', borderColor: 'base-700', hover: { bgColor: 'base-800', color: 'white' } },
+          },
+        },
+        variants: { compact: { px: 2.75, py: 2.75, b: 0, theme: { light: { bgColor: 'base-100' }, dark: { bgColor: 'base-800' } } } },
+      },
+      swatch: {
+        styles: {
+          width: 3.5,
+          height: 3.5,
+          flexShrink: 0,
+          borderRadius: 4,
+          ring: 1,
+          ringColor: 'black/10',
+          theme: { dark: { ringColor: 'white/20' } },
+        },
+      },
+      mark: { styles: { color: 'accent-500', mt: 1 } },
+      label: {
+        styles: {
+          mb: 3,
+          fontSize: 12,
+          fontWeight: 600,
+          letterSpacing: 'wider',
+          textTransform: 'uppercase',
+          color: 'base-500',
+          theme: { dark: { color: 'base-400' } },
+        },
+      },
+      card: {
+        styles: {
+          display: 'block',
+          position: 'relative',
+          overflow: 'hidden',
+          pb: 4,
+          b: 1,
+          borderRadius: 3,
+          cursor: 'pointer',
+          bgColor: 'white',
+          borderColor: 'base-200',
+          transition: 'colors',
+          hover: { borderColor: 'base-300' },
+          has: { ':focus-visible': { outline: 2, outlineStyle: 'solid', outlineOffset: 2, outlineColor: 'accent-500' } },
+          theme: { dark: { bgColor: 'base-900', borderColor: 'base-700', hover: { borderColor: 'base-600' } } },
+        },
+        variants: {
+          selected: {
+            ring: 1,
+            ringColor: 'accent-500',
+            borderColor: 'accent-500',
+            hover: { borderColor: 'accent-500' },
+            theme: { dark: { borderColor: 'accent-400', ringColor: 'accent-400', hover: { borderColor: 'accent-400' } } },
+          },
+        },
+      },
+      preview: {
+        styles: {
+          p: 4,
+          bb: 1,
+          bgImage: 'gradient-aurora-light',
+          bgColor: 'base-50',
+          borderColor: 'base-200',
+          color: 'base-900',
+          theme: { dark: { bgImage: 'gradient-aurora-dark', bgColor: 'base-950', borderColor: 'base-800', color: 'base-100' } },
+        },
+      },
+      cardName: { styles: { fontSize: 14, fontWeight: 600 } },
+      cardDescription: {
+        styles: { px: 4, pt: 1, m: 0, fontSize: 13, lineHeight: 18, color: 'base-500', theme: { dark: { color: 'base-400' } } },
+      },
+      check: {
+        styles: {
+          display: 'flex',
+          ai: 'center',
+          jc: 'center',
+          width: 5,
+          height: 5,
+          flexShrink: 0,
+          borderRadius: 5,
+          b: 1,
+          borderColor: 'base-300',
+          color: 'transparent',
+          theme: { dark: { borderColor: 'base-600' } },
+        },
+        variants: {
+          selected: {
+            bgColor: 'accent-600',
+            borderColor: 'accent-600',
+            color: 'white',
+            theme: { dark: { bgColor: 'accent-500', borderColor: 'accent-500', color: 'base-950' } },
+          },
+        },
+      },
+      modes: {
+        styles: {
+          display: 'inline-flex',
+          gap: 1,
+          p: 1,
+          borderRadius: 2.5,
+          bgColor: 'base-100',
+          theme: { dark: { bgColor: 'base-800' } },
+        },
+      },
+      mode: {
+        styles: {
+          display: 'flex',
+          ai: 'center',
+          gap: 2,
+          px: 3,
+          py: 1.5,
+          borderRadius: 2,
+          fontSize: 13,
+          fontWeight: 500,
+          cursor: 'pointer',
+          color: 'base-600',
+          transition: 'colors',
+          hover: { color: 'base-900' },
+          has: { ':focus-visible': { outline: 2, outlineStyle: 'solid', outlineOffset: 0, outlineColor: 'accent-500' } },
+          theme: { dark: { color: 'base-400', hover: { color: 'white' } } },
+        },
+        variants: {
+          selected: {
+            bgColor: 'white',
+            color: 'base-900',
+            shadow: 'xs',
+            theme: { dark: { bgColor: 'base-700', color: 'white' } },
+          },
+        },
+      },
+    },
+  },
+
   // Color box for docs
   colorBox: {
     styles: {
@@ -147,7 +305,7 @@ export const components = Box.components({
       shadow: 'small',
       transition: 'all',
       transitionDuration: 150,
-      hover: { outline: 2, outlineOffset: 2, outlineColor: 'indigo-200' },
+      hover: { outline: 2, outlineOffset: 2, outlineColor: 'accent-200' },
     },
   },
 
@@ -204,8 +362,8 @@ export const components = Box.components({
           py: 3,
           bb: 1,
           theme: {
-            dark: { bgColor: 'code-bg-light', borderColor: 'slate-700' },
-            light: { bgColor: 'slate-50', borderColor: 'slate-200' },
+            dark: { bgColor: 'code-bg-light', borderColor: 'base-700' },
+            light: { bgColor: 'base-50', borderColor: 'base-200' },
           },
         },
       },
@@ -215,7 +373,7 @@ export const components = Box.components({
           ai: 'center',
           gap: 2,
           fontSize: 12,
-          theme: { dark: { color: 'slate-400' }, light: { color: 'slate-500' } },
+          theme: { dark: { color: 'base-400' }, light: { color: 'base-500' } },
         },
       },
       action: {
@@ -232,8 +390,8 @@ export const components = Box.components({
           textDecoration: 'none',
           transitionDuration: 150,
           theme: {
-            dark: { bgColor: 'slate-700', color: 'slate-300', hover: { bgColor: 'slate-600' } },
-            light: { bgColor: 'slate-200', color: 'slate-600', hover: { bgColor: 'slate-300' } },
+            dark: { bgColor: 'base-700', color: 'base-300', hover: { bgColor: 'base-600' } },
+            light: { bgColor: 'base-200', color: 'base-600', hover: { bgColor: 'base-300' } },
           },
         },
         variants: {
@@ -259,12 +417,12 @@ export const components = Box.components({
         },
       },
       gutter: {
-        styles: { theme: { dark: { color: 'slate-600' }, light: { css: { color: '#237893' } } } },
+        styles: { theme: { dark: { color: 'base-600' }, light: { css: { color: '#237893' } } } },
       },
       lineNumber: {
         styles: {},
         variants: {
-          current: { theme: { dark: { color: 'slate-300' }, light: { css: { color: '#0B216F' } } } },
+          current: { theme: { dark: { color: 'base-300' }, light: { css: { color: '#0B216F' } } } },
         },
       },
       currentLine: {
@@ -277,7 +435,7 @@ export const components = Box.components({
       field: {
         styles: {
           theme: {
-            dark: { caretColor: 'slate-100', selection: { css: { backgroundColor: '#264F78' } } },
+            dark: { caretColor: 'base-100', selection: { css: { backgroundColor: '#264F78' } } },
             light: { caretColor: 'black', selection: { css: { backgroundColor: '#ADD6FF' } } },
           },
         },
@@ -330,12 +488,12 @@ export const components = Box.components({
       bgColor: 'white',
       borderRadius: 3,
       b: 1,
-      borderColor: 'slate-200',
+      borderColor: 'base-200',
       transition: 'all',
       transitionDuration: 200,
       hover: {
         shadow: 'large',
-        borderColor: 'indigo-200',
+        borderColor: 'accent-200',
         translateY: -0.5,
       },
     },
@@ -356,13 +514,13 @@ export const components = Box.components({
         styles: {
           fontSize: 18,
           fontWeight: 600,
-          color: 'slate-900',
+          color: 'base-900',
         },
       },
       description: {
         styles: {
           fontSize: 14,
-          color: 'slate-600',
+          color: 'base-600',
           lineHeight: 24,
         },
       },
@@ -381,10 +539,10 @@ export const components = Box.components({
       cursor: 'pointer',
       transition: 'all',
       transitionDuration: 150,
-      color: 'slate-600',
+      color: 'base-600',
       hover: {
-        bgColor: 'slate-100',
-        color: 'slate-900',
+        bgColor: 'base-100',
+        color: 'base-900',
       },
     },
     variants: {
@@ -407,7 +565,7 @@ export const components = Box.components({
       fontWeight: 600,
       textTransform: 'uppercase',
       letterSpacing: 1,
-      color: 'slate-400',
+      color: 'base-400',
       px: 4,
       py: 2,
     },
@@ -424,8 +582,8 @@ export const components = Box.components({
       borderRadius: 10,
       fontSize: 12,
       fontWeight: 500,
-      bgColor: 'indigo-100',
-      color: 'indigo-700',
+      bgColor: 'accent-100',
+      color: 'accent-700',
     },
     variants: {
       success: {
@@ -452,24 +610,24 @@ export const components = Box.components({
       outlined: {
         bgColor: 'transparent',
         b: 2,
-        borderColor: 'indigo-500',
-        color: 'indigo-600',
-        theme: { dark: { borderColor: 'indigo-400', color: 'indigo-300' } },
+        borderColor: 'accent-500',
+        color: 'accent-600',
+        theme: { dark: { borderColor: 'accent-400', color: 'accent-300' } },
       },
     },
     children: {
       item: {
         variants: {
           outlined: {
-            hover: { bgColor: 'indigo-50' },
-            selected: { bgColor: 'indigo-100', color: 'indigo-700' },
-            theme: { dark: { hover: { bgColor: 'indigo-950' }, selected: { bgColor: 'indigo-900', color: 'indigo-200' } } },
+            hover: { bgColor: 'accent-50' },
+            selected: { bgColor: 'accent-100', color: 'accent-700' },
+            theme: { dark: { hover: { bgColor: 'accent-950' }, selected: { bgColor: 'accent-900', color: 'accent-200' } } },
           },
         },
       },
       items: {
         variants: {
-          outlined: { b: 2, borderColor: 'indigo-500', theme: { dark: { borderColor: 'indigo-400' } } },
+          outlined: { b: 2, borderColor: 'accent-500', theme: { dark: { borderColor: 'accent-400' } } },
         },
       },
     },
@@ -491,12 +649,12 @@ export const components = Box.components({
           cell: {
             variants: {
               isExpanded: {
-                bgColor: 'slate-100',
-                group: { 'grid-row/hover': { bgColor: 'slate-200' } },
+                bgColor: 'base-100',
+                group: { 'grid-row/hover': { bgColor: 'base-200' } },
                 theme: {
                   dark: {
-                    bgColor: 'slate-950',
-                    group: { 'grid-row/hover': { bgColor: 'slate-900' } },
+                    bgColor: 'base-950',
+                    group: { 'grid-row/hover': { bgColor: 'base-900' } },
                   },
                 },
               },
@@ -504,11 +662,11 @@ export const components = Box.components({
           },
           detailRow: {
             styles: {
-              bgColor: 'slate-100',
+              bgColor: 'base-100',
               // Two steps off the drawer, not one: at `slate-200` the rule closing one block sits between
               // two surfaces of nearly its own lightness, and two open rows in a row merge into one.
-              borderColor: 'slate-300',
-              theme: { dark: { bgColor: 'slate-950', borderColor: 'slate-800' } },
+              borderColor: 'base-300',
+              theme: { dark: { bgColor: 'base-950', borderColor: 'base-800' } },
             },
           },
         },
@@ -582,3 +740,8 @@ export const components = Box.components({
     },
   },
 });
+
+// The second design. Imported here so it registers wherever the site's components do — the browser and the prerender.
+import './designs/azure';
+import './designs/ember';
+import './designs/mono';

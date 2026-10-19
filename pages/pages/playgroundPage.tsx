@@ -151,7 +151,7 @@ interface WorkbenchProps {
   onShare: (params: URLSearchParams, options: { replace: boolean }) => void;
 }
 
-const border = { theme: { dark: { borderColor: 'slate-700' }, light: { borderColor: 'slate-200' } } } satisfies BoxProps;
+const border = { theme: { dark: { borderColor: 'base-700' }, light: { borderColor: 'base-200' } } } satisfies BoxProps;
 
 function Workbench({ scope, source, settled, onChange, onShare }: WorkbenchProps) {
   const compiled = useMemo(() => compileSnippet(settled, scope), [settled, scope]);
@@ -190,7 +190,7 @@ function Workbench({ scope, source, settled, onChange, onShare }: WorkbenchProps
       inset={fullscreen.full ? 0 : undefined}
       zIndex={fullscreen.full ? 100 : undefined}
       p={fullscreen.full ? 3 : undefined}
-      theme={fullscreen.full ? { dark: { bgColor: 'slate-950' }, light: { bgColor: 'slate-50' } } : undefined}
+      theme={fullscreen.full ? { dark: { bgColor: 'base-950' }, light: { bgColor: 'base-50' } } : undefined}
     >
       <Toolbar
         source={source}
@@ -285,7 +285,7 @@ function Workbench({ scope, source, settled, onChange, onShare }: WorkbenchProps
                 flex1
                 overflow="auto"
                 p={6}
-                theme={{ dark: { bgColor: 'slate-900', color: 'slate-100' }, light: { bgColor: 'white', color: 'slate-900' } }}
+                theme={{ dark: { bgColor: 'base-900', color: 'base-100' }, light: { bgColor: 'white', color: 'base-900' } }}
               >
                 <Status compiled={compiled} />
                 {/* Keyed by the snippet, so a new one remounts and the ref reads the rules it wrote. */}
@@ -332,7 +332,7 @@ function Workbench({ scope, source, settled, onChange, onShare }: WorkbenchProps
                     ))}
                   </Flex>
                 ) : (
-                  <Box color="slate-400" fontSize={13}>
+                  <Box color="base-400" fontSize={13}>
                     No rules yet — the preview has not rendered anything the engine had to write CSS for.
                   </Box>
                 )}
@@ -342,7 +342,7 @@ function Workbench({ scope, source, settled, onChange, onShare }: WorkbenchProps
         </Flex>
       </Flex>
 
-      <Box fontSize={12} color="slate-500">
+      <Box fontSize={12} color="base-500">
         Suggestions open as you type a prop or a value — <Key>Ctrl</Key> <Key>Space</Key> asks for them anywhere. <Key>Ctrl</Key>{' '}
         <Key>S</Key> formats the snippet. Tab indents, so <Key>Esc</Key> then <Key>Tab</Key> is the way out of the editor.
       </Box>
@@ -377,8 +377,8 @@ function ShowButton({ label, onClick, children }: { label: string; onClick: () =
       shadow="md"
       onClick={onClick}
       theme={{
-        light: { bgColor: 'white', color: 'slate-700', borderColor: 'slate-200', hover: { bgColor: 'slate-50', color: 'indigo-700' } },
-        dark: { bgColor: 'slate-800', color: 'slate-200', borderColor: 'slate-700', hover: { bgColor: 'slate-700', color: 'white' } },
+        light: { bgColor: 'white', color: 'base-700', borderColor: 'base-200', hover: { bgColor: 'base-50', color: 'accent-700' } },
+        dark: { bgColor: 'base-800', color: 'base-200', borderColor: 'base-700', hover: { bgColor: 'base-700', color: 'white' } },
       }}
     >
       <Flex ai="center" gap={1.5}>
@@ -392,7 +392,7 @@ function ShowButton({ label, onClick, children }: { label: string; onClick: () =
 function PaneHeader({ title, children }: { title: string; children?: ReactNode }) {
   return (
     <Flex ai="center" jc="space-between" gap={2} flexShrink={0} height={10} px={3} bb={1} {...border}>
-      <H2 fontSize={12} fontWeight={600} color="slate-500" whiteSpace="nowrap" overflow="hidden" textOverflow="ellipsis">
+      <H2 fontSize={12} fontWeight={600} color="base-500" whiteSpace="nowrap" overflow="hidden" textOverflow="ellipsis">
         {title}
       </H2>
       {children}
@@ -505,7 +505,7 @@ function Toolbar({ source, body, onChange, layout, onLayoutChange, fullscreen }:
 }
 
 function Divider() {
-  return <Box width={0.25} height={5} mx={1} bgColor="slate-300" theme={{ dark: { bgColor: 'slate-700' } }} />;
+  return <Box width={0.25} height={5} mx={1} bgColor="base-300" theme={{ dark: { bgColor: 'base-700' } }} />;
 }
 
 function useCopied(): [boolean, () => void] {
@@ -541,9 +541,9 @@ function PaneButton({ label, onClick, done, children }: PaneButtonProps) {
       cursor="pointer"
       p={1.5}
       borderRadius={1.5}
-      color="slate-500"
-      hover={{ color: 'slate-700', bgColor: 'slate-500/10' }}
-      theme={{ dark: { hover: { color: 'slate-200' } } }}
+      color="base-500"
+      hover={{ color: 'base-700', bgColor: 'base-500/10' }}
+      theme={{ dark: { hover: { color: 'base-200' } } }}
       onClick={() => {
         onClick();
         setPressed();
@@ -563,15 +563,15 @@ const actionStyles = {
   borderRadius: 2,
   fontSize: 12,
   theme: {
-    dark: { bgColor: 'slate-800', color: 'slate-300', hover: { bgColor: 'slate-700' } },
-    light: { bgColor: 'slate-100', color: 'slate-600', hover: { bgColor: 'slate-200' } },
+    dark: { bgColor: 'base-800', color: 'base-300', hover: { bgColor: 'base-700' } },
+    light: { bgColor: 'base-100', color: 'base-600', hover: { bgColor: 'base-200' } },
   },
 } satisfies BoxProps;
 
 /** A toggle that is on wears the accent, so the panes showing can be read off the toolbar at a glance. */
 const pressedTheme = {
-  dark: { bgColor: 'indigo-500/20', color: 'indigo-200', hover: { bgColor: 'indigo-500/30' } },
-  light: { bgColor: 'indigo-50', color: 'indigo-700', hover: { bgColor: 'indigo-100' } },
+  dark: { bgColor: 'accent-500/20', color: 'accent-200', hover: { bgColor: 'accent-500/30' } },
+  light: { bgColor: 'accent-50', color: 'accent-700', hover: { bgColor: 'accent-100' } },
 } satisfies BoxProps['theme'];
 
 interface ActionButtonProps extends Pick<BoxProps, 'display' | 'xl'> {
@@ -612,7 +612,7 @@ function Key({ children }: { children: ReactNode }) {
       borderRadius={1}
       fontSize={11}
       b={1}
-      theme={{ dark: { borderColor: 'slate-700', bgColor: 'slate-800' }, light: { borderColor: 'slate-200', bgColor: 'slate-50' } }}
+      theme={{ dark: { borderColor: 'base-700', bgColor: 'base-800' }, light: { borderColor: 'base-200', bgColor: 'base-50' } }}
     >
       {children}
     </Box>

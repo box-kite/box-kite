@@ -18,7 +18,7 @@ export default function DataGridBooleanValue(props: Props) {
         width="1rem"
         height="1rem"
         css={{ verticalAlign: 'middle' }}
-        color={value ? undefined : 'gray-400'}
+        color={value ? undefined : 'base-400'}
         props={{ fill: 'none' }}
       >
         <Path

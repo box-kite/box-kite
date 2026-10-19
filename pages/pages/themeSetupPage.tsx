@@ -2,9 +2,11 @@ import { Moon, Paintbrush, Sun } from 'lucide-react';
 import Box from '../../src/box';
 import Button from '../../src/components/button';
 import Flex from '../../src/components/flex';
+import Switch from '../../src/components/switch';
 import Code from '../components/code';
 import PageHeader from '../components/pageHeader';
 import Reveal from '../components/reveal';
+import { DESIGNS, designScope } from '../designs/designs';
 import useTableOfContents from '../hooks/useTableOfContents';
 
 export default function ThemeSetupPage() {
@@ -243,6 +245,72 @@ function Panel() {
               </Box>
             </Box.Theme>
           </Code>
+
+          <Code
+            id="designs"
+            label="A Second Design"
+            language="jsx"
+            code={`import Box from '@box-kite/react';
+import Button from '@box-kite/react/components/button';
+
+// A design is a Box.components() object with a name, merged over the app's own. Its rules carry
+// [data-design="ember"], so it is chosen in CSS: a stored choice written onto <html> before the first
+// paint is all a prerendered page needs, and the server and the browser render the same classes.
+Box.components(
+  {
+    button: { styles: { borderRadius: 2.5, bgGradient: { linear: 'b', colors: ['accent-500', 'accent-600'] } } },
+    dialog: { styles: { borderRadius: 5, p: 7 } },
+  },
+  { design: 'ember' },
+);
+
+// Every component is drawn in two families a design repoints: accent (indigo) and base (gray).
+// Box.palette() is the vars record that does it — a family's name, or eleven colours of your own.
+const tokens = { dataAttr: { 'design=ember': { vars: Box.palette({ accent: 'orange', base: 'stone' }) } } };
+
+function Providers({ children }: { children: React.ReactNode }) {
+  return (
+    <Box.Theme use="global" design="classic" designStorageKey="design" globalStyles={tokens}>
+      {children}
+    </Box.Theme>
+  );
+}
+
+// Box.useDesign() is Box.useTheme() for the second axis; null goes back to the design prop.
+function DesignSwitch() {
+  const [design, setDesign] = Box.useDesign();
+
+  return <Button onClick={() => setDesign(design === 'ember' ? 'classic' : 'ember')}>{design}</Button>;
+}
+
+// Before the first paint, in <head> — the same one line a stored theme needs:
+//   <script>try { var d = localStorage.getItem('design'); if (d) document.documentElement.setAttribute('data-design', d) } catch (e) {}</script>`}
+          >
+            <Flex gap={4} flexWrap="wrap">
+              {DESIGNS.map((design) => (
+                <Flex
+                  key={design.id}
+                  {...designScope(design.id)}
+                  props={{ 'data-design': design.id }}
+                  d="column"
+                  gap={3}
+                  p={4}
+                  b={1}
+                  borderRadius={3}
+                  theme={{ light: { borderColor: 'base-200', bgColor: 'base-50' }, dark: { borderColor: 'base-800', bgColor: 'base-950' } }}
+                >
+                  <Box fontSize={13} fontWeight={600}>
+                    {design.name}
+                  </Box>
+                  <Flex gap={2} ai="center">
+                    <Button>Save</Button>
+                    <Button variant="secondary">Cancel</Button>
+                    <Switch label="Live" defaultChecked />
+                  </Flex>
+                </Flex>
+              ))}
+            </Flex>
+          </Code>
         </Flex>
       </Reveal>
     </Box>
@@ -255,6 +323,7 @@ const sidebarLinks = [
   { id: 'theme-switching', label: 'Theme Switching' },
   { id: 'animating-the-switch', label: 'Animating the Switch' },
   { id: 'nesting', label: 'A Theme Inside a Theme' },
+  { id: 'designs', label: 'A Second Design' },
 ] as const;
 
 function Sample() {
@@ -266,8 +335,8 @@ function Sample() {
       borderRadius={2}
       b={1}
       theme={{
-        light: { color: 'indigo-950', bgColor: 'white' },
-        dark: { color: 'white', bgColor: 'indigo-950' },
+        light: { color: 'accent-950', bgColor: 'white' },
+        dark: { color: 'white', bgColor: 'accent-950' },
       }}
     >
       <Flex gap={3} ai="center">

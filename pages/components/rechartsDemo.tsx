@@ -23,8 +23,8 @@ export default function RechartsDemo() {
   return (
     <ChartContainer
       series={['revenue', 'cost']}
-      vars={{ 'chart-grid': 'slate-200', 'chart-label': 'slate-500' }}
-      theme={{ dark: { vars: { 'chart-grid': 'slate-800', 'chart-label': 'slate-400' } } }}
+      vars={{ 'chart-grid': 'base-200', 'chart-label': 'base-500' }}
+      theme={{ dark: { vars: { 'chart-grid': 'base-800', 'chart-label': 'base-400' } } }}
       height={60}
     >
       <ResponsiveContainer width="100%" height="100%">

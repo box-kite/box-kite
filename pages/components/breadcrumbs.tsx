@@ -24,7 +24,7 @@ export default function Breadcrumbs() {
         ai="center"
         gap={1.5}
         fontSize={13}
-        theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-500' } }}
+        theme={{ dark: { color: 'base-400' }, light: { color: 'base-500' } }}
       >
         {crumbs.map((crumb, index) => {
           const last = index === crumbs.length - 1;
@@ -45,7 +45,7 @@ export default function Breadcrumbs() {
                   to={crumb.path}
                   textDecoration="none"
                   whiteSpace="nowrap"
-                  theme={{ dark: { hover: { color: 'white' } }, light: { hover: { color: 'slate-900' } } }}
+                  theme={{ dark: { hover: { color: 'white' } }, light: { hover: { color: 'base-900' } } }}
                 >
                   {crumb.name}
                 </SiteLink>

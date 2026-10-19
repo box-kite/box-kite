@@ -211,7 +211,7 @@ describe('SwipeItem', () => {
     );
 
     expect(rowOf().querySelector('[aria-hidden="true"] svg')).not.toBeNull();
-    expect(document.querySelector('li')!.className).toContain('bgColor-indigo-500/10');
+    expect(document.querySelector('li')!.className).toContain('bgColor-accent-500/10');
     expect(rowOf().className).toContain('minHeight-11');
   });
 });

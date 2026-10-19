@@ -5,6 +5,7 @@ import Box from '../../src/box';
 import Flex from '../../src/components/flex';
 import Icon from '../../src/components/icon';
 import { Link, Nav } from '../../src/components/semantics';
+import DesignPicker from '../components/designPicker';
 import SiteLink from '../components/siteLink';
 import { Section, SECTIONS, sectionOf } from '../site/sections';
 import { REPO_URL } from '../site/site';
@@ -15,8 +16,8 @@ import SiNpm from '~icons/simple-icons/npm';
 const ICONS: Record<Section, ReactElement> = { docs: <BookOpen />, start: <Zap />, templates: <LayoutTemplate />, blog: <Newspaper /> };
 
 const muted = {
-  dark: { color: 'slate-400', hover: { color: 'white' } },
-  light: { color: 'slate-500', hover: { color: 'slate-900' } },
+  dark: { color: 'base-400', hover: { color: 'white' } },
+  light: { color: 'base-500', hover: { color: 'base-900' } },
 } as const;
 
 /**
@@ -59,16 +60,16 @@ export default function SectionNav({ placement }: { placement: 'bar' | 'drawer' 
             transition="colors"
             theme={
               active
-                ? { dark: { bgColor: 'slate-800', color: 'white' }, light: { bgColor: 'slate-100', color: 'slate-900' } }
+                ? { dark: { bgColor: 'base-800', color: 'white' }, light: { bgColor: 'base-100', color: 'base-900' } }
                 : accent
                   ? {
-                      dark: { color: 'violet-300', hover: { color: 'violet-200' } },
-                      light: { color: 'violet-600', hover: { color: 'violet-700' } },
+                      dark: { color: 'accent-300', hover: { color: 'accent-200' } },
+                      light: { color: 'accent-600', hover: { color: 'accent-700' } },
                     }
                   : muted
             }
           >
-            <Icon size={bar ? 4 : 3.5} theme={accent ? { dark: { color: 'violet-400' }, light: { color: 'violet-500' } } : undefined}>
+            <Icon size={bar ? 4 : 3.5} theme={accent ? { dark: { color: 'accent-400' }, light: { color: 'accent-500' } } : undefined}>
               {ICONS[id]}
             </Icon>
             {label}
@@ -77,7 +78,8 @@ export default function SectionNav({ placement }: { placement: 'bar' | 'drawer' 
       })}
 
       {bar && (
-        <Flex ai="center" gap={1} ms="auto">
+        <Flex ai="center" gap={2} ms="auto">
+          <DesignPicker />
           <External href={REPO_URL} label="Star Box Kite on GitHub" text="Star">
             <SiGithub />
           </External>
@@ -107,7 +109,7 @@ function External({ href, label, text, children }: { href: string; label: string
       textDecoration="none"
       cursor="pointer"
       transition="colors"
-      theme={text ? { dark: { ...muted.dark, borderColor: 'slate-700' }, light: { ...muted.light, borderColor: 'slate-200' } } : muted}
+      theme={text ? { dark: { ...muted.dark, borderColor: 'base-700' }, light: { ...muted.light, borderColor: 'base-200' } } : muted}
     >
       <Icon size={text ? 4 : 4.5} label={text ? undefined : label}>
         {children}
@@ -130,7 +132,7 @@ export function SectionBar() {
       px={6}
       bb={1}
       backdropBlur="md"
-      theme={{ dark: { borderColor: 'slate-800', bgColor: 'slate-900/70' }, light: { borderColor: 'slate-200', bgColor: 'white/70' } }}
+      theme={{ dark: { borderColor: 'base-800', bgColor: 'base-900/70' }, light: { borderColor: 'base-200', bgColor: 'white/70' } }}
     >
       <Flex height="fit" ai="center">
         <SectionNav placement="bar" />

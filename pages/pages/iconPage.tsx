@@ -453,10 +453,10 @@ function ActiveLink({ to, children }: { to: string; children: React.ReactNode })
 const swatches = [
   { icon: <Sun />, color: 'amber-500', dark: 'amber-400' },
   { icon: <Heart />, color: 'rose-500', dark: 'rose-400' },
-  { icon: <Star />, color: 'violet-500', dark: 'violet-400' },
+  { icon: <Star />, color: 'accent-500', dark: 'accent-400' },
   { icon: <Bell />, color: 'sky-500', dark: 'sky-400' },
   { icon: <Search />, color: 'emerald-500', dark: 'emerald-400' },
-  { icon: <ChartLine />, color: 'indigo-500', dark: 'indigo-400' },
+  { icon: <ChartLine />, color: 'accent-500', dark: 'accent-400' },
 ] as const;
 
 const props = [
@@ -527,7 +527,7 @@ function HeadCell({ children }: { children: ReactNode }) {
       py={2}
       pr={6}
       bb={1}
-      theme={{ dark: { color: 'slate-300', borderColor: 'slate-700' }, light: { color: 'slate-700', borderColor: 'slate-200' } }}
+      theme={{ dark: { color: 'base-300', borderColor: 'base-700' }, light: { color: 'base-700', borderColor: 'base-200' } }}
     >
       {children}
     </Box>
@@ -543,7 +543,7 @@ function Cell({ children }: { children: ReactNode }) {
       py={2}
       pr={6}
       bb={1}
-      theme={{ dark: { color: 'slate-400', borderColor: 'slate-800' }, light: { color: 'slate-600', borderColor: 'slate-100' } }}
+      theme={{ dark: { color: 'base-400', borderColor: 'base-800' }, light: { color: 'base-600', borderColor: 'base-100' } }}
     >
       {children}
     </Box>
@@ -553,10 +553,10 @@ function Cell({ children }: { children: ReactNode }) {
 function Section({ id, title, children }: { id: string; title: string; children: ReactNode }) {
   return (
     <Box id={id}>
-      <H2 fontSize={20} fontWeight={600} mb={4} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }}>
+      <H2 fontSize={20} fontWeight={600} mb={4} theme={{ dark: { color: 'white' }, light: { color: 'base-900' } }}>
         {title}
       </H2>
-      <Box fontSize={15} lineHeight={26} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
+      <Box fontSize={15} lineHeight={26} theme={{ dark: { color: 'base-400' }, light: { color: 'base-600' } }}>
         {children}
       </Box>
     </Box>

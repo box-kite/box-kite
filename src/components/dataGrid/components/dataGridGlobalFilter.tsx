@@ -42,7 +42,7 @@ export default function DataGridGlobalFilter<TRow>(props: Props<TRow>) {
         </Box>
       )}
       <Flex position="relative" ai="center">
-        <Flex position="absolute" insetStart={3} pointerEvents="none" color="gray-400" theme={{ dark: { color: 'gray-500' } }}>
+        <Flex position="absolute" insetStart={3} pointerEvents="none" color="base-400" theme={{ dark: { color: 'base-500' } }}>
           <SearchIcon fill="currentColor" width="14px" />
         </Flex>
         <Textbox
@@ -59,9 +59,9 @@ export default function DataGridGlobalFilter<TRow>(props: Props<TRow>) {
             insetEnd={2}
             cursor="pointer"
             p={1}
-            color="gray-400"
-            hover={{ color: 'gray-600' }}
-            theme={{ dark: { color: 'gray-500', hover: { color: 'gray-300' } } }}
+            color="base-400"
+            hover={{ color: 'base-600' }}
+            theme={{ dark: { color: 'base-500', hover: { color: 'base-300' } } }}
             props={{ onClick: handleClear }}
           >
             <Box fontSize={12} fontWeight={600}>

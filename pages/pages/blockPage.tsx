@@ -19,11 +19,11 @@ import NotFoundPage from './notFoundPage';
 
 const linkTheme = {
   dark: { color: 'sky-400', hover: { color: 'sky-300' } },
-  light: { color: 'indigo-600', hover: { color: 'indigo-500' } },
+  light: { color: 'accent-600', hover: { color: 'accent-500' } },
 } as const;
 
-const prose = { dark: { color: 'slate-400' }, light: { color: 'slate-600' } } as const;
-const heading = { dark: { color: 'white' }, light: { color: 'slate-900' } } as const;
+const prose = { dark: { color: 'base-400' }, light: { color: 'base-600' } } as const;
+const heading = { dark: { color: 'white' }, light: { color: 'base-900' } } as const;
 
 /** One block: `/blocks/<slug>/`, its preview handed over by the route's loader as `Content`. */
 export default function BlockPage({ Content, sources = {} }: FamilyPageProps) {
@@ -67,7 +67,7 @@ export default function BlockPage({ Content, sources = {} }: FamilyPageProps) {
               <Link props={{ href: itemPath(item.name), target: '_blank', rel: 'noreferrer' }} theme={linkTheme}>
                 The item JSON
               </Link>
-              <Box color="slate-500">
+              <Box color="base-500">
                 {item.files.length} file{item.files.length === 1 ? '' : 's'} · installs{' '}
                 {[...item.dependencies, ...dependencies.map((entry) => entry.name)].join(', ')}
               </Box>
@@ -91,7 +91,7 @@ export default function BlockPage({ Content, sources = {} }: FamilyPageProps) {
               b={1}
               borderRadius={3}
               overflow="hidden"
-              theme={{ dark: { borderColor: 'slate-700' }, light: { borderColor: 'slate-200' } }}
+              theme={{ dark: { borderColor: 'base-700' }, light: { borderColor: 'base-200' } }}
             >
               <Half theme="light" wide={block.wide} Content={Content} />
               <Half theme="dark" wide={block.wide} Content={Content} />
@@ -165,7 +165,7 @@ function Half({ theme, wide, Content }: { theme: SnapshotTheme; wide?: boolean; 
         position="relative"
         props={{ 'data-md': 'skip', 'data-preview': '', 'data-snapshot': theme }}
         {...divider}
-        theme={{ dark: { bgColor: 'slate-900', borderColor: 'slate-700' }, light: { bgColor: 'white', borderColor: 'slate-200' } }}
+        theme={{ dark: { bgColor: 'base-900', borderColor: 'base-700' }, light: { bgColor: 'white', borderColor: 'base-200' } }}
       >
         <Box
           position="absolute"
@@ -175,7 +175,7 @@ function Half({ theme, wide, Content }: { theme: SnapshotTheme; wide?: boolean; 
           fontWeight={600}
           letterSpacing={1}
           textTransform="uppercase"
-          theme={{ dark: { color: 'slate-500' }, light: { color: 'slate-400' } }}
+          theme={{ dark: { color: 'base-500' }, light: { color: 'base-400' } }}
         >
           {theme}
         </Box>

@@ -35,7 +35,7 @@ export default function DataGridColumnGroups<TRow>(props: Props<TRow>) {
                 // removes and the button has to say so too.
                 props={{ 'aria-label': grid.localeText.stopGrouping(String(column.header ?? column.key)) }}
               >
-                <Box fontSize={10} color="gray-400" hover={{ color: 'gray-600' }}>
+                <Box fontSize={10} color="base-400" hover={{ color: 'base-600' }}>
                   ✕
                 </Box>
               </Button>

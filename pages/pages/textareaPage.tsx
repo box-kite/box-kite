@@ -21,7 +21,7 @@ export default function TextareaPage() {
           <Code label="Import" language="jsx" code="import Textarea from '@box-kite/react/components/textarea';" />
 
           <Code label="Basic Textarea" language="jsx" code='<Textarea placeholder="ex. description" />'>
-            <Textarea placeholder="ex. description" theme={{ dark: { bgColor: 'slate-800', color: 'white' } }} />
+            <Textarea placeholder="ex. description" />
           </Code>
 
           <Code label="Disabled Textarea" language="jsx" code='<Textarea disabled defaultValue="Disabled" />'>

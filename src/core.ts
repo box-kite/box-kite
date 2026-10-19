@@ -18,6 +18,8 @@ export { classNames } from './core/classNames';
 export type { ClassNameType } from './core/classNames';
 export { mergeDeep } from './core/mergeDeep';
 export { default as Springs } from './core/springs';
+export { default as Palette } from './core/palette';
+export { default as Designs } from './core/designs';
 export { createStyleEngine, DEFAULT_STYLE_ELEMENT_ID } from './core/engine/styleEngine';
 export { default as getDefaultEngine } from './core/engine/defaultEngine';
 export { default as BoxExtends } from './core/extends/boxExtends';
@@ -44,6 +46,7 @@ export type { ThemeTransition } from './core/theme/themeTransition';
 export { default as createThemeController } from './core/theme/themeController';
 export type { ThemeController, ThemeControllerOptions } from './core/theme/themeController';
 export {
+  applyDesignToElement,
   applyThemeToElement,
   clearStoredTheme,
   defaultThemeName,

@@ -139,15 +139,15 @@ const sidebarLinks = [
   { id: 'faq', label: 'Questions' },
 ];
 
-const headingTheme = { dark: { color: 'white' }, light: { color: 'slate-900' } } as const;
-const textTheme = { dark: { color: 'slate-400' }, light: { color: 'slate-600' } } as const;
+const headingTheme = { dark: { color: 'white' }, light: { color: 'base-900' } } as const;
+const textTheme = { dark: { color: 'base-400' }, light: { color: 'base-600' } } as const;
 const cardTheme = {
-  dark: { bgColor: 'slate-800', borderColor: 'slate-700' },
-  light: { bgColor: 'white', borderColor: 'slate-200' },
+  dark: { bgColor: 'base-800', borderColor: 'base-700' },
+  light: { bgColor: 'white', borderColor: 'base-200' },
 } as const;
 const linkStyles = {
   display: 'inline',
-  theme: { dark: { color: 'violet-400' }, light: { color: 'violet-600' } },
+  theme: { dark: { color: 'accent-400' }, light: { color: 'accent-600' } },
   hover: { textDecoration: 'underline' },
 } as const;
 const ctaStyles = { display: 'inline-flex', ai: 'center', jc: 'center', gap: 2, px: 5, py: 2.5, fontSize: 15 } as const;
@@ -221,7 +221,7 @@ function Hero({ product, onProductChange }: { product: string; onProductChange: 
           borderRadius={10}
           fontSize={13}
           fontWeight={500}
-          theme={{ dark: { bgColor: 'slate-800', color: 'indigo-300' }, light: { bgColor: 'indigo-50', color: 'indigo-700' } }}
+          theme={{ dark: { bgColor: 'base-800', color: 'accent-300' }, light: { bgColor: 'accent-50', color: 'accent-700' } }}
         >
           <Icon size={3.5}>
             <Bot />
@@ -247,7 +247,7 @@ function Hero({ product, onProductChange }: { product: string; onProductChange: 
           <Box
             tag="span"
             display="inline"
-            bgGradient={{ linear: 'r', colors: ['indigo-500', 'violet-500', 'pink-500'] }}
+            bgGradient={{ linear: 'r', colors: ['accent-500', 'accent-500', 'pink-500'] }}
             bgClip="text"
             color="transparent"
           >
@@ -268,7 +268,7 @@ function Hero({ product, onProductChange }: { product: string; onProductChange: 
             fontSize={15}
             fontWeight={600}
             mb={2}
-            theme={{ dark: { color: 'slate-200' }, light: { color: 'slate-700' } }}
+            theme={{ dark: { color: 'base-200' }, light: { color: 'base-700' } }}
           >
             What are you building?
           </Label>
@@ -292,7 +292,7 @@ function Hero({ product, onProductChange }: { product: string; onProductChange: 
                 fontSize={13}
                 borderRadius={10}
                 props={{ 'aria-pressed': product === example }}
-                ariaAttr={{ pressed: { borderColor: 'indigo-500', bgColor: 'indigo-500/10' } }}
+                ariaAttr={{ pressed: { borderColor: 'accent-500', bgColor: 'accent-500/10' } }}
                 onClick={() => onProductChange(example)}
               >
                 {example}
@@ -407,7 +407,7 @@ function Step({ id, number, title, outcomes, children }: StepProps) {
             borderRadius={10}
             fontSize={12}
             fontWeight={500}
-            theme={{ dark: { bgColor: 'slate-800', color: 'slate-300' }, light: { bgColor: 'slate-100', color: 'slate-700' } }}
+            theme={{ dark: { bgColor: 'base-800', color: 'base-300' }, light: { bgColor: 'base-100', color: 'base-700' } }}
           >
             <Icon size={3} color="emerald-500">
               <Check />
@@ -451,7 +451,7 @@ function Prompt({ label, prompt }: { label: string; prompt: string }) {
       borderRadius={3}
       overflow="hidden"
       b={1}
-      theme={{ dark: { borderColor: 'slate-700' }, light: { borderColor: 'slate-200' } }}
+      theme={{ dark: { borderColor: 'base-700' }, light: { borderColor: 'base-200' } }}
     >
       <Box component="code">
         <Box component="code.header" props={{ 'data-md': 'skip' }}>
@@ -489,7 +489,7 @@ function ClosingCta() {
       p={6}
       borderRadius={4}
       color="white"
-      bgGradient={{ linear: 'r', colors: ['indigo-600', 'violet-600'] }}
+      bgGradient={{ linear: 'r', colors: ['accent-600', 'accent-600'] }}
     >
       <Box>
         <H2 fontSize={22} fontWeight={700} mb={2}>

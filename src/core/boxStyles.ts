@@ -86,6 +86,9 @@ const ratioValue = {
  */
 const safeAlignments = ['safe center', 'safe start', 'safe end', 'unsafe center', 'unsafe start', 'unsafe end'] as const;
 
+/** Tailwind's tracking scale, in `em` so a heading keeps its tightness at any size. */
+const trackings = { tighter: '-0.05em', tight: '-0.025em', normal: '0em', wide: '0.025em', wider: '0.05em', widest: '0.1em' } as const;
+
 /**
  * One axis of the composed `translate`. Both axes used to write `transform`, so a Box asking for both kept
  * whichever rule landed last; each now sets its own custom property and both write the same declaration,
@@ -1731,6 +1734,7 @@ export const cssStyles = {
   ],
   /**
    * The letter-spacing CSS property sets the horizontal spacing behavior between text characters. This value is added to the natural spacing between characters while rendering the text. Positive values of letter-spacing causes characters to spread farther apart, while negative values of letter-spacing bring characters closer together.
+   * A number is pixels; Tailwind's tracking names (`tighter` … `widest`) are in `em`, so they scale with the text — what a display heading wants.
    * @example letterSpacing={4} → letter-spacing: 4px
    */
   letterSpacing: [
@@ -1738,6 +1742,11 @@ export const cssStyles = {
       styleName: 'letter-spacing',
       values: 0,
       valueFormat: BoxStylesFormatters.Value.px,
+    },
+    {
+      styleName: 'letter-spacing',
+      values: ['tighter', 'tight', 'normal', 'wide', 'wider', 'widest'] as const,
+      valueFormat: (value: string) => trackings[value as keyof typeof trackings],
     },
   ],
   /**
@@ -3040,7 +3049,8 @@ export const cssStyles = {
    * or an angle, `radial` a shape, `conic` an angle to start from), `colors` are the stops in order — a
    * palette token, one with an opacity modifier, or a `[colour, position]` pair. `interpolate="oklch"` is
    * what keeps a two-stop gradient out of the grey middle sRGB runs it through. Writes `background-image`,
-   * so it and `bgImage` are the same property: use one.
+   * so it and `bgImage` are the same property: use one. `'none'` clears it — the only way a variant or a
+   * design can take a gradient back off, since `bgGradient` is declared after `bgImage` and wins the property.
    * @example bgGradient={{ linear: 'r', colors: ['blue-500', 'pink-500'] }} → background-image: linear-gradient(to right,var(--blue-500,oklch(62.3% .214 259.8)),var(--pink-500,ok…
    */
   bgGradient: [
@@ -3048,6 +3058,10 @@ export const cssStyles = {
       values: {} as Gradients.Gradient,
       match: Gradients.isGradient,
       declarations: (value, getVariableValue) => `background-image:${Gradients.css(value, getVariableValue)}`,
+    },
+    {
+      styleName: 'background-image',
+      values: ['none'] as const,
     },
   ],
   /**

@@ -16,8 +16,18 @@ export const components = Box.components({
     children: { header: { styles: { fontSize: 18, fontWeight: 600 } } },
   },
   subgrid: { extends: 'datagrid', styles: { b: 0, shadow: 'none' } },
+  // A part extends too: a component by name, or another part by its dotted path.
+  picker: { children: { trigger: { extends: 'button', styles: { px: 3 } } } },
 });
 ```
+
+**A second design, chosen in CSS**: `Box.components(styles, { design: 'ember' })` merges `styles` over the app's components
+and applies them under `data-design="ember"` — `<Box.Theme design="classic" designStorageKey="design">` writes the
+attribute, `Box.useDesign()` switches it, and a pre-paint script that copies the stored value onto `<html>` means no flash
+on a prerendered page. Each design rule is one class more specific than the app's, so every state is outranked; a design
+cannot delete a key, so it writes `none` (`shadow: 'none'`, `bgGradient: 'none'`). Its colours are `Box.palette()` in a
+root `dataAttr={{ 'design=ember': { vars: … } }}`, since every built-in component is drawn in `accent` and `base`. A
+subtree whose design React decides is still `Box.createComponents()` + `<Box.Components value>`.
 
 ## Extension System
 

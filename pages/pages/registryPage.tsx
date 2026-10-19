@@ -16,7 +16,7 @@ import { BLOCKS_PATH, blockPath, blocks, registryItemFor, TEMPLATES_PATH } from 
 /** The docs site's own prose-link colours, the pair every other page uses. */
 const linkTheme = {
   dark: { color: 'sky-400', hover: { color: 'sky-300' } },
-  light: { color: 'indigo-600', hover: { color: 'indigo-500' } },
+  light: { color: 'accent-600', hover: { color: 'accent-500' } },
 } as const;
 
 const componentsJson = `{
@@ -28,10 +28,10 @@ const componentsJson = `{
 function Section({ id, title, children }: { id: string; title: string; children: ReactNode }) {
   return (
     <Box id={id}>
-      <H2 fontSize={20} fontWeight={600} mb={4} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }}>
+      <H2 fontSize={20} fontWeight={600} mb={4} theme={{ dark: { color: 'white' }, light: { color: 'base-900' } }}>
         {title}
       </H2>
-      <Box fontSize={15} lineHeight={26} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
+      <Box fontSize={15} lineHeight={26} theme={{ dark: { color: 'base-400' }, light: { color: 'base-600' } }}>
         {children}
       </Box>
     </Box>
@@ -51,7 +51,7 @@ export default function RegistryPage() {
 
       <Reveal delay={0.1}>
         <Flex d="column" gap={10}>
-          <Box fontSize={15} lineHeight={26} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
+          <Box fontSize={15} lineHeight={26} theme={{ dark: { color: 'base-400' }, light: { color: 'base-600' } }}>
             A shadcn registry is JSON over HTTP, and the CLI that reads it does not care which library the code imports. Each item installs
             the <Mono>@box-kite/react</Mono> package and drop wired code beside it — so the parts you will change are yours from the first
             commit, and the parts you will not stay a dependency you can upgrade.

@@ -244,7 +244,7 @@ export default function DataGridHeaderCellContextMenu<TRow>(props: Props<TRow>) 
                     <Box
                       bb={1}
                       my={2}
-                      borderColor="gray-300"
+                      borderColor="base-300"
                       component={`${grid.componentName}.header.cell.contextMenu.tooltip.item.separator` as never}
                     />
                   )}

@@ -8,6 +8,7 @@ import Icon from '../../src/components/icon';
 import Presence from '../../src/components/presence';
 import { Main } from '../../src/components/semantics';
 import Breadcrumbs from '../components/breadcrumbs';
+import DesignPicker from '../components/designPicker';
 import IconSwap from '../components/iconSwap';
 import PageFooter from '../components/pageFooter';
 import Reveal from '../components/reveal';
@@ -78,8 +79,8 @@ function DocsLayout({ children }: LayoutProps) {
       minHeight="fit-screen"
       position="relative"
       theme={{
-        dark: { bgColor: 'slate-900', color: 'slate-100', bgImage: 'gradient-aurora-dark' },
-        light: { bgColor: 'white', color: 'slate-900', bgImage: 'gradient-aurora-light' },
+        dark: { bgColor: 'base-900', color: 'base-100', bgImage: 'gradient-aurora-dark' },
+        light: { bgColor: 'white', color: 'base-900', bgImage: 'gradient-aurora-light' },
       }}
     >
       <DocumentHead />
@@ -98,8 +99,8 @@ function DocsLayout({ children }: LayoutProps) {
         lg={{ display: 'none' }}
         bb={1}
         theme={{
-          dark: { borderColor: 'slate-800' },
-          light: { borderColor: 'slate-200' },
+          dark: { borderColor: 'base-800' },
+          light: { borderColor: 'base-200' },
         }}
         backdropFilter="blur(12px)"
       >
@@ -111,8 +112,8 @@ function DocsLayout({ children }: LayoutProps) {
               p={2}
               borderRadius={2}
               theme={{
-                dark: { bgColor: 'slate-800', color: 'slate-100' },
-                light: { bgColor: 'slate-100', color: 'slate-900' },
+                dark: { bgColor: 'base-800', color: 'base-100' },
+                light: { bgColor: 'base-100', color: 'base-900' },
               }}
               onClick={() => setSidebarOpen(!sidebarOpen)}
             >
@@ -137,6 +138,7 @@ function DocsLayout({ children }: LayoutProps) {
           </Flex>
           <Flex ai="center" gap={2}>
             <SearchTrigger icon onOpen={openSearch} />
+            <DesignPicker compact />
             <ThemeToggle />
           </Flex>
         </Flex>
@@ -233,8 +235,8 @@ function ThemeToggle() {
       p={2}
       borderRadius={2}
       theme={{
-        dark: { bgColor: 'slate-800', color: 'slate-100' },
-        light: { bgColor: 'slate-100', color: 'slate-900' },
+        dark: { bgColor: 'base-800', color: 'base-100' },
+        light: { bgColor: 'base-100', color: 'base-900' },
       }}
       onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
     >
@@ -242,7 +244,7 @@ function ThemeToggle() {
       <IconSwap key={theme} motion="turn">
         <Icon
           size={4.5}
-          color={theme === 'dark' ? 'amber-400' : 'indigo-500'}
+          color={theme === 'dark' ? 'amber-400' : 'accent-500'}
           label={theme === 'dark' ? 'Switch to the light theme' : 'Switch to the dark theme'}
         >
           {theme === 'dark' ? <Sun /> : <Moon />}

@@ -32,10 +32,10 @@ const LANGUAGES: Record<string, 'jsx' | 'shell' | 'css' | 'javascript'> = {
 const ENTITIES: Record<string, string> = { '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&#39;': "'" };
 const decode = (text: string) => text.replace(/&(amp|lt|gt|quot|#39);/g, (entity) => ENTITIES[entity]);
 
-const prose = { dark: { color: 'slate-400' }, light: { color: 'slate-600' } } as const;
-const strong = { dark: { color: 'slate-200' }, light: { color: 'slate-800' } } as const;
-const heading = { dark: { color: 'white' }, light: { color: 'slate-900' } } as const;
-const rule = { dark: { borderColor: 'slate-800' }, light: { borderColor: 'slate-200' } } as const;
+const prose = { dark: { color: 'base-400' }, light: { color: 'base-600' } } as const;
+const strong = { dark: { color: 'base-200' }, light: { color: 'base-800' } } as const;
+const heading = { dark: { color: 'white' }, light: { color: 'base-900' } } as const;
+const rule = { dark: { borderColor: 'base-800' }, light: { borderColor: 'base-200' } } as const;
 
 function blocks(tokens: readonly Token[]): ReactNode {
   return tokens.map((token, index) => <Fragment key={index}>{block(token)}</Fragment>);
@@ -78,7 +78,7 @@ function block(token: Token): ReactNode {
       return <Table token={token as Tokens.Table} />;
     case 'blockquote':
       return (
-        <Box tag="blockquote" bs={2} ps={4} my={4} theme={{ dark: { borderColor: 'slate-700' }, light: { borderColor: 'slate-300' } }}>
+        <Box tag="blockquote" bs={2} ps={4} my={4} theme={{ dark: { borderColor: 'base-700' }, light: { borderColor: 'base-300' } }}>
           {blocks((token as Tokens.Blockquote).tokens)}
         </Box>
       );
@@ -191,7 +191,7 @@ function inlineToken(token: Token): ReactNode {
           px={1.5}
           py={0.5}
           borderRadius={1}
-          theme={{ dark: { bgColor: 'slate-800', color: 'slate-200' }, light: { bgColor: 'slate-100', color: 'slate-800' } }}
+          theme={{ dark: { bgColor: 'base-800', color: 'base-200' }, light: { bgColor: 'base-100', color: 'base-800' } }}
         >
           {decode((token as Tokens.Codespan).text)}
         </Box>
@@ -209,7 +209,7 @@ function inlineToken(token: Token): ReactNode {
           cursor="pointer"
           theme={{
             dark: { color: 'sky-400', hover: { color: 'sky-300' } },
-            light: { color: 'indigo-600', hover: { color: 'indigo-500' } },
+            light: { color: 'accent-600', hover: { color: 'accent-500' } },
           }}
         >
           {inline(tokens)}

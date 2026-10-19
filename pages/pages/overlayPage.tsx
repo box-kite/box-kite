@@ -235,10 +235,10 @@ export default function OverlayPage() {
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <Box>
-      <H2 fontSize={20} fontWeight={600} mb={4} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }}>
+      <H2 fontSize={20} fontWeight={600} mb={4} theme={{ dark: { color: 'white' }, light: { color: 'base-900' } }}>
         {title}
       </H2>
-      <Box fontSize={15} lineHeight={26} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
+      <Box fontSize={15} lineHeight={26} theme={{ dark: { color: 'base-400' }, light: { color: 'base-600' } }}>
         {children}
       </Box>
     </Box>
@@ -248,7 +248,7 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 function Bullet({ children }: { children: ReactNode }) {
   return (
     <Flex tag="li" gap={3} ai="baseline">
-      <Box width={1} height={1} borderRadius={10} bgColor="indigo-400" />
+      <Box width={1} height={1} borderRadius={10} bgColor="accent-400" />
       <Box flex1>{children}</Box>
     </Flex>
   );

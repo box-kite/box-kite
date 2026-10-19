@@ -42,7 +42,7 @@ export default function PageFooter() {
       gap={4}
       flexWrap="wrap"
       fontSize={13}
-      theme={{ dark: { color: 'slate-500' }, light: { color: 'slate-400' } }}
+      theme={{ dark: { color: 'base-500' }, light: { color: 'base-400' } }}
     >
       <Flex gap={2} flexWrap="wrap" ai="center">
         For an agent reading this:
@@ -51,7 +51,7 @@ export default function PageFooter() {
             {index > 0 && <Box display="inline">·</Box>}
             <Link
               props={{ href }}
-              theme={{ dark: { color: 'violet-400' }, light: { color: 'violet-600' } }}
+              theme={{ dark: { color: 'accent-400' }, light: { color: 'accent-600' } }}
               hover={{ textDecoration: 'underline' }}
             >
               {label}
@@ -63,7 +63,7 @@ export default function PageFooter() {
         <Link
           props={{ href: `${REPO_URL}/blob/main/${source}`, target: '_blank', rel: 'noopener noreferrer' }}
           ms="auto"
-          theme={{ dark: { color: 'slate-500' }, light: { color: 'slate-400' } }}
+          theme={{ dark: { color: 'base-500' }, light: { color: 'base-400' } }}
           hover={{ textDecoration: 'underline' }}
         >
           Edit this page

@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import Palette from './palette';
 
-/** The packed table, expanded: twenty-six families of eleven steps, in the notation the rules carry. */
+/** The packed table, expanded: twenty-six families and the two aliases, eleven steps each, in the notation the rules carry. */
 describe('Palette.colors', () => {
   it('expands every family and step into an oklch() value', () => {
     const tokens = Object.keys(Palette.colors).filter((name) => /-\d+$/.test(name));
 
-    expect(tokens).toHaveLength(26 * Palette.steps.length);
+    expect(tokens).toHaveLength(28 * Palette.steps.length);
     expect(tokens.every((token) => /^oklch\([\d.]+% [\d.]+ ([\d.]+|none)\)$/.test(Palette.colors[token as Palette.Token]))).toBe(true);
   });
 

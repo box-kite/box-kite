@@ -84,8 +84,8 @@ export default function Sidebar({ onClose, onSearch }: SidebarProps) {
     <Box
       height="fit-screen"
       theme={{
-        dark: { bgImage: 'gradient-sidebar-dark', bgColor: 'slate-900', borderColor: 'slate-800' },
-        light: { bgImage: 'gradient-sidebar', borderColor: 'slate-200' },
+        dark: { bgImage: 'gradient-sidebar-dark', bgColor: 'base-900', borderColor: 'base-800' },
+        light: { bgImage: 'gradient-sidebar', borderColor: 'base-200' },
       }}
       br={1}
       display="flex"
@@ -93,7 +93,7 @@ export default function Sidebar({ onClose, onSearch }: SidebarProps) {
       overflow="hidden"
     >
       {/* Header */}
-      <Flex ai="center" jc="space-between" p={4} bb={1} theme={{ dark: { borderColor: 'slate-800' }, light: { borderColor: 'slate-100' } }}>
+      <Flex ai="center" jc="space-between" p={4} bb={1} theme={{ dark: { borderColor: 'base-800' }, light: { borderColor: 'base-100' } }}>
         <Flex ai="center" gap={3}>
           <NavLink to="/">
             <Box width={10} height={10} borderRadius={2} bgImage="gradient-primary" display="flex" ai="center" jc="center" shadow="medium">
@@ -104,7 +104,7 @@ export default function Sidebar({ onClose, onSearch }: SidebarProps) {
           </NavLink>
           <Box>
             <NavLink to="/">
-              <Box fontWeight={700} fontSize={16} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }}>
+              <Box fontWeight={700} fontSize={16} theme={{ dark: { color: 'white' }, light: { color: 'base-900' } }}>
                 Box Kite
               </Box>
             </NavLink>
@@ -117,8 +117,8 @@ export default function Sidebar({ onClose, onSearch }: SidebarProps) {
               fontSize={11}
               textDecoration="none"
               theme={{
-                dark: { color: 'slate-500', hover: { color: 'slate-300' } },
-                light: { color: 'slate-400', hover: { color: 'slate-600' } },
+                dark: { color: 'base-500', hover: { color: 'base-300' } },
+                light: { color: 'base-400', hover: { color: 'base-600' } },
               }}
               hover={{ textDecoration: 'underline' }}
             >
@@ -132,7 +132,7 @@ export default function Sidebar({ onClose, onSearch }: SidebarProps) {
           p={2}
           borderRadius={2}
           lg={{ display: 'none' }}
-          theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-500' } }}
+          theme={{ dark: { color: 'base-400' }, light: { color: 'base-500' } }}
           onClick={onClose}
         >
           <Icon size={4.5} label="Close the menu">
@@ -166,14 +166,14 @@ export default function Sidebar({ onClose, onSearch }: SidebarProps) {
                 bgImage={isActive ? 'gradient-primary' : 'none'}
                 theme={{
                   dark: {
-                    bgColor: isActive ? undefined : 'indigo-950',
-                    color: isActive ? 'white' : 'indigo-300',
-                    borderColor: 'indigo-800',
+                    bgColor: isActive ? undefined : 'accent-950',
+                    color: isActive ? 'white' : 'accent-300',
+                    borderColor: 'accent-800',
                   },
                   light: {
-                    bgColor: isActive ? undefined : 'indigo-50',
-                    color: isActive ? 'white' : 'indigo-600',
-                    borderColor: 'indigo-200',
+                    bgColor: isActive ? undefined : 'accent-50',
+                    color: isActive ? 'white' : 'accent-600',
+                    borderColor: 'accent-200',
                   },
                 }}
                 b={isActive ? 0 : 1}
@@ -183,8 +183,8 @@ export default function Sidebar({ onClose, onSearch }: SidebarProps) {
                 <Icon
                   size={4}
                   theme={{
-                    dark: { color: isActive ? 'white' : 'indigo-400' },
-                    light: { color: isActive ? 'white' : 'indigo-500' },
+                    dark: { color: isActive ? 'white' : 'accent-400' },
+                    light: { color: isActive ? 'white' : 'accent-500' },
                   }}
                 >
                   <Bot />
@@ -197,8 +197,8 @@ export default function Sidebar({ onClose, onSearch }: SidebarProps) {
                   fontSize={10}
                   fontWeight={600}
                   theme={{
-                    dark: { bgColor: isActive ? 'white' : 'indigo-800', color: isActive ? 'indigo-600' : 'indigo-300' },
-                    light: { bgColor: isActive ? 'white' : 'indigo-200', color: 'indigo-600' },
+                    dark: { bgColor: isActive ? 'white' : 'accent-800', color: isActive ? 'accent-600' : 'accent-300' },
+                    light: { bgColor: isActive ? 'white' : 'accent-200', color: 'accent-600' },
                   }}
                 >
                   MCP
@@ -409,9 +409,9 @@ export default function Sidebar({ onClose, onSearch }: SidebarProps) {
       </Box>
 
       {/* Footer */}
-      <Box p={4} bt={1} theme={{ dark: { borderColor: 'slate-800' }, light: { borderColor: 'slate-100' } }}>
+      <Box p={4} bt={1} theme={{ dark: { borderColor: 'base-800' }, light: { borderColor: 'base-100' } }}>
         <Flex ai="center" jc="space-between">
-          <Box fontSize={12} theme={{ dark: { color: 'slate-500' }, light: { color: 'slate-400' } }}>
+          <Box fontSize={12} theme={{ dark: { color: 'base-500' }, light: { color: 'base-400' } }}>
             <Flex ai="center" gap={2}>
               <Icon size={3.5}>
                 <Layers />
@@ -438,8 +438,8 @@ function ThemeButton() {
       px={3}
       borderRadius={2}
       theme={{
-        dark: { bgColor: 'slate-800', color: 'slate-300' },
-        light: { bgColor: 'slate-100', color: 'slate-600' },
+        dark: { bgColor: 'base-800', color: 'base-300' },
+        light: { bgColor: 'base-100', color: 'base-600' },
       }}
       onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
       transitionDuration={150}
@@ -480,12 +480,12 @@ function MenuSection({ label, children, defaultOpen = true }: MenuSectionProps) 
           fontWeight={600}
           textTransform="uppercase"
           letterSpacing={1}
-          theme={{ dark: { color: 'slate-500' }, light: { color: 'slate-400' } }}
+          theme={{ dark: { color: 'base-500' }, light: { color: 'base-400' } }}
         >
           {label}
         </Box>
         <Box rotate={isOpen ? 0 : -90} transition="transform" transitionDuration={200}>
-          <Icon size={3.5} theme={{ dark: { color: 'slate-500' }, light: { color: 'slate-400' } }}>
+          <Icon size={3.5} theme={{ dark: { color: 'base-500' }, light: { color: 'base-400' } }}>
             <ChevronDown />
           </Icon>
         </Box>
@@ -523,8 +523,8 @@ function MenuItem({ to, icon, children }: MenuItemProps) {
           cursor={isActive ? 'default' : 'pointer'}
           bgImage={isActive ? 'gradient-primary' : 'none'}
           theme={{
-            dark: { color: isActive ? 'white' : 'slate-300' },
-            light: { color: isActive ? 'white' : 'slate-600' },
+            dark: { color: isActive ? 'white' : 'base-300' },
+            light: { color: isActive ? 'white' : 'base-600' },
           }}
           fontWeight={isActive ? 500 : 400}
           fontSize={14}
@@ -532,8 +532,8 @@ function MenuItem({ to, icon, children }: MenuItemProps) {
           <Icon
             size={4}
             theme={{
-              dark: { color: isActive ? 'white' : 'slate-500' },
-              light: { color: isActive ? 'white' : 'slate-400' },
+              dark: { color: isActive ? 'white' : 'base-500' },
+              light: { color: isActive ? 'white' : 'base-400' },
             }}
           >
             {icon}

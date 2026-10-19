@@ -178,6 +178,7 @@ export default class HeaderCellModel<TRow> {
       isPillBeforeResizer: this.hasHoverPill && this.showResizer && this.column.pin !== 'END',
       isPillAfterResizer: this.hasHoverPill && this.showResizer && this.column.pin === 'END',
       isRowNumber: this.column.isRowNumber,
+      isGroup: !this.column.isLeaf,
       isFirstLeaf: this.column.isFirstLeaf,
       isLastLeaf: this.column.isLastLeaf,
     };

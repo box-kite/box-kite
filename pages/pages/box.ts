@@ -541,7 +541,17 @@ export const boxMembers: readonly BoxMember[] = [
     id: 'components',
     name: 'Box.components()',
     signature: 'Box.components({ card: { styles, variants, children, extends } })',
-    summary: 'Name a set of styles — with variants, named parts and inheritance — and wear it with component="card".',
+    summary:
+      'Name a set of styles — with variants, named parts and inheritance — and wear it with component="card". With { design: "ember" } it is a second design, chosen by data-design="ember" in CSS.',
+    more: { label: 'Theme Setup', to: '/theme-setup' },
+  },
+  {
+    id: 'palette',
+    name: 'Box.palette()',
+    signature: 'vars={Box.palette({ accent: "orange", base: "stone" })}',
+    summary:
+      'Point the two families the components are drawn in — accent and base — at another family or a ramp of your own, for an element and everything inside it.',
+    more: { label: 'Colors', to: '/colors' },
   },
   {
     id: 'createcomponents',
@@ -591,6 +601,14 @@ export const boxMembers: readonly BoxMember[] = [
     name: 'Box.useTheme()',
     signature: 'const [theme, setTheme] = Box.useTheme()',
     summary: 'Read the theme the nearest provider settled on, and set it. Passing null hands control back to the system preference.',
+    more: { label: 'Theme Setup', to: '/theme-setup' },
+  },
+  {
+    id: 'usedesign',
+    name: 'Box.useDesign()',
+    signature: 'const [design, setDesign] = Box.useDesign()',
+    summary:
+      'Read the design the nearest provider draws in — a Box.components(…, { design }) name, written as data-design — and switch it. Passing null goes back to its design prop.',
     more: { label: 'Theme Setup', to: '/theme-setup' },
   },
   {

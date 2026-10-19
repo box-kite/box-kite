@@ -26,7 +26,7 @@ export default function TextboxPage() {
           <Code label="Import" language="jsx" code="import Textbox from '@box-kite/react/components/textbox';" />
 
           <Code id="basic" label="Basic Textbox" language="jsx" code='<Textbox placeholder="Enter your name..." />'>
-            <Textbox placeholder="Enter your name..." theme={{ dark: { bgColor: 'slate-800', color: 'white' } }} />
+            <Textbox placeholder="Enter your name..." />
           </Code>
 
           <Code
@@ -44,7 +44,7 @@ export default function TextboxPage() {
               <Box tag="label" fontSize={14} fontWeight={500} theme={{ dark: { color: 'slate-200' }, light: { color: 'slate-700' } }}>
                 Email address
               </Box>
-              <Textbox placeholder="you@example.com" theme={{ dark: { bgColor: 'slate-800', color: 'white' } }} />
+              <Textbox placeholder="you@example.com" />
             </Flex>
           </Code>
 
@@ -57,7 +57,7 @@ export default function TextboxPage() {
 <Textbox disabled defaultValue="Disabled" />`}
           >
             <Flex gap={4} flexWrap="wrap">
-              <Textbox placeholder="Default" theme={{ dark: { bgColor: 'slate-800', color: 'white' } }} />
+              <Textbox placeholder="Default" />
               <Textbox disabled defaultValue="Disabled" />
             </Flex>
           </Code>
@@ -71,9 +71,9 @@ export default function TextboxPage() {
 <Textbox py={4} px={5} fontSize={16} placeholder="Large" />`}
           >
             <Flex gap={4} ai="center" flexWrap="wrap">
-              <Textbox py={2} px={3} fontSize={13} placeholder="Small" theme={{ dark: { bgColor: 'slate-800', color: 'white' } }} />
-              <Textbox placeholder="Default" theme={{ dark: { bgColor: 'slate-800', color: 'white' } }} />
-              <Textbox py={4} px={5} fontSize={16} placeholder="Large" theme={{ dark: { bgColor: 'slate-800', color: 'white' } }} />
+              <Textbox py={2} px={3} fontSize={13} placeholder="Small" />
+              <Textbox placeholder="Default" />
+              <Textbox py={4} px={5} fontSize={16} placeholder="Large" />
             </Flex>
           </Code>
 
@@ -91,7 +91,6 @@ export default function TextboxPage() {
               borderColor="indigo-300"
               focus={{ borderColor: 'indigo-500', outlineColor: 'indigo-200' }}
               placeholder="Custom focus color"
-              theme={{ dark: { bgColor: 'slate-800', color: 'white' } }}
             />
           </Code>
           <ApiReference api={textboxApi} />

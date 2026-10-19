@@ -59,6 +59,12 @@ namespace Palette {
   };
 
   /**
+   * The two families a design repoints: `accent` is what the components are drawn in and `base` their
+   * neutral. Each starts as a copy of `indigo` and `gray`, the colours the built-in components always used.
+   */
+  const aliases = { accent: families.indigo, base: families.gray };
+
+  /**
    * The colours that are not a family: four CSS keywords kept from v1, the ends of the greyscale, and `vi`
    * — a stray brand violet that has been a token since v1 and is somebody's colour by now.
    */
@@ -74,7 +80,9 @@ namespace Palette {
     vi: '#7949FF',
   };
 
-  export type Family = keyof typeof families;
+  export type Family = keyof typeof families | Alias;
+  /** The families `Box.palette()` points at another one. */
+  export type Alias = keyof typeof aliases;
   export type Step = (typeof steps)[number];
   /** One palette token: the family and the step, `blue-500` or `slate-950`. */
   export type Token = `${Family}-${Step}`;
@@ -86,7 +94,7 @@ namespace Palette {
   function expand(): Record<string, string> {
     const expanded: Record<string, string> = { ...keywords };
 
-    for (const [family, packed] of Object.entries(families)) {
+    for (const [family, packed] of Object.entries({ ...families, ...aliases })) {
       packed.split(',').forEach((step, index) => {
         const [l, c, h] = step.split(' ');
         expanded[`${family}-${steps[index]}`] = `oklch(${l}% ${c} ${h})`;
@@ -133,6 +141,31 @@ namespace Palette {
     const parts = alphaOf(value);
 
     return parts ? `color-mix(in oklab, ${getVariableValue(parts.color)} ${parts.percent}%, transparent)` : '';
+  }
+
+  /** Eleven colours of your own for an alias, by step: any CSS colour, or a token. A step left out keeps its default. */
+  export type Ramp = Partial<Record<Step, string>>;
+  /** What `Box.palette()` takes: an alias and the family it now draws from, or a ramp of its own. */
+  export type Pointing = Partial<Record<Alias, Exclude<Family, Alias> | Ramp>>;
+
+  /**
+   * `Box.palette({ accent: 'orange', base: 'stone' })` — the `vars` record that repoints the two aliases for
+   * an element and everything inside it: `{ 'accent-50': 'orange-50', … }`, so `bgColor="accent-500"` is
+   * orange there. A record rather than a prop, so it nests in `theme`, a breakpoint or `dataAttr` like any `vars`.
+   */
+  export function point(pointing: Pointing): Record<string, string> {
+    const record: Record<string, string> = {};
+
+    for (const [alias, target] of Object.entries(pointing)) {
+      if (!(alias in aliases) || !target || (typeof target === 'string' && (target in aliases || !(target in families)))) continue;
+
+      for (const step of steps) {
+        const value = typeof target === 'string' ? `${target}-${step}` : target[step];
+        if (value) record[`${alias}-${step}`] = value;
+      }
+    }
+
+    return record;
   }
 }
 

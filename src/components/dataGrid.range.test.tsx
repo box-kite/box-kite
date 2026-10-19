@@ -53,7 +53,7 @@ function focusCell(row: number, column: number): HTMLElement {
  * in the DOM, and the outline is the one declaration only `isCurrentCell` and an open editor emit.
  */
 function isMarked(cell: HTMLElement): boolean {
-  return cell.className.includes('outlineColor-indigo-500');
+  return cell.className.includes('outlineColor-accent-500');
 }
 
 /** What the grid writes when the copy event reaches it. */

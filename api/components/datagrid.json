@@ -326,6 +326,7 @@
         "isPillAfterResizer",
         "isRowSelection",
         "isRowNumber",
+        "isGroup",
         "isFirstLeaf",
         "isLastLeaf",
         "isEmptyCell"

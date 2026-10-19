@@ -1266,12 +1266,12 @@
     },
     {
       "name": "letterSpacing",
-      "description": "The letter-spacing CSS property sets the horizontal spacing behavior between text characters. This value is added to the natural spacing between characters while rendering the text. Positive values of letter-spacing causes characters to spread farther apart, while negative values of letter-spacing bring characters closer together.",
+      "description": "The letter-spacing CSS property sets the horizontal spacing behavior between text characters. This value is added to the natural spacing between characters while rendering the text. Positive values of letter-spacing causes characters to spread farther apart, while negative values of letter-spacing bring characters closer together. A number is pixels; Tailwind's tracking names (`tighter` … `widest`) are in `em`, so they scale with the text — what a display heading wants.",
       "properties": ["letter-spacing"],
       "example": { "value": 4, "css": "letter-spacing: 4px" },
       "numeric": true,
       "open": false,
-      "values": []
+      "values": ["tighter", "tight", "normal", "wide", "wider", "widest"]
     },
     {
       "name": "lineHeight",
@@ -2051,7 +2051,7 @@
       "example": { "value": "sky-500", "css": "color: var(--sky-500,oklch(68.5% .169 237.3))" },
       "numeric": false,
       "open": true,
-      "valueCount": 304
+      "valueCount": 326
     },
     {
       "name": "bgColor",
@@ -2060,7 +2060,7 @@
       "example": { "value": "sky-500", "css": "background-color: var(--sky-500,oklch(68.5% .169 237.3))" },
       "numeric": false,
       "open": true,
-      "valueCount": 304
+      "valueCount": 326
     },
     {
       "name": "borderColor",
@@ -2069,7 +2069,7 @@
       "example": { "value": "sky-500", "css": "border-color: var(--sky-500,oklch(68.5% .169 237.3))" },
       "numeric": false,
       "open": true,
-      "valueCount": 304
+      "valueCount": 326
     },
     {
       "name": "outlineColor",
@@ -2078,7 +2078,7 @@
       "example": { "value": "sky-500", "css": "outline-color: var(--sky-500,oklch(68.5% .169 237.3))" },
       "numeric": false,
       "open": true,
-      "valueCount": 304
+      "valueCount": 326
     },
     {
       "name": "accentColor",
@@ -2087,7 +2087,7 @@
       "example": { "value": "sky-500", "css": "accent-color: var(--sky-500,oklch(68.5% .169 237.3))" },
       "numeric": false,
       "open": true,
-      "valueCount": 304
+      "valueCount": 326
     },
     {
       "name": "caretColor",
@@ -2096,7 +2096,7 @@
       "example": { "value": "sky-500", "css": "caret-color: var(--sky-500,oklch(68.5% .169 237.3))" },
       "numeric": false,
       "open": true,
-      "valueCount": 304
+      "valueCount": 326
     },
     {
       "name": "colorScheme",
@@ -2123,7 +2123,7 @@
       "example": { "value": "sky-500", "css": "fill: var(--sky-500,oklch(68.5% .169 237.3))" },
       "numeric": false,
       "open": true,
-      "valueCount": 304
+      "valueCount": 326
     },
     {
       "name": "fillOpacity",
@@ -2150,7 +2150,7 @@
       "example": { "value": "sky-500", "css": "stroke: var(--sky-500,oklch(68.5% .169 237.3))" },
       "numeric": false,
       "open": true,
-      "valueCount": 304
+      "valueCount": 326
     },
     {
       "name": "strokeOpacity",
@@ -2346,7 +2346,7 @@
     },
     {
       "name": "bgGradient",
-      "description": "A gradient written as a value: the key names the kind and carries its geometry (`linear` a direction or an angle, `radial` a shape, `conic` an angle to start from), `colors` are the stops in order — a palette token, one with an opacity modifier, or a `[colour, position]` pair. `interpolate=\"oklch\"` is what keeps a two-stop gradient out of the grey middle sRGB runs it through. Writes `background-image`, so it and `bgImage` are the same property: use one.",
+      "description": "A gradient written as a value: the key names the kind and carries its geometry (`linear` a direction or an angle, `radial` a shape, `conic` an angle to start from), `colors` are the stops in order — a palette token, one with an opacity modifier, or a `[colour, position]` pair. `interpolate=\"oklch\"` is what keeps a two-stop gradient out of the grey middle sRGB runs it through. Writes `background-image`, so it and `bgImage` are the same property: use one. `'none'` clears it — the only way a variant or a design can take a gradient back off, since `bgGradient` is declared after `bgImage` and wins the property.",
       "properties": ["background-image"],
       "example": {
         "value": { "linear": "r", "colors": ["blue-500", "pink-500"] },
@@ -2354,7 +2354,7 @@
       },
       "numeric": false,
       "open": true,
-      "values": []
+      "values": ["none"]
     },
     {
       "name": "shadow",
@@ -2375,7 +2375,7 @@
       "example": { "value": "sky-500", "css": "--boxShadowColor: var(--sky-500,oklch(68.5% .169 237.3))" },
       "numeric": false,
       "open": true,
-      "valueCount": 304
+      "valueCount": 326
     },
     {
       "name": "insetShadow",
@@ -2396,7 +2396,7 @@
       "example": { "value": "sky-500", "css": "--boxInsetShadowColor: var(--sky-500,oklch(68.5% .169 237.3))" },
       "numeric": false,
       "open": true,
-      "valueCount": 304
+      "valueCount": 326
     },
     {
       "name": "ring",
@@ -2417,7 +2417,7 @@
       "example": { "value": "sky-500", "css": "--boxRingColor: var(--sky-500,oklch(68.5% .169 237.3))" },
       "numeric": false,
       "open": true,
-      "valueCount": 304
+      "valueCount": 326
     },
     {
       "name": "insetRing",
@@ -2438,7 +2438,7 @@
       "example": { "value": "sky-500", "css": "--boxInsetRingColor: var(--sky-500,oklch(68.5% .169 237.3))" },
       "numeric": false,
       "open": true,
-      "valueCount": 304
+      "valueCount": 326
     },
     {
       "name": "textShadow",
@@ -2456,7 +2456,7 @@
       "example": { "value": "sky-500", "css": "--boxTextShadowColor: var(--sky-500,oklch(68.5% .169 237.3))" },
       "numeric": false,
       "open": true,
-      "valueCount": 304
+      "valueCount": 326
     },
     {
       "name": "blur",
@@ -2573,7 +2573,7 @@
       "example": { "value": "sky-500", "css": "--boxDropShadowColor: var(--sky-500,oklch(68.5% .169 237.3))" },
       "numeric": false,
       "open": true,
-      "valueCount": 304
+      "valueCount": 326
     },
     {
       "name": "backdropBlur",
@@ -3056,6 +3056,28 @@
           "rose-800",
           "rose-900",
           "rose-950",
+          "accent-50",
+          "accent-100",
+          "accent-200",
+          "accent-300",
+          "accent-400",
+          "accent-500",
+          "accent-600",
+          "accent-700",
+          "accent-800",
+          "accent-900",
+          "accent-950",
+          "base-50",
+          "base-100",
+          "base-200",
+          "base-300",
+          "base-400",
+          "base-500",
+          "base-600",
+          "base-700",
+          "base-800",
+          "base-900",
+          "base-950",
           "none"
         ]
       ]

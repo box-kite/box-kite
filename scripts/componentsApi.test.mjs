@@ -31,7 +31,9 @@ describe('the component API reference', () => {
   });
 
   it('lets a part narrow what it inherited rather than listing it twice', () => {
-    const names = componentOf('Menu').parts.find((part) => part.name === 'Menu.CheckboxItem').props.map((prop) => prop.name);
+    const names = componentOf('Menu')
+      .parts.find((part) => part.name === 'Menu.CheckboxItem')
+      .props.map((prop) => prop.name);
 
     expect(names.filter((name) => name === 'disabled')).toHaveLength(1);
     expect(names).toContain('checked');

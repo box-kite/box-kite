@@ -111,7 +111,7 @@ export default function ShowcasePage() {
               <H2 fontSize={22} fontWeight={600} mb={2}>
                 {group.label}
               </H2>
-              <Box mb={6} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
+              <Box mb={6} theme={{ dark: { color: 'base-400' }, light: { color: 'base-600' } }}>
                 {group.note}
               </Box>
               <Flex d="column" gap={6}>
@@ -133,7 +133,7 @@ function Card({ entry }: { entry: ShowcaseCard }) {
       b={1}
       borderRadius={3}
       overflow="hidden"
-      theme={{ dark: { borderColor: 'slate-700', bgColor: 'slate-900' }, light: { borderColor: 'slate-200', bgColor: 'white' } }}
+      theme={{ dark: { borderColor: 'base-700', bgColor: 'base-900' }, light: { borderColor: 'base-200', bgColor: 'white' } }}
     >
       <Flex
         ai="baseline"
@@ -144,25 +144,25 @@ function Card({ entry }: { entry: ShowcaseCard }) {
         py={4}
         bb={1}
         theme={{
-          dark: { borderColor: 'slate-700', bgColor: 'slate-800' },
-          light: { borderColor: 'slate-200', bgColor: 'slate-50' },
+          dark: { borderColor: 'base-700', bgColor: 'base-800' },
+          light: { borderColor: 'base-200', bgColor: 'base-50' },
         }}
       >
         <Flex ai="baseline" gap={3}>
-          <Box tag="h3" fontSize={16} fontWeight={600} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }}>
+          <Box tag="h3" fontSize={16} fontWeight={600} theme={{ dark: { color: 'white' }, light: { color: 'base-900' } }}>
             {entry.name}
           </Box>
           <SiteLink
             to={entry.route}
             fontSize={12}
             textDecoration="none"
-            theme={{ dark: { color: 'indigo-400' }, light: { color: 'indigo-600' } }}
+            theme={{ dark: { color: 'accent-400' }, light: { color: 'accent-600' } }}
             hover={{ textDecoration: 'underline' }}
           >
             Docs →
           </SiteLink>
         </Flex>
-        <Box fontSize={13} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
+        <Box fontSize={13} theme={{ dark: { color: 'base-400' }, light: { color: 'base-600' } }}>
           {entry.note}
         </Box>
       </Flex>
@@ -192,7 +192,7 @@ function Half({ name, theme }: { name: ShowcaseName; theme: 'light' | 'dark' }) 
         props={{ 'data-md': 'skip' }}
         bt={1}
         md={{ bt: 0, bl: theme === 'dark' ? 1 : 0 }}
-        theme={{ dark: { bgColor: 'slate-900', borderColor: 'slate-700' }, light: { bgColor: 'white', borderColor: 'slate-200' } }}
+        theme={{ dark: { bgColor: 'base-900', borderColor: 'base-700' }, light: { bgColor: 'white', borderColor: 'base-200' } }}
       >
         <Box
           position="absolute"
@@ -202,7 +202,7 @@ function Half({ name, theme }: { name: ShowcaseName; theme: 'light' | 'dark' }) 
           fontWeight={600}
           letterSpacing={1}
           textTransform="uppercase"
-          theme={{ dark: { color: 'slate-500' }, light: { color: 'slate-400' } }}
+          theme={{ dark: { color: 'base-500' }, light: { color: 'base-400' } }}
         >
           {theme}
         </Box>
@@ -412,7 +412,7 @@ const demos: Record<ShowcaseName, (scope: string) => ReactNode> = {
           opacity={present ? 1 : 0}
           startingStyle={{ opacity: 0 }}
           transitionDuration={200}
-          theme={{ dark: { bgColor: 'slate-800' }, light: { bgColor: 'slate-100' } }}
+          theme={{ dark: { bgColor: 'base-800' }, light: { bgColor: 'base-100' } }}
         >
           Still here until its own transition says otherwise.
         </Box>
@@ -529,7 +529,7 @@ const demos: Record<ShowcaseName, (scope: string) => ReactNode> = {
   Widget: () => (
     <Flex d="column" gap={4}>
       <Widget title="Revenue" description="Last 12 weeks" level={4}>
-        <Sparkline data={REVENUE} variant="area" width="100%" height="3rem" color="violet-500" />
+        <Sparkline data={REVENUE} variant="area" width="100%" height="3rem" color="accent-500" />
       </Widget>
       <Widget title="Orders" loading level={4} />
       <Widget title="Refunds" empty level={4} />
@@ -539,7 +539,7 @@ const demos: Record<ShowcaseName, (scope: string) => ReactNode> = {
   Sparkline: () => (
     <Flex gap={4} ai="center" flexWrap="wrap">
       <Sparkline data={REVENUE} width="6rem" color="sky-500" />
-      <Sparkline data={REVENUE} width="6rem" variant="area" color="violet-500" />
+      <Sparkline data={REVENUE} width="6rem" variant="area" color="accent-500" />
       <Sparkline data={REVENUE} width="6rem" variant="bar" color="emerald-500" />
     </Flex>
   ),
@@ -562,7 +562,7 @@ const demos: Record<ShowcaseName, (scope: string) => ReactNode> = {
   MiniDonut: () => (
     <Flex gap={4} ai="center" flexWrap="wrap">
       <MiniDonut data={[5, 3, 2]} />
-      <MiniDonut data={[6, 4]} colors={['violet-500', 'violet-200']} thickness={30} />
+      <MiniDonut data={[6, 4]} colors={['accent-500', 'accent-200']} thickness={30} />
     </Flex>
   ),
 
@@ -613,7 +613,7 @@ const demos: Record<ShowcaseName, (scope: string) => ReactNode> = {
       ai="center"
       p={3}
       borderRadius={2}
-      theme={{ dark: { bgColor: 'slate-800' }, light: { bgColor: 'slate-100' } }}
+      theme={{ dark: { bgColor: 'base-800' }, light: { bgColor: 'base-100' } }}
     >
       <Box>jc="space-between"</Box>
       <Box>ai="center"</Box>
@@ -623,13 +623,7 @@ const demos: Record<ShowcaseName, (scope: string) => ReactNode> = {
   Grid: () => (
     <Grid gridTemplateColumns={3} gap={3}>
       {[1, 2, 3, 4, 5, 6].map((cell) => (
-        <Box
-          key={cell}
-          p={3}
-          borderRadius={2}
-          textAlign="center"
-          theme={{ dark: { bgColor: 'slate-800' }, light: { bgColor: 'slate-100' } }}
-        >
+        <Box key={cell} p={3} borderRadius={2} textAlign="center" theme={{ dark: { bgColor: 'base-800' }, light: { bgColor: 'base-100' } }}>
           {cell}
         </Box>
       ))}
@@ -674,7 +668,7 @@ function OverlayDemo() {
           b={1}
           fontSize={13}
           shadow="large"
-          theme={{ dark: { bgColor: 'slate-800', borderColor: 'slate-700' }, light: { bgColor: 'white', borderColor: 'slate-200' } }}
+          theme={{ dark: { bgColor: 'base-800', borderColor: 'base-700' }, light: { bgColor: 'white', borderColor: 'base-200' } }}
         >
           In the top layer, beside its anchor.
         </Box>

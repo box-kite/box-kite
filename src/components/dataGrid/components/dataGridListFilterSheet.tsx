@@ -53,7 +53,7 @@ export default function DataGridListFilterSheet<TRow>(props: Props<TRow>) {
               height={5}
               px={1.5}
               borderRadius={999}
-              bgColor="indigo-600"
+              bgColor="accent-600"
               color="white"
               fontSize={12}
               fontWeight={600}

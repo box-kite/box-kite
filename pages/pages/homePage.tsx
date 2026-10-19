@@ -21,7 +21,7 @@ const PILLAR_ICONS = { agent: Bot, typed: Type, generative: ShieldCheck, finishe
 
 /** The four colours the hand-written code lines use — a syntax theme small enough to be a record. */
 const TOKEN_COLORS = {
-  punct: { dark: 'slate-500', light: 'slate-400' },
+  punct: { dark: 'base-500', light: 'base-400' },
   tag: { dark: 'emerald-400', light: 'emerald-600' },
   attr: { dark: 'sky-300', light: 'sky-700' },
   value: { dark: 'amber-300', light: 'amber-700' },
@@ -75,7 +75,7 @@ function Hero() {
           px={4}
           py={2}
           borderRadius={10}
-          theme={{ dark: { bgColor: 'slate-800', color: 'indigo-300' }, light: { bgColor: 'indigo-50', color: 'indigo-700' } }}
+          theme={{ dark: { bgColor: 'base-800', color: 'accent-300' }, light: { bgColor: 'accent-50', color: 'accent-700' } }}
           fontSize={13}
           fontWeight={500}
           mb={6}
@@ -89,27 +89,18 @@ function Hero() {
 
       <Reveal delay={0.1}>
         <H1
+          component="display"
+          variant="hero"
           fontSize={32}
           sm={{ fontSize: 44, lineHeight: 52 }}
           lg={{ fontSize: 54, lineHeight: 62 }}
-          fontWeight={800}
           lineHeight={40}
-          letterSpacing={-1}
           textWrap="balance"
           mb={6}
           maxWidth={190}
         >
-          <Box theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }}>The React library your AI already knows.</Box>
-          {/* The library's own gradient-on-text, which is inert without the transparent colour beside it. */}
-          <Box
-            width="fit-content"
-            mx="auto"
-            bgGradient={{ linear: 'r', colors: ['indigo-500', 'violet-500', 'pink-500'] }}
-            bgClip="text"
-            color="transparent"
-          >
-            Every CSS property is a typed prop.
-          </Box>
+          <Box theme={{ dark: { color: 'white' }, light: { color: 'base-900' } }}>The React library your AI already knows.</Box>
+          <Box component="heroAccent">Every CSS property is a typed prop.</Box>
         </H1>
       </Reveal>
 
@@ -117,7 +108,7 @@ function Hero() {
         <P
           fontSize={16}
           sm={{ fontSize: 18 }}
-          theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}
+          theme={{ dark: { color: 'base-400' }, light: { color: 'base-600' } }}
           maxWidth={160}
           lineHeight={28}
           mb={10}
@@ -139,7 +130,7 @@ function Hero() {
             </Button>
           </SiteLink>
           <SiteLink to="/ai-context">
-            <Button variant="secondary" px={6} py={3} fontSize={15} theme={{ dark: { color: 'slate-300' }, light: { color: 'slate-700' } }}>
+            <Button variant="secondary" px={6} py={3} fontSize={15} theme={{ dark: { color: 'base-300' }, light: { color: 'base-700' } }}>
               <Flex ai="center" gap={2}>
                 <Icon size={4.5}>
                   <Bot />
@@ -149,7 +140,7 @@ function Hero() {
             </Button>
           </SiteLink>
           <SiteLink to="/playground">
-            <Button variant="secondary" px={6} py={3} fontSize={15} theme={{ dark: { color: 'slate-300' }, light: { color: 'slate-700' } }}>
+            <Button variant="secondary" px={6} py={3} fontSize={15} theme={{ dark: { color: 'base-300' }, light: { color: 'base-700' } }}>
               <Flex ai="center" gap={2}>
                 <Icon size={4.5}>
                   <CirclePlay />
@@ -180,8 +171,8 @@ function CompletionDemo() {
       overflow="hidden"
       shadow="lg"
       theme={{
-        dark: { bgColor: 'slate-900', borderColor: 'slate-700' },
-        light: { bgColor: 'white', borderColor: 'slate-200' },
+        dark: { bgColor: 'base-900', borderColor: 'base-700' },
+        light: { bgColor: 'white', borderColor: 'base-200' },
       }}
     >
       <Box
@@ -191,8 +182,8 @@ function CompletionDemo() {
         bb={1}
         fontSize={12}
         theme={{
-          dark: { bgColor: 'slate-800', borderColor: 'slate-700', color: 'slate-400' },
-          light: { bgColor: 'slate-50', borderColor: 'slate-200', color: 'slate-500' },
+          dark: { bgColor: 'base-800', borderColor: 'base-700', color: 'base-400' },
+          light: { bgColor: 'base-50', borderColor: 'base-200', color: 'base-500' },
         }}
       >
         Card.tsx
@@ -212,7 +203,7 @@ function CompletionDemo() {
             ml={0.5}
             flexShrink={0}
             animation="pulse"
-            theme={{ dark: { bgColor: 'slate-200' }, light: { bgColor: 'slate-700' } }}
+            theme={{ dark: { bgColor: 'base-200' }, light: { bgColor: 'base-700' } }}
             props={{ 'data-md': 'skip' }}
           />
         </Flex>
@@ -222,7 +213,7 @@ function CompletionDemo() {
           b={1}
           borderRadius={2}
           overflow="hidden"
-          theme={{ dark: { borderColor: 'slate-700', bgColor: 'slate-800' }, light: { borderColor: 'slate-200', bgColor: 'slate-50' } }}
+          theme={{ dark: { borderColor: 'base-700', bgColor: 'base-800' }, light: { borderColor: 'base-200', bgColor: 'base-50' } }}
         >
           {completions.map((completion, index) => (
             <Flex
@@ -234,15 +225,15 @@ function CompletionDemo() {
               py={2}
               bt={index === 0 ? 0 : 1}
               theme={{
-                dark: { borderColor: 'slate-700', bgColor: index === 0 ? 'indigo-500/20' : 'transparent' },
-                light: { borderColor: 'slate-200', bgColor: index === 0 ? 'indigo-500/10' : 'transparent' },
+                dark: { borderColor: 'base-700', bgColor: index === 0 ? 'accent-500/20' : 'transparent' },
+                light: { borderColor: 'base-200', bgColor: index === 0 ? 'accent-500/10' : 'transparent' },
               }}
             >
               <Box width={36} flexShrink={0} whiteSpace="nowrap" overflow="hidden">
                 <Tok kind="attr">{completion.prop}</Tok>
                 <Tok kind="value">={completion.written}</Tok>
               </Box>
-              <Box flex1 whiteSpace="nowrap" overflow="hidden" theme={{ dark: { color: 'slate-300' }, light: { color: 'slate-700' } }}>
+              <Box flex1 whiteSpace="nowrap" overflow="hidden" theme={{ dark: { color: 'base-300' }, light: { color: 'base-700' } }}>
                 {completion.css}
               </Box>
               <Box
@@ -251,7 +242,7 @@ function CompletionDemo() {
                 flexShrink={0}
                 fontSize={12}
                 textAlign="end"
-                theme={{ dark: { color: 'slate-500' }, light: { color: 'slate-500' } }}
+                theme={{ dark: { color: 'base-500' }, light: { color: 'base-500' } }}
               >
                 {completion.note}
               </Box>
@@ -267,8 +258,8 @@ function CompletionDemo() {
         fontSize={13}
         lineHeight={20}
         theme={{
-          dark: { borderColor: 'slate-700', color: 'slate-400' },
-          light: { borderColor: 'slate-200', color: 'slate-600' },
+          dark: { borderColor: 'base-700', color: 'base-400' },
+          light: { borderColor: 'base-200', color: 'base-600' },
         }}
       >
         The same <Mono>4</Mono> is a rem here and a pixel there, because a padding and a border are not measured the same way. The editor
@@ -305,8 +296,8 @@ function PillarCard({ pillar }: { pillar: Pillar }) {
       transitionDuration={200}
       hover={{ translateY: -1 }}
       theme={{
-        dark: { bgColor: 'slate-800', borderColor: 'slate-700', color: 'slate-400' },
-        light: { bgColor: 'white', borderColor: 'slate-200', color: 'slate-600' },
+        dark: { bgColor: 'base-800', borderColor: 'base-700', color: 'base-400' },
+        light: { bgColor: 'white', borderColor: 'base-200', color: 'base-600' },
       }}
     >
       <Flex width={11} height={11} ai="center" jc="center" bgImage="gradient-primary" borderRadius={2} color="white" mb={4}>
@@ -314,13 +305,13 @@ function PillarCard({ pillar }: { pillar: Pillar }) {
           <PillarIcon />
         </Icon>
       </Flex>
-      <H2 fontSize={17} fontWeight={600} mb={2} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }}>
+      <H2 fontSize={17} fontWeight={600} mb={2} theme={{ dark: { color: 'white' }, light: { color: 'base-900' } }}>
         {pillar.title}
       </H2>
       <Box fontSize={14} lineHeight={22} mb={3}>
         {pillar.claim}
       </Box>
-      <Flex ai="center" gap={2} fontSize={13} fontWeight={500} theme={{ dark: { color: 'indigo-300' }, light: { color: 'indigo-600' } }}>
+      <Flex ai="center" gap={2} fontSize={13} fontWeight={500} theme={{ dark: { color: 'accent-300' }, light: { color: 'accent-600' } }}>
         {pillar.proof}
         <Icon size={3.5}>
           <ArrowRight />
@@ -361,7 +352,7 @@ function AgentSection() {
         </Table>
       </Box>
 
-      <H3 fontSize={17} fontWeight={600} mb={3} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }}>
+      <H3 fontSize={17} fontWeight={600} mb={3} theme={{ dark: { color: 'white' }, light: { color: 'base-900' } }}>
         One line, whichever agent you use
       </H3>
 
@@ -371,7 +362,7 @@ function AgentSection() {
         ))}
       </Flex>
 
-      <H3 fontSize={17} fontWeight={600} mb={3} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }}>
+      <H3 fontSize={17} fontWeight={600} mb={3} theme={{ dark: { color: 'white' }, light: { color: 'base-900' } }}>
         The answer a file cannot give
       </H3>
 
@@ -608,7 +599,7 @@ function FinishedSection() {
                   <SiteLink
                     to={row.route}
                     fontWeight={500}
-                    theme={{ dark: { color: 'violet-400' }, light: { color: 'violet-600' } }}
+                    theme={{ dark: { color: 'accent-400' }, light: { color: 'accent-600' } }}
                     hover={{ textDecoration: 'underline' }}
                   >
                     {row.name}
@@ -618,7 +609,7 @@ function FinishedSection() {
                   <Link
                     props={{ href: `${APG_PATTERNS}${row.pattern}/`, target: '_blank', rel: 'noopener noreferrer' }}
                     display="inline"
-                    theme={{ dark: { color: 'slate-300' }, light: { color: 'slate-700' } }}
+                    theme={{ dark: { color: 'base-300' }, light: { color: 'base-700' } }}
                     hover={{ textDecoration: 'underline' }}
                   >
                     {row.pattern}
@@ -638,7 +629,7 @@ function FinishedSection() {
         <Stat value={String(totals.knownViolations)} label="violations in the ledger, which fails on a listed one that stops firing too" />
       </Grid>
 
-      <H3 fontSize={17} fontWeight={600} mb={3} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }}>
+      <H3 fontSize={17} fontWeight={600} mb={3} theme={{ dark: { color: 'white' }, light: { color: 'base-900' } }}>
         It renders in a Server Component, with nothing added
       </H3>
 
@@ -681,7 +672,7 @@ export default function Page() {
         </Point>
       </Ul>
 
-      <H3 fontSize={17} fontWeight={600} mb={3} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }}>
+      <H3 fontSize={17} fontWeight={600} mb={3} theme={{ dark: { color: 'white' }, light: { color: 'base-900' } }}>
         And the data grid is in the box
       </H3>
 
@@ -710,7 +701,7 @@ function QuickStart() {
           fontWeight={700}
           textAlign="center"
           mb={3}
-          theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }}
+          theme={{ dark: { color: 'white' }, light: { color: 'base-900' } }}
         >
           Two dependencies and no configuration
         </H2>
@@ -720,7 +711,7 @@ function QuickStart() {
           maxWidth={140}
           mx="auto"
           mb={10}
-          theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}
+          theme={{ dark: { color: 'base-400' }, light: { color: 'base-600' } }}
         >
           There is no plugin to register, no content globs to keep in step and nothing to import into your entry file.
         </P>
@@ -740,13 +731,13 @@ export default function App() {
   );
 }`}
           />
-          <P fontSize={15} textAlign="center" theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
+          <P fontSize={15} textAlign="center" theme={{ dark: { color: 'base-400' }, light: { color: 'base-600' } }}>
             New to web development? Build a whole page step by step in{' '}
             <SiteLink
               to={FIRST_POST}
               display="inline"
               textDecoration="underline"
-              theme={{ dark: { color: 'violet-400' }, light: { color: 'violet-600' } }}
+              theme={{ dark: { color: 'accent-400' }, light: { color: 'accent-600' } }}
             >
               Your first web page with Box Kite
             </SiteLink>
@@ -780,7 +771,7 @@ function HealthSignals() {
             <SiteLink
               key={link.to}
               to={link.to}
-              theme={{ dark: { color: 'violet-400' }, light: { color: 'violet-600' } }}
+              theme={{ dark: { color: 'accent-400' }, light: { color: 'accent-600' } }}
               hover={{ textDecoration: 'underline' }}
             >
               {link.label}
@@ -789,7 +780,7 @@ function HealthSignals() {
           <Link
             props={{ href: 'https://github.com/box-kite/box-kite', target: '_blank', rel: 'noopener noreferrer' }}
             display="inline"
-            theme={{ dark: { color: 'violet-400' }, light: { color: 'violet-600' } }}
+            theme={{ dark: { color: 'accent-400' }, light: { color: 'accent-600' } }}
             hover={{ textDecoration: 'underline' }}
           >
             <Flex props={{ 'data-md': 'inline' }} display="inline-flex" ai="center" gap={2}>
@@ -802,7 +793,7 @@ function HealthSignals() {
           <Link
             props={{ href: 'https://www.npmjs.com/package/@box-kite/react', target: '_blank', rel: 'noopener noreferrer' }}
             display="inline"
-            theme={{ dark: { color: 'violet-400' }, light: { color: 'violet-600' } }}
+            theme={{ dark: { color: 'accent-400' }, light: { color: 'accent-600' } }}
             hover={{ textDecoration: 'underline' }}
           >
             The package
@@ -830,7 +821,7 @@ function Section({ id, eyebrow, title, children }: SectionProps) {
         css={{ scrollMarginTop: '5rem' }}
         py={10}
         bt={1}
-        theme={{ dark: { borderColor: 'slate-800' }, light: { borderColor: 'slate-200' } }}
+        theme={{ dark: { borderColor: 'base-800' }, light: { borderColor: 'base-200' } }}
       >
         <Box
           tag="code"
@@ -842,7 +833,7 @@ function Section({ id, eyebrow, title, children }: SectionProps) {
           py={1}
           borderRadius={1}
           mb={3}
-          theme={{ dark: { bgColor: 'slate-800', color: 'indigo-300' }, light: { bgColor: 'indigo-50', color: 'indigo-600' } }}
+          theme={{ dark: { bgColor: 'base-800', color: 'accent-300' }, light: { bgColor: 'accent-50', color: 'accent-600' } }}
         >
           {eyebrow}
         </Box>
@@ -852,11 +843,11 @@ function Section({ id, eyebrow, title, children }: SectionProps) {
           fontWeight={700}
           letterSpacing={-1}
           mb={4}
-          theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }}
+          theme={{ dark: { color: 'white' }, light: { color: 'base-900' } }}
         >
           {title}
         </H2>
-        <Box fontSize={15} lineHeight={26} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
+        <Box fontSize={15} lineHeight={26} theme={{ dark: { color: 'base-400' }, light: { color: 'base-600' } }}>
           {children}
         </Box>
       </Box>
@@ -872,8 +863,8 @@ function ProofPanel({ tone, title, caption, children }: { tone: 'muted' | 'error
       b={1}
       borderRadius={3}
       theme={{
-        dark: { bgColor: 'slate-900', borderColor: tone === 'error' ? 'red-500/40' : 'slate-700' },
-        light: { bgColor: 'white', borderColor: tone === 'error' ? 'red-500/40' : 'slate-200' },
+        dark: { bgColor: 'base-900', borderColor: tone === 'error' ? 'red-500/40' : 'base-700' },
+        light: { bgColor: 'white', borderColor: tone === 'error' ? 'red-500/40' : 'base-200' },
       }}
     >
       <Box
@@ -881,13 +872,13 @@ function ProofPanel({ tone, title, caption, children }: { tone: 'muted' | 'error
         fontSize={12}
         fontWeight={600}
         mb={3}
-        theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-500' } }}
+        theme={{ dark: { color: 'base-400' }, light: { color: 'base-500' } }}
       >
         {title}
       </Box>
       <Box overflow="auto">{children}</Box>
       {/* `auto` rather than a gap: the two panels are different heights, and their captions line up. */}
-      <Box mt="auto" pt={4} fontSize={13} lineHeight={20} theme={{ dark: { color: 'slate-500' }, light: { color: 'slate-500' } }}>
+      <Box mt="auto" pt={4} fontSize={13} lineHeight={20} theme={{ dark: { color: 'base-500' }, light: { color: 'base-500' } }}>
         {caption}
       </Box>
     </Flex>
@@ -913,14 +904,14 @@ function Stat({ value, label, accent }: { value: string; label: string; accent?:
       b={1}
       borderRadius={3}
       theme={{
-        dark: { bgColor: accent ? 'indigo-500/20' : 'slate-800', borderColor: accent ? 'indigo-500/40' : 'slate-700' },
-        light: { bgColor: accent ? 'indigo-50' : 'white', borderColor: accent ? 'indigo-200' : 'slate-200' },
+        dark: { bgColor: accent ? 'accent-500/20' : 'base-800', borderColor: accent ? 'accent-500/40' : 'base-700' },
+        light: { bgColor: accent ? 'accent-50' : 'white', borderColor: accent ? 'accent-200' : 'base-200' },
       }}
     >
-      <Box fontSize={20} fontWeight={700} mb={1} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }}>
+      <Box fontSize={20} fontWeight={700} mb={1} theme={{ dark: { color: 'white' }, light: { color: 'base-900' } }}>
         {value}
       </Box>
-      <Box fontSize={13} lineHeight={20} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
+      <Box fontSize={13} lineHeight={20} theme={{ dark: { color: 'base-400' }, light: { color: 'base-600' } }}>
         {label}
       </Box>
     </Box>
@@ -933,10 +924,10 @@ function Signal({ label, value, note }: { label: string; value: string; note: st
       <Box fontSize={12} fontWeight={600} mb={1} textTransform="uppercase" letterSpacing={1}>
         {label}
       </Box>
-      <Box fontSize={22} fontWeight={700} mb={1} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }}>
+      <Box fontSize={22} fontWeight={700} mb={1} theme={{ dark: { color: 'white' }, light: { color: 'base-900' } }}>
         {value}
       </Box>
-      <Box fontSize={13} lineHeight={20} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
+      <Box fontSize={13} lineHeight={20} theme={{ dark: { color: 'base-400' }, light: { color: 'base-600' } }}>
         {note}
       </Box>
     </Box>
@@ -952,7 +943,7 @@ function SectionLink({ to, children }: { to: string; children: ReactNode }) {
       gap={2}
       fontSize={14}
       fontWeight={500}
-      theme={{ dark: { color: 'violet-400' }, light: { color: 'violet-600' } }}
+      theme={{ dark: { color: 'accent-400' }, light: { color: 'accent-600' } }}
       hover={{ textDecoration: 'underline' }}
     >
       {children}

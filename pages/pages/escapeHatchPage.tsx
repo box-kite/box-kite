@@ -204,10 +204,10 @@ export default function EscapeHatchPage() {
 function Section({ id, title, children }: { id: string; title: string; children: ReactNode }) {
   return (
     <Box id={id}>
-      <H2 fontSize={20} fontWeight={600} mb={4} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }}>
+      <H2 fontSize={20} fontWeight={600} mb={4} theme={{ dark: { color: 'white' }, light: { color: 'base-900' } }}>
         {title}
       </H2>
-      <Box fontSize={15} lineHeight={26} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
+      <Box fontSize={15} lineHeight={26} theme={{ dark: { color: 'base-400' }, light: { color: 'base-600' } }}>
         {children}
       </Box>
     </Box>
@@ -217,7 +217,7 @@ function Section({ id, title, children }: { id: string; title: string; children:
 function Bullet({ children }: { children: ReactNode }) {
   return (
     <Flex gap={2} mb={2}>
-      <Box flexShrink={0} width={1.5} height={1.5} mt={2.5} borderRadius={1} bgColor="indigo-500" />
+      <Box flexShrink={0} width={1.5} height={1.5} mt={2.5} borderRadius={1} bgColor="accent-500" />
       <Box>{children}</Box>
     </Flex>
   );

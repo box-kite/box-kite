@@ -25,7 +25,7 @@ const HAIRLINE = 'color-mix(in oklab, currentColor 12%, transparent)';
 const MEDIA_FILL: BoxComponentStyles = { bgColor: 'currentColor/6' };
 
 /** The keyboard's mark on a control in the DataGrid's list layout. */
-const FOCUS_RING: BoxComponentStyles = { outline: 2, outlineStyle: 'solid', outlineOffset: 2, outlineColor: 'indigo-500' };
+const FOCUS_RING: BoxComponentStyles = { outline: 2, outlineStyle: 'solid', outlineOffset: 2, outlineColor: 'accent-500' };
 
 /**
  * The DataGrid bottom bar's buttons. Quiet rather than links: they change the view, they do not go
@@ -42,19 +42,19 @@ const BAR_BUTTON: BoxComponentStyles = {
   borderRadius: 1.5,
   fontSize: 13,
   fontWeight: 500,
-  color: 'gray-600',
+  color: 'base-600',
   bgColor: 'transparent',
   cursor: 'pointer',
   textWrap: 'nowrap',
   transition: 'colors',
   transitionDuration: 150,
-  hover: { bgColor: 'gray-100', color: 'gray-900' },
-  focusVisible: { outline: 2, outlineStyle: 'solid', outlineOffset: 0, outlineColor: 'indigo-500' },
+  hover: { bgColor: 'base-100', color: 'base-900' },
+  focusVisible: { outline: 2, outlineStyle: 'solid', outlineOffset: 0, outlineColor: 'accent-500' },
   theme: {
     dark: {
-      color: 'gray-400',
-      hover: { bgColor: 'gray-800', color: 'gray-100' },
-      focusVisible: { outlineColor: 'indigo-400' },
+      color: 'base-400',
+      hover: { bgColor: 'base-800', color: 'base-100' },
+      focusVisible: { outlineColor: 'accent-400' },
     },
   },
 };
@@ -96,11 +96,11 @@ const baseComponents = {
       b: 1,
       borderRadius: 3,
       bgColor: 'white',
-      color: 'gray-900',
-      borderColor: 'gray-200',
+      color: 'base-900',
+      borderColor: 'base-200',
       shadow: 'large',
       theme: {
-        dark: { bgColor: 'gray-800', borderColor: 'gray-700', color: 'gray-100' },
+        dark: { bgColor: 'base-800', borderColor: 'base-700', color: 'base-100' },
       },
       // Opening is a first style resolution — `display: none` to shown — which is the moment
       // `@starting-style` names; `allow-discrete` is what holds `display` and `overlay` back on the way
@@ -138,9 +138,9 @@ const baseComponents = {
           lineHeight: 22,
           mt: 2,
           mb: 0,
-          color: 'gray-600',
+          color: 'base-600',
           theme: {
-            dark: { color: 'gray-400' },
+            dark: { color: 'base-400' },
           },
         },
       },
@@ -155,12 +155,12 @@ const baseComponents = {
       b: 1,
       borderRadius: 2,
       bgColor: 'white',
-      color: 'gray-900',
-      borderColor: 'gray-300',
+      color: 'base-900',
+      borderColor: 'base-300',
       shadow: 'medium',
       overflow: 'auto',
       theme: {
-        dark: { bgColor: 'gray-800', borderColor: 'gray-700', color: 'gray-100' },
+        dark: { bgColor: 'base-800', borderColor: 'base-700', color: 'base-100' },
       },
       // The panel is displayed when it opens — from `display: none` on the platform path, by mounting on
       // the other — and both are a first style resolution, which is the moment `@starting-style` names.
@@ -195,12 +195,12 @@ const baseComponents = {
       b: 1,
       borderRadius: 2,
       bgColor: 'white',
-      color: 'gray-900',
-      borderColor: 'gray-300',
+      color: 'base-900',
+      borderColor: 'base-300',
       shadow: 'medium',
       overflow: 'auto',
       theme: {
-        dark: { bgColor: 'gray-800', borderColor: 'gray-700', color: 'gray-100' },
+        dark: { bgColor: 'base-800', borderColor: 'base-700', color: 'base-100' },
       },
       // Opening is the panel's first style resolution — `display: none` to shown on the platform path,
       // and mounting on the other — which is the moment `@starting-style` names.
@@ -238,22 +238,22 @@ const baseComponents = {
           userSelect: 'none',
           whiteSpace: 'nowrap',
           transition: 'none',
-          hover: { bgColor: 'gray-100' },
-          focus: { bgColor: 'gray-100', outline: 0 },
+          hover: { bgColor: 'base-100' },
+          focus: { bgColor: 'base-100', outline: 0 },
           // A disabled item is `aria-disabled` rather than `disabled`, because APG asks that it stay
           // focusable — so the attribute is what styles it.
           ariaAttr: {
-            disabled: { color: 'gray-400', cursor: 'default', hover: { bgColor: 'transparent' }, focus: { bgColor: 'transparent' } },
+            disabled: { color: 'base-400', cursor: 'default', hover: { bgColor: 'transparent' }, focus: { bgColor: 'transparent' } },
           },
           // A forced-colors mode throws every background away, and the highlight is a background: these
           // two are the only pair those modes keep, so without them focus reads identically on and off.
           forcedColors: { focus: { bgColor: 'Highlight', color: 'HighlightText' } },
           theme: {
             dark: {
-              hover: { bgColor: 'gray-700' },
-              focus: { bgColor: 'gray-700' },
+              hover: { bgColor: 'base-700' },
+              focus: { bgColor: 'base-700' },
               ariaAttr: {
-                disabled: { color: 'gray-500', hover: { bgColor: 'transparent' }, focus: { bgColor: 'transparent' } },
+                disabled: { color: 'base-500', hover: { bgColor: 'transparent' }, focus: { bgColor: 'transparent' } },
               },
             },
           },
@@ -304,16 +304,16 @@ const baseComponents = {
           fontSize: 12,
           fontWeight: 600,
           lineHeight: 16,
-          color: 'gray-500',
-          theme: { dark: { color: 'gray-400' } },
+          color: 'base-500',
+          theme: { dark: { color: 'base-400' } },
         },
       },
       separator: {
         styles: {
           my: 1,
           bt: 1,
-          borderColor: 'gray-200',
-          theme: { dark: { borderColor: 'gray-700' } },
+          borderColor: 'base-200',
+          theme: { dark: { borderColor: 'base-700' } },
         },
       },
     },
@@ -335,13 +335,13 @@ const baseComponents = {
           gap: 1,
           ai: 'center',
           bb: 1,
-          borderColor: 'gray-200',
+          borderColor: 'base-200',
           // Deliberately **not** a scroll container. The selected tab's indicator overhangs this rule by
           // 1px to sit on it, and naming one axis is enough to lose that: `overflow` computes a `visible`
           // companion to an `auto` up to `auto`, so `overflowX: 'auto'` alone turned the 1px into a 15px
           // *vertical* scrollbar on every horizontal tablist. Scrolling a list that outgrows its
           // container is the consumer's to solve; doing it here costs the overlap.
-          theme: { dark: { borderColor: 'gray-700' } },
+          theme: { dark: { borderColor: 'base-700' } },
         },
         variants: {
           // The rule moves to the inline end, which mirrors in a right-to-left page where `br` would not.
@@ -362,7 +362,7 @@ const baseComponents = {
           fontSize: 14,
           lineHeight: 20,
           fontWeight: 500,
-          color: 'gray-600',
+          color: 'base-600',
           bgColor: 'transparent',
           b: 0,
           // The border the indicator is drawn on, pulled over the list's own 1px rule so the two read as
@@ -375,21 +375,21 @@ const baseComponents = {
           whiteSpace: 'nowrap',
           userSelect: 'none',
           transition: 'colors',
-          hover: { color: 'gray-900' },
-          selected: { color: 'indigo-600' },
-          disabled: { color: 'gray-400', cursor: 'default', hover: { color: 'gray-400' } },
+          hover: { color: 'base-900' },
+          selected: { color: 'accent-600' },
+          disabled: { color: 'base-400', cursor: 'default', hover: { color: 'base-400' } },
           // Inside the underline rather than around it: a ring drawn outside would sit under the
           // neighbouring tab, since the list scrolls and clips.
-          focusVisible: { outline: 2, outlineColor: 'indigo-500', outlineOffset: -2, borderRadius: 1 },
+          focusVisible: { outline: 2, outlineColor: 'accent-500', outlineOffset: -2, borderRadius: 1 },
           // Every colour is gone in a forced-colors mode, so the selected tab has to be told apart with
           // one of the pair those modes keep — otherwise it reads exactly like the rest.
           forcedColors: { selected: { color: 'Highlight' } },
           theme: {
             dark: {
-              color: 'gray-400',
-              hover: { color: 'gray-100' },
-              selected: { color: 'indigo-400' },
-              disabled: { color: 'gray-600', hover: { color: 'gray-600' } },
+              color: 'base-400',
+              hover: { color: 'base-100' },
+              selected: { color: 'accent-400' },
+              disabled: { color: 'base-600', hover: { color: 'base-600' } },
             },
           },
         },
@@ -399,9 +399,9 @@ const baseComponents = {
           // The tab colours its own border in. Declared here rather than in `selected` because the
           // travelling indicator turns it off, and a colour declared once is better than three undone.
           underline: {
-            selected: { borderColor: 'indigo-500' },
+            selected: { borderColor: 'accent-500' },
             forcedColors: { selected: { borderColor: 'Highlight' } },
-            theme: { dark: { selected: { borderColor: 'indigo-400' } } },
+            theme: { dark: { selected: { borderColor: 'accent-400' } } },
           },
         },
       },
@@ -415,9 +415,9 @@ const baseComponents = {
           // Physical, because the block axis does not mirror — `be` would be wrong here and right below.
           bottom: -0.25,
           height: 0.5,
-          bgColor: 'indigo-500',
+          bgColor: 'accent-500',
           forcedColors: { bgColor: 'Highlight' },
-          theme: { dark: { bgColor: 'indigo-400' } },
+          theme: { dark: { bgColor: 'accent-400' } },
         },
         variants: {
           // The bar turns with the list: along the block axis, on the inline end. `bottom` goes back to
@@ -449,7 +449,7 @@ const baseComponents = {
           fontSize: 14,
           lineHeight: 20,
           // The panel is a tab stop of its own (APG), and a container is not what a focus ring is for.
-          focusVisible: { outline: 2, outlineColor: 'indigo-500', outlineOffset: 2, borderRadius: 1 },
+          focusVisible: { outline: 2, outlineColor: 'accent-500', outlineOffset: 2, borderRadius: 1 },
           startingStyle: { opacity: 0, translateY: 1 },
         },
         variants: {
@@ -472,8 +472,8 @@ const baseComponents = {
       item: {
         styles: {
           bb: 1,
-          borderColor: 'gray-200',
-          theme: { dark: { borderColor: 'gray-700' } },
+          borderColor: 'base-200',
+          theme: { dark: { borderColor: 'base-700' } },
         },
       },
       // The heading APG asks the button be wrapped in. It carries no look of its own: the level says
@@ -494,24 +494,24 @@ const baseComponents = {
           lineHeight: 20,
           fontWeight: 500,
           textAlign: 'start',
-          color: 'gray-900',
+          color: 'base-900',
           bgColor: 'transparent',
           b: 0,
           cursor: 'pointer',
           transition: 'colors',
-          hover: { color: 'indigo-600' },
+          hover: { color: 'accent-600' },
           // The open state is the button's own `aria-expanded`, so it needs no variant: the attribute
           // the pattern already has to write is the selector.
-          ariaAttr: { expanded: { color: 'indigo-600' } },
-          disabled: { color: 'gray-400', cursor: 'default', hover: { color: 'gray-400' } },
-          focusVisible: { outline: 2, outlineColor: 'indigo-500', outlineOffset: -2, borderRadius: 1 },
+          ariaAttr: { expanded: { color: 'accent-600' } },
+          disabled: { color: 'base-400', cursor: 'default', hover: { color: 'base-400' } },
+          focusVisible: { outline: 2, outlineColor: 'accent-500', outlineOffset: -2, borderRadius: 1 },
           forcedColors: { ariaAttr: { expanded: { color: 'Highlight' } } },
           theme: {
             dark: {
-              color: 'gray-100',
-              hover: { color: 'indigo-400' },
-              ariaAttr: { expanded: { color: 'indigo-400' } },
-              disabled: { color: 'gray-600', hover: { color: 'gray-600' } },
+              color: 'base-100',
+              hover: { color: 'accent-400' },
+              ariaAttr: { expanded: { color: 'accent-400' } },
+              disabled: { color: 'base-600', hover: { color: 'base-600' } },
             },
           },
         },
@@ -558,8 +558,8 @@ const baseComponents = {
           pb: 4,
           fontSize: 14,
           lineHeight: 20,
-          color: 'gray-700',
-          theme: { dark: { color: 'gray-300' } },
+          color: 'base-700',
+          theme: { dark: { color: 'base-300' } },
         },
       },
     },
@@ -613,10 +613,10 @@ const baseComponents = {
           width: 'fit',
           height: 1.5,
           borderRadius: 1,
-          bgColor: 'gray-200',
+          bgColor: 'base-200',
           // The fill's own corners are square, so the track is what rounds both ends of it.
           overflow: 'hidden',
-          theme: { dark: { bgColor: 'gray-700' } },
+          theme: { dark: { bgColor: 'base-700' } },
         },
         variants: {
           vertical: { width: 1.5, height: 'fit' },
@@ -626,8 +626,8 @@ const baseComponents = {
         styles: {
           position: 'absolute',
           insetY: 0,
-          bgColor: 'indigo-500',
-          theme: { dark: { bgColor: 'indigo-400' } },
+          bgColor: 'accent-500',
+          theme: { dark: { bgColor: 'accent-400' } },
         },
         variants: {
           // A vertical slider fills from the bottom, so the axis the inline style writes swaps with it.
@@ -651,17 +651,17 @@ const baseComponents = {
           borderRadius: 4,
           bgColor: 'white',
           b: 2,
-          borderColor: 'indigo-500',
+          borderColor: 'accent-500',
           shadow: 'xs',
-          hover: { borderColor: 'indigo-600' },
-          focusVisible: { outline: 2, outlineColor: 'indigo-500', outlineOffset: 2 },
-          theme: { dark: { bgColor: 'gray-900', borderColor: 'indigo-400', hover: { borderColor: 'indigo-300' } } },
+          hover: { borderColor: 'accent-600' },
+          focusVisible: { outline: 2, outlineColor: 'accent-500', outlineOffset: 2 },
+          theme: { dark: { bgColor: 'base-900', borderColor: 'accent-400', hover: { borderColor: 'accent-300' } } },
           // A thumb whose only signal is its fill disappears in a forced-colors mode.
           forcedColors: { bgColor: 'ButtonFace', borderColor: 'ButtonText' },
         },
         variants: {
           vertical: { ms: 0, mb: -2 },
-          disabled: { cursor: 'default', borderColor: 'gray-400', hover: { borderColor: 'gray-400' } },
+          disabled: { cursor: 'default', borderColor: 'base-400', hover: { borderColor: 'base-400' } },
           // The same on the thumb, and both parts must carry it or they come apart (#144). A named
           // duration is outside the reduced-motion default, which only zeroes `--transitionTime`.
           tracking: { transitionDuration: 60, transitionTimingFunction: 'ease-out', motionReduce: { transition: 'none' } },
@@ -677,9 +677,9 @@ const baseComponents = {
       width: 'fit',
       height: 2,
       borderRadius: 1,
-      bgColor: 'gray-200',
+      bgColor: 'base-200',
       overflow: 'hidden',
-      theme: { dark: { bgColor: 'gray-700' } },
+      theme: { dark: { bgColor: 'base-700' } },
     },
     children: {
       fill: {
@@ -687,10 +687,10 @@ const baseComponents = {
           position: 'absolute',
           insetY: 0,
           insetStart: 0,
-          bgColor: 'indigo-500',
+          bgColor: 'accent-500',
           // The width is the value, so it is the one thing here that moves.
           transition: 'size',
-          theme: { dark: { bgColor: 'indigo-400' } },
+          theme: { dark: { bgColor: 'accent-400' } },
           forcedColors: { bgColor: 'Highlight' },
         },
         variants: {
@@ -770,12 +770,12 @@ const baseComponents = {
           borderRadius: 2,
           overflow: 'hidden',
           bgColor: 'white',
-          borderColor: 'gray-300',
-          color: 'gray-900',
+          borderColor: 'base-300',
+          color: 'base-900',
           shadow: 'medium',
           fontSize: 14,
           lineHeight: 20,
-          theme: { dark: { bgColor: 'gray-800', borderColor: 'gray-700', color: 'gray-100' } },
+          theme: { dark: { bgColor: 'base-800', borderColor: 'base-700', color: 'base-100' } },
           // The accent, drawn as a bar rather than a border because only `borderColor` exists and it
           // takes all four sides. Transparent until a kind names a colour, so the geometry is declared
           // once; `before` carries its own `content: ''`.
@@ -792,14 +792,14 @@ const baseComponents = {
           error: { before: { bgColor: 'red-500' } },
           warning: { before: { bgColor: 'amber-500' } },
           info: { before: { bgColor: 'sky-500' } },
-          loading: { before: { bgColor: 'gray-400' } },
+          loading: { before: { bgColor: 'base-400' } },
         },
       },
       message: {
-        styles: { fontWeight: 500, color: 'gray-900', theme: { dark: { color: 'gray-100' } } },
+        styles: { fontWeight: 500, color: 'base-900', theme: { dark: { color: 'base-100' } } },
       },
       description: {
-        styles: { fontSize: 13, lineHeight: 18, color: 'gray-600', theme: { dark: { color: 'gray-400' } } },
+        styles: { fontSize: 13, lineHeight: 18, color: 'base-600', theme: { dark: { color: 'base-400' } } },
       },
       action: {
         styles: {
@@ -812,15 +812,15 @@ const baseComponents = {
           fontWeight: 500,
           borderRadius: 1,
           b: 1,
-          borderColor: 'gray-300',
+          borderColor: 'base-300',
           bgColor: 'transparent',
-          color: 'gray-900',
+          color: 'base-900',
           cursor: 'pointer',
           transition: 'colors',
-          hover: { bgColor: 'gray-100' },
-          focusVisible: { outline: 2, outlineColor: 'indigo-500', outlineOffset: 1 },
+          hover: { bgColor: 'base-100' },
+          focusVisible: { outline: 2, outlineColor: 'accent-500', outlineOffset: 1 },
           theme: {
-            dark: { borderColor: 'gray-600', color: 'gray-100', hover: { bgColor: 'gray-700' } },
+            dark: { borderColor: 'base-600', color: 'base-100', hover: { bgColor: 'base-700' } },
           },
         },
       },
@@ -839,18 +839,18 @@ const baseComponents = {
           borderRadius: 1,
           b: 0,
           bgColor: 'transparent',
-          color: 'gray-500',
+          color: 'base-500',
           cursor: 'pointer',
           transition: 'colors',
-          hover: { color: 'gray-900', bgColor: 'gray-100' },
-          focusVisible: { outline: 2, outlineColor: 'indigo-500', outlineOffset: -2 },
+          hover: { color: 'base-900', bgColor: 'base-100' },
+          focusVisible: { outline: 2, outlineColor: 'accent-500', outlineOffset: -2 },
           // `borderStyle` on both, and it is the trap: a pseudo-element carries none of `._b`, whose
           // `border: 0 solid` is what every other border in this file is leaning on — so a width with
           // no style computes to `0px none` and the cross is invisible (measured in Chrome 153).
           before: { position: 'absolute', width: 2.5, height: 0, bt: 1, borderStyle: 'solid', borderColor: 'currentColor', rotate: 45 },
           after: { position: 'absolute', width: 2.5, height: 0, bt: 1, borderStyle: 'solid', borderColor: 'currentColor', rotate: -45 },
           theme: {
-            dark: { color: 'gray-400', hover: { color: 'gray-100', bgColor: 'gray-700' } },
+            dark: { color: 'base-400', hover: { color: 'base-100', bgColor: 'base-700' } },
           },
         },
       },
@@ -866,10 +866,10 @@ const baseComponents = {
           fontSize: 12,
           lineHeight: 16,
           fontWeight: 500,
-          bgColor: 'gray-900/80',
-          color: 'gray-50',
+          bgColor: 'base-900/80',
+          color: 'base-50',
           startingStyle: { opacity: 0 },
-          theme: { dark: { bgColor: 'gray-100/80', color: 'gray-900' } },
+          theme: { dark: { bgColor: 'base-100/80', color: 'base-900' } },
           forcedColors: { b: 1 },
         },
       },
@@ -886,10 +886,10 @@ const baseComponents = {
       borderRadius: 1.5,
       fontSize: 13,
       lineHeight: 18,
-      bgColor: 'gray-900',
-      color: 'gray-50',
+      bgColor: 'base-900',
+      color: 'base-50',
       theme: {
-        dark: { bgColor: 'gray-100', color: 'gray-900' },
+        dark: { bgColor: 'base-100', color: 'base-900' },
       },
       // Inversion is the only thing separating this bubble from the page, and a forced-colors mode
       // throws both colors away — leaving text floating over whatever it covers. A border is the
@@ -911,7 +911,7 @@ const baseComponents = {
       ai: 'center',
       jc: 'center',
       gap: 2,
-      bgColor: 'indigo-600',
+      bgColor: 'accent-600',
       color: 'white',
       fontWeight: 500,
       py: 2.5,
@@ -920,41 +920,42 @@ const baseComponents = {
       b: 0,
       cursor: 'pointer',
       hover: {
-        bgColor: 'indigo-700',
+        bgColor: 'accent-700',
       },
       active: {
-        bgColor: 'indigo-800',
+        bgColor: 'accent-800',
       },
-      focus: {
+      focusVisible: {
         outline: 2,
+        outlineStyle: 'solid',
         outlineOffset: 2,
-        outlineColor: 'indigo-200',
+        outlineColor: 'accent-500',
       },
       disabled: {
-        bgColor: 'gray-200',
-        color: 'gray-400',
+        bgColor: 'base-200',
+        color: 'base-400',
         cursor: 'not-allowed',
         hover: {
-          bgColor: 'gray-200',
+          bgColor: 'base-200',
         },
       },
       theme: {
         dark: {
-          bgColor: 'indigo-500',
+          bgColor: 'accent-500',
           hover: {
-            bgColor: 'indigo-400',
+            bgColor: 'accent-400',
           },
           active: {
-            bgColor: 'indigo-600',
+            bgColor: 'accent-600',
           },
-          focus: {
-            outlineColor: 'indigo-800',
+          focusVisible: {
+            outlineColor: 'accent-400',
           },
           disabled: {
-            bgColor: 'gray-800',
-            color: 'gray-600',
+            bgColor: 'base-800',
+            color: 'base-600',
             hover: {
-              bgColor: 'gray-800',
+              bgColor: 'base-800',
             },
           },
         },
@@ -963,73 +964,73 @@ const baseComponents = {
     variants: {
       secondary: {
         bgColor: 'white',
-        color: 'gray-900',
+        color: 'base-900',
         b: 1,
-        borderColor: 'gray-300',
+        borderColor: 'base-300',
         hover: {
-          bgColor: 'gray-50',
+          bgColor: 'base-50',
         },
         active: {
-          bgColor: 'gray-100',
+          bgColor: 'base-100',
         },
-        focus: {
-          borderColor: 'indigo-500',
-          outlineColor: 'indigo-100',
+        focusVisible: {
+          borderColor: 'accent-500',
+          outlineColor: 'accent-500',
         },
         disabled: {
-          bgColor: 'gray-50',
-          color: 'gray-400',
-          borderColor: 'gray-200',
+          bgColor: 'base-50',
+          color: 'base-400',
+          borderColor: 'base-200',
         },
         theme: {
           dark: {
-            bgColor: 'gray-800',
-            color: 'gray-100',
-            borderColor: 'gray-700',
+            bgColor: 'base-800',
+            color: 'base-100',
+            borderColor: 'base-700',
             hover: {
-              bgColor: 'gray-700',
+              bgColor: 'base-700',
             },
             active: {
-              bgColor: 'gray-600',
+              bgColor: 'base-600',
             },
-            focus: {
-              borderColor: 'indigo-400',
-              outlineColor: 'indigo-900',
+            focusVisible: {
+              borderColor: 'accent-400',
+              outlineColor: 'accent-400',
             },
             disabled: {
-              bgColor: 'gray-900',
-              color: 'gray-600',
-              borderColor: 'gray-800',
+              bgColor: 'base-900',
+              color: 'base-600',
+              borderColor: 'base-800',
             },
           },
         },
       },
       ghost: {
         bgColor: 'transparent',
-        color: 'gray-700',
+        color: 'base-700',
         hover: {
-          bgColor: 'gray-100',
+          bgColor: 'base-100',
         },
         active: {
-          bgColor: 'gray-200',
+          bgColor: 'base-200',
         },
         disabled: {
           bgColor: 'transparent',
-          color: 'gray-400',
+          color: 'base-400',
         },
         theme: {
           dark: {
             bgColor: 'transparent',
-            color: 'gray-300',
+            color: 'base-300',
             hover: {
-              bgColor: 'gray-800',
+              bgColor: 'base-800',
             },
             active: {
-              bgColor: 'gray-700',
+              bgColor: 'base-700',
             },
             disabled: {
               bgColor: 'transparent',
-              color: 'gray-600',
+              color: 'base-600',
             },
           },
         },
@@ -1040,44 +1041,44 @@ const baseComponents = {
     styles: {
       display: 'inline-block',
       b: 1,
-      borderColor: 'gray-300',
+      borderColor: 'base-300',
       bgColor: 'white',
-      color: 'gray-900',
+      color: 'base-900',
       borderRadius: 2,
       p: 3,
       px: 4,
       lineHeight: 20,
       hover: {
-        borderColor: 'gray-400',
+        borderColor: 'base-400',
       },
       focus: {
         outline: 2,
         outlineOffset: 0,
-        borderColor: 'indigo-500',
-        outlineColor: 'indigo-200',
+        borderColor: 'accent-500',
+        outlineColor: 'accent-200',
       },
       disabled: {
         cursor: 'not-allowed',
-        bgColor: 'gray-100',
-        color: 'gray-400',
-        borderColor: 'gray-200',
+        bgColor: 'base-100',
+        color: 'base-400',
+        borderColor: 'base-200',
       },
       theme: {
         dark: {
-          bgColor: 'gray-800',
-          color: 'gray-100',
-          borderColor: 'gray-700',
+          bgColor: 'base-800',
+          color: 'base-100',
+          borderColor: 'base-700',
           hover: {
-            borderColor: 'gray-600',
+            borderColor: 'base-600',
           },
           focus: {
-            borderColor: 'indigo-400',
-            outlineColor: 'indigo-900',
+            borderColor: 'accent-400',
+            outlineColor: 'accent-900',
           },
           disabled: {
-            bgColor: 'gray-900',
-            color: 'gray-600',
-            borderColor: 'gray-800',
+            bgColor: 'base-900',
+            color: 'base-600',
+            borderColor: 'base-800',
           },
         },
       },
@@ -1094,44 +1095,44 @@ const baseComponents = {
     styles: {
       display: 'inline-block',
       b: 1,
-      borderColor: 'gray-300',
+      borderColor: 'base-300',
       bgColor: 'white',
-      color: 'gray-900',
+      color: 'base-900',
       borderRadius: 2,
       p: 3,
       px: 4,
       hover: {
-        borderColor: 'gray-400',
+        borderColor: 'base-400',
       },
       focus: {
         outline: 2,
         outlineOffset: 0,
-        borderColor: 'indigo-500',
-        outlineColor: 'indigo-200',
+        borderColor: 'accent-500',
+        outlineColor: 'accent-200',
       },
       disabled: {
         cursor: 'not-allowed',
-        bgColor: 'gray-100',
-        color: 'gray-400',
-        borderColor: 'gray-200',
+        bgColor: 'base-100',
+        color: 'base-400',
+        borderColor: 'base-200',
         resize: 'none',
       },
       theme: {
         dark: {
-          bgColor: 'gray-800',
-          color: 'gray-100',
-          borderColor: 'gray-700',
+          bgColor: 'base-800',
+          color: 'base-100',
+          borderColor: 'base-700',
           hover: {
-            borderColor: 'gray-600',
+            borderColor: 'base-600',
           },
           focus: {
-            borderColor: 'indigo-400',
-            outlineColor: 'indigo-900',
+            borderColor: 'accent-400',
+            outlineColor: 'accent-900',
           },
           disabled: {
-            bgColor: 'gray-900',
-            color: 'gray-600',
-            borderColor: 'gray-800',
+            bgColor: 'base-900',
+            color: 'base-600',
+            borderColor: 'base-800',
           },
         },
       },
@@ -1142,16 +1143,16 @@ const baseComponents = {
       display: 'inline-block',
       appearance: 'none',
       b: 2,
-      borderColor: 'gray-300',
+      borderColor: 'base-300',
       borderRadius: 1,
       p: 2,
       cursor: 'pointer',
       // Quick, and colours only. The ring wears its colour before it is drawn, or it fades in from black.
       transition: 'colors',
       transitionDuration: 100,
-      outlineColor: 'indigo-200',
+      outlineColor: 'accent-200',
       hover: {
-        borderColor: 'indigo-400',
+        borderColor: 'accent-400',
       },
       // The keyboard's ring only: drawn on every click it was noise, and in a DataGrid it flashed on each row selected.
       focusVisible: {
@@ -1159,45 +1160,54 @@ const baseComponents = {
         outlineOffset: 2,
       },
       checked: {
-        bgColor: 'indigo-500',
-        borderColor: 'indigo-500',
+        bgColor: 'accent-500',
+        borderColor: 'accent-500',
         bgImage: 'bg-img-checked',
       },
+      // Filled like a tick, with a white dash: the dash used to be a fixed violet no design could reach.
       indeterminate: {
-        borderColor: 'indigo-500',
+        bgColor: 'accent-500',
+        borderColor: 'accent-500',
         bgImage: 'bg-img-indeterminate',
       },
       disabled: {
         cursor: 'not-allowed',
-        borderColor: 'gray-200',
+        borderColor: 'base-200',
         checked: {
-          bgColor: 'gray-300',
+          bgColor: 'base-300',
+        },
+        indeterminate: {
+          bgColor: 'base-300',
         },
         hover: {
-          borderColor: 'gray-200',
+          borderColor: 'base-200',
         },
       },
       theme: {
         dark: {
-          borderColor: 'gray-600',
+          borderColor: 'base-600',
           hover: {
-            borderColor: 'indigo-400',
+            borderColor: 'accent-400',
           },
-          outlineColor: 'indigo-900',
+          outlineColor: 'accent-900',
           checked: {
-            bgColor: 'indigo-500',
-            borderColor: 'indigo-500',
+            bgColor: 'accent-500',
+            borderColor: 'accent-500',
           },
           indeterminate: {
-            borderColor: 'indigo-500',
+            bgColor: 'accent-500',
+            borderColor: 'accent-500',
           },
           disabled: {
-            borderColor: 'gray-700',
+            borderColor: 'base-700',
             checked: {
-              bgColor: 'gray-600',
+              bgColor: 'base-600',
+            },
+            indeterminate: {
+              bgColor: 'base-600',
             },
             hover: {
-              borderColor: 'gray-700',
+              borderColor: 'base-700',
             },
           },
         },
@@ -1211,16 +1221,16 @@ const baseComponents = {
     styles: {
       appearance: 'none',
       b: 1,
-      borderColor: 'gray-300',
+      borderColor: 'base-300',
       borderRadius: 3,
       p: 2,
       cursor: 'pointer',
       // Quick, and colours only. The ring wears its colour before it is drawn, or it fades in from black.
       transition: 'colors',
       transitionDuration: 100,
-      outlineColor: 'indigo-200',
+      outlineColor: 'accent-200',
       hover: {
-        borderColor: 'indigo-400',
+        borderColor: 'accent-400',
       },
       // The keyboard's ring only: drawn on every click it was noise, and in a DataGrid it flashed on each row selected.
       focusVisible: {
@@ -1228,39 +1238,39 @@ const baseComponents = {
         outlineOffset: 2,
       },
       checked: {
-        bgColor: 'indigo-500',
-        borderColor: 'indigo-500',
+        bgColor: 'accent-500',
+        borderColor: 'accent-500',
         bgImage: 'bg-img-radio',
       },
       disabled: {
         checked: {
-          bgColor: 'gray-300',
-          borderColor: 'gray-200',
+          bgColor: 'base-300',
+          borderColor: 'base-200',
         },
         cursor: 'not-allowed',
-        borderColor: 'gray-200',
+        borderColor: 'base-200',
         hover: {
-          borderColor: 'gray-200',
+          borderColor: 'base-200',
         },
       },
       theme: {
         dark: {
-          borderColor: 'gray-600',
+          borderColor: 'base-600',
           hover: {
-            borderColor: 'indigo-400',
+            borderColor: 'accent-400',
           },
-          outlineColor: 'indigo-900',
+          outlineColor: 'accent-900',
           checked: {
-            bgColor: 'indigo-500',
-            borderColor: 'indigo-500',
+            bgColor: 'accent-500',
+            borderColor: 'accent-500',
           },
           disabled: {
-            borderColor: 'gray-700',
+            borderColor: 'base-700',
             checked: {
-              bgColor: 'gray-600',
+              bgColor: 'base-600',
             },
             hover: {
-              borderColor: 'gray-700',
+              borderColor: 'base-700',
             },
           },
         },
@@ -1279,8 +1289,8 @@ const baseComponents = {
       label: {
         styles: {
           fontSize: 14,
-          color: 'gray-700',
-          theme: { dark: { color: 'gray-300' } },
+          color: 'base-700',
+          theme: { dark: { color: 'base-300' } },
         },
       },
     },
@@ -1297,7 +1307,7 @@ const baseComponents = {
       height: 5,
       minWidth: 9,
       borderRadius: 5,
-      bgColor: 'gray-300',
+      bgColor: 'base-300',
       cursor: 'pointer',
       transition: 'all',
       transitionDuration: 150,
@@ -1313,17 +1323,18 @@ const baseComponents = {
         transitionDuration: 150,
       },
       hover: {
-        bgColor: 'gray-400',
+        bgColor: 'base-400',
       },
-      focus: {
+      focusVisible: {
         outline: 2,
+        outlineStyle: 'solid',
         outlineOffset: 2,
-        outlineColor: 'indigo-200',
+        outlineColor: 'accent-500',
       },
       checked: {
-        bgColor: 'indigo-500',
+        bgColor: 'accent-500',
         hover: {
-          bgColor: 'indigo-600',
+          bgColor: 'accent-600',
         },
         before: {
           translateX: 4,
@@ -1339,14 +1350,14 @@ const baseComponents = {
       },
       disabled: {
         cursor: 'not-allowed',
-        bgColor: 'gray-200',
+        bgColor: 'base-200',
         hover: {
-          bgColor: 'gray-200',
+          bgColor: 'base-200',
         },
         checked: {
-          bgColor: 'gray-300',
+          bgColor: 'base-300',
           hover: {
-            bgColor: 'gray-300',
+            bgColor: 'base-300',
           },
         },
       },
@@ -1378,28 +1389,28 @@ const baseComponents = {
       },
       theme: {
         dark: {
-          bgColor: 'gray-600',
+          bgColor: 'base-600',
           hover: {
-            bgColor: 'gray-500',
+            bgColor: 'base-500',
           },
-          focus: {
-            outlineColor: 'indigo-900',
+          focusVisible: {
+            outlineColor: 'accent-400',
           },
           checked: {
-            bgColor: 'indigo-500',
+            bgColor: 'accent-500',
             hover: {
-              bgColor: 'indigo-400',
+              bgColor: 'accent-400',
             },
           },
           disabled: {
-            bgColor: 'gray-700',
+            bgColor: 'base-700',
             hover: {
-              bgColor: 'gray-700',
+              bgColor: 'base-700',
             },
             checked: {
-              bgColor: 'gray-600',
+              bgColor: 'base-600',
               hover: {
-                bgColor: 'gray-600',
+                bgColor: 'base-600',
               },
             },
           },
@@ -1418,45 +1429,45 @@ const baseComponents = {
       // The whole shell is the field's hit area, which is what the pointer handler makes true.
       cursor: 'text',
       bgColor: 'white',
-      color: 'gray-900',
+      color: 'base-900',
       b: 1,
-      borderColor: 'gray-300',
+      borderColor: 'base-300',
       borderRadius: 2,
       lineHeight: 20,
       transition: 'none',
       hover: {
-        borderColor: 'gray-400',
+        borderColor: 'base-400',
       },
       // `focus` is `:focus-within`, so the shell lights up for the field inside it.
       focus: {
         outline: 2,
         outlineOffset: 0,
-        borderColor: 'indigo-500',
-        outlineColor: 'indigo-200',
+        borderColor: 'accent-500',
+        outlineColor: 'accent-200',
       },
       // The shell is a `<div>` and takes no `disabled` of its own: the state belongs to the field in it.
       hasDisabled: {
         cursor: 'not-allowed',
-        bgColor: 'gray-100',
-        color: 'gray-400',
-        borderColor: 'gray-300',
+        bgColor: 'base-100',
+        color: 'base-400',
+        borderColor: 'base-300',
       },
       theme: {
         dark: {
-          bgColor: 'gray-800',
-          color: 'gray-100',
-          borderColor: 'gray-700',
+          bgColor: 'base-800',
+          color: 'base-100',
+          borderColor: 'base-700',
           hover: {
-            borderColor: 'gray-600',
+            borderColor: 'base-600',
           },
           focus: {
-            borderColor: 'indigo-400',
-            outlineColor: 'indigo-900',
+            borderColor: 'accent-400',
+            outlineColor: 'accent-900',
           },
           hasDisabled: {
-            bgColor: 'gray-900',
-            color: 'gray-500',
-            borderColor: 'gray-700',
+            bgColor: 'base-900',
+            color: 'base-500',
+            borderColor: 'base-700',
           },
         },
       },
@@ -1472,10 +1483,10 @@ const baseComponents = {
       label: {
         styles: {
           fontSize: 14,
-          color: 'gray-700',
+          color: 'base-700',
           theme: {
             dark: {
-              color: 'gray-300',
+              color: 'base-300',
             },
           },
         },
@@ -1494,7 +1505,7 @@ const baseComponents = {
           outline: 0,
           lineHeight: 20,
           placeholder: {
-            color: 'gray-400',
+            color: 'base-400',
           },
           disabled: {
             cursor: 'not-allowed',
@@ -1502,7 +1513,7 @@ const baseComponents = {
           theme: {
             dark: {
               placeholder: {
-                color: 'gray-500',
+                color: 'base-500',
               },
             },
           },
@@ -1518,13 +1529,13 @@ const baseComponents = {
           fontSize: 13,
           lineHeight: 18,
           borderRadius: 1,
-          bgColor: 'gray-100',
-          color: 'gray-800',
+          bgColor: 'base-100',
+          color: 'base-800',
           whiteSpace: 'nowrap',
           theme: {
             dark: {
-              bgColor: 'gray-700',
-              color: 'gray-100',
+              bgColor: 'base-700',
+              color: 'base-100',
             },
           },
         },
@@ -1538,17 +1549,17 @@ const baseComponents = {
           p: 0,
           borderRadius: 1,
           bgColor: 'transparent',
-          color: 'gray-500',
+          color: 'base-500',
           cursor: 'pointer',
           hover: {
-            bgColor: 'gray-300',
-            color: 'gray-900',
+            bgColor: 'base-300',
+            color: 'base-900',
           },
           theme: {
             dark: {
-              color: 'gray-400',
+              color: 'base-400',
               hover: {
-                bgColor: 'gray-600',
+                bgColor: 'base-600',
                 color: 'white',
               },
             },
@@ -1559,10 +1570,10 @@ const baseComponents = {
         styles: {
           display: 'flex',
           ai: 'center',
-          color: 'gray-500',
+          color: 'base-500',
           theme: {
             dark: {
-              color: 'gray-400',
+              color: 'base-400',
             },
           },
         },
@@ -1578,14 +1589,14 @@ const baseComponents = {
           bgColor: 'white',
           overflow: 'auto',
           maxHeight: 62,
-          borderColor: 'gray-300',
-          color: 'gray-900',
+          borderColor: 'base-300',
+          color: 'base-900',
           shadow: 'medium',
           theme: {
             dark: {
-              bgColor: 'gray-800',
-              borderColor: 'gray-700',
-              color: 'gray-100',
+              bgColor: 'base-800',
+              borderColor: 'base-700',
+              color: 'base-100',
             },
           },
           // Mounted when it opens, so `@starting-style` is the whole entrance — no state and no effect.
@@ -1625,15 +1636,15 @@ const baseComponents = {
           borderRadius: 1,
           lineHeight: 20,
           hover: {
-            bgColor: 'gray-100',
+            bgColor: 'base-100',
           },
           selected: {
-            bgColor: 'indigo-50',
+            bgColor: 'accent-50',
           },
           ariaAttr: {
             disabled: {
               cursor: 'not-allowed',
-              color: 'gray-400',
+              color: 'base-400',
               hover: {
                 bgColor: 'transparent',
               },
@@ -1642,14 +1653,14 @@ const baseComponents = {
           theme: {
             dark: {
               hover: {
-                bgColor: 'gray-700',
+                bgColor: 'base-700',
               },
               selected: {
-                bgColor: 'indigo-900',
+                bgColor: 'accent-900',
               },
               ariaAttr: {
                 disabled: {
-                  color: 'gray-500',
+                  color: 'base-500',
                 },
               },
             },
@@ -1665,18 +1676,18 @@ const baseComponents = {
             // Without a style there is no outline at all: `outline-style` starts at `none`.
             outlineStyle: 'solid',
             outlineOffset: -2,
-            outlineColor: 'indigo-500',
+            outlineColor: 'accent-500',
             theme: {
               dark: {
-                outlineColor: 'indigo-400',
+                outlineColor: 'accent-400',
               },
             },
           },
           create: {
-            color: 'indigo-600',
+            color: 'accent-600',
             theme: {
               dark: {
-                color: 'indigo-300',
+                color: 'accent-300',
               },
             },
           },
@@ -1686,11 +1697,11 @@ const baseComponents = {
         styles: {
           px: 2,
           py: 1.5,
-          color: 'gray-500',
+          color: 'base-500',
           lineHeight: 20,
           theme: {
             dark: {
-              color: 'gray-400',
+              color: 'base-400',
             },
           },
         },
@@ -1708,45 +1719,45 @@ const baseComponents = {
       p: 3,
       cursor: 'pointer',
       bgColor: 'white',
-      color: 'gray-900',
+      color: 'base-900',
       b: 1,
-      borderColor: 'gray-300',
+      borderColor: 'base-300',
       borderRadius: 2,
       userSelect: 'none',
       lineHeight: 20,
       width: 'fit-content',
       transition: 'none',
       hover: {
-        borderColor: 'gray-400',
+        borderColor: 'base-400',
       },
       focus: {
         outline: 2,
         outlineOffset: 0,
-        borderColor: 'indigo-500',
-        outlineColor: 'indigo-200',
+        borderColor: 'accent-500',
+        outlineColor: 'accent-200',
       },
       disabled: {
         cursor: 'not-allowed',
-        bgColor: 'gray-100',
-        color: 'gray-400',
-        borderColor: 'gray-300',
+        bgColor: 'base-100',
+        color: 'base-400',
+        borderColor: 'base-300',
       },
       theme: {
         dark: {
-          bgColor: 'gray-800',
-          color: 'gray-100',
-          borderColor: 'gray-700',
+          bgColor: 'base-800',
+          color: 'base-100',
+          borderColor: 'base-700',
           hover: {
-            borderColor: 'gray-600',
+            borderColor: 'base-600',
           },
           focus: {
-            borderColor: 'indigo-400',
-            outlineColor: 'indigo-900',
+            borderColor: 'accent-400',
+            outlineColor: 'accent-900',
           },
           disabled: {
-            bgColor: 'gray-900',
-            color: 'gray-500',
-            borderColor: 'gray-700',
+            bgColor: 'base-900',
+            color: 'base-500',
+            borderColor: 'base-700',
           },
         },
       },
@@ -1772,14 +1783,14 @@ const baseComponents = {
           bgColor: 'white',
           overflow: 'auto',
           maxHeight: 62,
-          borderColor: 'gray-300',
-          color: 'gray-900',
+          borderColor: 'base-300',
+          color: 'base-900',
           shadow: 'medium',
           theme: {
             dark: {
-              bgColor: 'gray-800',
-              borderColor: 'gray-700',
-              color: 'gray-100',
+              bgColor: 'base-800',
+              borderColor: 'base-700',
+              color: 'base-100',
             },
           },
           // The popup is mounted when it opens, so `@starting-style` is its entrance and no state,
@@ -1812,30 +1823,30 @@ const baseComponents = {
           // has said the same since it shipped.
           userSelect: 'none',
           hover: {
-            bgColor: 'gray-100',
+            bgColor: 'base-100',
           },
           focus: {
-            bgColor: 'indigo-50',
+            bgColor: 'accent-50',
           },
           selected: {
-            bgColor: 'indigo-50',
+            bgColor: 'accent-50',
             cursor: 'default',
             hover: {
-              bgColor: 'indigo-100',
+              bgColor: 'accent-100',
             },
           },
           theme: {
             dark: {
               hover: {
-                bgColor: 'gray-700',
+                bgColor: 'base-700',
               },
               focus: {
-                bgColor: 'gray-700',
+                bgColor: 'base-700',
               },
               selected: {
-                bgColor: 'indigo-900',
+                bgColor: 'accent-900',
                 hover: {
-                  bgColor: 'indigo-800',
+                  bgColor: 'accent-800',
                 },
               },
             },
@@ -1852,10 +1863,10 @@ const baseComponents = {
             // `focus` rules elsewhere only get away with omitting it because the UA supplies one.
             outlineStyle: 'solid',
             outlineOffset: -2,
-            outlineColor: 'indigo-500',
+            outlineColor: 'accent-500',
             theme: {
               dark: {
-                outlineColor: 'indigo-400',
+                outlineColor: 'accent-400',
               },
             },
           },
@@ -1878,28 +1889,28 @@ const baseComponents = {
           cursor: 'pointer',
           lineHeight: 20,
           borderRadius: 1,
-          color: 'gray-500',
+          color: 'base-500',
           hover: {
-            bgColor: 'gray-100',
+            bgColor: 'base-100',
           },
           focus: {
-            bgColor: 'gray-100',
+            bgColor: 'base-100',
           },
           selected: {
-            bgColor: 'gray-100',
+            bgColor: 'base-100',
             cursor: 'default',
           },
           theme: {
             dark: {
-              color: 'gray-400',
+              color: 'base-400',
               hover: {
-                bgColor: 'gray-700',
+                bgColor: 'base-700',
               },
               focus: {
-                bgColor: 'gray-700',
+                bgColor: 'base-700',
               },
               selected: {
-                bgColor: 'gray-700',
+                bgColor: 'base-700',
               },
             },
           },
@@ -1915,10 +1926,10 @@ const baseComponents = {
             // `focus` rules elsewhere only get away with omitting it because the UA supplies one.
             outlineStyle: 'solid',
             outlineOffset: -2,
-            outlineColor: 'indigo-500',
+            outlineColor: 'accent-500',
             theme: {
               dark: {
-                outlineColor: 'indigo-400',
+                outlineColor: 'accent-400',
               },
             },
           },
@@ -1936,28 +1947,28 @@ const baseComponents = {
           cursor: 'pointer',
           lineHeight: 20,
           borderRadius: 1,
-          color: 'gray-500',
+          color: 'base-500',
           hover: {
-            bgColor: 'gray-100',
+            bgColor: 'base-100',
           },
           focus: {
-            bgColor: 'gray-100',
+            bgColor: 'base-100',
           },
           selected: {
-            bgColor: 'gray-100',
+            bgColor: 'base-100',
             cursor: 'default',
           },
           theme: {
             dark: {
-              color: 'gray-400',
+              color: 'base-400',
               hover: {
-                bgColor: 'gray-700',
+                bgColor: 'base-700',
               },
               focus: {
-                bgColor: 'gray-700',
+                bgColor: 'base-700',
               },
               selected: {
-                bgColor: 'gray-700',
+                bgColor: 'base-700',
               },
             },
           },
@@ -1973,10 +1984,10 @@ const baseComponents = {
             // `focus` rules elsewhere only get away with omitting it because the UA supplies one.
             outlineStyle: 'solid',
             outlineOffset: -2,
-            outlineColor: 'indigo-500',
+            outlineColor: 'accent-500',
             theme: {
               dark: {
-                outlineColor: 'indigo-400',
+                outlineColor: 'accent-400',
               },
             },
           },
@@ -1994,10 +2005,10 @@ const baseComponents = {
           cursor: 'default',
           lineHeight: 20,
           borderRadius: 1,
-          color: 'gray-400',
+          color: 'base-400',
           theme: {
             dark: {
-              color: 'gray-500',
+              color: 'base-500',
             },
           },
         },
@@ -2024,7 +2035,7 @@ const baseComponents = {
     styles: {
       b: 1,
       bgColor: 'white',
-      borderColor: 'gray-200',
+      borderColor: 'base-200',
       overflow: 'hidden',
       borderRadius: 3,
       // A tight shadow rather than a large one: the border already separates the grid from the page, and a
@@ -2035,8 +2046,8 @@ const baseComponents = {
       fontSize: 14,
       theme: {
         dark: {
-          bgColor: 'gray-900',
-          borderColor: 'gray-800',
+          bgColor: 'base-900',
+          borderColor: 'base-800',
         },
       },
     },
@@ -2067,10 +2078,10 @@ const baseComponents = {
               top: 0,
               insetX: 0,
               overflow: 'hidden',
-              bgColor: 'indigo-100',
+              bgColor: 'accent-100',
               theme: {
                 dark: {
-                  bgColor: 'indigo-950',
+                  bgColor: 'accent-950',
                 },
               },
             },
@@ -2081,7 +2092,7 @@ const baseComponents = {
                   top: 0,
                   bottom: 0,
                   insetStart: 0,
-                  bgColor: 'indigo-500',
+                  bgColor: 'accent-500',
                   animationName: 'rb-datagrid-loader',
                   animationDuration: 1100,
                   animationTimingFunction: 'linear',
@@ -2093,7 +2104,7 @@ const baseComponents = {
                   },
                   theme: {
                     dark: {
-                      bgColor: 'indigo-400',
+                      bgColor: 'accent-400',
                     },
                   },
                 },
@@ -2178,16 +2189,16 @@ const baseComponents = {
           py: 3,
           px: 4,
           bb: 1,
-          borderColor: 'gray-200',
-          color: 'gray-900',
+          borderColor: 'base-200',
+          color: 'base-900',
           gap: 3,
           ai: 'center',
           bgColor: 'white',
           theme: {
             dark: {
-              bgColor: 'gray-900',
-              borderColor: 'gray-800',
-              color: 'gray-100',
+              bgColor: 'base-900',
+              borderColor: 'base-800',
+              color: 'base-100',
             },
           },
         },
@@ -2207,13 +2218,13 @@ const baseComponents = {
                   py: 1,
                   borderRadius: 1,
                   // Neutral: a count is information, and the grid's one accent is indigo.
-                  bgColor: 'gray-100',
-                  color: 'gray-600',
+                  bgColor: 'base-100',
+                  color: 'base-600',
                   css: { fontVariantNumeric: 'tabular-nums' },
                   theme: {
                     dark: {
-                      bgColor: 'gray-800',
-                      color: 'gray-300',
+                      bgColor: 'base-800',
+                      color: 'base-300',
                     },
                   },
                   textWrap: 'nowrap',
@@ -2229,11 +2240,11 @@ const baseComponents = {
             children: {
               icon: {
                 styles: {
-                  color: 'gray-700',
+                  color: 'base-700',
                   width: 4,
                   theme: {
                     dark: {
-                      color: 'gray-300',
+                      color: 'base-300',
                     },
                   },
                 },
@@ -2246,21 +2257,21 @@ const baseComponents = {
                   gap: 2,
                   ai: 'center',
                   b: 1,
-                  borderColor: 'gray-300',
+                  borderColor: 'base-300',
                   bgColor: 'white',
                   borderRadius: 2,
                   py: 2,
                   ps: 3,
                   pe: 2,
-                  color: 'gray-800',
+                  color: 'base-800',
                   fontSize: 14,
                   fontWeight: 500,
                   shadow: 'small',
                   theme: {
                     dark: {
-                      bgColor: 'gray-800',
-                      borderColor: 'gray-700',
-                      color: 'gray-200',
+                      bgColor: 'base-800',
+                      borderColor: 'base-700',
+                      color: 'base-200',
                     },
                   },
                 },
@@ -2268,16 +2279,16 @@ const baseComponents = {
                   icon: {
                     styles: {
                       width: 3,
-                      color: 'gray-500',
+                      color: 'base-500',
                       cursor: 'pointer',
                       hover: {
-                        color: 'gray-700',
+                        color: 'base-700',
                       },
                       theme: {
                         dark: {
-                          color: 'gray-400',
+                          color: 'base-400',
                           hover: {
-                            color: 'gray-200',
+                            color: 'base-200',
                           },
                         },
                       },
@@ -2295,12 +2306,12 @@ const baseComponents = {
               ai: 'center',
               gap: 1.5,
               b: 1,
-              borderColor: 'gray-300',
+              borderColor: 'base-300',
               bgColor: 'white',
               borderRadius: 2,
               py: 1.5,
               px: 2.5,
-              color: 'gray-700',
+              color: 'base-700',
               fontSize: 12,
               fontWeight: 500,
               lineHeight: 16,
@@ -2308,17 +2319,17 @@ const baseComponents = {
               textWrap: 'nowrap',
               transition: 'colors',
               transitionDuration: 150,
-              hover: { bgColor: 'gray-50', color: 'gray-900' },
-              ariaAttr: { expanded: { bgColor: 'gray-100', color: 'gray-900' } },
-              focusVisible: { outline: 2, outlineStyle: 'solid', outlineOffset: 2, outlineColor: 'indigo-500' },
+              hover: { bgColor: 'base-50', color: 'base-900' },
+              ariaAttr: { expanded: { bgColor: 'base-100', color: 'base-900' } },
+              focusVisible: { outline: 2, outlineStyle: 'solid', outlineOffset: 2, outlineColor: 'accent-500' },
               theme: {
                 dark: {
-                  bgColor: 'gray-800',
-                  borderColor: 'gray-700',
-                  color: 'gray-300',
-                  hover: { bgColor: 'gray-700', color: 'gray-100' },
-                  ariaAttr: { expanded: { bgColor: 'gray-700', color: 'gray-100' } },
-                  focusVisible: { outlineColor: 'indigo-400' },
+                  bgColor: 'base-800',
+                  borderColor: 'base-700',
+                  color: 'base-300',
+                  hover: { bgColor: 'base-700', color: 'base-100' },
+                  ariaAttr: { expanded: { bgColor: 'base-700', color: 'base-100' } },
+                  focusVisible: { outlineColor: 'accent-400' },
                 },
               },
             },
@@ -2359,8 +2370,8 @@ const baseComponents = {
                   ai: 'center',
                   p: 2,
                   bb: 1,
-                  borderColor: 'gray-200',
-                  theme: { dark: { borderColor: 'gray-700' } },
+                  borderColor: 'base-200',
+                  theme: { dark: { borderColor: 'base-700' } },
                 },
               },
               searchIcon: {
@@ -2368,34 +2379,34 @@ const baseComponents = {
                   position: 'absolute',
                   insetStart: 4.5,
                   pointerEvents: 'none',
-                  color: 'gray-400',
-                  theme: { dark: { color: 'gray-500' } },
+                  color: 'base-400',
+                  theme: { dark: { color: 'base-500' } },
                 },
               },
               searchInput: {
                 styles: {
                   width: 'fit',
                   b: 1,
-                  borderColor: 'gray-300',
+                  borderColor: 'base-300',
                   borderRadius: 1.5,
                   bgColor: 'white',
-                  color: 'gray-900',
+                  color: 'base-900',
                   py: 1.5,
                   ps: 7,
                   pe: 2,
                   fontSize: 13,
                   lineHeight: 20,
-                  hover: { borderColor: 'gray-400' },
-                  focus: { outline: 2, outlineOffset: 0, borderColor: 'indigo-500', outlineColor: 'indigo-200' },
-                  placeholder: { color: 'gray-400' },
+                  hover: { borderColor: 'base-400' },
+                  focus: { outline: 2, outlineOffset: 0, borderColor: 'accent-500', outlineColor: 'accent-200' },
+                  placeholder: { color: 'base-400' },
                   theme: {
                     dark: {
-                      bgColor: 'gray-900',
-                      color: 'gray-100',
-                      borderColor: 'gray-600',
-                      hover: { borderColor: 'gray-500' },
-                      focus: { borderColor: 'indigo-400', outlineColor: 'indigo-900' },
-                      placeholder: { color: 'gray-500' },
+                      bgColor: 'base-900',
+                      color: 'base-100',
+                      borderColor: 'base-600',
+                      hover: { borderColor: 'base-500' },
+                      focus: { borderColor: 'accent-400', outlineColor: 'accent-900' },
+                      placeholder: { color: 'base-500' },
                     },
                   },
                 },
@@ -2411,16 +2422,16 @@ const baseComponents = {
                   pe: 1.5,
                   py: 1.5,
                   bb: 1,
-                  borderColor: 'gray-200',
-                  theme: { dark: { borderColor: 'gray-700' } },
+                  borderColor: 'base-200',
+                  theme: { dark: { borderColor: 'base-700' } },
                 },
               },
               count: {
                 styles: {
                   fontSize: 12,
-                  color: 'gray-500',
+                  color: 'base-500',
                   textWrap: 'nowrap',
-                  theme: { dark: { color: 'gray-400' } },
+                  theme: { dark: { color: 'base-400' } },
                 },
               },
               action: {
@@ -2432,18 +2443,18 @@ const baseComponents = {
                   fontSize: 12,
                   fontWeight: 500,
                   lineHeight: 16,
-                  color: 'indigo-600',
+                  color: 'accent-600',
                   cursor: 'pointer',
                   textWrap: 'nowrap',
-                  hover: { bgColor: 'indigo-50' },
-                  focusVisible: { outline: 2, outlineStyle: 'solid', outlineOffset: 0, outlineColor: 'indigo-500' },
-                  disabled: { color: 'gray-400', cursor: 'default', hover: { bgColor: 'transparent' } },
+                  hover: { bgColor: 'accent-50' },
+                  focusVisible: { outline: 2, outlineStyle: 'solid', outlineOffset: 0, outlineColor: 'accent-500' },
+                  disabled: { color: 'base-400', cursor: 'default', hover: { bgColor: 'transparent' } },
                   theme: {
                     dark: {
-                      color: 'indigo-300',
-                      hover: { bgColor: 'indigo-400/15' },
-                      focusVisible: { outlineColor: 'indigo-400' },
-                      disabled: { color: 'gray-500', hover: { bgColor: 'transparent' } },
+                      color: 'accent-300',
+                      hover: { bgColor: 'accent-400/15' },
+                      focusVisible: { outlineColor: 'accent-400' },
+                      disabled: { color: 'base-500', hover: { bgColor: 'transparent' } },
                     },
                   },
                 },
@@ -2466,8 +2477,8 @@ const baseComponents = {
                     bt: 1,
                     mt: 1,
                     pt: 1,
-                    borderColor: 'gray-200',
-                    theme: { dark: { borderColor: 'gray-700' } },
+                    borderColor: 'base-200',
+                    theme: { dark: { borderColor: 'base-700' } },
                   },
                 },
               },
@@ -2480,8 +2491,8 @@ const baseComponents = {
                   fontWeight: 600,
                   letterSpacing: 0.4,
                   textTransform: 'uppercase',
-                  color: 'gray-500',
-                  theme: { dark: { color: 'gray-400' } },
+                  color: 'base-500',
+                  theme: { dark: { color: 'base-400' } },
                 },
               },
               // The label wraps the switch, so the whole row is the hit target; the switch sits at the end.
@@ -2495,10 +2506,10 @@ const baseComponents = {
                   px: 2,
                   py: 1.5,
                   borderRadius: 1.5,
-                  color: 'gray-700',
+                  color: 'base-700',
                   lineHeight: 20,
-                  hover: { bgColor: 'gray-100' },
-                  theme: { dark: { color: 'gray-200', hover: { bgColor: 'gray-700' } } },
+                  hover: { bgColor: 'base-100' },
+                  theme: { dark: { color: 'base-200', hover: { bgColor: 'base-700' } } },
                 },
               },
               empty: {
@@ -2506,8 +2517,8 @@ const baseComponents = {
                   px: 3,
                   py: 4,
                   textAlign: 'center',
-                  color: 'gray-500',
-                  theme: { dark: { color: 'gray-400' } },
+                  color: 'base-500',
+                  theme: { dark: { color: 'base-400' } },
                 },
               },
             },
@@ -2524,12 +2535,12 @@ const baseComponents = {
                   ai: 'center',
                   gap: 1.5,
                   b: 1,
-                  borderColor: 'gray-300',
+                  borderColor: 'base-300',
                   bgColor: 'white',
                   borderRadius: 2,
                   py: 1.5,
                   px: 2.5,
-                  color: 'gray-700',
+                  color: 'base-700',
                   fontSize: 12,
                   fontWeight: 500,
                   cursor: 'pointer',
@@ -2537,26 +2548,26 @@ const baseComponents = {
                   transition: 'colors',
                   transitionDuration: 150,
                   hover: {
-                    bgColor: 'gray-50',
-                    color: 'gray-900',
+                    bgColor: 'base-50',
+                    color: 'base-900',
                   },
                   focusVisible: {
                     outline: 2,
                     outlineStyle: 'solid',
                     outlineOffset: 2,
-                    outlineColor: 'indigo-500',
+                    outlineColor: 'accent-500',
                   },
                   theme: {
                     dark: {
-                      bgColor: 'gray-800',
-                      borderColor: 'gray-700',
-                      color: 'gray-300',
+                      bgColor: 'base-800',
+                      borderColor: 'base-700',
+                      color: 'base-300',
                       hover: {
-                        bgColor: 'gray-700',
-                        color: 'gray-100',
+                        bgColor: 'base-700',
+                        color: 'base-100',
                       },
                       focusVisible: {
-                        outlineColor: 'indigo-400',
+                        outlineColor: 'accent-400',
                       },
                     },
                   },
@@ -2573,11 +2584,11 @@ const baseComponents = {
             styles: {
               bgColor: 'white',
               bb: 1,
-              borderColor: 'gray-200',
+              borderColor: 'base-200',
               theme: {
                 dark: {
-                  bgColor: 'gray-900',
-                  borderColor: 'gray-800',
+                  bgColor: 'base-900',
+                  borderColor: 'base-800',
                 },
               },
             },
@@ -2594,12 +2605,12 @@ const baseComponents = {
                 outline: 2,
                 outlineStyle: 'solid',
                 outlineOffset: -2,
-                outlineColor: 'indigo-500',
+                outlineColor: 'accent-500',
               },
               theme: {
                 dark: {
                   focusVisible: {
-                    outlineColor: 'indigo-400',
+                    outlineColor: 'accent-400',
                   },
                 },
               },
@@ -2607,30 +2618,30 @@ const baseComponents = {
             variants: {
               isPinned: {
                 position: 'sticky',
-                bgColor: 'gray-50',
+                bgColor: 'base-50',
                 zIndex: 2,
                 theme: {
                   dark: {
-                    bgColor: 'gray-800',
+                    bgColor: 'base-800',
                   },
                 },
               },
               isFirstStartPinned: {},
               isLastStartPinned: {
                 be: 1,
-                borderColor: 'gray-200',
+                borderColor: 'base-200',
                 theme: {
                   dark: {
-                    borderColor: 'gray-700',
+                    borderColor: 'base-700',
                   },
                 },
               },
               isFirstEndPinned: {
                 bs: 1,
-                borderColor: 'gray-200',
+                borderColor: 'base-200',
                 theme: {
                   dark: {
-                    borderColor: 'gray-700',
+                    borderColor: 'base-700',
                   },
                 },
               },
@@ -2642,22 +2653,22 @@ const baseComponents = {
                   display: 'flex',
                   ai: 'center',
                   b: 1,
-                  borderColor: 'gray-200',
+                  borderColor: 'base-200',
                   borderRadius: 1,
                   position: 'relative',
                   width: 'fit',
                   focus: {
-                    borderColor: 'indigo-500',
+                    borderColor: 'accent-500',
                     outline: 2,
                     outlineOffset: 0,
-                    outlineColor: 'indigo-200',
+                    outlineColor: 'accent-200',
                   },
                   theme: {
                     dark: {
-                      borderColor: 'gray-700',
+                      borderColor: 'base-700',
                       focus: {
-                        borderColor: 'indigo-400',
-                        outlineColor: 'indigo-900',
+                        borderColor: 'accent-400',
+                        outlineColor: 'accent-900',
                       },
                     },
                   },
@@ -2674,10 +2685,10 @@ const baseComponents = {
           width: 'max-content',
           minWidth: 'fit',
           zIndex: 1,
-          bgColor: 'gray-50',
+          bgColor: 'base-50',
           theme: {
             dark: {
-              bgColor: 'gray-800',
+              bgColor: 'base-800',
             },
           },
         },
@@ -2703,7 +2714,7 @@ const baseComponents = {
                 position: 'absolute',
                 inset: 1,
                 borderRadius: 1,
-                bgColor: 'gray-900/5',
+                bgColor: 'base-900/5',
               },
               theme: { dark: { before: { bgColor: 'white/10' } } },
             },
@@ -2725,7 +2736,7 @@ const baseComponents = {
           },
           cell: {
             styles: {
-              borderColor: 'gray-200',
+              borderColor: 'base-200',
               bb: 1,
               minHeight: 12,
               position: 'relative',
@@ -2735,7 +2746,7 @@ const baseComponents = {
               fontSize: 12,
               fontWeight: 600,
               letterSpacing: 0.2,
-              color: 'gray-500',
+              color: 'base-500',
               py: 3.5,
               // The cell is where the keyboard lives in a grid, so it has to show where it is — an *inset* outline,
               // since an outset ring on the first or last column would be clipped by the scroll container.
@@ -2745,14 +2756,14 @@ const baseComponents = {
                 outline: 2,
                 outlineStyle: 'solid',
                 outlineOffset: -2,
-                outlineColor: 'indigo-500',
+                outlineColor: 'accent-500',
               },
               theme: {
                 dark: {
-                  borderColor: 'gray-700',
-                  color: 'gray-400',
+                  borderColor: 'base-700',
+                  color: 'base-400',
                   focusVisible: {
-                    outlineColor: 'indigo-400',
+                    outlineColor: 'accent-400',
                   },
                 },
               },
@@ -2761,40 +2772,40 @@ const baseComponents = {
               isPinned: {
                 position: 'sticky',
                 zIndex: 2,
-                bgColor: 'gray-50',
+                bgColor: 'base-50',
                 theme: {
                   dark: {
-                    bgColor: 'gray-800',
+                    bgColor: 'base-800',
                   },
                 },
               },
               isFirstStartPinned: {},
               isLastStartPinned: {
                 be: 1,
-                borderColor: 'gray-200',
+                borderColor: 'base-200',
                 theme: {
                   dark: {
-                    borderColor: 'gray-700',
+                    borderColor: 'base-700',
                   },
                 },
               },
               isFirstEndPinned: {
                 bs: 1,
-                borderColor: 'gray-200',
+                borderColor: 'base-200',
                 theme: {
                   dark: {
-                    borderColor: 'gray-700',
+                    borderColor: 'base-700',
                   },
                 },
               },
               isLastEndPinned: {},
               isSortable: {
                 cursor: 'pointer',
-                hover: { color: 'gray-900' },
+                hover: { color: 'base-900' },
                 // The resizer is inside the cell, so the cell is `:hover` over it too — but a press there resizes.
                 // `:has()` outranks `:hover`, and the theme is restated because its scope adds a class of its own.
-                has: { '.resizer:hover': { color: 'gray-500' } },
-                theme: { dark: { hover: { color: 'gray-100' }, has: { '.resizer:hover': { color: 'gray-400' } } } },
+                has: { '.resizer:hover': { color: 'base-500' } },
+                theme: { dark: { hover: { color: 'base-100' }, has: { '.resizer:hover': { color: 'base-400' } } } },
               },
               // An inset pill rather than the whole cell, and a tint, so it reads on a pinned cell's own fill too.
               hasHoverPill: {
@@ -2807,7 +2818,7 @@ const baseComponents = {
                   borderRadius: 1,
                   pointerEvents: 'none',
                   opacity: 0,
-                  bgColor: 'gray-900/5',
+                  bgColor: 'base-900/5',
                   css: { transition: 'opacity calc(var(--transitionTime) * .6) ease' },
                 },
                 hover: { before: { opacity: 1 } },
@@ -2820,6 +2831,8 @@ const baseComponents = {
               isPillAfterResizer: { before: { insetStart: 1.25 } },
               isRowSelection: {},
               isRowNumber: { jc: 'center' },
+              // A column group's own cell ("Personal Info" over its columns), so a design can set the tier apart.
+              isGroup: {},
               isFirstLeaf: {},
               isLastLeaf: {},
               isEmptyCell: {},
@@ -2833,21 +2846,21 @@ const baseComponents = {
                   cursor: 'pointer',
                   userSelect: 'none',
                   borderRadius: 1.5,
-                  borderColor: 'gray-200',
+                  borderColor: 'base-200',
                   display: 'flex',
                   jc: 'center',
                   ai: 'center',
                   transition: 'none',
                   // Quiet by default: one of these sits in every header cell. `gray-500` rather than the
                   // `gray-400` that looks right — a control owes 3:1 and `gray-400` on `gray-50` is 2.49.
-                  color: 'gray-500',
+                  color: 'base-500',
                   // A tint, so it stacks on the cell's hover pill instead of matching it: the pill is about the
                   // grey a flat `gray-200` would be, and in the dark theme the same as `gray-700`.
-                  hover: { bgColor: 'gray-900/12', color: 'gray-800' },
+                  hover: { bgColor: 'base-900/12', color: 'base-800' },
                   theme: {
                     dark: {
-                      color: 'gray-400',
-                      hover: { bgColor: 'white/15', color: 'gray-100' },
+                      color: 'base-400',
+                      hover: { bgColor: 'white/15', color: 'base-100' },
                     },
                   },
                 },
@@ -2858,10 +2871,10 @@ const baseComponents = {
                   tooltip: {
                     styles: {
                       bgColor: 'white',
-                      color: 'gray-900',
+                      color: 'base-900',
                       width: 56,
                       b: 1,
-                      borderColor: 'gray-300',
+                      borderColor: 'base-300',
                       borderRadius: 3,
                       display: 'flex',
                       d: 'column',
@@ -2870,9 +2883,9 @@ const baseComponents = {
                       shadow: 'medium',
                       theme: {
                         dark: {
-                          bgColor: 'gray-800',
-                          borderColor: 'gray-700',
-                          color: 'gray-100',
+                          bgColor: 'base-800',
+                          borderColor: 'base-700',
+                          color: 'base-100',
                         },
                       },
                       startingStyle: { opacity: 0, translateY: -1 },
@@ -2890,12 +2903,12 @@ const baseComponents = {
                           gap: 2,
                           p: 3,
                           cursor: 'pointer',
-                          color: 'gray-900',
-                          hover: { bgColor: 'violet-50' },
+                          color: 'base-900',
+                          hover: { bgColor: 'accent-50' },
                           theme: {
                             dark: {
-                              color: 'gray-100',
-                              hover: { bgColor: 'gray-700' },
+                              color: 'base-100',
+                              hover: { bgColor: 'base-700' },
                             },
                           },
                         },
@@ -2903,10 +2916,10 @@ const baseComponents = {
                           icon: {
                             styles: {
                               width: 4,
-                              color: 'violet-950',
+                              color: 'accent-950',
                               theme: {
                                 dark: {
-                                  color: 'violet-300',
+                                  color: 'accent-300',
                                 },
                               },
                             },
@@ -2915,10 +2928,10 @@ const baseComponents = {
                             styles: {
                               bb: 1,
                               my: 2,
-                              borderColor: 'gray-300',
+                              borderColor: 'base-300',
                               theme: {
                                 dark: {
-                                  borderColor: 'gray-700',
+                                  borderColor: 'base-700',
                                 },
                               },
                             },
@@ -2936,8 +2949,8 @@ const baseComponents = {
                   // `gray-400` on `gray-50` is already only 2.49:1.
                   width: 0.25,
                   height: 'fit',
-                  bgColor: 'gray-400',
-                  group: { 'resizer/hover': { bgColor: 'indigo-500' } },
+                  bgColor: 'base-400',
+                  group: { 'resizer/hover': { bgColor: 'accent-500' } },
                   // The separator is its own tab stop, and a bar two pixels wide has no room for a ring inside it, so the
                   // outline sits around it. `opacity` is here rather than on the element because a resizer that only
                   // appears on hover is a tab stop nobody could follow, and a pseudo rule outranks the base one.
@@ -2945,16 +2958,16 @@ const baseComponents = {
                     opacity: 1,
                     outline: 2,
                     outlineStyle: 'solid',
-                    outlineColor: 'indigo-500',
-                    bgColor: 'indigo-500',
+                    outlineColor: 'accent-500',
+                    bgColor: 'accent-500',
                   },
                   theme: {
                     dark: {
-                      bgColor: 'gray-600',
-                      group: { 'resizer/hover': { bgColor: 'indigo-400' } },
+                      bgColor: 'base-600',
+                      group: { 'resizer/hover': { bgColor: 'accent-400' } },
                       focusVisible: {
-                        outlineColor: 'indigo-400',
-                        bgColor: 'indigo-400',
+                        outlineColor: 'accent-400',
+                        bgColor: 'accent-400',
                       },
                     },
                   },
@@ -2972,30 +2985,30 @@ const baseComponents = {
               bb: 1,
               // A lighter hairline than the header's: the separator between two rows is the quietest line
               // in the grid, and at `gray-200` a screenful of them read as a spreadsheet grid.
-              borderColor: 'gray-100',
+              borderColor: 'base-100',
               transition: 'none',
               ai: 'center',
-              color: 'gray-900',
+              color: 'base-900',
               // The one thing a data grid cannot do without and the registry has no prop for: without it a
               // column of numbers is ragged, because a proportional `1` is narrower than a `0`.
               css: { fontVariantNumeric: 'tabular-nums' },
               group: {
-                'grid-row/hover': { bgColor: 'gray-50' },
+                'grid-row/hover': { bgColor: 'base-50' },
                 // A group row is tinted because it is a group, not because it can be opened: since #162 the
                 // open state is on the expand button, and a tree row carries an `aria-expanded` of its own.
-                'grid-row/data-group-row': { bgColor: 'gray-50' },
+                'grid-row/data-group-row': { bgColor: 'base-50' },
                 // Selection had no appearance at all: `isRowSelected` was declared on this node and applied
                 // by nothing, so a selected row was legible only by its own checkbox.
-                'grid-row/aria-selected=true': { bgColor: 'indigo-50' },
+                'grid-row/aria-selected=true': { bgColor: 'accent-50' },
               },
               theme: {
                 dark: {
-                  borderColor: 'gray-800',
-                  color: 'gray-100',
+                  borderColor: 'base-800',
+                  color: 'base-100',
                   group: {
-                    'grid-row/hover': { bgColor: 'gray-800' },
-                    'grid-row/data-group-row': { bgColor: 'gray-800' },
-                    'grid-row/aria-selected=true': { bgColor: 'indigo-950' },
+                    'grid-row/hover': { bgColor: 'base-800' },
+                    'grid-row/data-group-row': { bgColor: 'base-800' },
+                    'grid-row/aria-selected=true': { bgColor: 'accent-950' },
                   },
                 },
               },
@@ -3008,17 +3021,17 @@ const baseComponents = {
                 bgColor: 'white',
                 zIndex: 1,
                 group: {
-                  'grid-row/hover': { bgColor: 'gray-50' },
-                  'grid-row/data-group-row': { bgColor: 'gray-50' },
-                  'grid-row/aria-selected=true': { bgColor: 'indigo-50' },
+                  'grid-row/hover': { bgColor: 'base-50' },
+                  'grid-row/data-group-row': { bgColor: 'base-50' },
+                  'grid-row/aria-selected=true': { bgColor: 'accent-50' },
                 },
                 theme: {
                   dark: {
-                    bgColor: 'gray-900',
+                    bgColor: 'base-900',
                     group: {
-                      'grid-row/hover': { bgColor: 'gray-800' },
-                      'grid-row/data-group-row': { bgColor: 'gray-800' },
-                      'grid-row/aria-selected=true': { bgColor: 'indigo-950' },
+                      'grid-row/hover': { bgColor: 'base-800' },
+                      'grid-row/data-group-row': { bgColor: 'base-800' },
+                      'grid-row/aria-selected=true': { bgColor: 'accent-950' },
                     },
                   },
                 },
@@ -3045,19 +3058,19 @@ const baseComponents = {
               // for the reason `isPinned` does: it paints a background, so a hovered or selected row under
               // it would otherwise win the colour and the block would disappear one row at a time.
               isInRange: {
-                bgColor: 'indigo-50',
+                bgColor: 'accent-50',
                 group: {
-                  'grid-row/hover': { bgColor: 'indigo-100' },
-                  'grid-row/data-group-row': { bgColor: 'indigo-50' },
-                  'grid-row/aria-selected=true': { bgColor: 'indigo-100' },
+                  'grid-row/hover': { bgColor: 'accent-100' },
+                  'grid-row/data-group-row': { bgColor: 'accent-50' },
+                  'grid-row/aria-selected=true': { bgColor: 'accent-100' },
                 },
                 theme: {
                   dark: {
-                    bgColor: 'indigo-950',
+                    bgColor: 'accent-950',
                     group: {
-                      'grid-row/hover': { bgColor: 'indigo-900' },
-                      'grid-row/data-group-row': { bgColor: 'indigo-950' },
-                      'grid-row/aria-selected=true': { bgColor: 'indigo-900' },
+                      'grid-row/hover': { bgColor: 'accent-900' },
+                      'grid-row/data-group-row': { bgColor: 'accent-950' },
+                      'grid-row/aria-selected=true': { bgColor: 'accent-900' },
                     },
                   },
                 },
@@ -3070,8 +3083,8 @@ const baseComponents = {
                 outline: 2,
                 outlineStyle: 'solid',
                 outlineOffset: -2,
-                outlineColor: 'indigo-500',
-                theme: { dark: { outlineColor: 'indigo-400' } },
+                outlineColor: 'accent-500',
+                theme: { dark: { outlineColor: 'accent-400' } },
               },
               // The cell being edited. It stops clipping — a control as tall as the row is cut at both
               // ends by the cell's own `overflow` — and paints its own surface, since a pinned neighbour
@@ -3085,11 +3098,11 @@ const baseComponents = {
                 outline: 2,
                 outlineStyle: 'solid',
                 outlineOffset: -2,
-                outlineColor: 'indigo-500',
+                outlineColor: 'accent-500',
                 theme: {
                   dark: {
-                    bgColor: 'gray-900',
-                    outlineColor: 'indigo-400',
+                    bgColor: 'base-900',
+                    outlineColor: 'accent-400',
                   },
                 },
               },
@@ -3107,7 +3120,7 @@ const baseComponents = {
               },
               // Muted, but only as far as contrast allows: `gray-400` on white measures 2.60:1 and `gray-500`
               // on `gray-900` 3.67:1, so the quiet-looking pair is the one that fails both ways round.
-              isRowNumber: { jc: 'end', color: 'gray-500', theme: { dark: { color: 'gray-400' } } },
+              isRowNumber: { jc: 'end', color: 'base-500', theme: { dark: { color: 'base-400' } } },
               isRowSelection: {},
               isFirstLeaf: {},
               isLastLeaf: {},
@@ -3117,17 +3130,17 @@ const baseComponents = {
               // gives up the hairline between them, so the panel reads as hanging off the row rather than as
               // the row after it. Neutral rather than tinted, so it stays legible beside a *selected* row.
               isExpanded: {
-                bgColor: 'gray-50',
+                bgColor: 'base-50',
                 bb: 0,
                 // The row keeps its hover, one step off the surface it now has: the grid's own row hover is
                 // the colour this row is already painted, so an expanded row would have stopped answering.
-                group: { 'grid-row/hover': { bgColor: 'gray-100' } },
+                group: { 'grid-row/hover': { bgColor: 'base-100' } },
                 theme: {
                   dark: {
                     // Darker than the grid, not lighter: a well is what a drawer should read as, and
                     // `gray-800` reads as raised against a `gray-900` grid.
-                    bgColor: 'gray-950',
-                    group: { 'grid-row/hover': { bgColor: 'gray-900' } },
+                    bgColor: 'base-950',
+                    group: { 'grid-row/hover': { bgColor: 'base-900' } },
                   },
                 },
               },
@@ -3135,10 +3148,10 @@ const baseComponents = {
               // tying a panel this tall back to the row that opened it. Logical, so it mirrors with the text.
               isExpandedFirstLeaf: {
                 bs: 2,
-                borderColor: 'indigo-500',
+                borderColor: 'accent-500',
                 theme: {
                   dark: {
-                    borderColor: 'indigo-400',
+                    borderColor: 'accent-400',
                   },
                 },
               },
@@ -3177,7 +3190,7 @@ const baseComponents = {
                   theme: {
                     dark: {
                       bgColor: 'red-500',
-                      color: 'gray-950',
+                      color: 'base-950',
                     },
                   },
                 },
@@ -3195,11 +3208,11 @@ const baseComponents = {
                     styles: {
                       height: 2,
                       borderRadius: 1,
-                      bgColor: 'gray-200',
+                      bgColor: 'base-200',
                       animation: 'pulse',
                       theme: {
                         dark: {
-                          bgColor: 'gray-800',
+                          bgColor: 'base-800',
                         },
                       },
                     },
@@ -3223,20 +3236,20 @@ const baseComponents = {
                       height: 5,
                       flexShrink: 0,
                       borderRadius: 1,
-                      color: 'gray-500',
-                      hover: { color: 'gray-900', bgColor: 'gray-100' },
+                      color: 'base-500',
+                      hover: { color: 'base-900', bgColor: 'base-100' },
                       theme: {
                         dark: {
-                          color: 'gray-400',
-                          hover: { color: 'gray-100', bgColor: 'gray-800' },
+                          color: 'base-400',
+                          hover: { color: 'base-100', bgColor: 'base-800' },
                         },
                       },
                     },
                     variants: {
                       // Open: the chevron takes the accent everything else in the grid opens in.
                       isExpanded: {
-                        color: 'indigo-600',
-                        theme: { dark: { color: 'indigo-400' } },
+                        color: 'accent-600',
+                        theme: { dark: { color: 'accent-400' } },
                       },
                     },
                   },
@@ -3254,20 +3267,20 @@ const baseComponents = {
               rowDetail: {
                 clean: true,
                 styles: {
-                  color: 'gray-500',
-                  hover: { color: 'gray-900' },
+                  color: 'base-500',
+                  hover: { color: 'base-900' },
                   theme: {
                     dark: {
-                      color: 'gray-400',
-                      hover: { color: 'gray-100' },
+                      color: 'base-400',
+                      hover: { color: 'base-100' },
                     },
                   },
                 },
                 variants: {
                   // Open: the chevron takes the accent the row's own bar is drawn in.
                   isExpanded: {
-                    color: 'indigo-600',
-                    theme: { dark: { color: 'indigo-400' } },
+                    color: 'accent-600',
+                    theme: { dark: { color: 'accent-400' } },
                   },
                 },
               },
@@ -3279,16 +3292,16 @@ const baseComponents = {
           detailRow: {
             styles: {
               bb: 1,
-              borderColor: 'gray-200',
-              bgColor: 'gray-50',
+              borderColor: 'base-200',
+              bgColor: 'base-50',
               // What a panel opening below the fold scrolls to. `nearest` aligns the panel's own top
               // when it is taller than the viewport, which would push the row that opened it off the
               // screen — a scroll margin one row deep makes that row part of what gets revealed.
               css: { scrollMarginBlockStart: 'var(--row-height)' },
               theme: {
                 dark: {
-                  borderColor: 'gray-800',
-                  bgColor: 'gray-950',
+                  borderColor: 'base-800',
+                  bgColor: 'base-950',
                 },
               },
             },
@@ -3299,19 +3312,19 @@ const baseComponents = {
                   // on the row because this is the sticky box: the row is as wide as the scrolled content,
                   // so a border on it would slide out of view.
                   bs: 2,
-                  borderColor: 'indigo-500',
+                  borderColor: 'accent-500',
                   // The panel is the detail row's single cell, so it holds focus like any other.
                   focusVisible: {
                     outline: 2,
                     outlineStyle: 'solid',
                     outlineOffset: -2,
-                    outlineColor: 'indigo-500',
+                    outlineColor: 'accent-500',
                   },
                   theme: {
                     dark: {
-                      borderColor: 'indigo-400',
+                      borderColor: 'accent-400',
                       focusVisible: {
-                        outlineColor: 'indigo-400',
+                        outlineColor: 'accent-400',
                       },
                     },
                   },
@@ -3352,11 +3365,11 @@ const baseComponents = {
           zIndex: 1,
           bgColor: 'white',
           bt: 1,
-          borderColor: 'gray-200',
+          borderColor: 'base-200',
           theme: {
             dark: {
-              bgColor: 'gray-900',
-              borderColor: 'gray-800',
+              bgColor: 'base-900',
+              borderColor: 'base-800',
             },
           },
         },
@@ -3364,8 +3377,8 @@ const baseComponents = {
           cell: {
             styles: {
               fontWeight: 600,
-              color: 'gray-900',
-              theme: { dark: { color: 'gray-50' } },
+              color: 'base-900',
+              theme: { dark: { color: 'base-50' } },
             },
           },
           label: {
@@ -3373,10 +3386,10 @@ const baseComponents = {
               fontSize: 12,
               fontWeight: 600,
               letterSpacing: 0.2,
-              color: 'gray-500',
+              color: 'base-500',
               theme: {
                 dark: {
-                  color: 'gray-400',
+                  color: 'base-400',
                 },
               },
             },
@@ -3393,19 +3406,19 @@ const baseComponents = {
           lineHeight: 36,
           bgColor: 'white',
           bt: 1,
-          borderColor: 'gray-200',
+          borderColor: 'base-200',
           // A narrow grid wraps the bar rather than pushing its last button out of reach.
           flexWrap: 'wrap',
           columnGap: 4,
           rowGap: 0,
           ai: 'center',
           fontSize: 13,
-          color: 'gray-500',
+          color: 'base-500',
           theme: {
             dark: {
-              bgColor: 'gray-900',
-              borderColor: 'gray-800',
-              color: 'gray-400',
+              bgColor: 'base-900',
+              borderColor: 'base-800',
+              color: 'base-400',
             },
           },
         },
@@ -3427,11 +3440,11 @@ const baseComponents = {
             variants: {
               // "Show selected" while it is on: a toggle has to look pressed, not only say so to a screen reader.
               pressed: {
-                bgColor: 'indigo-50',
-                color: 'indigo-700',
-                hover: { bgColor: 'indigo-100', color: 'indigo-800' },
+                bgColor: 'accent-50',
+                color: 'accent-700',
+                hover: { bgColor: 'accent-100', color: 'accent-800' },
                 theme: {
-                  dark: { bgColor: 'indigo-500/15', color: 'indigo-300', hover: { bgColor: 'indigo-500/25', color: 'indigo-200' } },
+                  dark: { bgColor: 'accent-500/15', color: 'accent-300', hover: { bgColor: 'accent-500/25', color: 'accent-200' } },
                 },
               },
             },
@@ -3459,60 +3472,60 @@ const baseComponents = {
         styles: {},
         children: {
           toolbar: {
-            styles: { bb: 1, borderColor: 'gray-200', theme: { dark: { borderColor: 'gray-800' } } },
+            styles: { bb: 1, borderColor: 'base-200', theme: { dark: { borderColor: 'base-800' } } },
             children: {
-              count: { styles: { color: 'gray-500', theme: { dark: { color: 'gray-400' } } } },
+              count: { styles: { color: 'base-500', theme: { dark: { color: 'base-400' } } } },
               search: {
                 styles: {
-                  bgColor: 'gray-100',
-                  focus: { outline: 2, outlineStyle: 'solid', outlineColor: 'indigo-500', bgColor: 'white' },
-                  theme: { dark: { bgColor: 'gray-800', focus: { bgColor: 'gray-900' } } },
+                  bgColor: 'base-100',
+                  focus: { outline: 2, outlineStyle: 'solid', outlineColor: 'accent-500', bgColor: 'white' },
+                  theme: { dark: { bgColor: 'base-800', focus: { bgColor: 'base-900' } } },
                 },
               },
               button: {
                 clean: true,
                 styles: {
                   b: 1,
-                  borderColor: 'gray-200',
-                  color: 'gray-700',
-                  active: { bgColor: 'gray-100' },
+                  borderColor: 'base-200',
+                  color: 'base-700',
+                  active: { bgColor: 'base-100' },
                   focusVisible: FOCUS_RING,
-                  theme: { dark: { borderColor: 'gray-700', color: 'gray-200', active: { bgColor: 'gray-800' } } },
+                  theme: { dark: { borderColor: 'base-700', color: 'base-200', active: { bgColor: 'base-800' } } },
                 },
                 variants: {
                   active: {
-                    bgColor: 'indigo-50',
-                    borderColor: 'indigo-200',
-                    color: 'indigo-700',
-                    theme: { dark: { bgColor: 'indigo-500/15', borderColor: 'indigo-500/40', color: 'indigo-300' } },
+                    bgColor: 'accent-50',
+                    borderColor: 'accent-200',
+                    color: 'accent-700',
+                    theme: { dark: { bgColor: 'accent-500/15', borderColor: 'accent-500/40', color: 'accent-300' } },
                   },
                 },
               },
-              chip: { styles: { bgColor: 'gray-100', theme: { dark: { bgColor: 'gray-800' } } } },
+              chip: { styles: { bgColor: 'base-100', theme: { dark: { bgColor: 'base-800' } } } },
             },
           },
           // The rows themselves are `List.Item`s, styled by the `list` tree. These are the grid's own inside one: a tree's
           // chevron and the row-detail toggle, and the detail panel under it.
           toggle: {
             clean: true,
-            styles: { color: 'indigo-600', focusVisible: FOCUS_RING, theme: { dark: { color: 'indigo-300' } } },
+            styles: { color: 'accent-600', focusVisible: FOCUS_RING, theme: { dark: { color: 'accent-300' } } },
           },
-          detail: { styles: { bgColor: 'gray-50', theme: { dark: { bgColor: 'gray-800/60' } } } },
+          detail: { styles: { bgColor: 'base-50', theme: { dark: { bgColor: 'base-800/60' } } } },
           button: {
             clean: true,
             styles: {
               b: 1,
-              borderColor: 'gray-200',
-              color: 'gray-700',
-              active: { bgColor: 'gray-100' },
+              borderColor: 'base-200',
+              color: 'base-700',
+              active: { bgColor: 'base-100' },
               disabled: { opacity: 0.4 },
               focusVisible: FOCUS_RING,
-              theme: { dark: { borderColor: 'gray-700', color: 'gray-200', active: { bgColor: 'gray-800' } } },
+              theme: { dark: { borderColor: 'base-700', color: 'base-200', active: { bgColor: 'base-800' } } },
             },
           },
           // What a selection is for sits where a thumb is: pinned to the bottom of the screen while rows are ticked.
           selectionBar: {
-            styles: { bgColor: 'gray-900', color: 'white', theme: { dark: { bgColor: 'gray-100', color: 'gray-900' } } },
+            styles: { bgColor: 'base-900', color: 'white', theme: { dark: { bgColor: 'base-100', color: 'base-900' } } },
           },
           // The sort, the filters and the record view: a modal `<dialog>` docked to the bottom edge, where a thumb
           // is, that slides up as it opens and back down as it closes.
@@ -3525,54 +3538,54 @@ const baseComponents = {
               b: 0,
               borderRadiusTop: 5,
               bgColor: 'white',
-              color: 'gray-900',
+              color: 'base-900',
               shadow: 'large',
               css: { maxWidth: 'none', maxHeight: 'calc(100dvh - 2rem)' },
               startingStyle: { translateY: '1/1' },
               transitionBehavior: 'allow-discrete',
               not: { open: { translateY: '1/1', display: 'none' } },
               backdrop: { bgColor: 'black/40', transition: 'opacity', startingStyle: { opacity: 0 }, not: { open: { opacity: 0 } } },
-              theme: { dark: { bgColor: 'gray-900', color: 'gray-100' } },
+              theme: { dark: { bgColor: 'base-900', color: 'base-100' } },
             },
             children: {
-              line: { styles: { borderColor: 'gray-100', theme: { dark: { borderColor: 'gray-800' } } } },
+              line: { styles: { borderColor: 'base-100', theme: { dark: { borderColor: 'base-800' } } } },
               input: {
                 styles: {
                   b: 1,
-                  borderColor: 'gray-300',
+                  borderColor: 'base-300',
                   bgColor: 'white',
-                  focus: { outline: 2, outlineStyle: 'solid', outlineOffset: -1, outlineColor: 'indigo-500' },
-                  theme: { dark: { bgColor: 'gray-800', borderColor: 'gray-700' } },
+                  focus: { outline: 2, outlineStyle: 'solid', outlineOffset: -1, outlineColor: 'accent-500' },
+                  theme: { dark: { bgColor: 'base-800', borderColor: 'base-700' } },
                 },
               },
               chip: {
                 clean: true,
                 styles: {
                   b: 1,
-                  borderColor: 'gray-300',
+                  borderColor: 'base-300',
                   focusVisible: FOCUS_RING,
-                  ariaAttr: { pressed: { bgColor: 'indigo-600', borderColor: 'indigo-600', color: 'white' } },
-                  theme: { dark: { borderColor: 'gray-600', ariaAttr: { pressed: { bgColor: 'indigo-500', borderColor: 'indigo-500' } } } },
+                  ariaAttr: { pressed: { bgColor: 'accent-600', borderColor: 'accent-600', color: 'white' } },
+                  theme: { dark: { borderColor: 'base-600', ariaAttr: { pressed: { bgColor: 'accent-500', borderColor: 'accent-500' } } } },
                 },
               },
               button: {
                 clean: true,
                 styles: {
-                  color: 'gray-700',
-                  active: { bgColor: 'gray-100' },
+                  color: 'base-700',
+                  active: { bgColor: 'base-100' },
                   disabled: { opacity: 0.3 },
                   focusVisible: FOCUS_RING,
-                  theme: { dark: { color: 'gray-200', active: { bgColor: 'gray-800' } } },
+                  theme: { dark: { color: 'base-200', active: { bgColor: 'base-800' } } },
                 },
               },
               primary: {
                 clean: true,
                 styles: {
-                  bgColor: 'indigo-600',
+                  bgColor: 'accent-600',
                   color: 'white',
-                  active: { bgColor: 'indigo-700' },
+                  active: { bgColor: 'accent-700' },
                   focusVisible: FOCUS_RING,
-                  theme: { dark: { bgColor: 'indigo-500', active: { bgColor: 'indigo-600' } } },
+                  theme: { dark: { bgColor: 'accent-500', active: { bgColor: 'accent-600' } } },
                 },
               },
             },
@@ -3610,10 +3623,10 @@ const baseComponents = {
           borderRadius: 2,
           b: 2,
           borderStyle: 'dashed',
-          borderColor: 'indigo-400',
-          bgColor: 'indigo-500/10',
+          borderColor: 'accent-400',
+          bgColor: 'accent-500/10',
           pointerEvents: 'none',
-          theme: { dark: { borderColor: 'indigo-500' } },
+          theme: { dark: { borderColor: 'accent-500' } },
           forcedColors: { borderColor: 'Highlight' },
         },
       },
@@ -3632,10 +3645,10 @@ const baseComponents = {
       overflow: 'hidden',
       bgColor: 'white',
       b: 1,
-      borderColor: 'gray-200',
+      borderColor: 'base-200',
       borderRadius: 2,
       shadow: 'xs',
-      theme: { dark: { bgColor: 'gray-900', borderColor: 'gray-800' } },
+      theme: { dark: { bgColor: 'base-900', borderColor: 'base-800' } },
       // A widget added to a dashboard arrives rather than appearing. Plain props only, and nothing here
       // transitions per frame, so it costs the drag nothing.
       startingStyle: { opacity: 0, scale: 0.98 },
@@ -3647,7 +3660,7 @@ const baseComponents = {
       dragging: { shadow: 'large', zIndex: 10, cursor: 'grabbing', transition: 'none' },
       // The keyboard's equivalent: picked up, waiting for the arrows. A ring rather than a shadow,
       // because it has to be visible in a forced-colors mode where every shadow is thrown away.
-      grabbed: { outline: 2, outlineColor: 'indigo-500', outlineOffset: 2 },
+      grabbed: { outline: 2, outlineColor: 'accent-500', outlineOffset: 2 },
     },
     children: {
       header: {
@@ -3658,8 +3671,8 @@ const baseComponents = {
           px: 4,
           py: 3,
           bb: 1,
-          borderColor: 'gray-100',
-          theme: { dark: { borderColor: 'gray-800' } },
+          borderColor: 'base-100',
+          theme: { dark: { borderColor: 'base-800' } },
         },
       },
       // The title and its description, stacked, so the bar itself stays one row however many lines they are.
@@ -3676,13 +3689,13 @@ const baseComponents = {
           fontSize: 14,
           lineHeight: 20,
           fontWeight: 600,
-          color: 'gray-900',
+          color: 'base-900',
           m: 0,
-          theme: { dark: { color: 'gray-100' } },
+          theme: { dark: { color: 'base-100' } },
         },
       },
       description: {
-        styles: { fontSize: 12, lineHeight: 16, color: 'gray-500', theme: { dark: { color: 'gray-400' } } },
+        styles: { fontSize: 12, lineHeight: 16, color: 'base-500', theme: { dark: { color: 'base-400' } } },
       },
       actions: { styles: { display: 'flex', ai: 'center', gap: 1 } },
       // Both handles are this one node: a bare button, invisible until the dashboard is in edit mode and
@@ -3700,15 +3713,15 @@ const baseComponents = {
           b: 0,
           borderRadius: 1,
           bgColor: 'transparent',
-          color: 'gray-400',
+          color: 'base-400',
           cursor: 'grab',
-          hover: { bgColor: 'gray-100', color: 'gray-700' },
-          focusVisible: { outline: 2, outlineColor: 'indigo-500', outlineOffset: 1 },
-          theme: { dark: { color: 'gray-500', hover: { bgColor: 'gray-800', color: 'gray-200' } } },
+          hover: { bgColor: 'base-100', color: 'base-700' },
+          focusVisible: { outline: 2, outlineColor: 'accent-500', outlineOffset: 1 },
+          theme: { dark: { color: 'base-500', hover: { bgColor: 'base-800', color: 'base-200' } } },
         },
         variants: {
           editable: { display: 'flex' },
-          grabbed: { cursor: 'grabbing', color: 'indigo-600', theme: { dark: { color: 'indigo-400' } } },
+          grabbed: { cursor: 'grabbing', color: 'accent-600', theme: { dark: { color: 'accent-400' } } },
           // A resize cursor names a physical diagonal, so it is the one part of this that a logical inset
           // cannot mirror for itself.
           corner: { position: 'absolute', bottom: 0, insetEnd: 0, cursor: 'nwse-resize', rtl: { cursor: 'nesw-resize' } },
@@ -3730,8 +3743,8 @@ const baseComponents = {
           textAlign: 'center',
           fontSize: 13,
           lineHeight: 18,
-          color: 'gray-500',
-          theme: { dark: { color: 'gray-400' } },
+          color: 'base-500',
+          theme: { dark: { color: 'base-400' } },
         },
         variants: {
           error: { color: 'red-600', theme: { dark: { color: 'red-400' } } },
@@ -3744,14 +3757,14 @@ const baseComponents = {
           p: 0,
           b: 0,
           bgColor: 'transparent',
-          color: 'indigo-600',
+          color: 'accent-600',
           fontSize: 13,
           fontWeight: 500,
           cursor: 'pointer',
           textDecoration: 'underline',
-          hover: { color: 'indigo-700' },
-          focusVisible: { outline: 2, outlineColor: 'indigo-500', outlineOffset: 2, borderRadius: 1 },
-          theme: { dark: { color: 'indigo-400', hover: { color: 'indigo-300' } } },
+          hover: { color: 'accent-700' },
+          focusVisible: { outline: 2, outlineColor: 'accent-500', outlineOffset: 2, borderRadius: 1 },
+          theme: { dark: { color: 'accent-400', hover: { color: 'accent-300' } } },
         },
       },
       // The loading state: bars where the content will be. `pulse` is a registered preset, so it stops
@@ -3766,7 +3779,7 @@ const baseComponents = {
         },
         children: {
           bar: {
-            styles: { height: 3, borderRadius: 1, bgColor: 'gray-200', theme: { dark: { bgColor: 'gray-800' } } },
+            styles: { height: 3, borderRadius: 1, bgColor: 'base-200', theme: { dark: { bgColor: 'base-800' } } },
           },
         },
       },
@@ -3783,11 +3796,11 @@ const baseComponents = {
       overflow: 'hidden',
       bgColor: 'white',
       b: 1,
-      borderColor: 'gray-200',
+      borderColor: 'base-200',
       borderRadius: 2,
       fontSize: 13,
       lineHeight: 18,
-      theme: { dark: { bgColor: 'gray-900', borderColor: 'gray-800' } },
+      theme: { dark: { bgColor: 'base-900', borderColor: 'base-800' } },
     },
     children: {
       header: {
@@ -3803,8 +3816,8 @@ const baseComponents = {
           b: 0,
           textAlign: 'start',
           bgColor: 'transparent',
-          color: 'gray-900',
-          theme: { dark: { color: 'gray-100' } },
+          color: 'base-900',
+          theme: { dark: { color: 'base-100' } },
         },
         variants: {
           // Only when there is a body to open: a card with nothing under it renders a row, not a control,
@@ -3812,9 +3825,9 @@ const baseComponents = {
           interactive: {
             cursor: 'pointer',
             transition: 'colors',
-            hover: { bgColor: 'gray-50' },
-            focusVisible: { outline: 2, outlineColor: 'indigo-500', outlineOffset: -2 },
-            theme: { dark: { hover: { bgColor: 'gray-800' } } },
+            hover: { bgColor: 'base-50' },
+            focusVisible: { outline: 2, outlineColor: 'accent-500', outlineOffset: -2 },
+            theme: { dark: { hover: { bgColor: 'base-800' } } },
           },
         },
       },
@@ -3826,7 +3839,7 @@ const baseComponents = {
         styles: { overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', fontWeight: 600, css: { fontFamily: FONT_MONO } },
       },
       description: {
-        styles: { fontSize: 12, lineHeight: 16, color: 'gray-500', theme: { dark: { color: 'gray-400' } } },
+        styles: { fontSize: 12, lineHeight: 16, color: 'base-500', theme: { dark: { color: 'base-400' } } },
       },
       // The state, in a word. A transparent border in every mode so a forced-colors one can draw the chip
       // without the row changing height when it does.
@@ -3844,14 +3857,14 @@ const baseComponents = {
           fontSize: 11,
           lineHeight: 16,
           fontWeight: 500,
-          bgColor: 'gray-100',
-          color: 'gray-700',
+          bgColor: 'base-100',
+          color: 'base-700',
           forcedColors: { borderColor: 'CanvasText' },
-          theme: { dark: { bgColor: 'gray-800', color: 'gray-300' } },
+          theme: { dark: { bgColor: 'base-800', color: 'base-300' } },
         },
         variants: {
           pending: {},
-          running: { bgColor: 'indigo-50', color: 'indigo-700', theme: { dark: { bgColor: 'indigo-950', color: 'indigo-300' } } },
+          running: { bgColor: 'accent-50', color: 'accent-700', theme: { dark: { bgColor: 'accent-950', color: 'accent-300' } } },
           success: { bgColor: 'emerald-50', color: 'emerald-700', theme: { dark: { bgColor: 'emerald-950', color: 'emerald-300' } } },
           error: { bgColor: 'red-50', color: 'red-700', theme: { dark: { bgColor: 'red-950', color: 'red-300' } } },
         },
@@ -3893,8 +3906,8 @@ const baseComponents = {
           fontWeight: 600,
           textTransform: 'uppercase',
           letterSpacing: 0.5,
-          color: 'gray-500',
-          theme: { dark: { color: 'gray-400' } },
+          color: 'base-500',
+          theme: { dark: { color: 'base-400' } },
         },
       },
       // What the model actually sent, as it stands. Capped in height rather than in the card: a long
@@ -3904,19 +3917,19 @@ const baseComponents = {
           m: 0,
           p: 2,
           borderRadius: 1,
-          bgColor: 'gray-50',
-          color: 'gray-800',
+          bgColor: 'base-50',
+          color: 'base-800',
           fontSize: 12,
           lineHeight: 18,
           maxHeight: 64,
           overflow: 'auto',
           whiteSpace: 'pre-wrap',
           css: { fontFamily: FONT_MONO, wordBreak: 'break-word' },
-          theme: { dark: { bgColor: 'gray-950', color: 'gray-200' } },
+          theme: { dark: { bgColor: 'base-950', color: 'base-200' } },
         },
       },
       truncated: {
-        styles: { fontSize: 11, lineHeight: 16, color: 'gray-500', theme: { dark: { color: 'gray-400' } } },
+        styles: { fontSize: 11, lineHeight: 16, color: 'base-500', theme: { dark: { color: 'base-400' } } },
       },
     },
   },
@@ -3936,24 +3949,24 @@ const baseComponents = {
       borderRadius: 2,
       overflow: 'hidden',
       bgColor: 'white',
-      borderColor: 'gray-200',
+      borderColor: 'base-200',
       fontSize: 13,
       lineHeight: 18,
       before: { position: 'absolute', insetStart: 0, insetY: 0, width: 1, bgColor: 'amber-500' },
-      theme: { dark: { bgColor: 'gray-900', borderColor: 'gray-800' } },
+      theme: { dark: { bgColor: 'base-900', borderColor: 'base-800' } },
     },
     variants: {
       // Amber until it is answered, and then the colour of the answer — beside the word, never instead
       // of it, since a forced-colors mode keeps one and throws the other away.
       approved: { before: { bgColor: 'emerald-500' } },
-      rejected: { before: { bgColor: 'gray-400' } },
+      rejected: { before: { bgColor: 'base-400' } },
     },
     children: {
       title: {
-        styles: { fontSize: 14, lineHeight: 20, fontWeight: 600, color: 'gray-900', theme: { dark: { color: 'gray-100' } } },
+        styles: { fontSize: 14, lineHeight: 20, fontWeight: 600, color: 'base-900', theme: { dark: { color: 'base-100' } } },
       },
       description: {
-        styles: { color: 'gray-600', theme: { dark: { color: 'gray-400' } } },
+        styles: { color: 'base-600', theme: { dark: { color: 'base-400' } } },
       },
       section: {
         styles: { display: 'flex', d: 'column', gap: 1 },
@@ -3965,8 +3978,8 @@ const baseComponents = {
           fontWeight: 600,
           textTransform: 'uppercase',
           letterSpacing: 0.5,
-          color: 'gray-500',
-          theme: { dark: { color: 'gray-400' } },
+          color: 'base-500',
+          theme: { dark: { color: 'base-400' } },
         },
       },
       value: {
@@ -3974,19 +3987,19 @@ const baseComponents = {
           m: 0,
           p: 2,
           borderRadius: 1,
-          bgColor: 'gray-50',
-          color: 'gray-800',
+          bgColor: 'base-50',
+          color: 'base-800',
           fontSize: 12,
           lineHeight: 18,
           maxHeight: 64,
           overflow: 'auto',
           whiteSpace: 'pre-wrap',
           css: { fontFamily: FONT_MONO, wordBreak: 'break-word' },
-          theme: { dark: { bgColor: 'gray-950', color: 'gray-200' } },
+          theme: { dark: { bgColor: 'base-950', color: 'base-200' } },
         },
       },
       truncated: {
-        styles: { fontSize: 11, lineHeight: 16, color: 'gray-500', theme: { dark: { color: 'gray-400' } } },
+        styles: { fontSize: 11, lineHeight: 16, color: 'base-500', theme: { dark: { color: 'base-400' } } },
       },
       // No gap: the decision's live region is always rendered and is empty until there is a decision, so
       // a gap here would be a gap around nothing for as long as the card is unanswered.
@@ -4007,24 +4020,24 @@ const baseComponents = {
           fontWeight: 500,
           cursor: 'pointer',
           transition: 'colors',
-          focusVisible: { outline: 2, outlineColor: 'indigo-500', outlineOffset: 2 },
+          focusVisible: { outline: 2, outlineColor: 'accent-500', outlineOffset: 2 },
           disabled: { opacity: 0.6, cursor: 'default' },
         },
         variants: {
           approve: {
-            bgColor: 'indigo-600',
-            borderColor: 'indigo-600',
+            bgColor: 'accent-600',
+            borderColor: 'accent-600',
             color: 'white',
-            hover: { bgColor: 'indigo-700', borderColor: 'indigo-700' },
-            disabled: { hover: { bgColor: 'indigo-600', borderColor: 'indigo-600' } },
+            hover: { bgColor: 'accent-700', borderColor: 'accent-700' },
+            disabled: { hover: { bgColor: 'accent-600', borderColor: 'accent-600' } },
           },
           reject: {
             bgColor: 'transparent',
-            borderColor: 'gray-300',
-            color: 'gray-700',
-            hover: { bgColor: 'gray-100' },
+            borderColor: 'base-300',
+            color: 'base-700',
+            hover: { bgColor: 'base-100' },
             disabled: { hover: { bgColor: 'transparent' } },
-            theme: { dark: { borderColor: 'gray-700', color: 'gray-200', hover: { bgColor: 'gray-800' } } },
+            theme: { dark: { borderColor: 'base-700', color: 'base-200', hover: { bgColor: 'base-800' } } },
           },
         },
       },
@@ -4032,7 +4045,7 @@ const baseComponents = {
         styles: { fontWeight: 600 },
         variants: {
           approved: { color: 'emerald-700', theme: { dark: { color: 'emerald-300' } } },
-          rejected: { color: 'gray-600', theme: { dark: { color: 'gray-400' } } },
+          rejected: { color: 'base-600', theme: { dark: { color: 'base-400' } } },
         },
       },
     },
@@ -4056,10 +4069,10 @@ const baseComponents = {
           fontSize: 13,
           lineHeight: 18,
           fontWeight: 500,
-          color: 'gray-500',
-          hover: { color: 'gray-700' },
-          focusVisible: { outline: 2, outlineColor: 'indigo-500', outlineOffset: 2, borderRadius: 1 },
-          theme: { dark: { color: 'gray-400', hover: { color: 'gray-200' } } },
+          color: 'base-500',
+          hover: { color: 'base-700' },
+          focusVisible: { outline: 2, outlineColor: 'accent-500', outlineOffset: 2, borderRadius: 1 },
+          theme: { dark: { color: 'base-400', hover: { color: 'base-200' } } },
         },
         variants: {
           streaming: { animation: 'pulse' },
@@ -4101,12 +4114,12 @@ const baseComponents = {
         styles: {
           ps: 3,
           bs: 2,
-          borderColor: 'gray-200',
+          borderColor: 'base-200',
           fontSize: 13,
           lineHeight: 20,
-          color: 'gray-600',
+          color: 'base-600',
           whiteSpace: 'pre-wrap',
-          theme: { dark: { borderColor: 'gray-800', color: 'gray-400' } },
+          theme: { dark: { borderColor: 'base-800', color: 'base-400' } },
         },
       },
     },
@@ -4115,28 +4128,28 @@ const baseComponents = {
   // caller wraps the renderer in; every node below inherits its size and colour, so restyling the prose
   // is one place. Each inline node says `display: inline` — the base class is `block`.
   markdown: {
-    styles: { fontSize: 14, lineHeight: 22, color: 'gray-700', theme: { dark: { color: 'gray-300' } } },
+    styles: { fontSize: 14, lineHeight: 22, color: 'base-700', theme: { dark: { color: 'base-300' } } },
     children: {
       heading: {
-        styles: { fontWeight: 600, mt: 5, mb: 2, color: 'gray-900', theme: { dark: { color: 'gray-100' } } },
+        styles: { fontWeight: 600, mt: 5, mb: 2, color: 'base-900', theme: { dark: { color: 'base-100' } } },
         variants: {
           level1: { fontSize: 24, lineHeight: 32 },
           level2: { fontSize: 20, lineHeight: 28 },
           level3: { fontSize: 17, lineHeight: 24 },
           level4: { fontSize: 15, lineHeight: 22 },
           level5: { fontSize: 14, lineHeight: 20 },
-          level6: { fontSize: 13, lineHeight: 18, color: 'gray-500', theme: { dark: { color: 'gray-400' } } },
+          level6: { fontSize: 13, lineHeight: 18, color: 'base-500', theme: { dark: { color: 'base-400' } } },
         },
       },
       paragraph: { styles: { my: 2 } },
       link: {
         styles: {
           display: 'inline',
-          color: 'indigo-600',
+          color: 'accent-600',
           textDecoration: 'underline',
-          hover: { color: 'indigo-700' },
-          focusVisible: { outline: 2, outlineColor: 'indigo-500', outlineOffset: 2, borderRadius: 1 },
-          theme: { dark: { color: 'indigo-400', hover: { color: 'indigo-300' } } },
+          hover: { color: 'accent-700' },
+          focusVisible: { outline: 2, outlineColor: 'accent-500', outlineOffset: 2, borderRadius: 1 },
+          theme: { dark: { color: 'accent-400', hover: { color: 'accent-300' } } },
         },
       },
       list: {
@@ -4149,9 +4162,9 @@ const baseComponents = {
           my: 3,
           ps: 4,
           bs: 2,
-          borderColor: 'gray-300',
-          color: 'gray-600',
-          theme: { dark: { borderColor: 'gray-700', color: 'gray-400' } },
+          borderColor: 'base-300',
+          color: 'base-600',
+          theme: { dark: { borderColor: 'base-700', color: 'base-400' } },
         },
       },
       // The chip. A fenced block never wears it, because `pre` renders the fence itself.
@@ -4162,10 +4175,10 @@ const baseComponents = {
           py: 0.25,
           borderRadius: 1,
           fontSize: 13,
-          bgColor: 'gray-100',
+          bgColor: 'base-100',
           css: { fontFamily: FONT_MONO },
           color: 'pink-700',
-          theme: { dark: { bgColor: 'gray-800', color: 'pink-300' } },
+          theme: { dark: { bgColor: 'base-800', color: 'pink-300' } },
         },
       },
       codeBlock: {
@@ -4175,42 +4188,42 @@ const baseComponents = {
           p: 3,
           borderRadius: 2,
           overflow: 'auto',
-          bgColor: 'gray-900',
-          color: 'gray-100',
+          bgColor: 'base-900',
+          color: 'base-100',
           fontSize: 13,
           lineHeight: 20,
           css: { fontFamily: FONT_MONO },
-          theme: { dark: { bgColor: 'gray-950' } },
+          theme: { dark: { bgColor: 'base-950' } },
         },
         children: {
           language: {
-            styles: { position: 'absolute', top: 2, insetEnd: 3, fontSize: 11, color: 'gray-400', userSelect: 'none' },
+            styles: { position: 'absolute', top: 2, insetEnd: 3, fontSize: 11, color: 'base-400', userSelect: 'none' },
           },
           code: { styles: { display: 'block', css: { fontFamily: FONT_MONO } } },
         },
       },
       rule: {
-        styles: { my: 5, bt: 1, borderColor: 'gray-200', theme: { dark: { borderColor: 'gray-800' } } },
+        styles: { my: 5, bt: 1, borderColor: 'base-200', theme: { dark: { borderColor: 'base-800' } } },
       },
       image: { styles: { my: 3, maxWidth: 'fit', borderRadius: 2 } },
       // The scroller is the wrapper rather than the table: a table that scrolls itself loses its layout.
       tableWrap: { styles: { my: 3, overflow: 'auto' } },
       table: { styles: { display: 'table', width: 'fit', fontSize: 13, css: { borderCollapse: 'collapse' } } },
       row: {
-        styles: { display: 'table-row', bb: 1, borderColor: 'gray-200', theme: { dark: { borderColor: 'gray-800' } } },
+        styles: { display: 'table-row', bb: 1, borderColor: 'base-200', theme: { dark: { borderColor: 'base-800' } } },
       },
       cell: {
         styles: { display: 'table-cell', px: 3, py: 2, textAlign: 'start', css: { verticalAlign: 'top' } },
-        variants: { header: { fontWeight: 600, color: 'gray-900', theme: { dark: { color: 'gray-100' } } } },
+        variants: { header: { fontWeight: 600, color: 'base-900', theme: { dark: { color: 'base-100' } } } },
       },
       inline: {
         styles: { display: 'inline' },
         variants: {
-          strong: { fontWeight: 600, color: 'gray-900', theme: { dark: { color: 'gray-100' } } },
+          strong: { fontWeight: 600, color: 'base-900', theme: { dark: { color: 'base-100' } } },
           struck: { textDecoration: 'line-through', opacity: 0.7 },
         },
       },
-      checkbox: { styles: { display: 'inline-block', me: 1.5, accentColor: 'indigo-600' } },
+      checkbox: { styles: { display: 'inline-block', me: 1.5, accentColor: 'accent-600' } },
     },
   },
   // Where content will be. Two elements per bar rather than one, because the gloss travels and the bar
@@ -4224,8 +4237,8 @@ const baseComponents = {
           overflow: 'hidden',
           height: 3,
           borderRadius: 1,
-          bgColor: 'gray-200',
-          theme: { dark: { bgColor: 'gray-800' } },
+          bgColor: 'base-200',
+          theme: { dark: { bgColor: 'base-800' } },
         },
         variants: {
           // A paragraph's last line stops short of the margin, and bars of one length read as a table.
@@ -4254,7 +4267,7 @@ const baseComponents = {
   // What the agent is saying, as it arrives. Two children and no third: the settled text is a bare text
   // node, because wrapping it would be an element that grows without bound.
   streamingText: {
-    styles: { whiteSpace: 'pre-wrap', fontSize: 14, lineHeight: 22, color: 'gray-700', theme: { dark: { color: 'gray-300' } } },
+    styles: { whiteSpace: 'pre-wrap', fontSize: 14, lineHeight: 22, color: 'base-700', theme: { dark: { color: 'base-300' } } },
     children: {
       // Opacity alone, and `display: inline` rather than the base class's `block`: a transform on an
       // inline box does nothing, and inline-block would stop a run wrapping mid-word.
@@ -4348,7 +4361,7 @@ const listComponents = {
         bgColor: 'white',
         // `clip`, not `hidden`: the corners clip and the list is still no scroll container, so a sticky label sticks.
         css: { overflow: 'clip' },
-        theme: { dark: { bgColor: 'gray-900' } },
+        theme: { dark: { bgColor: 'base-900' } },
       },
       separated: {
         display: 'flex',
@@ -4366,18 +4379,18 @@ const listComponents = {
           // Pressable when it holds a `List.Action`, so the states are read off that rather than a prop.
           has: {
             '[data-list-action]:active': { bgColor: 'currentColor/8' },
-            '[data-list-action][aria-current]:not([aria-current=false])': { bgColor: 'indigo-500/15' },
+            '[data-list-action][aria-current]:not([aria-current=false])': { bgColor: 'accent-500/15' },
             '[data-list-action]:disabled': { opacity: 0.5 },
           },
           pointerFine: { has: { '[data-list-action]:hover': { bgColor: 'currentColor/4' } } },
         },
         variants: {
           // Its own hover too, or the item's hover tint would replace the selection while the pointer is on it.
-          selected: { bgColor: 'indigo-500/10', pointerFine: { has: { '[data-list-action]:hover': { bgColor: 'indigo-500/15' } } } },
+          selected: { bgColor: 'accent-500/10', pointerFine: { has: { '[data-list-action]:hover': { bgColor: 'accent-500/15' } } } },
           // A `SortableList` item under the pointer: lifted over its neighbours and following the pointer with no lag.
-          lifted: { zIndex: 2, bgColor: 'white', shadow: 'lg', transition: 'none', theme: { dark: { bgColor: 'gray-900' } } },
+          lifted: { zIndex: 2, bgColor: 'white', shadow: 'lg', transition: 'none', theme: { dark: { bgColor: 'base-900' } } },
           // One the keyboard picked up.
-          grabbed: { zIndex: 1, bgColor: 'indigo-500/10', ring: 2, ringColor: 'indigo-500' },
+          grabbed: { zIndex: 1, bgColor: 'accent-500/10', ring: 2, ringColor: 'accent-500' },
           // The commit a drop lands in: the items' offsets go back to zero there, and must not transition from them.
           settling: { transition: 'none' },
         },
@@ -4385,17 +4398,17 @@ const listComponents = {
       media: { styles: {}, variants: { icon: MEDIA_FILL, avatar: MEDIA_FILL, image: MEDIA_FILL } },
       // The quieter half of an item: an overline, a description, a secondary row, a meta value, a field's label, a
       // chevron. A palette pair rather than a mix, since a mix inside a mix would fade twice.
-      muted: { styles: { color: 'gray-500', theme: { dark: { color: 'gray-400' } } } },
+      muted: { styles: { color: 'base-500', theme: { dark: { color: 'base-400' } } } },
       // The item's one primary action: the ring round the item it covers. `disabled` here is the state; as a part's
       // default prop it would be the attribute.
       action: {
         styles: {
           disabled: { cursor: 'not-allowed' },
-          focusVisible: { after: { outline: 2, outlineStyle: 'solid', outlineOffset: -2, outlineColor: 'indigo-500' } },
+          focusVisible: { after: { outline: 2, outlineStyle: 'solid', outlineOffset: -2, outlineColor: 'accent-500' } },
         },
       },
       // A group's label, opaque so a sticky one hides the items scrolling under it.
-      label: { styles: { color: 'gray-600', bgColor: 'gray-50', theme: { dark: { color: 'gray-300', bgColor: 'gray-800' } } } },
+      label: { styles: { color: 'base-600', bgColor: 'base-50', theme: { dark: { color: 'base-300', bgColor: 'base-800' } } } },
     },
   },
   // A list item that slides aside to show the commands under it. Paint only, for the reason `list` is.
@@ -4408,12 +4421,12 @@ const listComponents = {
       action: {
         styles: {
           color: 'white',
-          bgColor: 'gray-500',
+          bgColor: 'base-500',
           focusVisible: { outline: 2, outlineStyle: 'solid', outlineOffset: -4, outlineColor: 'white' },
           forcedColors: { b: 1, borderColor: 'ButtonText' },
         },
         variants: {
-          accent: { bgColor: 'blue-600' },
+          accent: { bgColor: 'accent-600' },
           warning: { bgColor: 'amber-700' },
           danger: { bgColor: 'red-600' },
           // Carried far enough that letting go performs it: the outermost action takes the whole tray.
@@ -4428,14 +4441,14 @@ const listComponents = {
     children: {
       handle: {
         styles: {
-          color: 'gray-500',
+          color: 'base-500',
           cursor: 'grab',
           borderRadius: 2,
-          theme: { dark: { color: 'gray-400' } },
+          theme: { dark: { color: 'base-400' } },
           pointerFine: { hover: { bgColor: 'currentColor/8' } },
           focusVisible: FOCUS_RING,
         },
-        variants: { grabbed: { cursor: 'grabbing', color: 'indigo-600', theme: { dark: { color: 'indigo-400' } } } },
+        variants: { grabbed: { cursor: 'grabbing', color: 'accent-600', theme: { dark: { color: 'accent-400' } } } },
       },
     },
   },
@@ -4451,7 +4464,7 @@ const QUIET_CONTROL: BoxComponentStyles = {
 };
 
 /** What a chosen day, month or time looks like. White on indigo reads in either theme, so it has no dark twin. */
-const CHOSEN: BoxComponentStyles = { bgColor: 'indigo-600', color: 'white', hover: { bgColor: 'indigo-700' } };
+const CHOSEN: BoxComponentStyles = { bgColor: 'accent-600', color: 'white', hover: { bgColor: 'accent-700' } };
 
 /** The quieter half of a date widget — a separator, a weekday, a day of the next month — mixed from the text. */
 const DATE_MUTED: BoxComponentStyles = { color: 'currentColor/55' };
@@ -4493,23 +4506,23 @@ const dateComponents = {
       cell: {
         styles: {},
         variants: {
-          rangeMiddle: { bgColor: 'indigo-500/15' },
-          rangeStart: { bgColor: 'indigo-500/15', borderRadiusStart: 999 },
-          rangeEnd: { bgColor: 'indigo-500/15', borderRadiusEnd: 999 },
+          rangeMiddle: { bgColor: 'accent-500/15' },
+          rangeStart: { bgColor: 'accent-500/15', borderRadiusStart: 999 },
+          rangeEnd: { bgColor: 'accent-500/15', borderRadiusEnd: 999 },
         },
       },
       day: {
         styles: { cursor: 'pointer', hover: { bgColor: 'currentColor/8' }, focusVisible: FOCUS_RING },
         variants: {
           // Today is a ring rather than a fill, so it never reads as chosen.
-          today: { insetRing: 1, insetRingColor: 'indigo-500' },
+          today: { insetRing: 1, insetRingColor: 'accent-500' },
           selected: CHOSEN,
           outside: DATE_MUTED,
           blocked: { opacity: 0.4, cursor: 'not-allowed', hover: { bgColor: 'transparent' } },
           unavailable: { ...DATE_MUTED, textDecoration: 'line-through', cursor: 'not-allowed' },
         },
       },
-      zoomItem: { styles: QUIET_CONTROL, variants: { today: { insetRing: 1, insetRingColor: 'indigo-500' }, selected: CHOSEN } },
+      zoomItem: { styles: QUIET_CONTROL, variants: { today: { insetRing: 1, insetRingColor: 'accent-500' }, selected: CHOSEN } },
     },
   },
   // What a picker adds to its field (a `dateField`) and to its panel (a `popover`).

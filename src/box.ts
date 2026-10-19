@@ -62,6 +62,8 @@ interface BoxType {
   ): React.ReactNode;
   extend: typeof BoxExtends.extend;
   components: typeof BoxExtends.components;
+  /** The `vars` record that points the components' `accent` and `base` families at others, for an element and its subtree. */
+  palette: typeof BoxExtends.palette;
   /** A design for one subtree, registered nowhere: hand it to `<Box.Components value>` or `<Box.Theme components>`. */
   createComponents: typeof BoxExtends.createComponents;
   /** Every Box below resolves its `component` against this registry instead of the app's `Box.components()`. */
@@ -71,6 +73,8 @@ interface BoxType {
   spring: typeof Springs.spring;
   Theme: typeof Theme;
   useTheme: typeof Theme.useTheme;
+  /** Read the design the nearest `<Box.Theme>` draws in, and set it — `data-design` on its root. */
+  useDesign: typeof Theme.useDesign;
   getVariableValue: (name: string) => string;
   /** Explicit engine configuration (class-name hashing, style sink). Call once, before the first render. */
   configure: typeof StylesContext.configure;
@@ -82,12 +86,14 @@ const Box = boxComponent(useBoxElement, 'Box') as unknown as BoxType;
 
 Box.extend = BoxExtends.extend;
 Box.components = BoxExtends.components;
+Box.palette = BoxExtends.palette;
 Box.createComponents = BoxExtends.createComponents;
 Box.Components = Components;
 Box.keyframes = BoxExtends.keyframes;
 Box.spring = Springs.spring;
 Box.Theme = Theme;
 Box.useTheme = Theme.useTheme;
+Box.useDesign = Theme.useDesign;
 Box.getVariableValue = (name: string) => getDefaultEngine().getVariableValue(name);
 Box.configure = StylesContext.configure;
 Box.viewTransition = startViewTransition;

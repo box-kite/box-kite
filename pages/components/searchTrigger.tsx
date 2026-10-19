@@ -50,8 +50,8 @@ export function Hint({ children }: { children: React.ReactNode }) {
       b={1}
       fontSize={11}
       theme={{
-        dark: { bgColor: 'slate-800', borderColor: 'slate-700', color: 'slate-400' },
-        light: { bgColor: 'slate-100', borderColor: 'slate-200', color: 'slate-500' },
+        dark: { bgColor: 'base-800', borderColor: 'base-700', color: 'base-400' },
+        light: { bgColor: 'base-100', borderColor: 'base-200', color: 'base-500' },
       }}
     >
       {children}
@@ -96,12 +96,12 @@ export default function SearchTrigger({ onOpen, icon = false }: { onOpen: () => 
     b: 1,
     display: 'flex',
     theme: {
-      dark: { bgColor: 'slate-800', borderColor: 'slate-700', color: 'slate-400', hover: { color: 'slate-200', borderColor: 'slate-600' } },
+      dark: { bgColor: 'base-800', borderColor: 'base-700', color: 'base-400', hover: { color: 'base-200', borderColor: 'base-600' } },
       light: {
-        bgColor: 'slate-100',
-        borderColor: 'slate-200',
-        color: 'slate-500',
-        hover: { color: 'slate-900', borderColor: 'slate-300' },
+        bgColor: 'base-100',
+        borderColor: 'base-200',
+        color: 'base-500',
+        hover: { color: 'base-900', borderColor: 'base-300' },
       },
     },
   } as const;

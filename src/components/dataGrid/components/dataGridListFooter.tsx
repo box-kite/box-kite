@@ -105,9 +105,9 @@ export default function DataGridListFooter<TRow>(props: Props<TRow>) {
                 borderRadius={3}
                 fontSize={15}
                 fontWeight={500}
-                color="indigo-600"
+                color="accent-600"
                 cursor="pointer"
-                theme={{ dark: { color: 'indigo-300' } }}
+                theme={{ dark: { color: 'accent-300' } }}
                 onClick={list.showMore}
               >
                 {text.showMore(list.nextBatch)}

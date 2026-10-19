@@ -24,10 +24,10 @@ export default function DemoExit({ to, name }: { to: string; name: string }) {
         textDecoration="none"
         shadow="lg"
         b={1}
-        focusVisible={{ outline: 2, outlineOffset: 2, outlineColor: 'indigo-500' }}
+        focusVisible={{ outline: 2, outlineOffset: 2, outlineColor: 'accent-500' }}
         theme={{
-          light: { bgColor: 'white', color: 'slate-900', borderColor: 'slate-200', hover: { bgColor: 'slate-100' } },
-          dark: { bgColor: 'slate-900', color: 'slate-100', borderColor: 'slate-700', hover: { bgColor: 'slate-800' } },
+          light: { bgColor: 'white', color: 'base-900', borderColor: 'base-200', hover: { bgColor: 'base-100' } },
+          dark: { bgColor: 'base-900', color: 'base-100', borderColor: 'base-700', hover: { bgColor: 'base-800' } },
         }}
       >
         <Icon size={4}>

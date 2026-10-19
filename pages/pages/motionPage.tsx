@@ -438,10 +438,10 @@ function Curve({ easing, caption }: { easing: string; caption: string }) {
   return (
     <Flex d="column" gap={1} ai="center">
       <Svg viewBox="0 0 100 100" width={76} height={76} label={`The ${caption} curve`}>
-        <Path d="M2,28 L98,28" fill="none" stroke="slate-400" strokeWidth={0.8} strokeDasharray="3 3" />
+        <Path d="M2,28 L98,28" fill="none" stroke="base-400" strokeWidth={0.8} strokeDasharray="3 3" />
         <Path d={curvePath(easing)} fill="none" stroke="sky-500" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round" />
       </Svg>
-      <Box fontSize={11} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
+      <Box fontSize={11} theme={{ dark: { color: 'base-400' }, light: { color: 'base-600' } }}>
         {caption}
       </Box>
     </Flex>
@@ -455,14 +455,14 @@ function Demo({ id, children }: { id: string; children: ReactNode }) {
   return (
     <Flex id={id} d="column" gap={4}>
       <Box>
-        <H2 fontSize={22} fontWeight={600} mb={2} theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }}>
+        <H2 fontSize={22} fontWeight={600} mb={2} theme={{ dark: { color: 'white' }, light: { color: 'base-900' } }}>
           {demo.title}
         </H2>
-        <Box fontSize={13} theme={{ dark: { color: 'slate-500' }, light: { color: 'slate-500' } }}>
+        <Box fontSize={13} theme={{ dark: { color: 'base-500' }, light: { color: 'base-500' } }}>
           Instead of {demo.instead}.
         </Box>
       </Box>
-      <Box fontSize={15} lineHeight={26} theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}>
+      <Box fontSize={15} lineHeight={26} theme={{ dark: { color: 'base-400' }, light: { color: 'base-600' } }}>
         {children}
       </Box>
     </Flex>
@@ -478,8 +478,8 @@ function Aside({ children }: { children: ReactNode }) {
       fontSize={14}
       lineHeight={24}
       theme={{
-        dark: { borderColor: 'slate-700', color: 'slate-400' },
-        light: { borderColor: 'slate-200', color: 'slate-600' },
+        dark: { borderColor: 'base-700', color: 'base-400' },
+        light: { borderColor: 'base-200', color: 'base-600' },
       }}
     >
       {children}

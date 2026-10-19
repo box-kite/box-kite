@@ -27,10 +27,10 @@ export default function PageHeader({ icon: PageIcon, title, description, badge }
             <Flex ai="center" gap={3}>
               <Box
                 tag="h1"
+                component="display"
                 fontSize={28}
                 sm={{ fontSize: 36 }}
-                fontWeight={700}
-                theme={{ dark: { color: 'white' }, light: { color: 'slate-900' } }}
+                theme={{ dark: { color: 'white' }, light: { color: 'base-900' } }}
               >
                 {title}
               </Box>
@@ -40,7 +40,7 @@ export default function PageHeader({ icon: PageIcon, title, description, badge }
                   px={3}
                   py={1}
                   borderRadius={10}
-                  theme={{ dark: { bgColor: 'indigo-900', color: 'indigo-300' }, light: { bgColor: 'indigo-100', color: 'indigo-600' } }}
+                  theme={{ dark: { bgColor: 'accent-900', color: 'accent-300' }, light: { bgColor: 'accent-100', color: 'accent-600' } }}
                   fontSize={12}
                   fontWeight={500}
                 >
@@ -53,7 +53,7 @@ export default function PageHeader({ icon: PageIcon, title, description, badge }
         <Box
           fontSize={16}
           sm={{ fontSize: 18 }}
-          theme={{ dark: { color: 'slate-400' }, light: { color: 'slate-600' } }}
+          theme={{ dark: { color: 'base-400' }, light: { color: 'base-600' } }}
           lineHeight={28}
           maxWidth={160}
         >

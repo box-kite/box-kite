@@ -28,6 +28,7 @@ import {
 import { CatalogSource } from '../catalog/boxCatalog';
 import Containers from '../containers';
 import { BoxStyle, BoxStyleValue } from '../coreTypes';
+import Designs from '../designs';
 import type DiagnosticsModule from '../diagnostics';
 import defaultBoxComponents, { BoxComponent, Components } from '../extends/boxComponents';
 import { ComponentsRegistry } from '../extends/componentsRegistry';
@@ -138,7 +139,11 @@ export interface StyleEngine {
     extendedProps: TProps,
     extendedPropTypes: TPropTypes,
   ): { extendedProps: TProps; extendedPropTypes: TPropTypes };
-  components<T extends Components>(components: T): T;
+  /**
+   * Component defaults for the whole app. With `design`, they apply only under `data-design="<design>"`, merged
+   * over the app's own, so the design can be switched in CSS — on `<html>` before the first paint.
+   */
+  components<T extends Components>(components: T, options?: { design?: string }): T;
   /**
    * Register `@keyframes` sequences, whose steps are Box props. Nothing is emitted until a rule names
    * one, so registering a library of them costs no CSS.
@@ -317,6 +322,31 @@ function resolveExtends(components: Components): Components {
 
   for (const name in components) resolve(name);
 
+  // A part extends too — `trigger: { extends: 'button' }` or `'dialog.title'` — by the same merge, at any depth.
+  function lookup(path: string): BoxComponent | undefined {
+    const [head, ...parts] = path.split('.');
+
+    return parts.reduce<BoxComponent | undefined>((node, part) => node?.children?.[part], resolve(head));
+  }
+
+  function resolveParts(component: BoxComponent, depth: number): BoxComponent {
+    if (!component.children || depth > 8) return component;
+
+    const children: Record<string, BoxComponent> = {};
+    for (const [name, child] of Object.entries(component.children)) {
+      const base = child.extends ? lookup(child.extends) : undefined;
+      const { extends: _, ...override } = child;
+      children[name] = resolveParts(
+        base && base !== child ? mergeDeep<BoxComponent>({}, resolveParts(base, depth + 1), override) : child,
+        depth + 1,
+      );
+    }
+
+    return { ...component, children };
+  }
+
+  for (const name in resolved) resolved[name] = resolveParts(resolved[name], 0);
+
   return resolved;
 }
 
@@ -442,6 +472,16 @@ export function createStyleEngine(options: StyleEngineOptions = {}): StyleEngine
   let componentsStyles: Components = resolveExtends(rawComponents);
   // Resolved registries by id. Emptied by `components()`, since a `'global'` base has just changed.
   const registryStyles = new Map<string, Components>();
+  // `components(…, { design })`: each design as given, then resolved over the app's own with its selector.
+  const rawDesigns = new Map<string, Components>();
+  let designs: { variant: Variants.Variant; components: Components }[] = [];
+
+  function resolveDesigns() {
+    designs = [...rawDesigns].map(([name, design]) => ({
+      variant: Designs.variant(name)!,
+      components: resolveExtends(mergeDeep<Components>(rawComponents, design)),
+    }));
+  }
 
   function rawComponentsOf(registry: ComponentsRegistry): Components {
     const { base } = registry;
@@ -1142,6 +1182,30 @@ export function createStyleEngine(options: StyleEngineOptions = {}): StyleEngine
     sink?.reset();
   }
 
+  /**
+   * A design's whole class list again, each rule carrying the design's selector — not just what it changed:
+   * one class more specific than the rule without it, so every state the app's own design styles is
+   * outranked by the same state of this one, and the cascade inside the design is the one it would have alone.
+   */
+  // Only what decides a class: a Box's props also carry its children and handlers, and a React tree has cycles.
+  function stylesOf(props: BoxStyleProps<any>): Record<string, unknown> {
+    const styles: Record<string, unknown> = {};
+    for (const key in props) if (styleKeys.has(key)) styles[key] = (props as Record<string, unknown>)[key];
+
+    return styles;
+  }
+
+  function addDesignClassNames(props: BoxStyleProps<any>, propsToUse: BoxStyleProps<any>, classNames: string[]) {
+    for (const design of designs) {
+      const designed = resolveComponentStyles(props, design.components) as BoxStyleProps | undefined;
+      const designProps = designed ? mergeDeep(withoutReplacedThemeValues(designed, props), props) : props;
+      // A design that leaves the component alone (its merge keeps the base's key order), or whose changes the caller overrode, costs nothing.
+      if (JSON.stringify(stylesOf(designProps)) === JSON.stringify(stylesOf(propsToUse))) continue;
+
+      addClassNames(designProps, classNames, { ...rootContext(), variants: [design.variant] });
+    }
+  }
+
   function resolveClassNames(props: BoxStyleProps<any>, isSvg: boolean, registry?: ComponentsRegistry) {
     adoptRenderedStyles();
     const signature = computeSignature(props, isSvg, registry);
@@ -1153,7 +1217,13 @@ export function createStyleEngine(options: StyleEngineOptions = {}): StyleEngine
       const propsToUse = componentStyles ? mergeDeep(withoutReplacedThemeValues(componentStyles, props), props) : props;
 
       const classNames = [isSvg ? svgClassName : boxClassName];
-      resolved = { classNames, elements: collect(() => addClassNames(propsToUse, classNames, rootContext())) };
+      resolved = {
+        classNames,
+        elements: collect(() => {
+          addClassNames(propsToUse, classNames, rootContext());
+          if (props.component && !registry) addDesignClassNames(props, propsToUse, classNames);
+        }),
+      };
 
       if (signature !== null) styleCache.set(signature, resolved);
     }
@@ -1251,10 +1321,22 @@ export function createStyleEngine(options: StyleEngineOptions = {}): StyleEngine
       return { extendedProps, extendedPropTypes };
     },
 
-    components(components) {
-      // Merge into what this engine holds, not the defaults: sequential calls used to drop earlier ones.
-      rawComponents = mergeDeep<Components>(rawComponents, components);
-      componentsStyles = resolveExtends(rawComponents);
+    components(components, options) {
+      const design = options?.design;
+
+      if (design !== undefined) {
+        if (!Designs.isName(design))
+          throw new Error(`[box-kite] "${design}" is not a design name: a letter, then letters, digits, - or _.`);
+
+        rawDesigns.set(design, mergeDeep<Components>(rawDesigns.get(design) ?? {}, components));
+      } else {
+        // Merge into what this engine holds, not the defaults: sequential calls used to drop earlier ones.
+        rawComponents = mergeDeep<Components>(rawComponents, components);
+        componentsStyles = resolveExtends(rawComponents);
+      }
+
+      // A design is merged over the app's own, so a change to either resolves every design again.
+      resolveDesigns();
       registryStyles.clear();
       // Cached class lists were resolved against the previous component defaults.
       styleCache.clear();

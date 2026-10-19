@@ -19,22 +19,22 @@ export default function DataGridEmptyColumns<TRow>(props: Props<TRow>) {
       gap={4}
       py={16}
       px={6}
-      bgColor="gray-50"
+      bgColor="base-50"
       borderRadius={4}
-      theme={{ dark: { bgColor: 'gray-900' } }}
+      theme={{ dark: { bgColor: 'base-900' } }}
     >
       <Flex d="column" ai="center" gap={3}>
         <Box
           width={16}
           height={16}
           borderRadius={999}
-          bgColor="gray-200"
-          theme={{ dark: { bgColor: 'gray-700' } }}
+          bgColor="base-200"
+          theme={{ dark: { bgColor: 'base-700' } }}
           display="flex"
           ai="center"
           jc="center"
         >
-          <Svg viewBox="0 0 24 24" width="40" fill="currentColor" color="gray-400" theme={{ dark: { color: 'gray-500' } }}>
+          <Svg viewBox="0 0 24 24" width="40" fill="currentColor" color="base-400" theme={{ dark: { color: 'base-500' } }}>
             <Path
               fillRule="evenodd"
               props={{ clipRule: 'evenodd' }}
@@ -44,10 +44,10 @@ export default function DataGridEmptyColumns<TRow>(props: Props<TRow>) {
         </Box>
 
         <Flex d="column" ai="center" gap={1}>
-          <Box fontSize={18} fontWeight={600} color="gray-900" theme={{ dark: { color: 'gray-50' } }}>
+          <Box fontSize={18} fontWeight={600} color="base-900" theme={{ dark: { color: 'base-50' } }}>
             {grid.localeText.noColumnsTitle}
           </Box>
-          <Box fontSize={14} color="gray-500" textAlign="center" theme={{ dark: { color: 'gray-400' } }}>
+          <Box fontSize={14} color="base-500" textAlign="center" theme={{ dark: { color: 'base-400' } }}>
             {grid.localeText.noColumnsDescription}
           </Box>
         </Flex>
