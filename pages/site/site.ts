@@ -59,6 +59,13 @@ export const siteRoutes = [
       'Copy three prompts into Claude Code, Cursor, Codex or Copilot: one sets up a React app with Box Kite, two more build a landing page and a product page.',
   },
   {
+    path: '/start-a-project',
+    name: 'Start a project',
+    title: 'Start a Vite + React project with a design — Box Kite',
+    description:
+      'npm create @box-kite makes a Vite + React app with Box Kite, one of four designs and a sample page, in TypeScript or JavaScript.',
+  },
+  {
     path: '/installation',
     name: 'Installation',
     description: 'Install Box Kite and render your first Box: two dependencies, no bundler plugin, and no stylesheet to import.',

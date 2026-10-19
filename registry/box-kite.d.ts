@@ -14,4 +14,5 @@
  */
 declare module '@box-kite/react' {
   export { default } from '../src/box';
+  export type { BoxComponentStyles, BoxStyleProps } from '../src/types';
 }

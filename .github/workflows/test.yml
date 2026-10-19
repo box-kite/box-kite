@@ -49,6 +49,10 @@ jobs:
       # is a claim nothing holds up.
       - name: Check the committed agent files are current 🔧
         run: npm run check:agents
+      # The designs `npm create @box-kite` writes are generated from the site's and committed, so the docs page
+      # shows them as files: this fails when a site design changed and the app's copy did not.
+      - name: Check the create templates match the site designs 🔧
+        run: npm run check:create
       # Where this library stands against the ones it is usually weighed against. It is a development
       # instrument rather than a page on the site, so this is what keeps it runnable: the tables are
       # held to the live registry by their own tests, and this proves the report still prints them.
@@ -64,6 +68,10 @@ jobs:
       # dependencies — the only place a broken `npx @box-kite/mcp` would otherwise surface is a release.
       - name: Check the MCP server builds and answers 🔧
         run: npm run build:mcp
+      # Runs the built `npm create @box-kite` for every design in both languages, then each app's own type check
+      # and build against this commit's dist/, so a design that compiles on the site but not in an app stops here.
+      - name: Check the create command makes apps that build 🔧
+        run: npm run build:create
       - name: Check package health (publint + attw) 🔧
         run: npm run check:package
       - name: Check size budgets 🔧

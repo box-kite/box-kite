@@ -2,6 +2,7 @@ node_modules
 dist
 dist-core
 dist-mcp
+dist-create
 dist-pages
 dist-pages-ssr
 **/.DS_Store

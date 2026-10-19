@@ -216,6 +216,9 @@ export default function Sidebar({ onClose, onSearch }: SidebarProps) {
           <MenuItem to="/start-with-ai" icon={<Zap />}>
             Start with AI
           </MenuItem>
+          <MenuItem to="/start-a-project" icon={<Rocket />}>
+            Start a project
+          </MenuItem>
           <MenuItem to="/installation" icon={<Download />}>
             Installation
           </MenuItem>

@@ -17,6 +17,19 @@ export default function InstallationPage() {
 
       <Reveal delay={0.1}>
         <Flex d="column" gap={8}>
+          <Box fontSize={14} lineHeight={22} theme={{ dark: { color: 'base-400' }, light: { color: 'base-600' } }}>
+            Starting a new app?{' '}
+            <SiteLink
+              to="/start-a-project"
+              display="inline"
+              theme={{ dark: { color: 'accent-400' }, light: { color: 'accent-600' } }}
+              hover={{ textDecoration: 'underline' }}
+            >
+              Start a project
+            </SiteLink>{' '}
+            has one command that makes a Vite + React app with Box Kite, a design and a sample page in it.
+          </Box>
+
           <Code language="shell" label="Install via npm" code="npm install @box-kite/react" />
 
           <Code language="shell" label="Or with yarn" code="yarn add @box-kite/react" />

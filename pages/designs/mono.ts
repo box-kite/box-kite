@@ -124,9 +124,6 @@ export const mono = Box.components(
     h1: { styles: heading },
     h2: { styles: heading },
     h3: { styles: heading },
-    display: { styles: { ...heading, fontWeight: 500 }, variants: { hero: { fontWeight: 700, letterSpacing: 'tight' } } },
-    // Two tones of ink instead of a gradient: the second line steps back to the grey.
-    heroAccent: { styles: { bgGradient: 'none', color: 'base-500', theme: { dark: { color: 'base-400' } } } },
 
     button: {
       styles: { ...PRIMARY, px: 4, borderRadius: 1.5, fontWeight: 500, focusVisible: RING_APART },
@@ -460,7 +457,10 @@ export const mono = Box.components(
       },
     },
 
-    // The site's own.
+    // The site's own. Everything above this line is the design `npm create @box-kite` hands an app.
+    display: { styles: { ...heading, fontWeight: 500 }, variants: { hero: { fontWeight: 700, letterSpacing: 'tight' } } },
+    // Two tones of ink instead of a gradient: the second line steps back to the grey.
+    heroAccent: { styles: { bgGradient: 'none', color: 'base-500', theme: { dark: { color: 'base-400' } } } },
     // Every code surface in greys: structure is carried by weight and slant rather than by hue, so a block reads
     // like the page around it. Strings and comments step back; keywords and names come forward.
     code: {

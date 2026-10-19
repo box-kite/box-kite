@@ -10,6 +10,7 @@ A second design for the same app, chosen in CSS: `Box.components(styles, { desig
 - **[Every component is drawn in accent and base](#every-component-is-drawn-in-accent-and-base-and-boxpalette-points-them-elsewhere)** — a brand colour is one `vars` record rather than a restyle of every component.
 - **[Box.Theme keeps a design beside the theme](#boxtheme-keeps-a-design-beside-the-theme)** — `design`, `designStorageKey` and `Box.useDesign()`.
 - **[A part can extend](#a-part-can-extend-a-component-or-another-part)** — `trigger: { extends: 'button' }` now does what it says.
+- **[npm create @box-kite](#npm-create-box-kite-starts-a-vite-app-with-a-design-already-in-it)** — a Vite + React app with Box Kite, a design and a sample page, in one command.
 
 ## A design can be chosen in CSS, so a stored choice paints before React runs
 
@@ -48,6 +49,18 @@ Nothing looks different until a family is pointed somewhere: `accent-500` resolv
 ## A DataGrid column group can be styled as its own tier
 
 A header cell over a group of columns now carries the `isGroup` variant, so `datagrid.header.cell` can set the group row apart from the column titles under it — `variants: { isGroup: { color: 'base-700' } }` — where before the two rows could only look the same.
+
+## npm create @box-kite starts a Vite app with a design already in it
+
+A new package, `@box-kite/create`, is the command to start from: it runs Vite's own create-vite, adds `@box-kite/react` and the design's fonts, writes the design to `src/design.tsx`, wraps the app in it and replaces the template's page with a sample of buttons, fields, a dialog, tabs and a data grid. The design is Classic, Ember, Azure or Mono, the same four the site's Theme button shows, and the template is any of create-vite's four React ones, so JavaScript gets `.jsx` files with the types taken out. The files are ordinary files in the project, there to be edited. The [Start a project](https://www.box-kite.dev/start-a-project/) page builds the command from a design and a language, and shows every file it writes for anyone setting an app up by hand.
+
+```sh
+npm create @box-kite@latest my-app -- --design mono
+```
+
+## BoxComponentStyles and BoxStyleProps come from @box-kite/react
+
+The two types a design file annotates its shared styles with are exported from `@box-kite/react` now, `import Box, { type BoxComponentStyles } from '@box-kite/react'`. They used to be importable only from `@box-kite/core/types`, which a strict pnpm install hides, since `@box-kite/core` is a dependency of the library rather than of the app.
 
 ## Breaking changes
 
