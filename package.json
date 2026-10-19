@@ -432,7 +432,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "60.04 KB"
+      "limit": "60.07 KB"
     },
     {
       "name": "DateTime",

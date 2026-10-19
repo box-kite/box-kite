@@ -1,9 +1,10 @@
-import { FunctionComponent, useEffect, useMemo, useState } from 'react';
+import { Ref, RefAttributes, useCallback, useEffect, useMemo, useState } from 'react';
 import Box, { BoxProps } from '../box';
 import { useEventCallback } from '../react/a11y/callbacks';
 import useControllableState, { ChangeHandler } from '../react/a11y/useControllableState';
 import useRovingFocus from '../react/a11y/useRovingFocus';
 import useAnchorPosition from '../react/anchor/useAnchorPosition';
+import boxComponent from '../react/boxComponent';
 import { DateChangeDetails, DateChangeReason } from '../react/date/dateChange';
 import { useDateEnvironment } from '../react/date/dateEnvironment';
 import usePopoverLayer, { PopoverReason } from '../react/popover/usePopoverLayer';
@@ -169,6 +170,12 @@ function ClearIcon() {
   );
 }
 
+/** A ref of any kind, given its element. */
+function assignRef<T>(ref: Ref<T> | undefined, element: T | null) {
+  if (typeof ref === 'function') ref(element);
+  else if (ref) (ref as React.RefObject<T | null>).current = element;
+}
+
 interface LayerOptions {
   open?: boolean;
   defaultOpen?: boolean;
@@ -176,11 +183,21 @@ interface LayerOptions {
   side: AnchorSide;
   align: AnchorAlign;
   label: string;
+  /** The caller's ref, on the same element the panel hangs off. */
+  ref?: Ref<HTMLDivElement>;
 }
 
 /** The panel's layer: the platform's popover where there is one, an `Overlay` where there is not, anchored to the field. */
 function usePickerLayer(options: LayerOptions) {
   const [field, setField] = useState<HTMLElement | null>(null);
+  const callerRef = options.ref;
+  const attachField = useCallback(
+    (element: HTMLDivElement | null) => {
+      setField(element);
+      assignRef(callerRef, element);
+    },
+    [callerRef],
+  );
   // The chosen day, or the chosen time — whichever the panel's keyboard starts on. Tried when the layer opens and
   // again once its contents have rendered, since either can come first and focus only lands once both have.
   const focusInto = (panel: HTMLElement | null) => {
@@ -263,7 +280,7 @@ function usePickerLayer(options: LayerOptions) {
     setOpen(false, { reason: 'select', event });
   };
 
-  return { attachTrigger: trigger.ref, triggerAttributes: trigger.props, closeOnChoice, id, setField, panel };
+  return { attachTrigger: trigger.ref, triggerAttributes: trigger.props, closeOnChoice, id, attachField, panel };
 }
 
 /** The list of times: a listbox, one option per step, the chosen one marked and the keyboard roving through them. */
@@ -379,7 +396,7 @@ function Presets<TValue>(props: {
  * @keyboard Escape — Closes it and returns focus to the button.
  * @keyboard Up / Down — In the list of times, the time before or after.
  */
-function DatePickerImpl<TKey extends keyof ComponentsAndVariants = 'dateField'>(props: DatePickerProps<TKey>) {
+function DatePickerImpl<TKey extends keyof ComponentsAndVariants = 'dateField'>(props: DatePickerProps<TKey>, ref: Ref<HTMLDivElement>) {
   const {
     type = 'date',
     value,
@@ -433,7 +450,8 @@ function DatePickerImpl<TKey extends keyof ComponentsAndVariants = 'dateField'>(
 
   const buttonName = triggerLabel ?? (type === 'time' ? 'Choose time' : 'Choose date');
   const panelName = typeof label === 'string' ? label : buttonName;
-  const { attachTrigger, triggerAttributes, closeOnChoice, setField, panel } = usePickerLayer({
+  const { attachTrigger, triggerAttributes, closeOnChoice, attachField, panel } = usePickerLayer({
+    ref,
     open,
     defaultOpen,
     onOpenChange,
@@ -517,7 +535,7 @@ function DatePickerImpl<TKey extends keyof ComponentsAndVariants = 'dateField'>(
   return (
     <>
       <DateField
-        ref={setField}
+        ref={attachField}
         {...(restProps as object)}
         type={type}
         value={current}
@@ -604,7 +622,10 @@ function DatePickerImpl<TKey extends keyof ComponentsAndVariants = 'dateField'>(
  * @keyboard Enter / Space — On the button, opens the panel; in the calendar, anchors and then ends the range.
  * @keyboard Escape — Drops a half-picked range, then closes the panel.
  */
-function DateRangePickerImpl<TKey extends keyof ComponentsAndVariants = 'dateField'>(props: DateRangePickerProps<TKey>) {
+function DateRangePickerImpl<TKey extends keyof ComponentsAndVariants = 'dateField'>(
+  props: DateRangePickerProps<TKey>,
+  ref: Ref<HTMLDivElement>,
+) {
   const {
     value,
     defaultValue = null,
@@ -663,9 +684,9 @@ function DateRangePickerImpl<TKey extends keyof ComponentsAndVariants = 'dateFie
     triggerAttributes,
     closeOnChoice,
     id: layerId,
-    setField,
+    attachField,
     panel,
-  } = usePickerLayer({ open, defaultOpen, onOpenChange, side, align, label: panelName });
+  } = usePickerLayer({ ref, open, defaultOpen, onOpenChange, side, align, label: panelName });
   const shown = current ? formatRange(current.start, current.end, { locale }) : '';
   const backwards = start !== null && end !== null && compare(start, end) > 0;
 
@@ -698,7 +719,7 @@ function DateRangePickerImpl<TKey extends keyof ComponentsAndVariants = 'dateFie
         </Box>
       )}
       <Box
-        ref={setField}
+        ref={attachField}
         component={'dateField' as TKey}
         display="inline-flex"
         ai="center"
@@ -805,10 +826,12 @@ function DateRangePickerImpl<TKey extends keyof ComponentsAndVariants = 'dateFie
   );
 }
 
-const DatePicker = DatePickerImpl;
-(DatePicker as FunctionComponent).displayName = 'DatePicker';
-const DateRangePicker = DateRangePickerImpl;
-(DateRangePicker as FunctionComponent).displayName = 'DateRangePicker';
+const DatePicker = boxComponent(DatePickerImpl, 'DatePicker');
+const DateRangePicker = boxComponent(DateRangePickerImpl, 'DateRangePicker') as <TKey extends keyof ComponentsAndVariants = 'dateField'>(
+  props: DateRangePickerProps<TKey> & RefAttributes<HTMLDivElement>,
+) => React.ReactNode;
 
 export { DateRangePicker };
-export default DatePicker as <TKey extends keyof ComponentsAndVariants = 'dateField'>(props: DatePickerProps<TKey>) => React.ReactNode;
+export default DatePicker as <TKey extends keyof ComponentsAndVariants = 'dateField'>(
+  props: DatePickerProps<TKey> & RefAttributes<HTMLDivElement>,
+) => React.ReactNode;

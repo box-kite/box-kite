@@ -81,6 +81,9 @@ describe('SwipeItem', () => {
   });
 
   it('follows the press while it moves, and stays closed short of halfway', () => {
+    // A slow drag on a clock of its own: on the real one a loaded runner spreads the moves past a frame and reads a flick.
+    let now = 0;
+    vi.spyOn(Event.prototype, 'timeStamp', 'get').mockImplementation(() => (now += 200));
     render(<Item />);
 
     swipe(-60, { release: false });
