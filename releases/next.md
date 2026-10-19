@@ -59,7 +59,7 @@ Every conversion names its target, `format` takes `Intl` options rather than for
 
 ## A date in a DataGrid
 
-A column holding dates can now be edited with a `DateField`. `editor: 'date' | 'time' | 'datetime'` names one, and an ISO string or a `Date` in the column picks one without being told. `dateFormat: 'date' | 'time' | 'datetime' | 'relative'`, or `Intl` options, writes the values in the reader's language and zone. `filterable: { type: 'date' }` filters by a day, before or after one, or between two, on the reader's calendar, each day typed or picked in a `DatePicker`. A pasted date is read the way the field reads a paste.
+A column holding dates can now be edited with a `DateField`. `editor: 'date' | 'time' | 'datetime'` names one, and an ISO string or a `Date` in the column picks one without being told. `dateFormat: 'date' | 'time' | 'datetime' | 'relative'`, or `Intl` options, writes the values in the reader's language and zone. `filterable: { type: 'date' }` filters by a day, before or after one, or between two, on the reader's calendar, each day typed or picked in a `DatePicker`. A pasted date is read the way the field reads a paste, and an edited date-time is written back in the shape the cell held it: a `…Z` string stays UTC and a `Date` stays a `Date`.
 
 ```tsx
 columns: [
@@ -77,4 +77,5 @@ None.
 ## Fixes
 
 - **A `SortableList` or a `VirtualList` given a `ref` lost track of its own list on React 19**. The caller's ref replaced the one the component keeps for itself, leaving a drag and a window no list to measure. Every pre-built component now receives its `ref` the way React 18 hands it over, out of its props.
+- **A DataGrid cell holding a boolean was blank.** React writes `true` and `false` as nothing, so a column of booleans showed an empty cell in the table and `true`/`false` in the phone layout. A boolean is now a check or a cross, read out as `localeText.booleanTrue`/`booleanFalse` (`Yes`/`No`), which the phone layout writes too.
 - **A DataGrid cell holding a `Date` threw.** React cannot render an object, so the grid failed on the first `Date` it was given. A `Date` is now written as a date-time in the reader's words.

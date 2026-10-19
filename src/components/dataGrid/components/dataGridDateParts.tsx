@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Box from '../../../box';
 import { useDateEnvironment } from '../../../react/date/dateEnvironment';
-import { normalize } from '../../../utils/date/dateTime';
+import { normalize, toDate, toUtc } from '../../../utils/date/dateTime';
 import { format, FormatOptions, formatRange, formatRelative } from '../../../utils/date/format';
 import { parse } from '../../../utils/date/parse';
 import DateField from '../../dateField';
@@ -43,6 +43,14 @@ interface EditorProps<TRow> {
   onBlur: () => void;
 }
 
+/** An edited date-time in the shape the cell held it: a `Date` stays a `Date` and a `…Z` string stays UTC, so edits never mix shapes. */
+function shapedAs(held: unknown, next: string | null): unknown {
+  if (next === null) return null;
+  if (held instanceof Date) return toDate(next);
+
+  return typeof held === 'string' && /z$/i.test(held) ? toUtc(next) : next;
+}
+
 /** The `date`/`time`/`datetime` editor: a compact `DateField` bound to the cell's draft. */
 function DateEditor<TRow>(props: EditorProps<TRow>) {
   const { cell, label, errorId, onBlur } = props;
@@ -56,7 +64,7 @@ function DateEditor<TRow>(props: EditorProps<TRow>) {
       zone={zone}
       min={typeof min === 'string' ? min : undefined}
       max={typeof max === 'string' ? max : undefined}
-      onValueChange={(value) => cell.setDraft(value)}
+      onValueChange={(value) => cell.setDraft(type === 'datetime' ? shapedAs(cell.value, value) : value)}
       width="fit"
       variant="compact"
       b={0}

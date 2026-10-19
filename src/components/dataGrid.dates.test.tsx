@@ -99,6 +99,38 @@ describe('DataGrid dates', () => {
     expect(rows.map((row) => row.querySelector('[role="gridcell"]')?.textContent)).not.toContain('Oct 19, 2026');
   });
 
+  it('writes an edited date-time back in the shape it came in', () => {
+    const onCellEdit = vi.fn();
+    const rows = data.map((row) => ({ ...row, seen: '2026-10-18T10:34:00Z' }));
+    render(
+      <DataGrid
+        data={rows}
+        def={{
+          rowKey: 'id',
+          onCellEdit,
+          columns: [
+            { key: 'placed', header: 'Placed', editable: true },
+            { key: 'seen', header: 'Seen', editable: true },
+          ],
+        }}
+      />,
+    );
+
+    for (const column of [0, 1]) {
+      const cell = cellAt(1, column);
+      act(() => cell.focus());
+      fireEvent.keyDown(cell, { key: 'Enter' });
+      const day = screen.getByRole('group', { name: /^Edit/ }).querySelectorAll<HTMLElement>('[role="spinbutton"]')[1];
+      fireEvent.keyDown(day, { key: 'ArrowUp' });
+      fireEvent.keyDown(day, { key: 'Enter' });
+    }
+
+    const [[placed], [seen]] = onCellEdit.mock.calls as [{ value: unknown }][];
+    expect(placed.value).toBeInstanceOf(Date);
+    expect((placed.value as Date).toISOString()).toBe('2026-10-20T22:30:00.000Z');
+    expect(seen.value).toBe('2026-10-19T10:34:00Z');
+  });
+
   it('picks the filter day on a calendar, out of the page tab order, and clears it', () => {
     vi.useFakeTimers({ toFake: ['Date'] });
     vi.setSystemTime(Date.UTC(2026, 9, 19, 12));

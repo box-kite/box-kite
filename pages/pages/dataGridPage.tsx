@@ -19,7 +19,7 @@ import Grid from '../../src/components/grid';
 import RadioGroup from '../../src/components/radioGroup';
 import { H2 } from '../../src/components/semantics';
 import Switch from '../../src/components/switch';
-import { add } from '../../src/date';
+import { add, today } from '../../src/date';
 import ApiReference from '../components/apiReference';
 import Code from '../components/code';
 import Mono from '../components/mono';
@@ -1467,10 +1467,11 @@ const dataSource = useMemo(() => ({
             <Box>
               <Mono>column.editable</Mono> is the whole opt-in, and <Mono>def.onCellEdit</Mono> is the one function that both judges an edit
               and is told about it — answer nothing to accept the value, or a string to refuse it. Which editor a cell opens is read off the
-              value in it: a number gets a numeric field, a boolean a checkbox, everything else a text field, so a column of numbers has a
-              numeric keypad on a phone without being told. <Mono>editor</Mono> names one of the four (<Mono>text</Mono>,{' '}
-              <Mono>number</Mono>, <Mono>checkbox</Mono>, <Mono>select</Mono>) or configures it, and <Mono>EditCell</Mono> is a control of
-              your own bound to <Mono>cell.draft</Mono>.
+              value in it: a number gets a numeric field, a boolean a checkbox, an ISO date, time or date-time a <Mono>DateField</Mono>, and
+              everything else a text field — so a column of numbers has a numeric keypad on a phone without being told. <Mono>editor</Mono>{' '}
+              names one of the seven (<Mono>text</Mono>, <Mono>number</Mono>, <Mono>checkbox</Mono>, <Mono>select</Mono>, <Mono>date</Mono>,{' '}
+              <Mono>time</Mono>, <Mono>datetime</Mono>) or configures it, and <Mono>EditCell</Mono> is a control of your own bound to{' '}
+              <Mono>cell.draft</Mono>. The sample below has a column of each.
             </Box>
             <Flex d="column" gap={3} mt={4}>
               <Note icon={Table} title="A press chooses the cell, a double press opens it">
@@ -1523,12 +1524,17 @@ const dataSource = useMemo(() => ({
     onCellEdit: ({ columnKey, value }) => {
       if (columnKey === 'first_name' && !String(value).trim()) return 'A name is required';
       if (columnKey === 'salary' && Number(value) < 0) return 'A salary cannot be negative';
+      if (columnKey === 'started' && value > today()) return 'A start date cannot be in the future';
     },
+    // No \`editor\` where the value says which: a number, a boolean, an ISO date, time or date-time.
     columns: [
       { key: 'first_name', header: 'First name', editable: true },
-      // No \`editor\`: the value is a number, so the field is a numeric one.
       { key: 'salary', header: 'Salary', editable: true, align: 'end' },
+      { key: 'active', header: 'Active', editable: true },
       { key: 'country', header: 'Country', editable: true, editor: { type: 'select', options: countryOptions } },
+      { key: 'started', header: 'Started', editable: true, dateFormat: 'date' }, // '2021-03-15'
+      { key: 'shift', header: 'Shift starts', editable: true, dateFormat: 'time' }, // '09:30:00'
+      { key: 'lastSeen', header: 'Last seen', editable: true, dateFormat: 'datetime' }, // '2026-10-18T14:05:00Z'
     ],
   }}
 />`}
@@ -2660,6 +2666,15 @@ const fileTreeSize = fileTree.reduce(
  * Editing, with the two halves a page has to supply: a validator that refuses something, and somewhere
  * for the edit stream to go — which is all an undo needs, so this one has one.
  */
+/** One column per editor. Fixed rather than built from today, so the prerendered page and the browser hold the same rows. */
+const EDITING_ROWS = allData.map((person, index) => ({
+  ...person,
+  active: index % 3 !== 0,
+  started: add('2018-01-08', { days: (index * 53) % 3000 }),
+  shift: `${String(7 + (index % 5) * 2).padStart(2, '0')}:${index % 2 ? '30' : '00'}:00`,
+  lastSeen: add('2026-10-18T14:05:00Z', { minutes: -((index * 211) % 20000) }),
+}));
+
 function EditingDemo() {
   const [edits, setEdits] = useState<{ rowKey: Key; columnKey: Key; value: unknown; oldValue: unknown }[]>([]);
 
@@ -2672,19 +2687,23 @@ function EditingDemo() {
       onCellEdit: ({ columnKey, value }: { columnKey: Key; value: unknown }) => {
         if (columnKey === 'first_name' && !String(value ?? '').trim()) return 'A name is required';
         if (columnKey === 'salary' && Number(value) < 0) return 'A salary cannot be negative';
+        if (columnKey === 'started' && String(value) > today()) return 'A start date cannot be in the future';
       },
+      // No `editor` where the value says which: a number, a boolean, an ISO date, time or date-time.
       columns: [
-        { key: 'first_name' as const, header: 'First name', width: 170, editable: true },
-        { key: 'last_name' as const, header: 'Last name', width: 170, editable: true },
-        // No `editor`: the value is a number, so the field is a numeric one.
-        { key: 'salary' as const, header: 'Salary', width: 140, align: 'end' as const, editable: true },
+        { key: 'first_name' as const, header: 'First name', width: 150, editable: true },
+        { key: 'salary' as const, header: 'Salary', width: 120, align: 'end' as const, editable: true },
+        { key: 'active' as const, header: 'Active', width: 90, editable: true },
         {
           key: 'country' as const,
           header: 'Country',
-          width: 170,
+          width: 160,
           editable: true,
           editor: { type: 'select' as const, options: allCountryOptions },
         },
+        { key: 'started' as const, header: 'Started', width: 160, editable: true, dateFormat: 'date' as const },
+        { key: 'shift' as const, header: 'Shift starts', width: 130, editable: true, dateFormat: 'time' as const },
+        { key: 'lastSeen' as const, header: 'Last seen', width: 220, editable: true, dateFormat: 'datetime' as const },
       ],
     }),
     [],
@@ -2696,11 +2715,11 @@ function EditingDemo() {
     <Flex d="column" gap={3}>
       <Box fontSize={12} color="gray-500" theme={{ dark: { color: 'gray-400' } }}>
         {edits.length === 0
-          ? 'Double-press a cell, press Enter on it, or just start typing. Tab walks the row. An empty name is refused.'
+          ? 'Double-press a cell, press Enter on it, or just start typing. Tab walks the row. An empty name and a start date in the future are refused.'
           : `${edits.length} edit${edits.length === 1 ? '' : 's'} · last: ${String(last?.columnKey)} ${String(last?.oldValue)} → ${String(last?.value)}`}
       </Box>
 
-      <DataGrid data={allData} def={def} onCellEditsChange={setEdits} />
+      <DataGrid data={EDITING_ROWS} def={def} onCellEditsChange={setEdits} />
     </Flex>
   );
 }

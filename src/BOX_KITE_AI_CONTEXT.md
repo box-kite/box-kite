@@ -2884,11 +2884,13 @@ the same function — and an answer to an edit the user has since abandoned is d
 ```
 
 - **Which editor a cell opens is read off the value in it** — a number gets `number`, a boolean
-  `checkbox`, everything else `text` — unless `column.editor` names one (`text`/`number`/`checkbox`/
-  `select`) or configures it (`{ type, options?, placeholder?, step?, min?, max? }`; `options` may be a
-  function of the row). `column.EditCell` is a control of your own, bound to `cell.draft` with
-  `cell.setDraft(v)`, `cell.commitEdit()` and `cell.cancelEdit()` — the same three calls the built-in four
-  make.
+  `checkbox` (drawn as a check or a cross, read out as `localeText.booleanTrue`/`booleanFalse`), an ISO
+  date, time or date-time a `DateField` (an edit keeps the shape the cell held: `…Z` stays UTC, a `Date`
+  a `Date`), everything else `text` — unless `column.editor` names one of the seven
+  (`text`/`number`/`checkbox`/`select`/`date`/`time`/`datetime`) or configures it
+  (`{ type, options?, placeholder?, step?, min?, max?, zone? }`; `options` may be a function of the row).
+  `column.EditCell` is a control of your own, bound to `cell.draft` with `cell.setDraft(v)`,
+  `cell.commitEdit()` and `cell.cancelEdit()` — the same three calls the built-in seven make.
 - **Pointer:** a press makes a cell the current one — it takes the ring, whether the pointer or the
   keyboard put it there — and a **double press opens the editor** on an editable cell. A cell that cannot
   be edited takes both as focus and nothing else, and a double press landing on a widget inside a cell (a

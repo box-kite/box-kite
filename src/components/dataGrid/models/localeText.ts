@@ -68,6 +68,12 @@ export interface DataGridLocaleText {
   /** How a multiselect filter lists a `null` value. */
   filterEmptyValue: string;
 
+  // ===== Cell values =====
+  /** What a `true` cell is read out and listed as; it is drawn as a check. */
+  booleanTrue: string;
+  /** What a `false` cell is read out and listed as; it is drawn as a cross. */
+  booleanFalse: string;
+
   // ===== Body =====
   /** What an empty grid shows when there is no `noDataComponent`. */
   noRows: string;
@@ -200,6 +206,9 @@ export const DATA_GRID_LOCALE_TEXT: DataGridLocaleText = {
   filterSelectClear: 'Clear',
   filterSelectAll: 'Select All',
   filterEmptyValue: '(empty)',
+
+  booleanTrue: 'Yes',
+  booleanFalse: 'No',
 
   noRows: 'empty',
   loadingRows: 'loading...',

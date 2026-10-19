@@ -1,6 +1,7 @@
 import Box from '../../../box';
 import Flex from '../../flex';
 import CellModel from '../models/cellModel';
+import DataGridBooleanValue from './dataGridBooleanValue';
 import DataGridDateValue, { dateFormatOf } from './dataGridDateValue';
 
 interface Props<TRow> {
@@ -22,7 +23,13 @@ export default function DataGridCellText<TRow>(props: Props<TRow>) {
       jc={cell.column.align}
     >
       <Box px={3} textOverflow="ellipsis" overflow="hidden" textWrap="nowrap">
-        {dateFormat ? <DataGridDateValue value={value} format={dateFormat} /> : (value as string)}
+        {typeof value === 'boolean' ? (
+          <DataGridBooleanValue value={value} text={cell.grid.localeText} />
+        ) : dateFormat ? (
+          <DataGridDateValue value={value} format={dateFormat} />
+        ) : (
+          (value as string)
+        )}
       </Box>
     </Flex>
   );
