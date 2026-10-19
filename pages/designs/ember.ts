@@ -206,8 +206,14 @@ export const ember = Box.components(
         borderColor: 'base-300',
         focusVisible: RING,
         checked: { bgColor: 'accent-600', borderColor: 'accent-600' },
-        indeterminate: { borderColor: 'accent-600' },
-        theme: { dark: { borderColor: 'white/20', checked: { bgColor: 'accent-500', borderColor: 'accent-500' } } },
+        indeterminate: { bgColor: 'accent-600', borderColor: 'accent-600' },
+        theme: {
+          dark: {
+            borderColor: 'white/20',
+            checked: { bgColor: 'accent-500', borderColor: 'accent-500' },
+            indeterminate: { bgColor: 'accent-500', borderColor: 'accent-500' },
+          },
+        },
       },
     },
     radioButton: {
@@ -359,16 +365,59 @@ export const ember = Box.components(
       },
       children: {
         header: {
-          styles: { bgColor: 'base-50', theme: { dark: { bgColor: 'white/3' } } },
+          // Opaque: the header is sticky, so a translucent fill lets the rows scroll through it. The lift is a layer over it.
+          styles: {
+            bgColor: 'base-50',
+            theme: { dark: { bgColor: 'base-900', bgGradient: { linear: 'b', colors: ['white/3', 'white/3'] } } },
+          },
           children: {
+            hover: { styles: { before: { bgColor: 'accent-500/8' }, theme: { dark: { before: { bgColor: 'accent-400/12' } } } } },
             cell: {
               styles: {
                 letterSpacing: 'wide',
                 textTransform: 'uppercase',
                 fontSize: 11,
-                color: 'base-500',
-                theme: { dark: { color: 'base-400', borderColor: 'white/10' } },
+                // 600, not 500: at 11px uppercase 500 on the paper is right at 4.5:1.
+                color: 'base-600',
+                borderColor: 'base-200',
+                ariaAttr: { 'sort=ascending': { color: 'accent-700' }, 'sort=descending': { color: 'accent-700' } },
+                theme: {
+                  dark: {
+                    color: 'base-400',
+                    borderColor: 'white/10',
+                    ariaAttr: { 'sort=ascending': { color: 'accent-300' }, 'sort=descending': { color: 'accent-300' } },
+                  },
+                },
               },
+              variants: {
+                // The group over its columns: darker and calmer, so the two tiers read as a hierarchy.
+                isGroup: { color: 'base-700', letterSpacing: 'normal', theme: { dark: { color: 'base-300' } } },
+                isPinned: { theme: { dark: { bgColor: 'base-900', bgGradient: { linear: 'b', colors: ['white/3', 'white/3'] } } } },
+                hasHoverPill: { before: { bgColor: 'accent-500/8' }, theme: { dark: { before: { bgColor: 'accent-400/12' } } } },
+              },
+            },
+          },
+        },
+        // The filters belong to the header, so they share its fill and its bottom line is the one between header and body.
+        filter: {
+          children: {
+            row: {
+              styles: {
+                bgColor: 'base-50',
+                borderColor: 'base-300',
+                theme: {
+                  dark: { bgColor: 'base-900', bgGradient: { linear: 'b', colors: ['white/3', 'white/3'] }, borderColor: 'white/10' },
+                },
+              },
+            },
+            cell: {
+              variants: {
+                isPinned: {
+                  bgColor: 'base-50',
+                  theme: { dark: { bgColor: 'base-900', bgGradient: { linear: 'b', colors: ['white/3', 'white/3'] } } },
+                },
+              },
+              children: { input: { styles: { borderRadius: 2 } } },
             },
           },
         },

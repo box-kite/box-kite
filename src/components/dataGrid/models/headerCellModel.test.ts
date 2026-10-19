@@ -57,6 +57,14 @@ describe('HeaderCellModel', () => {
   });
 
   describe('flags', () => {
+    it('marks a column group, so its tier can be styled apart from its columns', () => {
+      const grid = getGrid({ columns: [{ key: 'name', header: 'Name', columns: [{ key: 'firstName' }] }, { key: 'age' }] });
+      const cell = (key: string) => ArrayUtils.findOrThrow(grid.columns.value.flat, (c) => c.key === key).headerCell;
+      expect(cell('name').variant.isGroup).toBe(true);
+      expect(cell('firstName').variant.isGroup).toBe(false);
+      expect(cell('age').variant.isGroup).toBe(false);
+    });
+
     it('data columns are sortable / resizable / show the context menu by default', () => {
       const hc = leaf(getGrid(), 'firstName').headerCell;
       expect(hc.isSortable).toBe(true);

@@ -128,11 +128,21 @@ export const components = Box.components({
     styles: { fontWeight: 700 },
     variants: { hero: { fontWeight: 800, letterSpacing: -1 } },
   },
+  // The hero's second line: the library's own gradient-on-text, inert without the transparent colour beside it.
+  heroAccent: {
+    styles: {
+      width: 'fit-content',
+      mx: 'auto',
+      bgGradient: { linear: 'r', colors: ['accent-500', 'accent-500', 'pink-500'] },
+      bgClip: 'text',
+      color: 'transparent',
+    },
+  },
 
   // The header's appearance dialog (`pages/components/designPicker.tsx`). A dialog, so every design's dialog reaches it.
   designPicker: {
     extends: 'dialog',
-    styles: { width: 'fit', maxWidth: 150, p: 6, sm: { p: 7 } },
+    styles: { width: 'fit', maxWidth: 225, p: 6, sm: { p: 7 } },
     children: {
       trigger: {
         styles: {
@@ -732,4 +742,6 @@ export const components = Box.components({
 });
 
 // The second design. Imported here so it registers wherever the site's components do — the browser and the prerender.
+import './designs/azure';
 import './designs/ember';
+import './designs/mono';

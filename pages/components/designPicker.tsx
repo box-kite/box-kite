@@ -67,7 +67,7 @@ export default function DesignPicker({ compact = false }: { compact?: boolean })
       </Flex>
 
       <Choices label="Design">
-        <Grid gridTemplateColumns={1} sm={{ gridTemplateColumns: 2 }} gap={3}>
+        <Grid gridTemplateColumns={1} sm={{ gridTemplateColumns: 2 }} lg={{ gridTemplateColumns: 4 }} gap={3}>
           {DESIGNS.map((option) => (
             <DesignCard key={option.id} design={option} selected={option.id === current.id} onSelect={() => setDesign(option.id)} />
           ))}

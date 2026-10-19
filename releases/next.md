@@ -45,6 +45,10 @@ Nothing looks different until a family is pointed somewhere: `accent-500` resolv
 
 `bgGradient="none"` takes a gradient back off, which nothing could do before: `bgGradient` is declared after `bgImage` and wins `background-image`, so a variant's `bgImage: 'none'` never reached it. `letterSpacing` takes Tailwind's tracking names — `tighter`, `tight`, `normal`, `wide`, `wider`, `widest` — in `em`, so a display heading keeps its tightness at every size; a number is still pixels.
 
+## A DataGrid column group can be styled as its own tier
+
+A header cell over a group of columns now carries the `isGroup` variant, so `datagrid.header.cell` can set the group row apart from the column titles under it — `variants: { isGroup: { color: 'base-700' } }` — where before the two rows could only look the same.
+
 ## Breaking changes
 
 None.
@@ -53,3 +57,4 @@ None.
 
 - **A button and a switch drew their focus ring on every click, in a colour too faint to see.** Both now draw it on `:focus-visible` only, solid `accent-500` (`accent-400` in the dark theme) — 3:1 against the page, which `accent-200` was not.
 - **A DataGrid's own controls ignored the palette a design set.** The handful of colours the grid's parts wrote inline (the empty state, the filter icons, the pagination hover) are drawn in `base` and `accent` like the rest of its tree.
+- **An indeterminate checkbox drew a fixed violet dash that no design could reach.** It is now filled like a checked box, in `accent-500`, with a white dash — the same shape as the tick, and the platform's convention for the mixed state.

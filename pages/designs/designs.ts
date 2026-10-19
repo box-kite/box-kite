@@ -3,7 +3,7 @@ import Variables from '../../src/core/variables';
 import type { BoxStyleProps } from '../../src/types';
 
 /** The designs a reader can pick from the header. `classic` is the library's own look; the rest are `Box.components(…, { design })`. */
-export type DesignId = 'classic' | 'ember';
+export type DesignId = 'classic' | 'ember' | 'azure' | 'mono';
 
 export interface Design {
   id: DesignId;
@@ -22,6 +22,16 @@ export const DESIGNS: readonly Design[] = [
     id: 'ember',
     name: 'Ember',
     description: 'Warm paper, vermilion and a serif — editorial, quiet, and lit from within.',
+  },
+  {
+    id: 'azure',
+    name: 'Azure',
+    description: 'Clear-sky blue on frosted glass — airy, precise, and bright in the dark.',
+  },
+  {
+    id: 'mono',
+    name: 'Mono',
+    description: 'Ink on white in single pixels — flat, quiet, and exact.',
   },
 ];
 
@@ -63,7 +73,74 @@ const EMBER_ACCENT = {
   950: 'oklch(26.4% .08 33)',
 } as const;
 
+/**
+ * Azure's two families: a slate cooled towards the sky for the neutrals, deep blue-black at the dark end, and an
+ * azure kept inside sRGB at every step, so 600 holds 4.7:1 under white text on every screen rather than only on P3.
+ */
+const AZURE_BASE = {
+  50: 'oklch(98.4% .004 240)',
+  100: 'oklch(96.4% .007 242)',
+  200: 'oklch(92.6% .012 244)',
+  300: 'oklch(87% .018 246)',
+  400: 'oklch(71.4% .028 248)',
+  500: 'oklch(55.8% .034 250)',
+  600: 'oklch(45.6% .034 252)',
+  700: 'oklch(37.8% .032 254)',
+  800: 'oklch(27.8% .032 256)',
+  900: 'oklch(21.4% .03 258)',
+  950: 'oklch(15.6% .026 260)',
+} as const;
+
+const AZURE_ACCENT = {
+  50: 'oklch(97.4% .013 236)',
+  100: 'oklch(94.6% .028 236)',
+  200: 'oklch(89.6% .055 237)',
+  300: 'oklch(82.4% .095 239)',
+  400: 'oklch(73.2% .145 242)',
+  500: 'oklch(64.4% .162 246)',
+  600: 'oklch(55.6% .155 250)',
+  700: 'oklch(48.8% .145 253)',
+  800: 'oklch(41.8% .128 255)',
+  900: 'oklch(35.8% .108 257)',
+  950: 'oklch(26.2% .075 259)',
+} as const;
+
+/**
+ * Mono's neutrals: a cool grey whose dark end is the ink, `#16191e` at 950 and its hover `#2c323b` at 800. The
+ * accent is the same ink, so a checked box, a selection and a primary action are all one colour: 600 is the ink,
+ * 500 its hover, and 400 the grey a dark page reads it in (5.9:1 on the ink).
+ */
+const MONO_BASE = {
+  50: '#f7f8f9',
+  100: '#eff1f3',
+  200: '#e2e5e9',
+  300: '#cdd1d7',
+  400: '#9ba2ad',
+  500: '#6b7380',
+  600: '#4f5763',
+  700: '#3b424d',
+  800: '#2c323b',
+  900: '#1d2127',
+  950: '#16191e',
+} as const;
+
+const MONO_ACCENT = {
+  50: '#f7f8f9',
+  100: '#eff1f3',
+  200: '#e2e5e9',
+  300: '#cdd1d7',
+  400: '#8c939e',
+  500: '#2c323b',
+  600: '#16191e',
+  700: '#101216',
+  800: '#0b0d10',
+  900: '#08090b',
+  950: '#050607',
+} as const;
+
 export const EMBER_FONT_DISPLAY = "'Fraunces', 'Iowan Old Style', 'Palatino Linotype', Georgia, serif";
+export const AZURE_FONT_DISPLAY = "'Sora', 'Inter', 'Segoe UI', system-ui, sans-serif";
+export const MONO_FONT = "'Roboto', 'Helvetica Neue', Arial, sans-serif";
 
 /**
  * What each design declares on the element it starts at: the two families the components are drawn in and
@@ -89,6 +166,30 @@ const DESIGN_VARS: Record<DesignId, Record<string, string>> = {
     'code-bg': 'oklch(17.6% .006 52)',
     'code-bg-light': 'oklch(21.4% .008 52)',
   },
+  azure: {
+    ...Box.palette({ accent: AZURE_ACCENT, base: AZURE_BASE }),
+    'gradient-primary': `linear-gradient(135deg, oklch(80% .12 215) 0%, ${AZURE_ACCENT[500]} 50%, oklch(50% .16 266) 100%)`,
+    'gradient-accent': `linear-gradient(135deg, oklch(88% .09 195) 0%, ${AZURE_ACCENT[400]} 50%, ${AZURE_ACCENT[600]} 100%)`,
+    'gradient-aurora-light': `radial-gradient(1100px circle at 86% -14%, oklch(89% .07 236 / .7), transparent 55%), radial-gradient(800px circle at -6% 26%, oklch(94% .05 200 / .55), transparent 50%), linear-gradient(180deg, ${AZURE_BASE[50]} 0%, ${AZURE_BASE[50]} 100%)`,
+    'gradient-aurora-dark': `radial-gradient(1200px circle at 90% -20%, oklch(46% .13 250 / .42), transparent 58%), radial-gradient(900px circle at 8% 108%, oklch(42% .09 215 / .24), transparent 60%), linear-gradient(180deg, ${AZURE_BASE[950]} 0%, ${AZURE_BASE[950]} 100%)`,
+    'gradient-sidebar': `linear-gradient(180deg, oklch(98.4% .004 240 / .9) 0%, oklch(97.2% .008 240 / .96) 100%)`,
+    'gradient-sidebar-dark': `linear-gradient(180deg, oklch(17.2% .021 259 / .96) 0%, oklch(15.4% .02 260 / .98) 100%)`,
+    'code-bg': 'oklch(17% .024 258)',
+    'code-bg-light': 'oklch(21% .028 256)',
+  },
+  // No gradients: each one the site names is a single flat colour. A tile is ink on the paper and a step lighter
+  // on the ink, which is `--mono-tile`, declared per theme below.
+  mono: {
+    ...Box.palette({ accent: MONO_ACCENT, base: MONO_BASE }),
+    'gradient-primary': 'linear-gradient(var(--mono-tile, #16191e), var(--mono-tile, #16191e))',
+    'gradient-accent': 'linear-gradient(var(--mono-tile, #16191e), var(--mono-tile, #16191e))',
+    'gradient-aurora-light': 'linear-gradient(#fff, #fff)',
+    'gradient-aurora-dark': `linear-gradient(${MONO_BASE[950]}, ${MONO_BASE[950]})`,
+    'gradient-sidebar': 'linear-gradient(#fff, #fff)',
+    'gradient-sidebar-dark': `linear-gradient(${MONO_BASE[950]}, ${MONO_BASE[950]})`,
+    'code-bg': MONO_BASE[950],
+    'code-bg-light': MONO_BASE[900],
+  },
 };
 
 /** The props a wrapper takes to be drawn in `id` whatever the page around it is — the picker's previews. */
@@ -103,9 +204,23 @@ export function designScope(id: DesignId): BoxStyleProps {
 export const designTokens: BoxStyleProps = {
   dataAttr: {
     'design=ember': { vars: DESIGN_VARS.ember, scrollbarColor: ['accent-300', 'transparent'] },
+    'design=azure': { vars: DESIGN_VARS.azure, scrollbarColor: ['accent-300', 'transparent'] },
+    'design=mono': { vars: DESIGN_VARS.mono, scrollbarColor: ['base-300', 'transparent'] },
   },
   theme: {
-    dark: { dataAttr: { 'design=ember': { bgColor: 'base-950', scrollbarColor: ['accent-800', 'transparent'] } } },
-    light: { dataAttr: { 'design=ember': { bgColor: 'base-50' } } },
+    dark: {
+      dataAttr: {
+        'design=ember': { bgColor: 'base-950', scrollbarColor: ['accent-800', 'transparent'] },
+        'design=azure': { bgColor: 'base-950', scrollbarColor: ['accent-800', 'transparent'] },
+        'design=mono': { bgColor: 'base-950', vars: { 'mono-tile': MONO_BASE[700] }, scrollbarColor: ['base-700', 'transparent'] },
+      },
+    },
+    light: {
+      dataAttr: {
+        'design=ember': { bgColor: 'base-50' },
+        'design=azure': { bgColor: 'base-50' },
+        'design=mono': { bgColor: 'white', vars: { 'mono-tile': MONO_BASE[950] } },
+      },
+    },
   },
 };

@@ -100,16 +100,7 @@ function Hero() {
           maxWidth={190}
         >
           <Box theme={{ dark: { color: 'white' }, light: { color: 'base-900' } }}>The React library your AI already knows.</Box>
-          {/* The library's own gradient-on-text, which is inert without the transparent colour beside it. */}
-          <Box
-            width="fit-content"
-            mx="auto"
-            bgGradient={{ linear: 'r', colors: ['accent-500', 'accent-500', 'pink-500'] }}
-            bgClip="text"
-            color="transparent"
-          >
-            Every CSS property is a typed prop.
-          </Box>
+          <Box component="heroAccent">Every CSS property is a typed prop.</Box>
         </H1>
       </Reveal>
 

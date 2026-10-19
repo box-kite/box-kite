@@ -1164,7 +1164,9 @@ const baseComponents = {
         borderColor: 'accent-500',
         bgImage: 'bg-img-checked',
       },
+      // Filled like a tick, with a white dash: the dash used to be a fixed violet no design could reach.
       indeterminate: {
+        bgColor: 'accent-500',
         borderColor: 'accent-500',
         bgImage: 'bg-img-indeterminate',
       },
@@ -1172,6 +1174,9 @@ const baseComponents = {
         cursor: 'not-allowed',
         borderColor: 'base-200',
         checked: {
+          bgColor: 'base-300',
+        },
+        indeterminate: {
           bgColor: 'base-300',
         },
         hover: {
@@ -1190,11 +1195,15 @@ const baseComponents = {
             borderColor: 'accent-500',
           },
           indeterminate: {
+            bgColor: 'accent-500',
             borderColor: 'accent-500',
           },
           disabled: {
             borderColor: 'base-700',
             checked: {
+              bgColor: 'base-600',
+            },
+            indeterminate: {
               bgColor: 'base-600',
             },
             hover: {
@@ -2822,6 +2831,8 @@ const baseComponents = {
               isPillAfterResizer: { before: { insetStart: 1.25 } },
               isRowSelection: {},
               isRowNumber: { jc: 'center' },
+              // A column group's own cell ("Personal Info" over its columns), so a design can set the tier apart.
+              isGroup: {},
               isFirstLeaf: {},
               isLastLeaf: {},
               isEmptyCell: {},
