@@ -2189,6 +2189,94 @@ Box.components({
 
 ---
 
+## Dates and times (`@box-kite/react/date` + the date components)
+
+```tsx
+import { format, toUtc, toLocal, toZone, toPlainDate, parse, add, today } from '@box-kite/react/date';
+import DateField from '@box-kite/react/components/dateField';
+import Calendar from '@box-kite/react/components/calendar';
+import DatePicker, { DateRangePicker } from '@box-kite/react/components/datePicker';
+import TimeZoneSelect from '@box-kite/react/components/timeZoneSelect';
+import DateTime, { DateProvider } from '@box-kite/react/components/dateTime';
+
+toUtc('2026-10-19T14:30', { from: 'Europe/Chisinau' }); // '2026-10-19T11:30:00Z'
+toLocal('2026-10-19T11:30:00Z'); // the reader's wall clock, with its offset
+format('2026-10-19', { locale: 'ro-MD', dateStyle: 'long' }); // '19 octombrie 2026'
+parse('03/04/2026', { locale: 'en-GB' }); // '2026-04-03'
+
+<DateField label="Due" name="due" />;
+<DatePicker type="datetime" zone="utc" label="Publish at" onValueChange={(value, { utc, local }) => schedule(utc)} />;
+<DateRangePicker label="Stay" startName="from" endName="to" />;
+<DateTime value={order.createdAt} />;
+```
+
+**Every value is an ISO string, and its shape is its kind** — never a `Date`, which is always a moment in
+the runtime's zone:
+
+| Kind       | Written as                                 | Means                                                     |
+| ---------- | ------------------------------------------ | --------------------------------------------------------- |
+| `date`     | `2026-10-19`                               | A day: no time, no zone, the same everywhere.             |
+| `time`     | `14:30:00` (`.sss` when there are any)     | A time of day.                                            |
+| `datetime` | `2026-10-19T14:30:00`                      | A wall clock with no zone — an alarm, a timetable.        |
+| `instant`  | `2026-10-19T14:30:00+03:00`, or `…Z` (UTC) | One moment, written as one zone sees it. Anything stored. |
+
+A zone is `'local'` (the reader), `'utc'`, `'system'` (the runtime), an IANA name or a fixed offset.
+**`'local'` on a server** is `configureDates({ timeZone })` or the nearest `<DateProvider timeZone>`;
+`systemZone()` is always the server's own. The browser writes its zone into a cookie with
+`document.cookie = zoneCookie()`, and a server reads it back with `readZoneCookie(request.headers.get('cookie'))`.
+
+| Function (`@box-kite/react/date`)                                               | What it does                                                                |
+| ------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| `toUtc(v, { from })` / `toLocal(v)` / `toZone(v, zone)`                         | The moment in UTC / on the reader's clock / on another zone's, with offset. |
+| `toPlainDate` / `toPlainTime` / `toPlainDateTime` / `toInstant`                 | `(v, { zone })` — the day, time or wall clock a value shows in `zone`.      |
+| `toDate` / `fromDate` / `toEpoch`                                               | The bridge to an API that insists on a `Date`.                              |
+| `combine(date, time, { zone })`                                                 | A date and a time: a date-time, or with `zone` the instant.                 |
+| `today(zone)` / `now(zone)` / `currentTime(zone)`                               | In the reader's zone unless told.                                           |
+| `format(v, { locale, zone, dateStyle, timeStyle, … })`                          | `Intl` options, never format tokens. `''` for a non-value.                  |
+| `formatRange` / `formatRelative` / `zoneName`                                   | `Oct 19 – 23, 2026`, `3 minutes ago`, `EEST`.                               |
+| `parse(text, { locale, kind, zone })`                                           | ISO, `Date`, epoch, HTTP date, or text in the locale's order.               |
+| `add` / `subtract` / `startOf` / `endOf` / `difference`                         | Calendar units on the wall clock, clock units on the instant.               |
+| `compare` / `isBefore` / `isAfter` / `isEqual` / `isSame` / `clamp`             | Across kinds and zones.                                                     |
+| `details(v, { zone })`                                                          | Every reading at once: `utc`, `zoned`, `local`, `offset`, `date`, `epoch`.  |
+| `weekInfo` / `hourCycleOf` / `monthNames` / `weekdayNames`                      | The locale, from `Intl`.                                                    |
+| `timeZones` / `offsetOf` / `isValidZone` / `normalizeZone`                      | The runtime's zones.                                                        |
+| `configureDates` / `localZone` / `systemZone` / `zoneCookie` / `readZoneCookie` | Who the reader is.                                                          |
+
+**DST** follows Temporal: a wall-clock time a zone skips or repeats takes `disambiguation` —
+`'compatible'` (default: the later reading of a skipped time, the earlier of a repeated one), `'earlier'`,
+`'later'` or `'reject'` (`null`).
+
+**The controls take and give the same string, and `onValueChange(value, details)` hands over the readings:**
+`details` is `{ reason, event, utc, local, zoned, date, epoch, zone, offset }`, all `null` while the value
+is. `reason` is `'keyboard'`, `'paste'`, `'select'`, `'preset'`, `'clear'` or `'reset'`.
+
+| Component (`components/…`)       | What it is                                                                                                                                                            |
+| -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DateField` (`dateField`)        | Segments (`role="spinbutton"`) in the locale's order. `type`, `zone`, `granularity`, `hourCycle`, `min`/`max`, `isDateUnavailable`, `name`, `required`, `label`.      |
+| `Calendar` (`calendar`)          | APG's grid keys. `mode="range"` → `{ start, end }`, `months`, `weekNumbers`, `min`/`max`, `isDateUnavailable`, `firstDayOfWeek`.                                      |
+| `DatePicker` (`datePicker`)      | A `DateField` with a calendar (`date`), a list of times every `step` minutes (`time`) or both (`datetime`) in the top layer; `presets`, `clearable`, `closeOnSelect`. |
+| `DateRangePicker` (`datePicker`) | Two fields over a range calendar; `startName`/`endName`, `months` (2), `presets` of `{ start, end }`.                                                                 |
+| `TimeZoneSelect`                 | A `Combobox` over every zone, searchable by place, region or offset; the value is the IANA name.                                                                      |
+| `DateTime` (`dateTime`)          | `<time datetime>` in the reader's zone and language; `format`, `relative`, `zone`, `locale`. Also exports `DateProvider`.                                             |
+
+**A date-time's `zone`** is whose wall clock it is typed on: `'local'` (default), `'utc'`, an IANA name, or
+`'none'` (a wall clock with no zone, value `2026-10-19T14:30:00`). The value is the instant on that clock
+(`…+03:00`, or `…Z` for UTC), and a zone that is not the reader's is named after the time.
+
+**Four things to know.** **Nothing typed is ever parsed**: `03/04/2026` is two days depending on who typed
+it, so each segment is a spin button and only a paste is read as text. **No hydration error, ever**: a
+server and a hydrating browser both render in the fallback (`UTC`/`en-US`, or a `DateProvider`'s), and the
+render after hydration switches to the reader — so pass the cookie's zone to a `DateProvider` for a first
+paint that is already right. **`name` posts the canonical string** (and `required` is a real input the
+browser validates), so a server reads `2026-10-19` whatever the reader's locale. And in a **DataGrid**, a
+column takes `editor: 'date' | 'time' | 'datetime'` (inferred from an ISO string or a `Date`),
+`dateFormat: 'date' | 'time' | 'datetime' | 'relative' | Intl options` and `filterable: { type: 'date' }`
+(`on`/`before`/`after`/`between`); those parts are a chunk the grid fetches only when it shows a date.
+Styling: `dateField` (extends `textbox`; `segment`, `literal`, `zone`, `label`; `compact`, `invalid`,
+`disabled`), `calendar` (`nav`, `title`, `weekday`, `weekNumber`, `cell` with the range band, `day` with
+`today`/`selected`/`outside`/`blocked`/`unavailable`, `zoomItem`) and `datePicker` (`trigger`, `clear`,
+`presets`, `preset`, `times`, `time`, `part`); the panel is a `popover`.
+
 ## Toaster (`toast()` + `<Toaster>`)
 
 ```tsx

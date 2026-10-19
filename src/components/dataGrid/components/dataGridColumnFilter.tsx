@@ -7,6 +7,7 @@ import Flex from '../../flex';
 import Textbox from '../../textbox';
 import { NumberFilterValue } from '../contracts/dataGridContract';
 import ColumnModel from '../models/columnModel';
+import useDateParts from '../useDateParts';
 import useFilterDraft from '../useFilterDraft';
 
 interface Props<TRow> {
@@ -225,6 +226,19 @@ function NumberFilter<TRow>({ column }: Props<TRow>) {
   );
 }
 
+/** The date filter, out of the grid's date chunk: nothing until it has arrived. */
+function DateFilter<TRow>({ column }: Props<TRow>) {
+  const parts = useDateParts(true);
+  const columnName = String(column.header ?? column.key);
+
+  return parts ? (
+    <parts.DateFilter
+      column={column}
+      clearButton={(onClear) => <ClearFilterButton label={column.grid.localeText.clearFilter(columnName)} onClear={onClear} />}
+    />
+  ) : null;
+}
+
 /**
  * Multi-select filter with checkbox list.
  */
@@ -301,6 +315,8 @@ export default function DataGridColumnFilter<TRow>(props: Props<TRow>) {
       return <NumberFilter column={column} />;
     case 'multiselect':
       return <MultiselectFilter column={column} />;
+    case 'date':
+      return <DateFilter column={column} />;
     case 'text':
     default:
       return <TextFilter column={column} />;

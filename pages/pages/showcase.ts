@@ -11,6 +11,7 @@
 /** The sections, in the order the page draws them. */
 export const groups = [
   { id: 'forms', label: 'Forms', note: 'A real native control each, and the label that names it.' },
+  { id: 'dates', label: 'Dates', note: 'An ISO string in, and UTC and the reader’s own clock out — in the reader’s order.' },
   { id: 'layers', label: 'Layers', note: "In the browser's top layer: no portal, no z-index, no focus trap written here." },
   { id: 'disclosure', label: 'Disclosure', note: 'Open and shut, animated by a grid track rather than a measured height.' },
   { id: 'feedback', label: 'Feedback', note: 'What is happening, what happened, and what is not there yet.' },
@@ -41,6 +42,18 @@ export const entries = [
   { name: 'RadioButton', route: '/radiobutton', group: 'forms', note: 'The same input on its own, for a group you assemble.' },
   { name: 'Switch', route: '/switch', group: 'forms', note: 'role="switch" over a checkbox, so Enter toggles it too.' },
   { name: 'Slider', route: '/slider', group: 'forms', note: 'One thumb or two — the value’s shape decides which.' },
+
+  { name: 'DateField', route: '/date-field', group: 'dates', note: 'Segments in the reader’s order: nothing typed is ever parsed.' },
+  { name: 'DatePicker', route: '/date-picker', group: 'dates', note: 'The field with a calendar behind its button. At rest, the field.' },
+  {
+    name: 'DateRangePicker',
+    route: '/date-picker',
+    group: 'dates',
+    note: 'Two fields over a range calendar on two months. At rest, the fields.',
+  },
+  { name: 'Calendar', route: '/calendar', group: 'dates', note: 'APG’s grid keys, the reader’s week, and a range band that mirrors.' },
+  { name: 'TimeZoneSelect', route: '/date-picker', group: 'dates', note: 'Every zone the runtime knows, found by place or by offset.' },
+  { name: 'DateTime', route: '/dates', group: 'dates', note: 'A value for whoever reads it, inside a real <time datetime>.' },
 
   {
     name: 'Popover',

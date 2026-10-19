@@ -149,6 +149,40 @@ a zero**: an indeterminate bar omits `aria-valuenow` rather than reporting `0`. 
 `thumbLabels` names the thumbs. The geometry is logical, so a right-to-left page mirrors for free; only
 the sideways arrows swap, and Up/Down never do.
 
+## Dates and times
+
+```tsx
+import DateField from '@box-kite/react/components/dateField';
+import DatePicker, { DateRangePicker } from '@box-kite/react/components/datePicker';
+import DateTime from '@box-kite/react/components/dateTime';
+import { toUtc, format } from '@box-kite/react/date';
+
+<DateField label="Due" name="due" />;
+<DatePicker type="datetime" zone="utc" label="Publish at" onValueChange={(value, { utc, local }) => schedule(utc)} />;
+<DateRangePicker label="Stay" startName="from" endName="to" />;
+<DateTime value={order.createdAt} />;
+```
+
+**A value is an ISO string whose shape is its kind**: `2026-10-19` a date, `14:30:00` a time,
+`2026-10-19T14:30:00` a wall clock with no zone, `…+03:00`/`…Z` an instant. Never a `Date`. Every control
+takes and gives that string, and `onValueChange(value, { reason, utc, local, zoned, date, epoch, offset })`
+hands the readings over beside it.
+
+`DateField`: `type` (`date`/`time`/`datetime`), `zone` (`'local'` default, `'utc'`, IANA, `'none'`),
+`locale`, `hourCycle`, `granularity`, `min`/`max`/`isDateUnavailable` (marked `aria-invalid`), `name`,
+`required`, `label`. Segments in the locale's order; a paste is the only text it reads. `Calendar`:
+`mode="range"` (`{ start, end }`), `months`, `weekNumbers`, `firstDayOfWeek`, `min`/`max`. `DatePicker`:
+the field with a calendar, a list of times (`step`) or both, `presets`, `clearable`; `DateRangePicker`:
+two fields over a range calendar, `startName`/`endName`. `TimeZoneSelect`: a `Combobox` whose value is the
+IANA name. `DateTime`: a `<time datetime>` in the reader's zone; the module also exports `DateProvider`.
+
+Four things to know. **`'local'` is the reader** — on a server, `configureDates({ timeZone })` or a
+`<DateProvider timeZone>` fed from the cookie `zoneCookie()` writes, and `systemZone()` is the server's own.
+**No hydration error**: server and hydration render in the fallback (`UTC`/`en-US`), then the reader's.
+**DST** is Temporal's `disambiguation` (`'compatible'` default). And the **conversions name their target**
+(`toUtc`, `toLocal`, `toZone`, `toPlainDate`), the arithmetic moves the wall clock for days and the instant
+for hours, and `format` takes `Intl` options, never tokens.
+
 ## Toaster
 
 ```tsx

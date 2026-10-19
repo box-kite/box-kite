@@ -1,0 +1,90 @@
+{
+  "name": "TimeZoneSelect",
+  "route": "/date-picker",
+  "import": "import TimeZoneSelect from '@box-kite/react/components/timeZoneSelect';",
+  "description": "Picks a time zone by place, region or offset — `chis`, `europe` and `+3` all find Chisinau — out of every zone the runtime knows, each with the offset it is at now.",
+  "pattern": "https://www.w3.org/WAI/ARIA/apg/patterns/combobox/",
+  "props": [
+    {
+      "name": "value",
+      "type": "string | null",
+      "required": false,
+      "default": null,
+      "description": "The chosen IANA zone (`Europe/Chisinau`, `UTC`), or `null`. Controlled."
+    },
+    {
+      "name": "defaultValue",
+      "type": "string | null",
+      "required": false,
+      "default": null,
+      "description": "The zone it starts with when it owns its state. Default the reader's own."
+    },
+    {
+      "name": "onValueChange",
+      "type": "ChangeHandler<string | null, ComboboxValueReason>",
+      "required": false,
+      "default": null,
+      "description": "Fires with the zone's IANA name."
+    },
+    {
+      "name": "zones",
+      "type": "readonly string[]",
+      "required": false,
+      "default": null,
+      "description": "Only these zones, in IANA names. Default every zone the runtime knows, UTC first."
+    },
+    { "name": "label", "type": "React.ReactNode", "required": false, "default": null, "description": "The select's visible name." },
+    {
+      "name": "placeholder",
+      "type": "string",
+      "required": false,
+      "default": null,
+      "description": "The field's placeholder. Not a name — it is gone on the first keystroke."
+    },
+    { "name": "name", "type": "string", "required": false, "default": null, "description": "What the zone posts under in a form." },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "required": false,
+      "default": null,
+      "description": "Not editable and not openable, but still read out."
+    },
+    {
+      "name": "props",
+      "type": "Record<string, unknown>",
+      "required": false,
+      "default": null,
+      "description": "Attributes for the `<input>` itself — an `aria-label`, an `id`."
+    },
+    {
+      "name": "emptyText",
+      "type": "React.ReactNode",
+      "required": false,
+      "default": "'No time zone matches'",
+      "description": "What the list says when nothing matches. Default `'No time zone matches'`."
+    }
+  ],
+  "parts": [],
+  "keyboard": [
+    { "mode": null, "keys": "A printable character", "action": "Searches by place, region, IANA name or offset." },
+    { "mode": null, "keys": "Down / Up", "action": "Opens, or moves through what the search left." },
+    { "mode": null, "keys": "Enter", "action": "Chooses the highlighted zone." },
+    { "mode": null, "keys": "Escape", "action": "Closes the list, then clears what was typed." }
+  ],
+  "a11y": [
+    "The APG editable combobox: `role=\"combobox\"` on the field, a `role=\"listbox\"` of options, the active one named by `aria-activedescendant`. A thousand-odd options are windowed, so it opens in one frame."
+  ],
+  "axe": { "fixtures": ["TimeZoneSelect"], "knownViolations": [] },
+  "styleTree": [
+    { "path": "combobox", "depth": 0, "extends": null, "variants": ["compact"] },
+    { "path": "combobox.label", "depth": 1, "extends": null, "variants": [] },
+    { "path": "combobox.field", "depth": 1, "extends": null, "variants": [] },
+    { "path": "combobox.chip", "depth": 1, "extends": null, "variants": [] },
+    { "path": "combobox.remove", "depth": 1, "extends": null, "variants": [] },
+    { "path": "combobox.icon", "depth": 1, "extends": null, "variants": [] },
+    { "path": "combobox.items", "depth": 1, "extends": null, "variants": ["closed", "closedUp"] },
+    { "path": "combobox.window", "depth": 1, "extends": null, "variants": [] },
+    { "path": "combobox.item", "depth": 1, "extends": null, "variants": ["highlighted", "create"] },
+    { "path": "combobox.message", "depth": 1, "extends": null, "variants": [] }
+  ]
+}

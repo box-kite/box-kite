@@ -54,12 +54,15 @@ const SANCTIONED = {
   'AlertDialog.styles': "the `dialog` tree, whose `alert` variant is this component's",
   'Overlay.styles': 'positions a layer and draws no surface: the surface is its child',
   'Icon.styles': 'styles an element it did not author, so the class lands on that element rather than a node',
+  'DateTime.styles': 'a `<time>` taking Box props, so the style tree is Box — the way `Flex` has none',
   // The Box half is intersected at the call signature rather than extended, because the other half is a
   // union (`Combobox`) or the props are shared with a polymorphic overload (`Overlay`). The caller writes
   // Box props on all three; it is the interface the reference names that has none.
   'Overlay.box': 'Box props are intersected in at the signature — `OverlayProps & Omit<BoxProps, …>`',
   'Combobox (single-select).box': 'one half of a union intersected with `BaseProps`, which takes them',
   'Combobox (multiple).box': 'one half of a union intersected with `BaseProps`, which takes them',
+  'Calendar (one day).box': 'one half of a union intersected with `BaseProps`, which takes them',
+  'Calendar (range).box': 'one half of a union intersected with `BaseProps`, which takes them',
   'Presence.box': 'renders no element at all, so there is nothing to style',
   // The one place a cloned child is right: an icon somebody else drew is an element this library did not
   // author, so there is no render prop to hand a trigger bag to. See `src/components/icon.tsx`.

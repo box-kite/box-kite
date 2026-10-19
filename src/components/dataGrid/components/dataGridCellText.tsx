@@ -1,6 +1,7 @@
 import Box from '../../../box';
 import Flex from '../../flex';
 import CellModel from '../models/cellModel';
+import DataGridDateValue, { dateFormatOf } from './dataGridDateValue';
 
 interface Props<TRow> {
   cell: CellModel<TRow>;
@@ -8,6 +9,8 @@ interface Props<TRow> {
 
 export default function DataGridCellText<TRow>(props: Props<TRow>) {
   const { cell } = props;
+  const { value } = cell;
+  const dateFormat = dateFormatOf(cell.column, value);
 
   return (
     <Flex
@@ -19,7 +22,7 @@ export default function DataGridCellText<TRow>(props: Props<TRow>) {
       jc={cell.column.align}
     >
       <Box px={3} textOverflow="ellipsis" overflow="hidden" textWrap="nowrap">
-        {cell.value as string}
+        {dateFormat ? <DataGridDateValue value={value} format={dateFormat} /> : (value as string)}
       </Box>
     </Flex>
   );

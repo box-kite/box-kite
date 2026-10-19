@@ -21,6 +21,7 @@ const entries: Record<string, () => Promise<Record<string, unknown>>> = {
   '@box-kite/react/anchor': () => import('../../src/anchor'),
   '@box-kite/react/catalog': () => import('../../src/catalog'),
   '@box-kite/react/interop': () => import('../../src/interop'),
+  '@box-kite/react/date': () => import('../../src/date'),
   '@box-kite/react/spec': () => import('../../src/spec'),
 };
 

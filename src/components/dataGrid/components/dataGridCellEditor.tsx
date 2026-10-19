@@ -9,6 +9,8 @@ import Textbox from '../../textbox';
 import { CellEditorOption } from '../contracts/dataGridContract';
 import { useGridNavigationContext } from '../gridNavigationContext';
 import CellModel from '../models/cellModel';
+import { isDateEditor } from '../models/editModel';
+import useDateParts from '../useDateParts';
 
 interface Props<TRow> {
   cell: CellModel<TRow>;
@@ -18,7 +20,7 @@ interface Props<TRow> {
 }
 
 /** What the control inside the editor is, whichever of the four it is. */
-const CONTROL_SELECTOR = 'input,select,textarea,button';
+const CONTROL_SELECTOR = 'input:not([type="hidden"]),select,textarea,button,[role="spinbutton"]';
 
 /** A `select` editor's options, as a list — worked out from the row when they depend on it. */
 function optionsOf<TRow>(cell: CellModel<TRow>): CellEditorOption[] {
@@ -182,6 +184,9 @@ function EditorControl<TRow>(props: ControlProps<TRow>) {
     'aria-describedby': errorId,
   };
 
+  // Asked for whatever the type, since a hook cannot sit behind the early returns below.
+  const parts = useDateParts(isDateEditor(type));
+
   if (EditCell) return <EditCell cell={cell} />;
 
   if (type === 'checkbox') {
@@ -225,6 +230,10 @@ function EditorControl<TRow>(props: ControlProps<TRow>) {
         ))}
       </Dropdown>
     );
+  }
+
+  if (isDateEditor(type)) {
+    return parts ? <parts.DateEditor cell={cell} label={named['aria-label']} errorId={errorId} onBlur={onBlur} /> : null;
   }
 
   const isNumber = type === 'number';

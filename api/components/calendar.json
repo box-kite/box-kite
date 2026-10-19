@@ -1,0 +1,224 @@
+{
+  "name": "Calendar",
+  "route": "/calendar",
+  "import": "import Calendar from '@box-kite/react/components/calendar';",
+  "description": "A month of days to pick from, on APG's grid keys — one day or, with `mode=\"range\"`, a start and an end.",
+  "pattern": "https://www.w3.org/WAI/ARIA/apg/patterns/grid/",
+  "props": [
+    {
+      "name": "min",
+      "type": "string | null",
+      "required": false,
+      "default": null,
+      "description": "The earliest day that can be chosen, `YYYY-MM-DD`. The arrows stop there too."
+    },
+    { "name": "max", "type": "string | null", "required": false, "default": null, "description": "The latest day that can be chosen." },
+    {
+      "name": "isDateUnavailable",
+      "type": "(date: string) => boolean",
+      "required": false,
+      "default": null,
+      "description": "Days that can be reached but not chosen — a weekend, a holiday. A range is refused across one."
+    },
+    {
+      "name": "locale",
+      "type": "string",
+      "required": false,
+      "default": null,
+      "description": "The language of the month and weekday names, and whose week it is. Default the reader's."
+    },
+    {
+      "name": "zone",
+      "type": "ZoneInput",
+      "required": false,
+      "default": null,
+      "description": "Whose \"today\" is marked. Default the reader's zone."
+    },
+    {
+      "name": "firstDayOfWeek",
+      "type": "number",
+      "required": false,
+      "default": null,
+      "description": "The day the week starts on, 0 for Sunday. Default the locale's."
+    },
+    { "name": "months", "type": "1 | 2 | 3", "required": false, "default": "1", "description": "How many months side by side. Default 1." },
+    {
+      "name": "weekNumbers",
+      "type": "boolean",
+      "required": false,
+      "default": "false",
+      "description": "A leading column of ISO week numbers."
+    },
+    {
+      "name": "showOutsideDays",
+      "type": "boolean",
+      "required": false,
+      "default": "true",
+      "description": "Whether the days that complete the first and last weeks are drawn. Default `true`."
+    },
+    {
+      "name": "focusedDate",
+      "type": "string",
+      "required": false,
+      "default": null,
+      "description": "The day the keyboard is on, which decides the month on show. Controlled."
+    },
+    {
+      "name": "defaultFocusedDate",
+      "type": "string",
+      "required": false,
+      "default": null,
+      "description": "Where the keyboard starts when the calendar owns it. Default the value, or today."
+    },
+    {
+      "name": "onFocusedDateChange",
+      "type": "ChangeHandler<string, 'keyboard' | 'navigate'>",
+      "required": false,
+      "default": null,
+      "description": "Fires when the keyboard or the paging buttons move to another day."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "required": false,
+      "default": "false",
+      "description": "Nothing can be chosen and nothing is focusable."
+    },
+    {
+      "name": "readOnly",
+      "type": "boolean",
+      "required": false,
+      "default": "false",
+      "description": "Can be read and navigated, but not chosen in."
+    },
+    {
+      "name": "autoFocus",
+      "type": "boolean",
+      "required": false,
+      "default": "false",
+      "description": "Focus the day the keyboard is on, on mount — what a picker's panel wants."
+    },
+    {
+      "name": "label",
+      "type": "string",
+      "required": false,
+      "default": null,
+      "description": "The calendar's accessible name, which a screen reader hears before the month."
+    },
+    {
+      "name": "previousLabel",
+      "type": "string",
+      "required": false,
+      "default": "'Previous'",
+      "description": "The previous-page button's name. Default `'Previous'`."
+    },
+    {
+      "name": "nextLabel",
+      "type": "string",
+      "required": false,
+      "default": "'Next'",
+      "description": "The next-page button's name. Default `'Next'`."
+    }
+  ],
+  "parts": [
+    {
+      "name": "Calendar (one day)",
+      "description": "One day at a time, which is the default: the value is a `YYYY-MM-DD` string or `null`.",
+      "props": [
+        {
+          "name": "mode",
+          "type": "'single'",
+          "required": false,
+          "default": null,
+          "description": "One day (default), or `'range'` for a start and an end."
+        },
+        {
+          "name": "value",
+          "type": "string | null",
+          "required": false,
+          "default": null,
+          "description": "The chosen day, `YYYY-MM-DD`, or `null`. Controlled."
+        },
+        {
+          "name": "defaultValue",
+          "type": "string | null",
+          "required": false,
+          "default": null,
+          "description": "The day it starts with when the calendar owns its value."
+        },
+        {
+          "name": "onValueChange",
+          "type": "ChangeHandler<string | null, DateChangeReason, DateChangeDetails>",
+          "required": false,
+          "default": null,
+          "description": "Fires with the day and its readings."
+        }
+      ]
+    },
+    {
+      "name": "Calendar (range)",
+      "description": "A start and an end: the first press anchors the range and the second ends it, whichever way round.",
+      "props": [
+        {
+          "name": "mode",
+          "type": "'range'",
+          "required": true,
+          "default": null,
+          "description": "`'range'` is what turns the value into `{ start, end }`."
+        },
+        {
+          "name": "value",
+          "type": "DateRange | null",
+          "required": false,
+          "default": null,
+          "description": "The chosen span, or `null`. Controlled."
+        },
+        {
+          "name": "defaultValue",
+          "type": "DateRange | null",
+          "required": false,
+          "default": null,
+          "description": "The span it starts with when the calendar owns its value."
+        },
+        {
+          "name": "onValueChange",
+          "type": "ChangeHandler<DateRange | null, DateChangeReason>",
+          "required": false,
+          "default": null,
+          "description": "Fires once both ends are chosen, start first whichever was picked first."
+        }
+      ]
+    }
+  ],
+  "keyboard": [
+    {
+      "mode": null,
+      "keys": "Tab",
+      "action": "One tab stop for the grid, on the focused day; the paging buttons and the title are their own."
+    },
+    { "mode": null, "keys": "Left / Right", "action": "The day before or after, in the reading order." },
+    { "mode": null, "keys": "Up / Down", "action": "The same day a week before or after." },
+    { "mode": null, "keys": "Home / End", "action": "The first or last day of the week." },
+    { "mode": null, "keys": "PageUp / PageDown", "action": "The same day a month before or after; with Shift, a year." },
+    {
+      "mode": null,
+      "keys": "Enter / Space",
+      "action": "Chooses the focused day; in a range, the first press anchors and the second ends it."
+    }
+  ],
+  "a11y": [
+    "The month is a `role=\"grid\"` named by its title, which is a polite live region, so paging says where it landed. Each day is a `gridcell` named by its full date (`Monday, October 19, 2026`), with `aria-selected` on the chosen day or span and `aria-current=\"date\"` on today.",
+    "An out-of-bounds day is `aria-disabled` and not focusable; an unavailable one can be reached, so it can be read, but not chosen."
+  ],
+  "axe": { "fixtures": ["Calendar"], "knownViolations": [] },
+  "styleTree": [
+    { "path": "calendar", "depth": 0, "extends": null, "variants": [] },
+    { "path": "calendar.nav", "depth": 1, "extends": null, "variants": [] },
+    { "path": "calendar.title", "depth": 1, "extends": null, "variants": [] },
+    { "path": "calendar.weekday", "depth": 1, "extends": null, "variants": [] },
+    { "path": "calendar.weekNumber", "depth": 1, "extends": null, "variants": [] },
+    { "path": "calendar.cell", "depth": 1, "extends": null, "variants": ["rangeMiddle", "rangeStart", "rangeEnd"] },
+    { "path": "calendar.day", "depth": 1, "extends": null, "variants": ["today", "selected", "outside", "blocked", "unavailable"] },
+    { "path": "calendar.zoomItem", "depth": 1, "extends": null, "variants": ["today", "selected"] }
+  ]
+}

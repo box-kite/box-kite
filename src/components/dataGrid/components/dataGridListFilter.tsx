@@ -7,6 +7,7 @@ import Flex from '../../flex';
 import Textbox from '../../textbox';
 import { NumberFilterValue } from '../contracts/dataGridContract';
 import ColumnModel from '../models/columnModel';
+import useDateParts from '../useDateParts';
 import useFilterDraft from '../useFilterDraft';
 import DataGridListLayout from './dataGridListLayout';
 
@@ -131,6 +132,13 @@ function NumberFilter<TRow>({ column }: Props<TRow>) {
   );
 }
 
+/** The date filter, out of the grid's date chunk: nothing until it has arrived. */
+function DateFilter<TRow>({ column }: Props<TRow>) {
+  const parts = useDateParts(true);
+
+  return parts ? <parts.ListDateFilter column={column} /> : null;
+}
+
 function MultiselectFilter<TRow>({ column }: Props<TRow>) {
   const { currentFilter } = column;
   const name = column.grid.componentName;
@@ -211,6 +219,8 @@ export default function DataGridListFilter<TRow>(props: Props<TRow>) {
       return <NumberFilter column={column} />;
     case 'multiselect':
       return <MultiselectFilter column={column} />;
+    case 'date':
+      return <DateFilter column={column} />;
     default:
       return <TextFilter column={column} />;
   }

@@ -1,5 +1,6 @@
 import memo from '../../../utils/memo';
 import { FilterValue, Key, ListRole } from '../contracts/dataGridContract';
+import { dateParts } from '../useDateParts';
 import ColumnModel from './columnModel';
 import DetailRowModel from './detailRowModel';
 import GridModel from './gridModel';
@@ -289,6 +290,11 @@ export default class ListModel<TRow> {
 
         return labels.length > 2 ? `${shown} +${labels.length - 2}` : shown;
       }
+      case 'date':
+        // In the reader's words once the grid's date chunk is here, which its date filter has already fetched.
+        return filter.operator === 'between'
+          ? (dateParts()?.describeDay(filter.value, filter.valueTo ?? filter.value) ?? `${filter.value}–${filter.valueTo ?? ''}`)
+          : `${DATE_SYMBOLS[filter.operator]} ${dateParts()?.describeDay(filter.value) ?? filter.value}`;
     }
   }
 
@@ -393,6 +399,9 @@ export default class ListModel<TRow> {
 
 const SEARCH_LIMIT = 10_000;
 const OPERATOR_SYMBOLS = { eq: '=', ne: '≠', gt: '>', gte: '≥', lt: '<', lte: '≤' } as const;
+
+/** A date filter's comparison, the way the table's filter row writes it. */
+const DATE_SYMBOLS = { on: '=', before: '<', after: '>' } as const;
 
 function isRecord<TRow>(row: FlatRow<TRow> | undefined): row is RowModel<TRow> {
   return !!row && row.kind === 'row';

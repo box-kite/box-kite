@@ -1,5 +1,6 @@
 import ColumnModel from '../models/columnModel';
 import RowModel from '../models/rowModel';
+import DataGridDateValue, { dateFormatOf } from './dataGridDateValue';
 
 interface Props<TRow> {
   row: RowModel<TRow>;
@@ -18,6 +19,9 @@ export default function DataGridListValue<TRow>(props: Props<TRow>) {
   if (column.Cell) return <column.Cell cell={cell} />;
 
   const { value } = cell;
+
+  const dateFormat = dateFormatOf(column, value);
+  if (dateFormat && value !== null && value !== undefined && value !== '') return <DataGridDateValue value={value} format={dateFormat} />;
 
   // An empty value says so: a blank under a label reads as a layout fault.
   return <>{value === null || value === undefined || value === '' ? '—' : String(value)}</>;

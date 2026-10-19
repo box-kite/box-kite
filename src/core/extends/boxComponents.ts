@@ -4441,6 +4441,97 @@ const listComponents = {
   },
 } satisfies Components;
 
-const boxComponents: typeof baseComponents & typeof listComponents = { ...baseComponents, ...listComponents };
+/** A borderless control inside a date widget: a paging arrow, a calendar's title, a picker's buttons. */
+const QUIET_CONTROL: BoxComponentStyles = {
+  bgColor: 'transparent',
+  cursor: 'pointer',
+  hover: { bgColor: 'currentColor/8' },
+  focusVisible: FOCUS_RING,
+  disabled: { opacity: 0.4, cursor: 'not-allowed' },
+};
+
+/** What a chosen day, month or time looks like. White on indigo reads in either theme, so it has no dark twin. */
+const CHOSEN: BoxComponentStyles = { bgColor: 'indigo-600', color: 'white', hover: { bgColor: 'indigo-700' } };
+
+/** The quieter half of a date widget — a separator, a weekday, a day of the next month — mixed from the text. */
+const DATE_MUTED: BoxComponentStyles = { color: 'currentColor/55' };
+
+// The date family, in an object of its own for the reason `listComponents` is. Paint only, and mixed from
+// `currentColor` so a rule follows any theme with no dark twin: every engine entry carries this tree.
+const dateComponents = {
+  // A date, a time or both, typed a segment at a time. The frame is the text box's.
+  dateField: {
+    extends: 'textbox',
+    styles: { px: 3, py: 2 },
+    variants: {
+      compact: { px: 2, py: 1, fontSize: 13 },
+      invalid: { borderColor: 'red-500', hover: { borderColor: 'red-500' }, focus: { borderColor: 'red-500', outlineColor: 'red-500/30' } },
+      disabled: { cursor: 'not-allowed', opacity: 0.6 },
+    },
+    children: {
+      label: { styles: { fontWeight: 500 } },
+      // Lit while it has the focus, the way a native field selects the part being edited.
+      segment: {
+        styles: { caretColor: 'transparent', outline: 0, focus: CHOSEN },
+        variants: { placeholder: DATE_MUTED, disabled: {} },
+      },
+      literal: { styles: DATE_MUTED },
+      zone: { styles: DATE_MUTED },
+      // The input the browser validates `required` on: present, focusable by the browser, and never seen.
+      validation: { styles: { position: 'absolute', inset: 0, opacity: 0, pointerEvents: 'none' } },
+    },
+  },
+  // A month of days on APG's grid keys.
+  calendar: {
+    styles: {},
+    children: {
+      nav: { styles: QUIET_CONTROL },
+      title: { styles: { ...QUIET_CONTROL, fontWeight: 600 } },
+      weekday: { styles: { ...DATE_MUTED, fontWeight: 500 } },
+      weekNumber: { styles: DATE_MUTED },
+      // The cell carries a range's band and the day inside it the caps, so the band runs unbroken along a week.
+      cell: {
+        styles: {},
+        variants: {
+          rangeMiddle: { bgColor: 'indigo-500/15' },
+          rangeStart: { bgColor: 'indigo-500/15', borderRadiusStart: 999 },
+          rangeEnd: { bgColor: 'indigo-500/15', borderRadiusEnd: 999 },
+        },
+      },
+      day: {
+        styles: { cursor: 'pointer', hover: { bgColor: 'currentColor/8' }, focusVisible: FOCUS_RING },
+        variants: {
+          // Today is a ring rather than a fill, so it never reads as chosen.
+          today: { insetRing: 1, insetRingColor: 'indigo-500' },
+          selected: CHOSEN,
+          outside: DATE_MUTED,
+          blocked: { opacity: 0.4, cursor: 'not-allowed', hover: { bgColor: 'transparent' } },
+          unavailable: { ...DATE_MUTED, textDecoration: 'line-through', cursor: 'not-allowed' },
+        },
+      },
+      zoomItem: { styles: QUIET_CONTROL, variants: { today: { insetRing: 1, insetRingColor: 'indigo-500' }, selected: CHOSEN } },
+    },
+  },
+  // What a picker adds to its field (a `dateField`) and to its panel (a `popover`).
+  datePicker: {
+    styles: {},
+    children: {
+      // One end of a range: a field with no frame of its own, inside the range's.
+      part: { styles: {} },
+      trigger: { styles: { ...QUIET_CONTROL, color: 'currentColor/70' } },
+      clear: { styles: { ...QUIET_CONTROL, color: 'currentColor/55' } },
+      presets: { styles: { borderColor: 'currentColor/12' } },
+      preset: { styles: QUIET_CONTROL, variants: { selected: CHOSEN } },
+      times: { styles: { borderColor: 'currentColor/12' } },
+      time: { styles: QUIET_CONTROL, variants: { selected: CHOSEN } },
+    },
+  },
+} satisfies Components;
+
+const boxComponents: typeof baseComponents & typeof listComponents & typeof dateComponents = {
+  ...baseComponents,
+  ...listComponents,
+  ...dateComponents,
+};
 
 export default boxComponents;

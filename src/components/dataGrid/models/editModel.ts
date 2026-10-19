@@ -7,6 +7,7 @@ import {
   Key,
   RejectedCellEdit,
 } from '../contracts/dataGridContract';
+import { dateParts } from '../useDateParts';
 import ColumnModel from './columnModel';
 import GridModel from './gridModel';
 import type { RangeBounds } from './rangeModel';
@@ -26,13 +27,30 @@ const SEARCH_LIMIT = 1000;
 
 /**
  * Which editor a value asks for when its column names none: the numeric keypad for a number and a
- * checkbox for a flag, so a column of either kind is right without being declared.
+ * checkbox for a flag and a date field for a date, so a column of any of them is right without being declared.
  */
 function inferEditor(value: unknown): CellEditorType {
   if (typeof value === 'number') return 'number';
   if (typeof value === 'boolean') return 'checkbox';
+  if (value instanceof Date) return 'datetime';
 
-  return 'text';
+  // ISO only: free text in a text column must never be taken for a date.
+  if (typeof value !== 'string') return 'text';
+  if (ISO_DATE.test(value)) return 'date';
+  if (ISO_TIME.test(value)) return 'time';
+
+  return ISO_DATE_TIME.test(value) ? 'datetime' : 'text';
+}
+
+const DATE_EDITORS = new Set<CellEditorType>(['date', 'time', 'datetime']);
+
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+const ISO_TIME = /^\d{2}:\d{2}(:\d{2}(\.\d+)?)?$/;
+const ISO_DATE_TIME = /^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}/;
+
+/** Whether an editor is a `DateField`. */
+export function isDateEditor(type: CellEditorType): boolean {
+  return DATE_EDITORS.has(type);
 }
 
 /**
@@ -74,6 +92,23 @@ function pastedValue<TRow>(editor: CellEditorConfig<TRow>, options: CellEditorOp
     if (TRUE_TEXT.has(flag)) return { value: true };
 
     return FALSE_TEXT.has(flag) ? { value: false } : undefined;
+  }
+
+  if (isDateEditor(editor.type)) {
+    if (text.trim() === '') return { value: null };
+
+    // Read the way the field reads a paste — ISO, or the reader's own order — once the grid's date chunk is here,
+    // which a column showing dates has already fetched. Before that, ISO as it stands.
+    const parts = dateParts();
+    if (parts) {
+      const parsed = parts.parsePasted(editor, text);
+
+      return parsed ? { value: parsed } : undefined;
+    }
+    const trimmed = text.trim();
+    const pattern = editor.type === 'date' ? ISO_DATE : editor.type === 'time' ? ISO_TIME : ISO_DATE_TIME;
+
+    return pattern.test(trimmed) ? { value: trimmed } : undefined;
   }
 
   if (editor.type === 'select') {

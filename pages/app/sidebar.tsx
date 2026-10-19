@@ -5,6 +5,9 @@ import {
   Blend,
   Blocks,
   BookOpen,
+  CalendarClock,
+  CalendarDays,
+  CalendarRange,
   Bot,
   Box as BoxIcon,
   ChartSpline,
@@ -48,6 +51,7 @@ import {
   Sun,
   Table,
   TextCursor,
+  TextCursorInput,
   ToggleLeft,
   Type,
   Wand2,
@@ -340,6 +344,18 @@ export default function Sidebar({ onClose, onSearch }: SidebarProps) {
           </MenuItem>
           <MenuItem to="/slider" icon={<SlidersVertical />}>
             Slider
+          </MenuItem>
+          <MenuItem to="/dates" icon={<CalendarClock />}>
+            Dates and times
+          </MenuItem>
+          <MenuItem to="/date-field" icon={<TextCursorInput />}>
+            DateField
+          </MenuItem>
+          <MenuItem to="/calendar" icon={<CalendarDays />}>
+            Calendar
+          </MenuItem>
+          <MenuItem to="/date-picker" icon={<CalendarRange />}>
+            DatePicker
           </MenuItem>
           <MenuItem to="/progress" icon={<LoaderCircle />}>
             Progress

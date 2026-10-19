@@ -1,0 +1,204 @@
+{
+  "name": "DateField",
+  "route": "/date-field",
+  "import": "import DateField from '@box-kite/react/components/dateField';",
+  "description": "A date, a time or both, typed one segment at a time — in the order and with the separators the reader's locale writes them, so `19.10.2026` in Moldova and `10/19/2026` in the US with nothing to configure and nothing to parse.",
+  "pattern": "https://www.w3.org/WAI/ARIA/apg/patterns/spinbutton/",
+  "props": [
+    {
+      "name": "type",
+      "type": "DateFieldType",
+      "required": false,
+      "default": "'date'",
+      "description": "What it edits: a day (`'date'`, default), a time of day (`'time'`), or both (`'datetime'`)."
+    },
+    {
+      "name": "value",
+      "type": "string | null",
+      "required": false,
+      "default": null,
+      "description": "Controlled value, an ISO string of the field's kind: `2026-10-19`, `14:30:00`, or for a date-time an instant with its offset (`2026-10-19T14:30:00+03:00`), `…Z` in UTC, or a wall clock with `zone=\"none\"`. `null` is empty. Any spelling `parse` reads is accepted; what comes back is canonical."
+    },
+    {
+      "name": "defaultValue",
+      "type": "string | null",
+      "required": false,
+      "default": "null",
+      "description": "The value it starts with when the field owns its state."
+    },
+    {
+      "name": "onValueChange",
+      "type": "ChangeHandler<string | null, DateChangeReason, DateChangeDetails>",
+      "required": false,
+      "default": null,
+      "description": "Fires with the new value — `null` while a segment is empty — and its readings: `utc`, the reader's `local` wall clock, a `Date`, the epoch, and why it changed."
+    },
+    {
+      "name": "zone",
+      "type": "ZoneInput | 'none'",
+      "required": false,
+      "default": null,
+      "description": "Whose wall clock a date-time is typed on. Default `'local'`, the reader's; `'utc'`, any IANA zone or `+03:00` for another; `'none'` for a wall clock with no zone at all (an alarm, a timetable). A date and a time have no zone, so this only says what \"today\" is for them."
+    },
+    {
+      "name": "locale",
+      "type": "string",
+      "required": false,
+      "default": null,
+      "description": "The language the segments are ordered and named in. Default the reader's."
+    },
+    {
+      "name": "hourCycle",
+      "type": "12 | 24",
+      "required": false,
+      "default": null,
+      "description": "A 12- or 24-hour clock. Default the locale's."
+    },
+    {
+      "name": "granularity",
+      "type": "DateFieldGranularity",
+      "required": false,
+      "default": "'minute'",
+      "description": "Whether a time is edited to the minute (default) or the second."
+    },
+    {
+      "name": "min",
+      "type": "string | null",
+      "required": false,
+      "default": null,
+      "description": "The earliest value that is valid. A value before it is kept and marked `aria-invalid`."
+    },
+    { "name": "max", "type": "string | null", "required": false, "default": null, "description": "The latest value that is valid." },
+    {
+      "name": "isDateUnavailable",
+      "type": "(date: string) => boolean",
+      "required": false,
+      "default": null,
+      "description": "Days nobody can choose — a weekend, a holiday. Handed the `YYYY-MM-DD` day."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "required": false,
+      "default": "false",
+      "description": "Not editable and not focusable, and read out as such."
+    },
+    {
+      "name": "readOnly",
+      "type": "boolean",
+      "required": false,
+      "default": "false",
+      "description": "Focusable and read out, but not editable."
+    },
+    {
+      "name": "required",
+      "type": "boolean",
+      "required": false,
+      "default": "false",
+      "description": "The form is not valid until it is filled in — the browser's own check, announced and translated for free."
+    },
+    {
+      "name": "invalid",
+      "type": "boolean",
+      "required": false,
+      "default": null,
+      "description": "Marks the value invalid whatever the bounds say. Default: invalid when out of bounds or unavailable."
+    },
+    {
+      "name": "name",
+      "type": "string",
+      "required": false,
+      "default": null,
+      "description": "What the value posts under in a form: the canonical string, or nothing while empty."
+    },
+    {
+      "name": "label",
+      "type": "React.ReactNode",
+      "required": false,
+      "default": null,
+      "description": "The field's visible name, rendered above it. A group of segments is not named by its contents."
+    },
+    {
+      "name": "labelledBy",
+      "type": "string",
+      "required": false,
+      "default": null,
+      "description": "Names the field after an element already on the page, instead of `label`."
+    },
+    {
+      "name": "describedBy",
+      "type": "string",
+      "required": false,
+      "default": null,
+      "description": "An element that describes the field — a hint, an error."
+    },
+    {
+      "name": "placeholderValue",
+      "type": "string",
+      "required": false,
+      "default": null,
+      "description": "What an empty segment starts from on an arrow key. Default today, at midnight."
+    },
+    {
+      "name": "disambiguation",
+      "type": "Disambiguation",
+      "required": false,
+      "default": null,
+      "description": "What a wall-clock time a zone skips or repeats means. Default `'compatible'`."
+    },
+    {
+      "name": "showZone",
+      "type": "boolean",
+      "required": false,
+      "default": null,
+      "description": "Whether a date-time names its zone after the time. Default: when the zone is not the reader's own."
+    },
+    {
+      "name": "end",
+      "type": "React.ReactNode",
+      "required": false,
+      "default": null,
+      "description": "Something inside the field, after the segments — a picker's button."
+    },
+    { "name": "autoFocus", "type": "boolean", "required": false, "default": null, "description": "Focus the first segment on mount." },
+    {
+      "name": "emptyText",
+      "type": "string",
+      "required": false,
+      "default": "'Empty'",
+      "description": "What an empty segment is read out as. Default `'Empty'`."
+    },
+    {
+      "name": "tabIndex",
+      "type": "number",
+      "required": false,
+      "default": "0",
+      "description": "Every segment's tab index. Default `0`; `-1` keeps the field out of the page's tab order, which a grid cell wants."
+    }
+  ],
+  "parts": [],
+  "keyboard": [
+    { "mode": null, "keys": "Tab", "action": "Every segment is its own tab stop." },
+    { "mode": null, "keys": "Left / Right", "action": "The previous or next segment, in the reading order." },
+    { "mode": null, "keys": "Up / Down", "action": "One more or one less, wrapping round the segment's range." },
+    { "mode": null, "keys": "PageUp / PageDown", "action": "A bigger step: five years, two months, a week, two hours, fifteen minutes." },
+    { "mode": null, "keys": "Home / End", "action": "The segment's lowest and highest value." },
+    { "mode": null, "keys": "0-9", "action": "Types into the segment, and moves on once no further digit could fit." },
+    { "mode": null, "keys": "A / P", "action": "AM or PM, in the AM/PM segment." },
+    { "mode": null, "keys": "Backspace", "action": "Takes back the last digit, then empties the segment, then moves to the one before." }
+  ],
+  "a11y": [
+    "The field is a `role=\"group\"` named by `label`; each segment is a `role=\"spinbutton\"` named by its unit in the reader's language (`Monat`, `месяц`), with `aria-valuetext` saying the month by name.",
+    "An empty segment still carries `aria-valuenow` (its placeholder, which is what an arrow starts from) and reads as `emptyText`.",
+    "`required` and `name` are a real input the browser validates, so an empty required field stops the form and the message is the browser's own."
+  ],
+  "axe": { "fixtures": ["DateField"], "knownViolations": [] },
+  "styleTree": [
+    { "path": "dateField", "depth": 0, "extends": "textbox", "variants": ["compact", "invalid", "disabled"] },
+    { "path": "dateField.label", "depth": 1, "extends": null, "variants": [] },
+    { "path": "dateField.segment", "depth": 1, "extends": null, "variants": ["placeholder", "disabled"] },
+    { "path": "dateField.literal", "depth": 1, "extends": null, "variants": [] },
+    { "path": "dateField.zone", "depth": 1, "extends": null, "variants": [] },
+    { "path": "dateField.validation", "depth": 1, "extends": null, "variants": [] }
+  ]
+}
