@@ -118,7 +118,6 @@ export const ember = Box.components(
     h1: { styles: display },
     h2: { styles: display },
     h3: { styles: display },
-    display: { styles: display, variants: { hero: { fontWeight: 500, letterSpacing: 'tighter' } } },
 
     button: {
       styles: {
@@ -459,7 +458,8 @@ export const ember = Box.components(
       },
     },
 
-    // The site's own.
+    // The site's own. Everything above this line is the design `npm create @box-kite` hands an app.
+    display: { styles: display, variants: { hero: { fontWeight: 500, letterSpacing: 'tighter' } } },
     // Every code surface, in a syntax theme of Ember's own: ink and paper, with the hues pulled warm — a
     // vermilion keyword, sage strings, amber numbers and one cool pine so properties still stand apart.
     code: {

@@ -8,7 +8,7 @@ import Grid from '../../src/components/grid';
 import Icon from '../../src/components/icon';
 import { Label, P, Span } from '../../src/components/semantics';
 import VisuallyHidden from '../../src/components/visuallyHidden';
-import { Design, DESIGNS, designOf, designScope, THEME_STORAGE_KEY } from '../designs/designs';
+import { Design, DesignId, DESIGNS, designOf, designScope, THEME_STORAGE_KEY } from '../designs/designs';
 
 type Mode = 'light' | 'dark' | 'system';
 
@@ -67,11 +67,7 @@ export default function DesignPicker({ compact = false }: { compact?: boolean })
       </Flex>
 
       <Choices label="Design">
-        <Grid gridTemplateColumns={1} sm={{ gridTemplateColumns: 2 }} lg={{ gridTemplateColumns: 4 }} gap={3}>
-          {DESIGNS.map((option) => (
-            <DesignCard key={option.id} design={option} selected={option.id === current.id} onSelect={() => setDesign(option.id)} />
-          ))}
-        </Grid>
+        <DesignCards name="design" value={current.id} onChange={setDesign} />
       </Choices>
 
       <Choices label="Mode">
@@ -133,9 +129,27 @@ function Choice({ name, checked, onSelect, component, children }: ChoiceProps) {
   );
 }
 
-function DesignCard({ design, selected, onSelect }: { design: Design; selected: boolean; onSelect: () => void }) {
+/** The four designs as radio cards, each drawn in its own design. `name` keeps two groups on one page apart. */
+export function DesignCards({ name, value, onChange }: { name: string; value: DesignId; onChange: (id: DesignId) => void }) {
   return (
-    <Choice name="design" checked={selected} onSelect={onSelect} component="designPicker.card">
+    <Grid gridTemplateColumns={1} sm={{ gridTemplateColumns: 2 }} lg={{ gridTemplateColumns: 4 }} gap={3}>
+      {DESIGNS.map((option) => (
+        <DesignCard key={option.id} name={name} design={option} selected={option.id === value} onSelect={() => onChange(option.id)} />
+      ))}
+    </Grid>
+  );
+}
+
+interface DesignCardProps {
+  name: string;
+  design: Design;
+  selected: boolean;
+  onSelect: () => void;
+}
+
+function DesignCard({ name, design, selected, onSelect }: DesignCardProps) {
+  return (
+    <Choice name={name} checked={selected} onSelect={onSelect} component="designPicker.card">
       <Preview design={design} />
       <Flex ai="center" jc="space-between" gap={2} px={4} pt={3}>
         <Span component="designPicker.cardName">{design.name}</Span>

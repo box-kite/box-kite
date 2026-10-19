@@ -101,3 +101,5 @@ export function useClassNames<TKey extends keyof ComponentsAndVariants = never>(
 export default RscBox;
 
 export type { BoxClassNames, BoxClassNameProps };
+// The two shapes a design file annotates with, so it needs no import from `@box-kite/core`, which pnpm hides.
+export type { BoxComponentStyles, BoxStyleProps } from './types';

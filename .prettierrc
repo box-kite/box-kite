@@ -10,6 +10,12 @@
       "options": {
         "parser": "markdown"
       }
+    },
+    {
+      "files": "create/templates/**",
+      "options": {
+        "printWidth": 120
+      }
     }
   ]
 }

@@ -24,6 +24,7 @@ export const TEMPLATE_DEMOS_DIRECTORY = 'pages/templates';
 const files: Record<SiteRoutePath, string> = {
   '/': 'homePage',
   '/start-with-ai': 'startPage',
+  '/start-a-project': 'startProjectPage',
   '/installation': 'installationPage',
   '/releases': 'releasesPage',
   '/blog': 'blogPage',

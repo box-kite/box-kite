@@ -1,0 +1,4 @@
+/* The design paints the page, so all that is left here is the margin the browser adds. */
+body {
+  margin: 0;
+}

@@ -113,14 +113,6 @@ export const azure = Box.components(
     h1: { styles: display },
     h2: { styles: display },
     h3: { styles: display },
-    display: { styles: display, variants: { hero: { fontWeight: 700, letterSpacing: 'tight' } } },
-    // Sky into shallow water rather than into pink, which over a blue would read as purple. The cyan end holds 3.4:1.
-    heroAccent: {
-      styles: {
-        bgGradient: { linear: 'r', colors: ['accent-700', 'accent-500', 'cyan-600'] },
-        theme: { dark: { bgGradient: { linear: 'r', colors: ['accent-400', 'accent-300', 'cyan-300'] } } },
-      },
-    },
 
     button: {
       styles: {
@@ -483,7 +475,15 @@ export const azure = Box.components(
       },
     },
 
-    // The site's own.
+    // The site's own. Everything above this line is the design `npm create @box-kite` hands an app.
+    display: { styles: display, variants: { hero: { fontWeight: 700, letterSpacing: 'tight' } } },
+    // Sky into shallow water rather than into pink, which over a blue would read as purple. The cyan end holds 3.4:1.
+    heroAccent: {
+      styles: {
+        bgGradient: { linear: 'r', colors: ['accent-700', 'accent-500', 'cyan-600'] },
+        theme: { dark: { bgGradient: { linear: 'r', colors: ['accent-400', 'accent-300', 'cyan-300'] } } },
+      },
+    },
     // Every code surface, in a syntax theme of Azure's own: night sky and paper, a sky-blue keyword, mint
     // strings, apricot numbers and one periwinkle for properties, so the cool hues still stand apart.
     code: {

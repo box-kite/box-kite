@@ -26,6 +26,7 @@ Read `.claude/rules/box-kite-rules.md` — the shortest complete answer — befo
 | `npm run build`                            | Build library (ESM + CJS output to dist/)                                                                         |
 | `npm run build:dev`                        | Build library without minification                                                                                |
 | `npm run build:mcp`                        | Build `@box-kite/mcp` into `dist-mcp/`, then speak the protocol to it to prove it answers                         |
+| `npm run build:create`                     | Build `@box-kite/create` into `dist-create/`, then create and build an app with it per design, in TS and JS       |
 | `npm run compile`                          | TypeScript type check (no emit)                                                                                   |
 | `npm test`                                 | Run all tests (Vitest)                                                                                            |
 | `npm run test:coverage`                    | Run all tests and enforce the coverage budget on `src/core/`                                                      |
@@ -40,6 +41,8 @@ Read `.claude/rules/box-kite-rules.md` — the shortest complete answer — befo
 | `npm run check:catalog`                    | Fail if that manifest no longer matches the props and components it is generated from                             |
 | `npm run docs:agents`                      | Write the committed agent files: the skill, the Cursor rule and the plugin marketplace entry                      |
 | `npm run check:agents`                     | Fail if one of those three has been edited by hand instead of its source                                          |
+| `npm run docs:create`                      | Write the `npm create @box-kite` templates: the site designs as app files, and every JavaScript twin              |
+| `npm run check:create`                     | Fail if one of those templates no longer matches what it is generated from                                        |
 | `npm run size:published -- accordion tabs` | The "N KB gz on top of Box" figure a release note quotes, measured rather than transcribed                        |
 | `npm run release -- minor`                 | Turn `releases/next.md` into the versioned notes, bump the manifest and open the release PR — merging it releases |
 
@@ -219,7 +222,8 @@ CI runs the test suite against React 18 and React 19 — both are in the support
 - Vite library mode, dual ESM (.mjs) + CJS (.cjs) output
 - Components get individual chunks for tree-shaking
 - `react`, `react-dom` are external (peer dependencies)
-- Published from `dist/`, `dist-core/` and `dist-mcp/` by `publish.yml` (a new package is seeded by hand once, since npm configures a trusted publisher only on a package that exists — `.claude/skills/release/SKILL.md`), dispatched by `release.yml` when a merged release PR (`npm run release`) lands on a green main; the release body is `releases/<version>.md`
+- `create/` is `@box-kite/create`, what `npm create @box-kite` runs: create-vite, then the files in `create/templates/`. Ember, Azure and Mono there are generated from `pages/designs/` (everything above the `// The site's own.` line) and every `js/` file from its `ts/` twin, so edit the site design or the TypeScript file and run `npm run docs:create`
+- Published from `dist/`, `dist-core/`, `dist-mcp/` and `dist-create/` by `publish.yml` (a new package is seeded by hand once, since npm configures a trusted publisher only on a package that exists — `.claude/skills/release/SKILL.md`), dispatched by `release.yml` when a merged release PR (`npm run release`) lands on a green main; the release body is `releases/<version>.md`
 - `vite-plugin-dts` generates `.d.ts` files
 
 ## Reference Documents

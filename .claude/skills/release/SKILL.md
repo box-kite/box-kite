@@ -5,7 +5,7 @@ disable-model-invocation: true
 argument-hint: [patch|minor|major|x.y.z] [--dry-run]
 ---
 
-Cut a release of `@box-kite/react`, `@box-kite/core` and `@box-kite/mcp`. One version, all three packages, one PR.
+Cut a release of `@box-kite/react`, `@box-kite/core`, `@box-kite/mcp` and `@box-kite/create`. One version, all four packages, one PR.
 
 ## How a release works
 
@@ -19,7 +19,7 @@ Cut a release of `@box-kite/react`, `@box-kite/core` and `@box-kite/mcp`. One ve
   run and no tag is made by hand.
 - **Merging the PR is the release.** When Tests go green on main, `release.yml` tags `v<version>`,
   creates the GitHub Release with the notes file as its body, and dispatches `publish.yml`, which
-  publishes core, then react, then mcp, with provenance, and then lists the new mcp version in the MCP registry
+  publishes core, then react, then mcp, then create, with provenance, and then lists the new mcp version in the MCP registry
   (its `mcp-registry` job, over GitHub OIDC). `pages.yml` deploys the site on the same push.
 
 ## Steps
@@ -37,7 +37,7 @@ Cut a release of `@box-kite/react`, `@box-kite/core` and `@box-kite/mcp`. One ve
    branch — the file is the source of truth, and the GitHub Release body follows it.
 5. **Merge** (squash), then watch the chain: `gh run list --limit 6` shows Tests → Release →
    Publish to NPM, and Deploy static content to Pages beside them.
-6. **Confirm**: `npm view @box-kite/react version`, `npm view @box-kite/core version` and `npm view @box-kite/mcp version` say the new
+6. **Confirm**: `npm view @box-kite/react version`, `npm view @box-kite/core version`, `npm view @box-kite/mcp version` and `npm view @box-kite/create version` say the new
    version; `curl -s https://registry.modelcontextprotocol.io/v0.1/servers/io.github.box-kite%2Fmcp/versions/<version>` is a 200;
    the release page reads right; the site is up.
 
@@ -66,7 +66,7 @@ Cut a release of `@box-kite/react`, `@box-kite/core` and `@box-kite/mcp`. One ve
 ## Owner setup, once per package
 
 npm trusted publishing is configured per package, and 1.0.0 was published by hand because it was
-missing: `@box-kite/react`, `@box-kite/core` **and** `@box-kite/mcp` each need a trusted publisher of
+missing: `@box-kite/react`, `@box-kite/core`, `@box-kite/mcp` **and** `@box-kite/create` each need a trusted publisher of
 owner `box-kite`, repository `box-kite`, workflow `publish.yml`, environment left blank, with
 `npm publish` ticked.
 
@@ -81,4 +81,12 @@ git worktree add ../box-kite-seed v2.1.0 && cd ../box-kite-seed
 npm ci && npm run build:mcp
 npm publish ./dist-mcp --access public   # logged in as a box-kite org owner, with 2FA
 cd - && git worktree remove ../box-kite-seed
+```
+
+`@box-kite/create` is seeded the same way, from the first tag that has it. Its build creates and builds an app per
+design against `dist/`, so the library is built first:
+
+```bash
+npm ci && npm run build && npm run build:create
+npm publish ./dist-create --access public
 ```
