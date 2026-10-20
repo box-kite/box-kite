@@ -42,6 +42,15 @@ a copy whose canonical URL points back here, and nothing is ever published only 
    in under 160 characters.
    ```
 
+   **Show the example, don't describe it.** Each visual claim gets a live example on the site and a screenshot
+   everywhere else, from one line of markdown on its own:
+   `![What the reader sees.](https://www.box-kite.dev/img/blog/<slug>/filter-card.png)`. Put the component in
+   `pages/postDemos/<slug>.tsx` as a named export (`FilterCard` for `filter-card.png`), identical to the code block
+   under it. The post page renders it live with the alt text as its caption, and the other platforms get the PNG. Take
+   the screenshot from the dev server in the light theme at `deviceScaleFactor: 2`, with the interesting state open,
+   clipped just inside the demo frame, into `pages/public/img/blog/<slug>/`. Word the prose so it reads true beside a
+   picture ("with the dropdown open", not "press Filters"). The cross-post script adds the "live in the original" line.
+
 6. **Write the cross-post kit** at `../box-kite-plans/launches/blog-<slug>.md`: the dev.to / Hashnode / Medium steps with
    `canonical_url: https://www.box-kite.dev/blog/<slug>/`, a Reddit post (r/reactjs for a use case, r/webdev or
    r/learnreactjs for a beginner article), an X thread of five to seven posts, a short LinkedIn post, a Show HN line when
@@ -75,6 +84,7 @@ a copy whose canonical URL points back here, and nothing is ever published only 
 - Plain sentences, second person, no hype words ("blazing", "seamless", "game-changing", "revolutionary").
 - Every claim is something the reader can check: a measured number, a link, a block they can paste.
 - Say the trade-off out loud. An article that admits the limit is the one people trust with the rest.
-- 1,200–2,500 words. A beginner article is longer in code and shorter in prose.
+- Short. A use case is about 1,000 words, most of them in code and examples; cut any paragraph that restates a bullet
+  or a picture. A beginner article is longer in code and shorter in prose.
 - Box Kite's own rules apply to every snippet: no `style={{ }}`, `<Flex>`/`<Grid>`/`<Button>`/`<H1>` rather than
   `<Box tag>`, HTML attributes in `props`, `fontSize` in pixels and spacing on the ÷4 scale.
