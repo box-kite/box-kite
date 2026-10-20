@@ -138,8 +138,9 @@ export function useClassNames<TKey extends keyof ComponentsAndVariants = never>(
 export { useVisibility };
 
 export type { BoxClassNames, BoxClassNameProps };
-export { flushInteractions } from './utils/interactions/interactionChannel';
-export type { InteractionEvent, InteractionListener } from './utils/interactions/interactionChannel';
+// Named rather than static, so an app that never reports pays nothing for the queue.
+export { emitInteraction as reportInteraction, flushInteractions } from './utils/interactions/interactionChannel';
+export type { InteractionEvent, InteractionInput, InteractionListener } from './utils/interactions/interactionChannel';
 export type { BoxConfiguration } from './react/useStyles';
 // The two shapes a design file annotates with, so it needs no import from `@box-kite/core`, which pnpm hides.
 export type { BoxComponentStyles, BoxStyleProps } from './types';

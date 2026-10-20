@@ -22,6 +22,12 @@ const stop = Box.onInteraction(({ component, type, reason, value }) => {
 
 One choice is one event: a component built from others keeps its parts quiet, so a day picked in a `DatePicker` reports `datePicker.valueChange` and `datePicker.openChange`, not the `Calendar` inside it as well. A click on a plain button or link reports no change, so it is not an event here. Instead, `Box.configure({ componentAttribute: true })` writes `data-bk="<component key>"` on every element a component styles, so one delegated `click` listener can name what was pressed with `event.target.closest('[data-bk]')`. Set it in a module that runs on both the server and the browser, or hydration sees two different trees. A value is shared with the app rather than copied, and it can hold what someone typed (a combobox query, an edited cell), so redact it before it leaves the page.
 
+An app reports its own moments on the same channel with `reportInteraction({ component, type, reason, value, details, event })`, a named export of `@box-kite/react`: a hover, a section scrolled into view, a wizard step. Box does not wrap the handlers an app passes in `props`, because that would cost every render and report a hover per frame, so a moment worth counting is named where it happens:
+
+```tsx
+<Button props={{ onMouseEnter: (event) => reportInteraction({ component: 'pricing-cta', type: 'mouseEnter', event }) }}>Pricing</Button>
+```
+
 ## Breaking changes
 
 None.

@@ -627,6 +627,13 @@ export const boxMembers: readonly BoxMember[] = [
       'Hear every change any component reports — a dialog opened and why, a tab chosen, a DataGrid sorted or edited — in one shape, for analytics or an audit log.',
   },
   {
+    id: 'reportinteraction',
+    name: 'reportInteraction()',
+    signature: "reportInteraction({ component: 'pricing-cta', type: 'mouseEnter', event })",
+    summary:
+      "Report a moment of the app's own — a hover, a page view, a custom step — to the same Box.onInteraction listeners, fire and forget. A named export, so an app that never calls it ships none of it.",
+  },
+  {
     id: 'getvariablevalue',
     name: 'Box.getVariableValue()',
     signature: 'Box.getVariableValue("sky-500")',

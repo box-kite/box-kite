@@ -3951,7 +3951,7 @@ const stop = Box.onInteraction(({ component, type, reason, value, details, event
 - **`event`** is the DOM event behind the change, unwrapped from React's synthetic one. **`target`** is the element that handled it (the tab, not the icon inside it), or the component's own element where no event was involved (the DataGrid's).
 - **It fires whether or not the app passed the callback, and it is fire and forget.** An event is queued as it happens (its `target` and `timeStamp` read at once) and delivered in order, batched, in a **background task** after the handler that caused it (`scheduler.postTask` at `background` priority, `setTimeout` where there is none). A listener is therefore never on the input's path: a slow one cannot delay the click, the render or the paint it reports. `pagehide` delivers whatever is still queued, and **`flushInteractions()`** (from `@box-kite/react`) delivers it now, which is what an analytics sender calls before it sends its last batch, and what a test calls before it asserts.
 - **One choice is one event, from the component the app rendered.** A component built from others keeps its parts quiet: a day picked in a `DatePicker` is `datePicker.valueChange` and `datePicker.openChange` (`select`), never `calendar.valueChange` as well. The same holds for the `Combobox` in a `TimeZoneSelect` and for the DataGrid's own filters, editors and panels, whose changes the grid reports itself. Focus moving inside a calendar is not an interaction and reports nothing.
-- **A listener that throws is reported (`reportError`) and skipped**, so analytics can never break the control it watches. With no listener, a change costs one size check.
+- **A listener that throws is rethrown on a timer and the rest still run**, so analytics can never break the control it watches. With no listener, a change costs one size check.
 - **`value` is shared, not copied**: never mutate it. It can hold what someone typed (a `Combobox` query, an edited cell, a toast's message), so redact it before it leaves the page.
 - **The channel lives on `globalThis`** under `Symbol.for('box-kite.interactions')`. Two copies of the package, or a server and a browser build in one process, share it.
 
@@ -3980,3 +3980,11 @@ document.addEventListener('click', (event) => {
 ```
 
 An app's own `data-bk` in `props` wins. Set the flag before the first render, on both sides, or a hydrating browser sees attributes the server never wrote.
+
+**A moment of the app's own is `reportInteraction`** (from `@box-kite/react`). Box never wraps the handlers an app passes in `props`: wrapping them all would cost every render, report a hover or a scroll per frame, and name nothing better than `button`. So a hover, a section scrolled into view or a wizard step is reported where it happens, in the same shape, to the same listeners, fire and forget:
+
+```tsx
+<Button props={{ onMouseEnter: (event) => reportInteraction({ component: 'pricing-cta', type: 'mouseEnter', event }) }}>Pricing</Button>
+```
+
+It is a function, not a hook and not a `Box` static, so an app that never calls it ships none of the queue, and it works in an effect, a fetch callback or a module with no React in it. `event` may be React's synthetic one; `target` and `timeStamp` are filled in, and with no listener it costs one size check. Keep it to discrete moments, the rule the components follow.

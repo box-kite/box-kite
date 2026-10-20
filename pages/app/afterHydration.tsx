@@ -1,10 +1,13 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
+import { reportInteraction } from '../../src/box';
 import { hydrationFinished, useHydrated } from './hydration';
 import { interactionFeed, logRequested } from './interactionLog';
 
 // Fetched only by a tab that asked for it, so a visitor who never does pays nothing.
 const InteractionPanel = lazy(() => import('./interactionPanel'));
+// Module-wide, so StrictMode running the effect twice is not a second visit.
+let reportedPath: string | undefined;
 
 /**
  * Runs once the prerendered HTML has been adopted, so a `Reveal` mounting from here on is a real mount —
@@ -21,12 +24,23 @@ export default function AfterHydration() {
     hydrationFinished();
   }, []);
 
+  // Read here rather than off `showLog`, which turns true a render late — after the first page view was reported.
   useEffect(() => {
-    if (import.meta.env.DEV || showLog) interactionFeed.start({ console: import.meta.env.DEV });
-  }, [showLog]);
+    if (import.meta.env.DEV || logRequested(window.location.search)) interactionFeed.start({ console: import.meta.env.DEV });
+  }, []);
 
   useEffect(() => {
-    interactionFeed.navigate(pathname);
+    if (pathname === reportedPath) return;
+
+    // A page view is the app's own moment, so it goes on the channel every component reports on.
+    reportInteraction({
+      component: 'router',
+      type: 'navigate',
+      reason: reportedPath === undefined ? 'load' : 'route',
+      value: pathname,
+      details: { from: reportedPath },
+    });
+    reportedPath = pathname;
   }, [pathname]);
 
   return showLog ? (

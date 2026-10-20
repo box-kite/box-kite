@@ -125,7 +125,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "40.73 kB"
+      "limit": "40.95 kB"
     },
     {
       "name": "Box in a Server Component (react-server entry)",

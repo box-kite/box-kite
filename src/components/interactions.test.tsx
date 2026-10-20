@@ -1,7 +1,7 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ignoreLogs } from '../../dev/tests';
-import Box from '../box';
+import Box, { reportInteraction } from '../box';
 import { flushInteractions, InteractionEvent } from '../utils/interactions/interactionChannel';
 import createToastStore from '../utils/toast/toastStore';
 import Button from './button';
@@ -50,6 +50,19 @@ describe('Box.onInteraction', () => {
     expect(onOpenChange).toHaveBeenCalledWith(true, expect.objectContaining({ reason: 'trigger' }));
     expect(heard()).toEqual([expect.objectContaining({ component: 'dialog', type: 'openChange', reason: 'trigger', value: true })]);
     expect(heard()[0].target).toBe(screen.getByRole('button', { name: 'Rename' }));
+  });
+
+  it('hears a moment the app reports itself, from a handler of its own in props', () => {
+    render(
+      <Button props={{ onMouseEnter: (event) => reportInteraction({ component: 'pricing-cta', type: 'mouseEnter', event }) }}>
+        Pricing
+      </Button>,
+    );
+
+    fireEvent.mouseEnter(screen.getByRole('button'));
+
+    expect(heard()).toEqual([expect.objectContaining({ component: 'pricing-cta', type: 'mouseEnter', event: expect.any(MouseEvent) })]);
+    expect(heard()[0].target).toBe(screen.getByRole('button'));
   });
 
   it('hears a tab chosen, with the tab as its target', () => {

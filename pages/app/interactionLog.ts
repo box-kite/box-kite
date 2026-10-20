@@ -49,13 +49,10 @@ export function clickLine(target: EventTarget | null): InteractionLine | null {
   return line(`click ${part.getAttribute('data-bk')}`, clip(label));
 }
 
-export const navigationLine = (path: string): InteractionLine => line('navigate', path);
-
 let lines: InteractionLine[] = [];
 const listeners = new Set<() => void>();
 let toConsole = false;
 let started = false;
-let lastPath: string | undefined;
 // Outside the log: a press on the panel itself is not something the page did.
 let ignored: (target: EventTarget | null) => boolean = () => false;
 
@@ -100,13 +97,6 @@ export const interactionFeed = {
       // Capture, so a press a component stops from bubbling is still heard.
       true,
     );
-  },
-  navigate(path: string): void {
-    // A repeat is StrictMode running the effect twice, not a second visit.
-    if (!started || path === lastPath) return;
-
-    lastPath = path;
-    publish(navigationLine(path));
   },
   ignore(test: (target: EventTarget | null) => boolean): void {
     ignored = test;
