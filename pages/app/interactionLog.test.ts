@@ -1,14 +1,10 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import Box, { InteractionEvent } from '../../src/box';
-import { describeValue, forgetLog, interactionFeed, interactionLine, logRequested } from './interactionLog';
+import { describeValue, interactionLine, logInteractions } from './interactionLog';
 
 const at = { source: 'user', timeStamp: 0, time: 0 } as const;
 
 describe('the interaction log', () => {
-  afterEach(() => {
-    forgetLog();
-  });
-
   it('reads a value as one short line, however big it is', () => {
     expect(describeValue(true)).toBe('true');
     expect(describeValue(['a', 'b'])).toBe('["a","b"]');
@@ -21,7 +17,7 @@ describe('the interaction log', () => {
   it('names a change by its component and type, and says why and what', () => {
     const line = interactionLine({ ...at, kind: 'change', component: 'dialog', type: 'openChange', reason: 'escape', value: false });
 
-    expect(line).toMatchObject({ name: 'dialog.openChange', detail: 'escape → false' });
+    expect(line).toEqual({ name: 'dialog.openChange', detail: 'escape → false' });
   });
 
   it('names a press by the part it landed on, and reads its label off the page', () => {
@@ -29,22 +25,14 @@ describe('the interaction log', () => {
     button.innerHTML = '<span>Save   draft</span>';
     const press: InteractionEvent = { ...at, kind: 'dom', component: 'button', type: 'click', target: button };
 
-    expect(interactionLine(press)).toMatchObject({ name: 'click button', detail: 'Save draft' });
+    expect(interactionLine(press)).toEqual({ name: 'click button', detail: 'Save draft' });
   });
 
-  it('keeps ?interactions for the rest of the tab', () => {
-    expect(logRequested('')).toBe(false);
-    expect(logRequested('?interactions')).toBe(true);
-    expect(logRequested('')).toBe(true);
-  });
-});
-
-describe('the interaction feed', () => {
   it('logs a press and the change it made from one stream, in order', async () => {
+    const info = vi.spyOn(console, 'info').mockImplementation(() => {});
     Box.configure({ componentAttribute: true });
-    interactionFeed.start({ console: false });
+    logInteractions();
     await vi.dynamicImportSettled();
-    interactionFeed.clear();
 
     const tab = document.createElement('button');
     tab.setAttribute('data-bk', 'tabs.tab');
@@ -57,8 +45,12 @@ describe('the interaction feed', () => {
     tab.click();
     Box.flushInteractions();
 
-    expect(interactionFeed.snapshot().map((line) => line.name)).toEqual(['tabs.valueChange', 'click tabs.tab']);
+    expect(info.mock.calls).toEqual([
+      ['[interaction] click tabs.tab', 'Activity'],
+      ['[interaction] tabs.valueChange', 'click → activity'],
+    ]);
     tab.remove();
+    info.mockRestore();
     Box.configure({ componentAttribute: false });
   });
 });

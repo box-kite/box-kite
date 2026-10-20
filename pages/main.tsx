@@ -13,7 +13,7 @@ import './index.css';
 // The build prerenders every route with content-hashed class names (see `entry-server.tsx`); the
 // browser has to name the same rules the same way, or hydration finds a different `class` on every
 // element it adopts.
-// `data-bk` names a press in the `?interactions` log, and the prerender and the browser must both write it.
+// `data-bk` names a press in the console's interaction log, and the prerender and the browser must both write it.
 Box.configure({ classNames: 'stable', componentAttribute: true });
 
 const container = document.getElementById('root')!;

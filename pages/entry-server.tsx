@@ -17,7 +17,7 @@ import './extends';
 
 // The class names have to survive the trip to the browser, where a counter starting from zero would
 // name the same rules differently. Content-hashed names agree across the two processes.
-// `data-bk` names a press in the `?interactions` log, and the prerender and the browser must both write it.
+// `data-bk` names a press in the console's interaction log, and the prerender and the browser must both write it.
 Box.configure({ classNames: 'stable', componentAttribute: true });
 
 /** A location no route matches, so the router falls through to the 404 page. */
