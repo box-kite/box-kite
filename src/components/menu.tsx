@@ -573,12 +573,12 @@ function MenuSub<TKey extends keyof ComponentsAndVariants = 'menu'>(props: MenuS
   });
 
   const { panels, registerLayer } = useNestedLayers(parent.registerLayer);
+  const quiet = useContext(InteractionsQuiet);
 
   const layer = usePopoverLayer<'menu', MenuReason>({
     haspopup: 'menu',
     idPrefix: 'menu-sub',
     id: restProps.id,
-    interaction: { component: 'menu.sub', type: 'openChange' },
     onOpened: handleOpened,
     onClosing: handleClosing,
     inside: panels,
@@ -624,6 +624,8 @@ function MenuSub<TKey extends keyof ComponentsAndVariants = 'menu'>(props: MenuS
 
     event.preventDefault();
     layer.setOpen(true, { reason: 'trigger', event });
+    // Only the deliberate open: hover opens one and focus following the pointer closes it, many times a visit.
+    if (!quiet) emitInteraction({ component: 'menu.sub', type: 'openChange', reason: 'keyboard', value: true, event });
   });
 
   const handlePointerEnter = useEventCallback((event: React.PointerEvent) => {

@@ -1,6 +1,7 @@
-import { FunctionComponent, useEffect, useMemo, useRef, useState } from 'react';
+import { FunctionComponent, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import Box, { BoxProps } from '../box';
 import { useEventCallback } from '../react/a11y/callbacks';
+import { InteractionsQuiet } from '../react/a11y/quietInteractions';
 import useControllableState, { ChangeHandler } from '../react/a11y/useControllableState';
 import { DateChangeDetails, DateChangeReason } from '../react/date/dateChange';
 import { useDateEnvironment } from '../react/date/dateEnvironment';
@@ -24,6 +25,7 @@ import { format } from '../utils/date/format';
 import { monthNames, weekdayNames, weekInfo } from '../utils/date/locale';
 import { ZoneInput } from '../utils/date/zones';
 import { isRtl } from '../utils/dom/domUtils';
+import { emitInteraction } from '../utils/interactions/interactionChannel';
 import { Path, Svg } from './svg';
 import VisuallyHidden from './visuallyHidden';
 
@@ -214,6 +216,11 @@ function CalendarImpl<TKey extends keyof ComponentsAndVariants = 'calendar'>(pro
   });
   const focused = dayOf(focusedText) ?? todayDay;
   const [view, setView] = useState<CalendarView>('day');
+  // Paging and zooming have no callback of their own; inside a picker the picker reports for the calendar.
+  const quiet = useContext(InteractionsQuiet);
+  const report = (type: string, reason: string, value: unknown) => {
+    if (!quiet) emitInteraction({ component: 'calendar', type, reason, value });
+  };
 
   // The first month on show. Several months side by side scroll only when the focus leaves them, so picking a day in
   // the second month does not slide the first one away mid-range.
@@ -292,10 +299,11 @@ function CalendarImpl<TKey extends keyof ComponentsAndVariants = 'calendar'>(pro
   });
 
   const page = (direction: 1 | -1) => {
-    if (view === 'day') {
-      setShown(first + direction * months);
-      focusDay(addMonths(focused, direction * months), 'navigate', false);
-    } else focusDay(addMonths(focused, direction * (view === 'month' ? 12 : 12 * YEARS_PER_PAGE)), 'navigate', false);
+    const to = addMonths(focused, direction * (view === 'day' ? months : view === 'month' ? 12 : 12 * YEARS_PER_PAGE));
+
+    if (view === 'day') setShown(first + direction * months);
+    focusDay(to, 'navigate', false);
+    report('pageChange', direction === 1 ? 'next' : 'previous', dayText(to));
   };
 
   const monthsShown = Array.from({ length: months }, (_, index) => ({
@@ -433,6 +441,7 @@ function CalendarImpl<TKey extends keyof ComponentsAndVariants = 'calendar'>(pro
       moveFocusRef.current = true;
       setFocusedText(dayText(clampDay({ ...date, day: Math.min(focused.day, 28) }, bounds)), { reason: 'navigate' });
       setView(view === 'year' ? 'month' : 'day');
+      report('viewChange', 'zoom-in', view === 'year' ? 'month' : 'day');
     };
     const focusAt = (index: number, container: Element | null) => {
       const date = target(index);
@@ -582,7 +591,10 @@ function CalendarImpl<TKey extends keyof ComponentsAndVariants = 'calendar'>(pro
               props={{
                 type: 'button',
                 'aria-live': 'polite',
-                onClick: () => setView(view === 'day' ? 'month' : 'year'),
+                onClick: () => {
+                  setView(view === 'day' ? 'month' : 'year');
+                  report('viewChange', 'zoom-out', view === 'day' ? 'month' : 'year');
+                },
               }}
             >
               {title}

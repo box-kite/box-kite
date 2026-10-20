@@ -1,11 +1,12 @@
 import { FunctionComponent, useMemo } from 'react';
 import Box, { BoxProps } from '../box';
+import { useInteractionCallback } from '../react/a11y/callbacks';
 import { QuietInteractions } from '../react/a11y/quietInteractions';
-import useControllableState, { ChangeHandler } from '../react/a11y/useControllableState';
+import useControllableState, { ChangeDetails, ChangeHandler } from '../react/a11y/useControllableState';
 import { useDateEnvironment } from '../react/date/dateEnvironment';
 import { matchZone, ZoneOption, zoneOptions } from '../utils/date/zoneOptions';
 import { normalizeZone } from '../utils/date/zones';
-import Combobox, { ComboboxValueReason } from './combobox';
+import Combobox, { ComboboxOpenReason, ComboboxValueReason } from './combobox';
 
 export type { ZoneOption };
 
@@ -82,11 +83,14 @@ function TimeZoneSelectImpl(props: TimeZoneSelectProps) {
     onChange: onValueChange,
     interaction: { component: 'timeZoneSelect', type: 'valueChange' },
   });
+  // The Combobox inside is quiet, so the select says when its list opens — created out here, where it is heard.
+  const reportOpen = useInteractionCallback<boolean, ChangeDetails<ComboboxOpenReason>>(undefined, 'timeZoneSelect', 'openChange');
 
   return (
     <QuietInteractions>
       <Combobox<ZoneOption>
         {...boxProps}
+        onOpenChange={reportOpen}
         data={options}
         def={{
           label: 'label',

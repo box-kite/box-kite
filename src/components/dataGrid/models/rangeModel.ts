@@ -240,6 +240,7 @@ export default class RangeModel<TRow> {
 
     this._dragging = false;
     this.grid.notifyRows();
+    this.reportBlock();
   };
 
   // ========== What is in it ==========
@@ -311,7 +312,13 @@ export default class RangeModel<TRow> {
 
   private emit(reason: DataGridRangeReason): void {
     this.grid.props.onRangeChange?.(this.range, { reason });
-    this.grid.reportInteraction('rangeChange', this.range, reason);
+    // Only a block marked on purpose: every arrow key moves the current cell, and a drag reports where it ends.
+    if (reason === 'extend' && !this._dragging) this.reportBlock();
+  }
+
+  private reportBlock(): void {
+    if (this.enabled && this._anchor && !samePosition(this._anchor, this._focus))
+      this.grid.reportInteraction('rangeChange', this.range, 'extend');
   }
 
   // ========== The clipboard ==========
@@ -329,6 +336,7 @@ export default class RangeModel<TRow> {
 
     event.clipboardData.setData('text/plain', toTsv(this.values()));
     event.preventDefault();
+    this.grid.reportInteraction('copy', this.range, 'copy');
   };
 
   /**

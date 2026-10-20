@@ -1,6 +1,6 @@
 import { createContext, Ref, RefAttributes, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { BoxProps, useBoxElement } from '../box';
-import { useEventCallback, useLatest } from '../react/a11y/callbacks';
+import { useEventCallback, useInteractionCallback, useLatest } from '../react/a11y/callbacks';
 import useControllableState, { ChangeDetails, ChangeHandler } from '../react/a11y/useControllableState';
 import boxComponent from '../react/boxComponent';
 import { useIsomorphicLayoutEffect } from '../react/effects';
@@ -175,6 +175,8 @@ function SwipeItemImpl<TKey extends keyof ComponentsAndVariants = 'list.item'>(p
   }, [current, measure]);
 
   const close = useEventCallback((details: ChangeDetails<SwipeReason>) => setOpen(null, details));
+  // A full swipe from a closed row changes no open state and runs its action from a timer, so it reports here.
+  const reportFullSwipe = useInteractionCallback<SwipeSide, ChangeDetails<'swipe'>>(undefined, 'swipeItem', 'fullSwipe');
 
   // A press anywhere else closes it, the way an open row in Mail closes when another is touched.
   useEffect(() => {
@@ -256,6 +258,7 @@ function SwipeItemImpl<TKey extends keyof ComponentsAndVariants = 'list.item'>(p
     setLive(null);
     if (rest.full) {
       setFull(rest.full);
+      reportFullSwipe(rest.full, { reason: 'swipe', event });
       setOpen(null, { reason: 'swipe', event });
     } else {
       setOpen(rest.open, { reason: 'swipe', event });

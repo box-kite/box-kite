@@ -253,7 +253,6 @@ function DashboardGridImpl<TKey extends keyof ComponentsAndVariants = 'dashboard
     value: layout,
     defaultValue: defaultLayout ?? { version: DashboardUtils.VERSION, columns: 12, items: [] },
     onChange: onLayoutChange,
-    interaction: { component: 'dashboard', type: 'layoutChange' },
   });
 
   // Normalized for rendering rather than on the way into state: a controlled consumer owns what it gave
@@ -390,8 +389,13 @@ function DashboardGridImpl<TKey extends keyof ComponentsAndVariants = 'dashboard
     }
   });
 
+  // A keyboard grab and its cancel change nothing a layout callback hears until the drop, so they report alone.
+  const reportGrab = useInteractionCallback<string, ChangeDetails<HandleKind>>(undefined, 'dashboard', 'grab');
+  const reportCancel = useInteractionCallback<string, ChangeDetails<'escape' | 'blur'>>(undefined, 'dashboard', 'grabCancel');
+
   /** Put the widget back, layout and all — the one thing a cancelled grab has to be able to do. */
   const cancel = useEventCallback((grip: Held, event: React.SyntheticEvent) => {
+    reportCancel(grip.id, { reason: event.type === 'blur' ? 'blur' : 'escape', event });
     apply(grip.before, { reason: grip.kind, event });
     setHeld(null);
     setAnnouncement(`${grip.name} put back at ${positionOf(grip.origin)}.`);
@@ -410,6 +414,7 @@ function DashboardGridImpl<TKey extends keyof ComponentsAndVariants = 'dashboard
 
       event.preventDefault();
       setHeld({ id, kind, name, origin: item, before: latest.current });
+      reportGrab(id, { reason: kind, event });
       setAnnouncement(
         kind === 'move'
           ? `${name} picked up at ${positionOf(item)}. Use the arrow keys to move it.`
@@ -601,6 +606,12 @@ function WidgetImpl<TKey extends keyof ComponentsAndVariants = 'widget'>(props: 
   const held = id === undefined ? undefined : dashboard?.heldOf(id);
   const label = name ?? (typeof title === 'string' ? title : undefined) ?? id ?? 'Widget';
   const editable = dashboard?.editable === true && placement !== undefined && !placement.fixed;
+  // The refresh button shares `widget.handle` with the grips, so a click alone cannot say which was pressed.
+  const refresh = useInteractionCallback(
+    (_id: string | undefined, _details: ChangeDetails<'refresh' | 'retry'>) => onRefresh?.(),
+    'widget',
+    'refresh',
+  );
 
   const handle = (kind: HandleKind) =>
     editable && id !== undefined ? (
@@ -631,7 +642,11 @@ function WidgetImpl<TKey extends keyof ComponentsAndVariants = 'widget'>(props: 
         <Box component="widget.message" variant={{ error: true }} props={{ role: 'status' }}>
           {error}
           {onRefresh && (
-            <Box tag="button" component="widget.retry" props={{ type: 'button', onClick: onRefresh }}>
+            <Box
+              tag="button"
+              component="widget.retry"
+              props={{ type: 'button', onClick: (event) => refresh(id, { reason: 'retry', event }) }}
+            >
               Try again
             </Box>
           )}
@@ -681,7 +696,11 @@ function WidgetImpl<TKey extends keyof ComponentsAndVariants = 'widget'>(props: 
               component="widget.handle"
               tag="button"
               variant={{ editable: true }}
-              props={{ type: 'button', 'aria-label': refreshLabel ?? `Refresh ${label}`, onClick: onRefresh }}
+              props={{
+                type: 'button',
+                'aria-label': refreshLabel ?? `Refresh ${label}`,
+                onClick: (event) => refresh(id, { reason: 'refresh', event }),
+              }}
             >
               <RefreshIcon />
             </Box>

@@ -136,7 +136,6 @@ function Tooltip<TKey extends keyof ComponentsAndVariants = 'tooltip'>(props: Pr
     value: open,
     defaultValue: defaultOpen,
     onChange: onOpenChange,
-    interaction: { component: 'tooltip', type: 'openChange' },
   });
 
   // The trigger element, as state rather than a ref: it is read during render (it is what the

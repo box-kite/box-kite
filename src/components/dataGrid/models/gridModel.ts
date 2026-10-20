@@ -542,7 +542,21 @@ export default class GridModel<TRow> {
 
   /** What the grid tells `Box.onInteraction`, beside whatever callback the host passed for the same change. */
   public reportInteraction(type: string, value: unknown, reason?: string, details?: Record<string, unknown>): void {
+    if (this._batching) return;
+
     emitInteraction({ component: 'datagrid', type, reason, value, details, target: this._sizingElement ?? undefined });
+  }
+
+  private _batching = false;
+
+  /** Run several changes that are one action, so they report once — the caller reports the whole. */
+  public quietly(changes: () => void): void {
+    this._batching = true;
+    try {
+      changes();
+    } finally {
+      this._batching = false;
+    }
   }
 
   private fireServerStateChange(reason: DataGridChangeReason, overrides?: Partial<ServerState<TRow>>): void {
@@ -562,7 +576,8 @@ export default class GridModel<TRow> {
   /** Both pager callbacks: the one carrying a reason, and the `(page, pageSize)` pair it replaces. */
   private firePaginationChange(page: number, pageSize: number, reason: DataGridChangeReason): void {
     this.props.onPaginationChange?.({ page, pageSize }, { reason });
-    this.reportInteraction('paginationChange', { page, pageSize }, reason);
+    // A reset that a sort or a filter caused is that change's consequence, not a second interaction.
+    if (reason === 'page' || reason === 'page-size') this.reportInteraction('paginationChange', { page, pageSize }, reason);
     this.props.onPageChange?.(page, pageSize);
   }
 
@@ -584,13 +599,14 @@ export default class GridModel<TRow> {
    */
   public setGlobalFilter = (value: string): void => {
     const reason: DataGridFilterReason = value === '' ? 'clear' : 'filter';
+    const changed = value !== this.globalFilterValue;
 
     // Written whether or not `globalFilterValue` is present — a handler is a listener, not ownership
     // (bug #154). The getter prefers the prop, so a controlled grid still shows what its owner asked for.
     this._globalFilterValue = value;
     this.leaveSelectionView();
     this.props.onGlobalFilterChange?.(value, { reason });
-    this.reportInteraction('globalFilterChange', value, reason);
+    if (changed) this.reportInteraction('globalFilterChange', value, reason);
 
     const nextPage = this.resetToFirstPage(reason);
 
@@ -608,6 +624,8 @@ export default class GridModel<TRow> {
   public setColumnFilter = (columnKey: Key, filter: FilterValue | undefined): void => {
     const newFilters = { ...this.columnFilters };
     const reason: DataGridFilterReason = filter === undefined ? 'clear' : 'filter';
+    // An operator changed on an empty filter clears a filter that was never set: nothing to report.
+    const changed = filter !== undefined || columnKey in newFilters;
 
     if (filter === undefined) {
       delete newFilters[columnKey as keyof TRow];
@@ -618,7 +636,7 @@ export default class GridModel<TRow> {
     this._columnFilters = newFilters;
     this.leaveSelectionView();
     this.props.onColumnFiltersChange?.(newFilters, { reason });
-    this.reportInteraction('columnFiltersChange', newFilters, reason, { columnKey, filter });
+    if (changed) this.reportInteraction('columnFiltersChange', newFilters, reason, { columnKey, filter });
 
     const nextPage = this.resetToFirstPage(reason);
 
@@ -634,10 +652,12 @@ export default class GridModel<TRow> {
    * Clear all column filters
    */
   public clearColumnFilters = (): void => {
+    const changed = Object.keys(this.columnFilters).length > 0;
+
     this._columnFilters = {};
     this.leaveSelectionView();
     this.props.onColumnFiltersChange?.({}, { reason: 'clear' });
-    this.reportInteraction('columnFiltersChange', {}, 'clear');
+    if (changed) this.reportInteraction('columnFiltersChange', {}, 'clear');
 
     this.fireServerStateChange('clear', { columnFilters: {} });
 
@@ -1156,7 +1176,6 @@ export default class GridModel<TRow> {
     const { downloadCsv } = await import('../export/gridExport');
 
     downloadCsv(this.exporter.table(options), this.exporter.fileName(options), options);
-    this.reportInteraction('export', 'csv', 'export', { fileName: this.exporter.fileName(options) });
   };
 
   /** Download the grid as an `.xlsx`, with its groups as Excel's own outline levels. */
@@ -1164,7 +1183,6 @@ export default class GridModel<TRow> {
     const { downloadXlsx } = await import('../export/gridExport');
 
     downloadXlsx(this.exporter.table(options), this.exporter.fileName(options), options);
-    this.reportInteraction('export', 'xlsx', 'export', { fileName: this.exporter.fileName(options) });
   };
 
   /** Whether any user-facing column is currently visible (else the empty-columns state shows). */
@@ -1354,7 +1372,6 @@ export default class GridModel<TRow> {
     const column = ArrayUtils.findOrThrow(this.columns.value.flat, (c) => c.uniqueKey === uniqueKey);
     if (column.pin !== side) {
       column.pinColumn(side);
-      this.reportInteraction('columnPinChange', side, side ? 'pin' : 'unpin', { columnKey: column.key });
     }
 
     this.columns.clear(); // cascades to headerRows/gridTemplateColumns/flexWidths/sizes/rows/flatRows/rowOffsets

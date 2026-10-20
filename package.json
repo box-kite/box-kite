@@ -255,7 +255,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "46.76 kB"
+      "limit": "46.82 kB"
     },
     {
       "name": "Accordion",
@@ -315,7 +315,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "45.91 kB"
+      "limit": "46.00 kB"
     },
     {
       "name": "SortableList",
@@ -327,7 +327,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "46.21 kB"
+      "limit": "46.31 kB"
     },
     {
       "name": "VirtualList",
@@ -423,7 +423,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "48.82 kB"
+      "limit": "48.93 kB"
     },
     {
       "name": "DatePicker",
@@ -435,7 +435,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "61.58 kB"
+      "limit": "61.69 kB"
     },
     {
       "name": "DateTime",
@@ -459,7 +459,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "52.01 kB"
+      "limit": "52.08 kB"
     },
     {
       "name": "Combobox",
@@ -483,7 +483,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "46.54 kB"
+      "limit": "46.66 kB"
     },
     {
       "name": "DataGrid",
@@ -497,7 +497,7 @@
         "../dataGridDateParts.mjs"
       ],
       "gzip": true,
-      "limit": "96.57 kB"
+      "limit": "97.11 kB"
     },
     {
       "name": "DataGrid export, the chunk fetched on the first press",
@@ -549,7 +549,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "164.51 kB"
+      "limit": "165.40 kB"
     }
   ],
   "repository": {

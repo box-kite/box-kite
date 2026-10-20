@@ -318,8 +318,10 @@ export default class TreeModel<TRow> {
     }
 
     this.grid.treeExpansionChanged();
-    this.grid.props.onExpandedTreeKeysChange?.(this.expandedKeys(), { reason: open ? 'expand' : 'collapse' });
-    this.grid.reportInteraction('expandedTreeKeysChange', this.expandedKeys(), open ? 'expand' : 'collapse', { rowKey: key });
+    const expanded = this.expandedKeys();
+
+    this.grid.props.onExpandedTreeKeysChange?.(expanded, { reason: open ? 'expand' : 'collapse' });
+    this.grid.reportInteraction('expandedTreeKeysChange', expanded, open ? 'expand' : 'collapse', { rowKey: key });
     this.grid.notify();
   };
 }

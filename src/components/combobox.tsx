@@ -265,7 +265,6 @@ function ComboboxImpl<TRow>(props: Props<TRow>, ref: Ref<HTMLInputElement>): Rea
     value: queryProp,
     defaultValue: defaultQuery ?? '',
     onChange: onQueryChange,
-    interaction: { component: 'combobox', type: 'queryChange' },
   });
 
   /** Whether the field holds the user's text or the selection's. A displayed value filters nothing. */

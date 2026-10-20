@@ -1,6 +1,19 @@
-import { forwardRef, FunctionComponent, ReactElement, Ref, RefAttributes, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  forwardRef,
+  FunctionComponent,
+  ReactElement,
+  Ref,
+  RefAttributes,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import Box, { BoxProps } from '../box';
 import { useEventCallback } from '../react/a11y/callbacks';
+import { InteractionsQuiet } from '../react/a11y/quietInteractions';
 import useControllableState, { ChangeHandler } from '../react/a11y/useControllableState';
 import useDismiss from '../react/a11y/useDismiss';
 import useFocusReturn from '../react/a11y/useFocusReturn';
@@ -8,6 +21,7 @@ import useRovingFocus from '../react/a11y/useRovingFocus';
 import { useIsomorphicLayoutEffect } from '../react/effects';
 import useIdentifier from '../react/identity/useIdentifier';
 import { BoxStyleProps, ComponentsAndVariants } from '../types';
+import { emitInteraction } from '../utils/interactions/interactionChannel';
 import BaseSvg from './baseSvg';
 import Button from './button';
 import DropdownContext, { DropdownItemProps, DropdownRow } from './dropdown/dropdownContext';
@@ -229,9 +243,21 @@ function DropdownImpl<TVal>(props: Props<TVal>, ref: Ref<HTMLInputElement>): Rea
   const hasLabel = label !== undefined && label !== null && label !== false;
   const optionId = useCallback((index: number) => `${identifier}-option-${index}`, [identifier]);
 
+  // Every open and close goes through here, so each reports once to `Box.onInteraction`, with why.
+  const quiet = useContext(InteractionsQuiet);
+  // A ref, since one keystroke can close twice — Tab commits the option, which closes, then leaves.
+  const openRef = useRef(isOpen);
+  const changeOpen = useEventCallback((open: boolean, reason: string, event?: React.SyntheticEvent | Event) => {
+    if (open === openRef.current) return;
+
+    openRef.current = open;
+    setOpen(open);
+    if (!quiet) emitInteraction({ component: 'dropdown', type: 'openChange', reason, value: open, event });
+  });
+
   /** Close the listbox, and let the field go back to the value — unless Escape said not to. */
-  const close = useEventCallback((keepSearch = false) => {
-    setOpen(false);
+  const close = useEventCallback((reason: string, event?: React.SyntheticEvent | Event, keepSearch = false) => {
+    changeOpen(false, reason, event);
     if (!keepSearch) setSearch(null);
   });
 
@@ -367,7 +393,7 @@ function DropdownImpl<TVal>(props: Props<TVal>, ref: Ref<HTMLInputElement>): Rea
         // it back, or the next keystroke of a search in progress goes nowhere.
         if (isSearchable) setTimeout(() => searchBoxRef.current?.focus(), 0);
       } else {
-        close();
+        close('select', e);
       }
     },
     [multiple, isSearchable, valueToUse, setSelectedValues, close],
@@ -430,7 +456,7 @@ function DropdownImpl<TVal>(props: Props<TVal>, ref: Ref<HTMLInputElement>): Rea
     inside: [triggerRef, popupRef],
     // Escape keeps what has been typed, which is what makes a *second* Escape the one that clears the field.
     // Every other way of closing restores the value, since a leftover query would describe no filter.
-    onDismiss: (reason) => close(reason === 'escape'),
+    onDismiss: (reason, event) => close(reason, event, reason === 'escape'),
   });
 
   // Focus lands back on the trigger only when a close left it nowhere — clicking an option drops
@@ -454,12 +480,12 @@ function DropdownImpl<TVal>(props: Props<TVal>, ref: Ref<HTMLInputElement>): Rea
   }, [isOpen, activeIndex, activeItem]);
 
   const openAt = (index: number, event: React.SyntheticEvent) => {
-    setOpen(true);
+    changeOpen(true, event.type === 'keydown' ? 'keyboard' : 'trigger', event);
     roving.setActiveIndex(index, { reason: 'programmatic', event });
   };
 
   const toggleOpen = useEventCallback((event: React.MouseEvent) => {
-    if (isOpen) close();
+    if (isOpen) close('trigger', event);
     else openAt(indexOnOpen('none'), event);
   });
 
@@ -471,7 +497,7 @@ function DropdownImpl<TVal>(props: Props<TVal>, ref: Ref<HTMLInputElement>): Rea
   const handleSearchChange = useEventCallback((next: string) => {
     setSearch(next);
     // Typing into a closed combobox is a request to see what it matches.
-    if (!isOpen) setOpen(true);
+    if (!isOpen) changeOpen(true, 'input');
     // Filtering must not carry the highlight with it: APG keeps visual focus in the field while
     // the user types, and an index into a list that has just changed points at the wrong option.
     clearHighlight();
@@ -516,7 +542,7 @@ function DropdownImpl<TVal>(props: Props<TVal>, ref: Ref<HTMLInputElement>): Rea
     }
 
     if (isPrintable(event)) {
-      setOpen(true);
+      changeOpen(true, 'input', event);
       // The row list does not depend on the popup being on screen, so the same typeahead that
       // moves the highlight while open can decide where it starts.
       roving.onKeyDown(event);
@@ -540,14 +566,14 @@ function DropdownImpl<TVal>(props: Props<TVal>, ref: Ref<HTMLInputElement>): Rea
       // APG: Tab commits the highlighted option and then leaves. No `preventDefault` — moving on
       // is the whole point of the key.
       if (!multiple && roving.activeIndex !== -1) selectRow(roving.activeIndex, event);
-      close();
+      close('tab', event);
       return;
     }
 
     if (event.altKey && event.key === 'ArrowUp') {
       event.preventDefault();
       if (roving.activeIndex !== -1) selectRow(roving.activeIndex, event);
-      close();
+      close('keyboard', event);
       return;
     }
 

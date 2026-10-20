@@ -3957,13 +3957,16 @@ const stop = Box.onInteraction(({ component, type, reason, value, details, event
 
 | `component` | `type` (and `reason`) |
 | --- | --- |
-| `dialog`, `alertDialog`, `popover`, `tooltip`, `menu`, `menu.sub`, `datePicker`, `combobox`, `collapsible`, `toolCall`, `reasoning`, `swipeItem` | `openChange` |
-| `tabs`, `accordion`, `radioGroup`, `dropdown`, `combobox`, `slider`, `calendar`, `dateField`, `datePicker`, `dateRangePicker`, `timeZoneSelect`, `menu.radioGroup` | `valueChange` |
-| `menu.item` | `select` · `menu.checkboxItem` `checkedChange` |
-| `combobox` | `queryChange` · `approval` `decisionChange` |
-| `slider` | `valueCommit` · `dashboard` `layoutChange`, `layoutCommit` · `sortableList` `orderChange`, `orderCommit` |
-| `toaster` | `show` (reason: the kind), `update`, `dismiss` (`timeout`/`close`/`action`/`imperative`) |
-| `datagrid` | `sortingChange`, `globalFilterChange`, `columnFiltersChange`, `paginationChange`, `selectedRowKeysChange`, `expandedRowKeysChange`, `expandedTreeKeysChange`, `rangeChange`, `cellEdit`, `cellEditsChange`, `paste` — plus the changes with no callback: `columnPinChange`, `columnVisibilityChange`, `columnResize`, `groupingChange`, `groupExpandedChange`, `selectionViewChange`, `export` |
+| `dialog`, `alertDialog`, `popover`, `menu`, `datePicker`, `combobox`, `dropdown`, `timeZoneSelect`, `collapsible`, `toolCall`, `reasoning`, `swipeItem` | `openChange` · `menu.sub` `openChange` only when the keyboard opens it |
+| `tabs`, `accordion`, `radioGroup`, `dropdown`, `combobox`, `calendar`, `dateField`, `datePicker`, `dateRangePicker`, `timeZoneSelect`, `menu.radioGroup` | `valueChange` |
+| `menu.item` | `select` · `menu.checkboxItem` `checkedChange` · `approval` `decisionChange` |
+| `calendar` | `pageChange` (`next`/`previous`), `viewChange` (`zoom-in`/`zoom-out`) |
+| `slider` | `valueCommit` · `dashboard` `layoutCommit`, `grab`, `grabCancel` · `widget` `refresh` (`refresh`/`retry`) · `sortableList` `orderChange`, `orderCommit`, `grab`, `grabCancel` · `swipeItem` `fullSwipe` |
+| `form` | `submit` — the value is the **field names**, never what was typed into them |
+| `toaster` | `show` (reason: the kind), `update`, `dismiss` (`timeout`/`close`/`action`/`imperative`), `action` (an action that leaves the toast up) |
+| `datagrid` | `sortingChange`, `globalFilterChange`, `columnFiltersChange`, `paginationChange`, `selectedRowKeysChange`, `expandedRowKeysChange`, `expandedTreeKeysChange`, `rangeChange` (a marked block only), `copy`, `cellEditStart`, `cellEdit`, `cellEditCancel`, `cellEditReject`, `paste`, `columnPinChange`, `columnVisibilityChange`, `columnResize`, `groupingChange`, `groupExpandedChange`, `selectionViewChange`, `export`, `retry` — and on a phone `recordChange`, `sheetChange`, `selectModeChange`, `showMore` |
+
+**Nothing reports per frame, per hover or per keystroke.** A drag reports where it ends (`valueCommit`, `layoutCommit`, `columnResize`, a range block), so a slider's `valueChange` and a dashboard's `layoutChange` are not events here; neither is a tooltip shown on hover, a submenu opened by the pointer, the text typed into a combobox or a dropdown's search, focus moving in a calendar or a grid, nor a page reset that a sort or a filter caused. A change the app makes through a ref (`exportCsv()`, `clearEdits()`, `refresh()`) is not the user's and does not report.
 
 **A plain press is not a change**, so a `Button`, a `Link`, a `Checkbox` or a `Textbox` reports nothing here; those are native elements whose own events already bubble. To name them, `Box.configure({ componentAttribute: true })` writes `data-bk="<component key>"` on every element a component styles, user components from `Box.components()` included, and one delegated listener does the rest:
 

@@ -112,6 +112,11 @@ export default class CellModel<TRow> {
 
   /** Close the editor with nothing written — what Escape does. */
   public cancelEdit = (): void => {
+    if (!this.grid.edits.isOpen) return;
+
+    const { draft } = this.grid.edits;
+
     this.grid.edits.cancel();
+    this.grid.reportInteraction('cellEditCancel', draft, 'cancel', { rowKey: this.row.key, columnKey: this.column.key });
   };
 }

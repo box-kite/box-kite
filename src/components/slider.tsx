@@ -168,7 +168,6 @@ function SliderImpl<TKey extends keyof ComponentsAndVariants = 'slider', TValue 
     value,
     defaultValue: defaultValue ?? (min as TValue),
     onChange: onValueChange,
-    interaction: { component: 'slider', type: 'valueChange' },
   });
 
   const scale = scaleOf(min, max, step);

@@ -8,6 +8,7 @@ import usePortalContainer from '../react/hooks/usePortalContainer';
 import useTopLayer from '../react/popover/useTopLayer';
 import { ComponentsAndVariants } from '../types';
 import { documentOrNull, supportsPopover } from '../utils/environment/environmentUtils';
+import { emitInteraction } from '../utils/interactions/interactionChannel';
 import createToastStore, { Toast, ToastAction, ToastDismissReason, ToastKind, ToastOptions, ToastStore } from '../utils/toast/toastStore';
 
 export { default as createToastStore } from '../utils/toast/toastStore';
@@ -125,7 +126,16 @@ function ToastItem(props: ToastItemProps) {
   const handleAction = () => {
     action?.onClick();
 
+    // A closing action reports as the dismissal it causes; one that leaves the toast up reports itself.
     if (action?.closeOnClick !== false) store.dismiss(entry.id, 'action');
+    else
+      emitInteraction({
+        component: 'toaster',
+        type: 'action',
+        reason: 'action',
+        value: entry.message,
+        details: { id: entry.id, kind: entry.kind },
+      });
   };
 
   return (

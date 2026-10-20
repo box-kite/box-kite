@@ -256,6 +256,10 @@ export default class EditModel<TRow> {
       pending: false,
     };
     this.grid.notify();
+    this.grid.reportInteraction('cellEditStart', value, initial === undefined ? 'open' : 'typing', {
+      rowKey: row.key,
+      columnKey: column.key,
+    });
   }
 
   /** Open the editor on a cell named by grid coordinates, which is where Tab lands. */
@@ -330,6 +334,12 @@ export default class EditModel<TRow> {
     if (typeof result === 'string' || result === false) {
       this._active = { ...this._active, pending: false, error: typeof result === 'string' ? result : this.invalidValue };
       this.grid.notify();
+      this.grid.reportInteraction('cellEditReject', edit.value, 'invalid', {
+        rowKey: edit.rowKey,
+        columnKey: edit.columnKey,
+        oldValue: edit.oldValue,
+        error: this._active.error,
+      });
 
       return;
     }
@@ -375,7 +385,6 @@ export default class EditModel<TRow> {
     this._edits = [];
     this.grid.notify();
     this.grid.props.onCellEditsChange?.(this._edits, { reason: 'clear' });
-    this.grid.reportInteraction('cellEditsChange', this._edits, 'clear');
   };
 
   // ========== A block at a time ==========

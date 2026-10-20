@@ -7,8 +7,11 @@ import createToastStore from '../utils/toast/toastStore';
 import Button from './button';
 import GridModel from './dataGrid/models/gridModel';
 import Dialog from './dialog';
+import Dropdown from './dropdown';
+import Form from './form';
 import Menu from './menu';
 import Tabs from './tabs';
+import Tooltip from './tooltip';
 
 /** What `Box.onInteraction` hears from real components: the channel itself is `interactionChannel.test.ts`. */
 describe('Box.onInteraction', () => {
@@ -105,6 +108,104 @@ describe('Box.onInteraction', () => {
     ]);
     expect(heard[0].value).toEqual({ columnKey: 'name', direction: 'ASC' });
     expect(heard.every((event) => event.target === element)).toBe(true);
+  });
+
+  it('hears a dropdown open and close once per change, with why', () => {
+    render(
+      <Dropdown<string>>
+        <Dropdown.Item value="a">Alpha</Dropdown.Item>
+        <Dropdown.Item value="b">Beta</Dropdown.Item>
+      </Dropdown>,
+    );
+
+    fireEvent.click(screen.getByRole('combobox'));
+    fireEvent.click(screen.getByRole('option', { name: 'Beta' }));
+
+    expect(heard.map(({ component, type, reason, value }) => [component, type, reason, value])).toEqual([
+      ['dropdown', 'openChange', 'trigger', true],
+      ['dropdown', 'valueChange', 'select', ['b']],
+      ['dropdown', 'openChange', 'select', false],
+    ]);
+  });
+
+  it('tells which fields a form sent, never what was typed into them', () => {
+    render(
+      <Form onSubmit={() => undefined}>
+        <input name="email" defaultValue="ada@example.com" />
+        <input name="password" type="password" defaultValue="hunter2" />
+      </Form>,
+    );
+
+    fireEvent.submit(document.querySelector('form')!);
+
+    expect(heard).toEqual([expect.objectContaining({ component: 'form', type: 'submit', value: ['email', 'password'] })]);
+    expect(JSON.stringify(heard[0].value)).not.toContain('hunter2');
+  });
+
+  it('says nothing for a tooltip shown on hover', () => {
+    render(<Tooltip content="Saves the draft">{(trigger) => <Button {...trigger}>Save</Button>}</Tooltip>);
+
+    fireEvent.pointerEnter(screen.getByRole('button'));
+    fireEvent.focus(screen.getByRole('button'));
+
+    expect(heard).toEqual([]);
+  });
+
+  it('reports a column pinned from its menu, which the grid never heard as a change', () => {
+    const grid = new GridModel<{ id: number; name: string }>(
+      { data: [], def: { rowKey: 'id', columns: [{ key: 'name', header: 'Name' }] } },
+      vi.fn(),
+    );
+
+    grid.columns.value.flat.find((column) => column.key === 'name')!.pinColumn('START');
+
+    expect(heard).toEqual([expect.objectContaining({ component: 'datagrid', type: 'columnPinChange', reason: 'pin', value: 'START' })]);
+  });
+
+  it('reports a marked block, not every move of the current cell', () => {
+    const grid = new GridModel<{ id: number; a: string; b: string }>(
+      {
+        data: [{ id: 1, a: 'x', b: 'y' }],
+        def: {
+          rowKey: 'id',
+          columns: [
+            { key: 'a', header: 'A' },
+            { key: 'b', header: 'B' },
+          ],
+          rangeSelection: true,
+        },
+      },
+      vi.fn(),
+    );
+
+    grid.range.setCurrent(0, 0);
+    grid.range.setCurrent(0, 1);
+    grid.range.setCurrent(0, 0, true);
+
+    expect(heard.map(({ type, reason }) => [type, reason])).toEqual([['rangeChange', 'extend']]);
+  });
+
+  it('reports show-all in the columns panel once, however many columns it shows', () => {
+    const grid = new GridModel<{ id: number; a: string; b: string }>(
+      {
+        data: [],
+        def: {
+          rowKey: 'id',
+          columns: [
+            { key: 'a', header: 'A' },
+            { key: 'b', header: 'B' },
+          ],
+        },
+      },
+      vi.fn(),
+    );
+    grid.quietly(() => ['a', 'b'].forEach((key) => grid.toggleColumnVisibility(key)));
+
+    grid.columnVisibility.setAll(true);
+
+    expect(heard).toEqual([
+      expect.objectContaining({ type: 'columnVisibilityChange', reason: 'show-all', details: { columnKeys: ['a', 'b'] } }),
+    ]);
   });
 
   it('hears a toast shown and dismissed', () => {
