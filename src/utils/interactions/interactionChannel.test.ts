@@ -56,6 +56,19 @@ describe('interaction channel', () => {
     expect(heard.mock.calls[0][0].time).toBeGreaterThanOrEqual(before);
   });
 
+  it('names the page it happened on, not the one it was delivered on', () => {
+    const heard = vi.fn();
+    listen(heard);
+    const page = location.href;
+
+    reportInteraction({ component: 'router', type: 'navigate', value: '/next' });
+    history.pushState(null, '', '/next');
+    flushInteractions();
+    history.replaceState(null, '', page);
+
+    expect(heard.mock.calls[0][0].url).toBe(page);
+  });
+
   it('hands every listener the event until it unsubscribes', () => {
     const first = vi.fn();
     const second = vi.fn();

@@ -12,13 +12,14 @@ _Unreleased. A PR that changes what a consumer sees adds its section here — se
 
 ## Every interaction on the page now reaches one handler
 
-`Box.onInteraction(listener)` hears everything a person does with the library in one stream: a dialog opening and why, a tab chosen, a menu command, a slider let go, a DataGrid sorted, filtered, paged, edited, pasted into, grouped or exported, a toast shown and dismissed, and a press on any element a component styled. Each event is `{ kind, component, type, reason, value, details, source, event, target, timeStamp, time }`:
+`Box.onInteraction(listener)` hears everything a person does with the library in one stream: a dialog opening and why, a tab chosen, a menu command, a slider let go, a DataGrid sorted, filtered, paged, edited, pasted into, grouped or exported, a toast shown and dismissed, and a press on any element a component styled. Each event is `{ kind, component, type, reason, value, details, source, event, target, timeStamp, time, url }`:
 
 - **`kind`** says what reported it. `'change'` is a component's own change, and `type` is the callback it mirrors without its `on` (`'openChange'`, `'sortingChange'`, `'cellEdit'`). `'dom'` is a `click` or `change` on anything a component styled. `'custom'` is the app's own.
 - **`component`** names it: `'dialog'`, `'datagrid'`, `'menu.item'`, or for a press the nearest `data-bk`. `reason` is the word the callback is given.
 - **`source`** is `'app'` when code did it — a call through a ref, a timer, a `toast()` — and `'user'` otherwise, so a dashboard counts what people did.
 - **`value` and `details` are plain JSON copies**, safe to send as they stand: a `Date` is its ISO string, and a function, a React element or a DOM node is left out. A form reports the names of the fields it sent and a `change` on a checkbox its `checked` state, never what was typed.
 - **`event` and `target`** are the DOM event behind it and the control that handled it — also for a change the component was never handed an event for, like a DataGrid header sorted by a press.
+- **`url`** is `location.href` when it happened, so an event delivered after a navigation still names the page it happened on. It is the whole address, query string and hash included, so trim what should not leave the page before sending it.
 - **The events are typed.** Narrow on `kind` and then `component` and `type`, and `value` is the type that change carries.
 
 ```tsx

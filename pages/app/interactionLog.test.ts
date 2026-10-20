@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import Box, { InteractionEvent } from '../../src/box';
 import { describeValue, interactionLine, LOG_FLAG, logInteractions, logRequested } from './interactionLog';
 
-const at = { source: 'user', timeStamp: 0, time: 0 } as const;
+const at = { source: 'user', timeStamp: 0, time: 0, url: 'http://localhost/' } as const;
 
 describe('the interaction log', () => {
   afterEach(() => {

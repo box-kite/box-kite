@@ -92,6 +92,8 @@ interface InteractionBase {
   timeStamp: number;
   /** `Date.now()`: when it happened, for a log on another machine. */
   time: number;
+  /** `location.href` as it happened, so an event delivered after a navigation still names its own page. */
+  url: string;
 }
 
 /** A change a component reports — `kind: 'change'`, so `component` and `type` narrow `value`. */

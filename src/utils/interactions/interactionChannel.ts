@@ -26,6 +26,7 @@ interface Entry extends Omit<InteractionReport, 'event'> {
   event?: Event;
   timeStamp: number;
   time: number;
+  url: string;
 }
 
 interface Channel {
@@ -96,7 +97,7 @@ function enqueue(kind: Entry['kind'], input: InteractionReport): void {
   const target = handler ?? controlOf(element(event?.target)) ?? input.target ?? element(event?.target);
   const source = input.source ?? (input.reason && APP_REASONS.includes(input.reason) ? 'app' : 'user');
 
-  channel.queue.push({ ...input, kind, source, event, target, timeStamp: performance.now(), time: Date.now() });
+  channel.queue.push({ ...input, kind, source, event, target, timeStamp: performance.now(), time: Date.now(), url: location.href });
   if (live) schedule();
   else if (channel.queue.length > EARLY_LIMIT) channel.queue.shift();
 }
