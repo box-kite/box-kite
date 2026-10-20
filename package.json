@@ -126,7 +126,7 @@
         "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "41.47 kB"
+      "limit": "41.50 kB"
     },
     {
       "name": "Box in a Server Component (react-server entry)",
@@ -152,7 +152,7 @@
         "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "4.09 kB"
+      "limit": "4.12 kB"
     },
     {
       "name": "Anchor positioning (anchor entry)",
@@ -241,7 +241,7 @@
         "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "43.66 kB"
+      "limit": "43.69 kB"
     },
     {
       "name": "Popover",
@@ -254,7 +254,7 @@
         "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "45.21 kB"
+      "limit": "45.24 kB"
     },
     {
       "name": "Menu",
@@ -267,7 +267,7 @@
         "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "47.55 kB"
+      "limit": "47.58 kB"
     },
     {
       "name": "Accordion",
@@ -280,7 +280,7 @@
         "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "42.92 kB"
+      "limit": "42.95 kB"
     },
     {
       "name": "Agent",
@@ -293,7 +293,7 @@
         "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "43.70 kB"
+      "limit": "43.73 kB"
     },
     {
       "name": "Markdown",
@@ -306,7 +306,7 @@
         "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "42.04 kB"
+      "limit": "42.08 kB"
     },
     {
       "name": "List",
@@ -319,7 +319,7 @@
         "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "43.39 kB"
+      "limit": "43.42 kB"
     },
     {
       "name": "SwipeItem",
@@ -332,7 +332,7 @@
         "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "46.64 kB"
+      "limit": "46.66 kB"
     },
     {
       "name": "SortableList",
@@ -345,7 +345,7 @@
         "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "46.95 kB"
+      "limit": "46.98 kB"
     },
     {
       "name": "VirtualList",
@@ -358,7 +358,7 @@
         "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "45.58 kB"
+      "limit": "45.61 kB"
     },
     {
       "name": "Skeleton",
@@ -371,7 +371,7 @@
         "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "41.38 kB"
+      "limit": "41.42 kB"
     },
     {
       "name": "Tabs",
@@ -384,7 +384,7 @@
         "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "44.13 kB"
+      "limit": "44.16 kB"
     },
     {
       "name": "Slider",
@@ -397,7 +397,7 @@
         "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "43.32 kB"
+      "limit": "43.36 kB"
     },
     {
       "name": "Progress",
@@ -410,7 +410,7 @@
         "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "41.34 kB"
+      "limit": "41.37 kB"
     },
     {
       "name": "Toaster",
@@ -423,7 +423,7 @@
         "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "44.95 kB"
+      "limit": "44.98 kB"
     },
     {
       "name": "DateField",
@@ -436,7 +436,7 @@
         "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "50.14 kB"
+      "limit": "50.17 kB"
     },
     {
       "name": "Calendar",
@@ -449,7 +449,7 @@
         "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "49.61 kB"
+      "limit": "49.64 kB"
     },
     {
       "name": "DatePicker",
@@ -462,7 +462,7 @@
         "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "62.37 kB"
+      "limit": "62.39 kB"
     },
     {
       "name": "DateTime",
@@ -475,7 +475,7 @@
         "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "44.90 kB"
+      "limit": "44.93 kB"
     },
     {
       "name": "TimeZoneSelect",
@@ -488,7 +488,7 @@
         "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "52.71 kB"
+      "limit": "52.74 kB"
     },
     {
       "name": "Combobox",
@@ -501,7 +501,7 @@
         "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "50.70 kB"
+      "limit": "50.73 kB"
     },
     {
       "name": "Dashboard",
@@ -514,7 +514,7 @@
         "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "47.28 kB"
+      "limit": "47.31 kB"
     },
     {
       "name": "DataGrid",
@@ -529,7 +529,7 @@
         "../dataGridDateParts.mjs"
       ],
       "gzip": true,
-      "limit": "97.80 kB"
+      "limit": "97.83 kB"
     },
     {
       "name": "Interaction listening, the chunk the first Box.onInteraction fetches",
@@ -595,7 +595,7 @@
         "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "166.05 kB"
+      "limit": "166.08 kB"
     }
   ],
   "repository": {

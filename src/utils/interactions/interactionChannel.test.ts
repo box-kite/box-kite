@@ -282,6 +282,28 @@ describe('interaction channel', () => {
       expect(heard.mock.calls[0][0].source).toBe('app');
     });
 
+    it('is left out when a change or a report in the same batch carries its event', async () => {
+      const heard = vi.fn();
+      listen(heard);
+      await vi.dynamicImportSettled();
+      setComponentAttribute(true);
+      document.body.innerHTML =
+        '<button data-bk="tabs.tab">Tab</button><a data-bk="a" href="#x">Link</a><button data-bk="button">Save</button>';
+      const [tab, link, save] = document.querySelectorAll('[data-bk]');
+      tab.addEventListener('click', () => emitInteraction({ component: 'tabs', type: 'valueChange', value: 'b' }));
+      link.addEventListener('click', (event) => reportInteraction({ component: 'toc', type: 'jump', value: 'x', event }));
+
+      for (const element of [tab, link, save]) (element as HTMLElement).click();
+      flushInteractions();
+
+      expect(heard.mock.calls.map(([event]) => [event.kind, event.component])).toEqual([
+        ['change', 'tabs'],
+        ['custom', 'toc'],
+        ['dom', 'button'],
+      ]);
+      expect(heard.mock.calls[1][0].target).toBe(link);
+    });
+
     it("carries a checkbox's checked state, and never what was typed", async () => {
       const heard = vi.fn();
       listen(heard);

@@ -318,7 +318,7 @@ describe('Box.onInteraction', () => {
     expect(heard()).toEqual([expect.objectContaining({ component: 'tabs', type: 'valueChange', value: 'b' })]);
   });
 
-  it('hears a press and the change it made from one stream, the press first', () => {
+  it('hears a press that changed something as the change, which carries the press', () => {
     Box.configure({ componentAttribute: true });
     render(
       <Tabs defaultValue="overview">
@@ -331,9 +331,8 @@ describe('Box.onInteraction', () => {
 
     fireEvent.click(screen.getByRole('tab', { name: 'Activity' }));
 
-    expect(heard().map(({ kind, component, type }) => [kind, component, type])).toEqual([
-      ['dom', 'tabs.tab', 'click'],
-      ['change', 'tabs', 'valueChange'],
+    expect(heard()).toEqual([
+      expect.objectContaining({ kind: 'change', component: 'tabs', type: 'valueChange', event: expect.any(MouseEvent) }),
     ]);
     expect(heard()[0].target).toBe(screen.getByRole('tab', { name: 'Activity' }));
   });

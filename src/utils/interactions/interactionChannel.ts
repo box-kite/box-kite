@@ -146,7 +146,11 @@ export function flushInteractions(): void {
   channel.scheduled = false;
   if (channel.listeners.size === 0) return;
 
-  for (const { value, details, ...entry } of channel.queue.splice(0)) {
+  const batch = channel.queue.splice(0);
+  for (const { value, details, ...entry } of batch) {
+    // A press a component or the app explained arrives as that event, which carries it: one click is one event.
+    if (entry.kind === 'dom' && batch.some((other) => other.kind !== 'dom' && other.event === entry.event)) continue;
+
     const json = toInteractionJson(details) as Record<string, never> | undefined;
     const interaction = { ...entry, value: toInteractionJson(value), details: json && Object.keys(json).length > 0 ? json : undefined };
 

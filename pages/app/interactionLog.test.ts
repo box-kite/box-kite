@@ -38,7 +38,7 @@ describe('the interaction log', () => {
     expect(logRequested('')).toBe(true);
   });
 
-  it('logs a press and the change it made from one stream, in order', async () => {
+  it('logs a press as the change it made, and a press that changed nothing as itself', async () => {
     const info = vi.spyOn(console, 'info').mockImplementation(() => {});
     Box.configure({ componentAttribute: true });
     logInteractions();
@@ -50,16 +50,21 @@ describe('the interaction log', () => {
     tab.addEventListener('click', () =>
       Box.reportInteraction({ component: 'tabs', type: 'valueChange', reason: 'click', value: 'activity', details: { from: 'overview' } }),
     );
-    document.body.append(tab);
+    const save = document.createElement('button');
+    save.setAttribute('data-bk', 'button');
+    save.textContent = 'Save';
+    document.body.append(tab, save);
 
     tab.click();
+    save.click();
     Box.flushInteractions();
 
     expect(info.mock.calls).toEqual([
-      ['[interaction] click tabs.tab', 'Activity', expect.objectContaining({ kind: 'dom', details: { interactive: true } })],
       ['[interaction] tabs.valueChange', 'click → activity', expect.objectContaining({ kind: 'custom', details: { from: 'overview' } })],
+      ['[interaction] click button', 'Save', expect.objectContaining({ kind: 'dom', details: { interactive: true } })],
     ]);
     tab.remove();
+    save.remove();
     info.mockRestore();
     Box.configure({ componentAttribute: false });
   });
