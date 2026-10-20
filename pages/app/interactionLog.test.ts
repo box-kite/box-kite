@@ -1,6 +1,8 @@
-import { afterEach, describe, expect, it } from 'vitest';
-import { emitInteraction } from '../../src/utils/interactions/interactionChannel';
-import { clickLine, describeValue, forgetLog, interactionFeed, interactionLine, logRequested } from './interactionLog';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import Box, { InteractionEvent } from '../../src/box';
+import { describeValue, forgetLog, interactionFeed, interactionLine, logRequested } from './interactionLog';
+
+const at = { source: 'user', timeStamp: 0, time: 0 } as const;
 
 describe('the interaction log', () => {
   afterEach(() => {
@@ -16,19 +18,18 @@ describe('the interaction log', () => {
     expect(describeValue(undefined)).toBe('');
   });
 
-  it('names an event by its component and type, and says why and what', () => {
-    const line = interactionLine({ component: 'dialog', type: 'openChange', reason: 'escape', value: false, timeStamp: 0 });
+  it('names a change by its component and type, and says why and what', () => {
+    const line = interactionLine({ ...at, kind: 'change', component: 'dialog', type: 'openChange', reason: 'escape', value: false });
 
     expect(line).toMatchObject({ name: 'dialog.openChange', detail: 'escape → false' });
   });
 
-  it('names a press by the nearest part a component styled', () => {
+  it('names a press by the part it landed on, and reads its label off the page', () => {
     const button = document.createElement('button');
-    button.setAttribute('data-bk', 'button');
     button.innerHTML = '<span>Save   draft</span>';
+    const press: InteractionEvent = { ...at, kind: 'dom', component: 'button', type: 'click', target: button };
 
-    expect(clickLine(button.firstChild as Element)).toMatchObject({ name: 'click button', detail: 'Save draft' });
-    expect(clickLine(document.createElement('div'))).toBeNull();
+    expect(interactionLine(press)).toMatchObject({ name: 'click button', detail: 'Save draft' });
   });
 
   it('keeps ?interactions for the rest of the tab', () => {
@@ -39,25 +40,25 @@ describe('the interaction log', () => {
 });
 
 describe('the interaction feed', () => {
-  it('logs a press only when it changed nothing a component reports', async () => {
+  it('logs a press and the change it made from one stream, in order', async () => {
+    Box.configure({ componentAttribute: true });
     interactionFeed.start({ console: false });
+    await vi.dynamicImportSettled();
     interactionFeed.clear();
 
-    const plain = document.createElement('button');
-    plain.setAttribute('data-bk', 'button');
-    plain.textContent = 'Copy';
     const tab = document.createElement('button');
     tab.setAttribute('data-bk', 'tabs.tab');
     tab.textContent = 'Activity';
-    tab.addEventListener('click', () => emitInteraction({ component: 'tabs', type: 'valueChange', reason: 'click', value: 'activity' }));
-    document.body.append(plain, tab);
+    tab.addEventListener('click', () =>
+      Box.reportInteraction({ component: 'tabs', type: 'valueChange', reason: 'click', value: 'activity' }),
+    );
+    document.body.append(tab);
 
-    plain.click();
     tab.click();
-    await new Promise((resolve) => setTimeout(resolve, 80));
+    Box.flushInteractions();
 
-    expect(interactionFeed.snapshot().map((line) => line.name)).toEqual(['click button', 'tabs.valueChange']);
-    plain.remove();
+    expect(interactionFeed.snapshot().map((line) => line.name)).toEqual(['tabs.valueChange', 'click tabs.tab']);
     tab.remove();
+    Box.configure({ componentAttribute: false });
   });
 });

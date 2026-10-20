@@ -1,7 +1,7 @@
-import { useCallback, useContext, useState } from 'react';
-import { emitInteraction, InteractionSource } from '../../utils/interactions/interactionChannel';
+import { useCallback, useState } from 'react';
+import type { InteractionSource } from '../../utils/interactions/interactionChannel';
 import { useEventCallback, useLatest } from './callbacks';
-import { InteractionsQuiet } from './quietInteractions';
+import { useInteractionReporter } from './interactions';
 
 /**
  * Why a change happened, and the event that caused it — the reason being the point. A component that only
@@ -45,8 +45,7 @@ export default function useControllableState<T, TReason extends string = string>
 ): [T, SetControllableState<T, TReason>] {
   const { value, defaultValue, onChange, interaction } = options;
   // Two literals at every call site, so the strings rather than the object keep the setter stable.
-  const quiet = useContext(InteractionsQuiet);
-  const component = quiet ? undefined : interaction?.component;
+  const report = useInteractionReporter(interaction?.component);
   const type = interaction?.type;
 
   const isControlled = value !== undefined;
@@ -65,19 +64,17 @@ export default function useControllableState<T, TReason extends string = string>
 
       if (Object.is(resolved, currentRef.current)) return;
 
+      // A second call in the same handler (Tab commits an option, which closes, then leaves) sees the first.
+      // Not when controlled: an owner that refuses the change must hear the next request for it too.
+      if (!isControlled) currentRef.current = resolved;
       // Written whether or not a value prop is present: one code path, and a consumer that stops
       // controlling the value carries on from the last one it was asked for rather than snapping
       // back to the default.
       setUncontrolled(resolved);
       changeHandler(resolved, details);
-
-      if (component && type) {
-        const { reason, event, ...rest } = details;
-
-        emitInteraction({ component, type, reason, value: resolved, details: rest, event });
-      }
+      if (type) report(type as never, resolved, details);
     },
-    [changeHandler, currentRef, component, type],
+    [changeHandler, currentRef, isControlled, report, type],
   );
 
   return [current, setValue];

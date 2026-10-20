@@ -1,7 +1,7 @@
 import { Ref, RefAttributes, useCallback, useEffect, useMemo, useState } from 'react';
 import Box, { BoxProps } from '../box';
 import { useEventCallback } from '../react/a11y/callbacks';
-import { QuietInteractions } from '../react/a11y/quietInteractions';
+import { QuietInteractions } from '../react/a11y/interactions';
 import useControllableState, { ChangeHandler } from '../react/a11y/useControllableState';
 import useRovingFocus from '../react/a11y/useRovingFocus';
 import useAnchorPosition from '../react/anchor/useAnchorPosition';

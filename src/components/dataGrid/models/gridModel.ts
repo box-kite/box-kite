@@ -1,7 +1,9 @@
 import { ComponentsAndVariants } from '../../../types';
 import ArrayUtils from '../../../utils/array/arrayUtils';
 import { isRtl } from '../../../utils/dom/domUtils';
-import { emitInteraction } from '../../../utils/interactions/interactionChannel';
+// The grid's one door to the channel: a headless model has no hook to report through.
+// eslint-disable-next-line no-restricted-imports
+import { emitInteraction, InteractionType } from '../../../utils/interactions/interactionChannel';
 import memo from '../../../utils/memo';
 import { fuzzySearch } from '../../../utils/string/fuzzySearch';
 import DataGridCellRowDetail from '../components/dataGridCellRowDetail';
@@ -541,7 +543,7 @@ export default class GridModel<TRow> {
   }
 
   /** What the grid tells `Box.onInteraction`, beside whatever callback the host passed for the same change. */
-  public reportInteraction(type: string, value: unknown, reason?: string, details?: Record<string, unknown>): void {
+  public reportInteraction(type: InteractionType<'datagrid'>, value: unknown, reason?: string, details?: Record<string, unknown>): void {
     if (this._batching) return;
 
     emitInteraction({ component: 'datagrid', type, reason, value, details, target: this._sizingElement ?? undefined });

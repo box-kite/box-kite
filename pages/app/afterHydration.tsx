@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { reportInteraction } from '../../src/box';
+import Box from '../../src/box';
 import { hydrationFinished, useHydrated } from './hydration';
 import { interactionFeed, logRequested } from './interactionLog';
 
@@ -33,7 +33,7 @@ export default function AfterHydration() {
     if (pathname === reportedPath) return;
 
     // A page view is the app's own moment, so it goes on the channel every component reports on.
-    reportInteraction({
+    Box.reportInteraction({
       component: 'router',
       type: 'navigate',
       reason: reportedPath === undefined ? 'load' : 'route',

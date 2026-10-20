@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react';
 import Box from '../../../box';
 import ExpandIcon from '../../../icons/expandIcon';
+import { ReportInteractions } from '../../../react/a11y/interactions';
 import Button from '../../button';
 import Checkbox from '../../checkbox';
 import Flex from '../../flex';
@@ -215,7 +216,7 @@ export default function DataGridListRecord<TRow>(props: Props<TRow>) {
               <H3 m={0} fontSize={14} fontWeight={600}>
                 {text.details}
               </H3>
-              {rowDetail.content(record.data)}
+              <ReportInteractions>{rowDetail.content(record.data)}</ReportInteractions>
             </Flex>
           )}
         </>

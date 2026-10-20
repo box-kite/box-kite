@@ -1,6 +1,7 @@
 import { createContext, Ref, RefAttributes, useCallback, useContext, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { BoxProps, useBoxElement } from '../box';
-import { useEventCallback, useInteractionCallback, useLatest } from '../react/a11y/callbacks';
+import { useEventCallback, useLatest } from '../react/a11y/callbacks';
+import { useInteractionCallback, useInteractionReporter } from '../react/a11y/interactions';
 import { ChangeDetails, ChangeHandler } from '../react/a11y/useControllableState';
 import boxComponent from '../react/boxComponent';
 import { useIsomorphicLayoutEffect } from '../react/effects';
@@ -171,16 +172,7 @@ function SortableListImpl<TKey extends keyof ComponentsAndVariants = 'list'>(pro
   const changeHandler = useInteractionCallback(onOrderChange, 'sortableList', 'orderChange');
   const commitHandler = useInteractionCallback(onOrderCommit, 'sortableList', 'orderCommit');
   // A grab and its cancel reach no order callback — a pointer drag reorders nothing before the drop.
-  const reportGrab = useInteractionCallback<string, ChangeDetails<'keyboard' | 'pointer'> & { from: number }>(
-    undefined,
-    'sortableList',
-    'grab',
-  );
-  const reportCancel = useInteractionCallback<string, ChangeDetails<'escape' | 'blur' | 'pointercancel'>>(
-    undefined,
-    'sortableList',
-    'grabCancel',
-  );
+  const report = useInteractionReporter('sortableList');
 
   const setRefs = useCallback(
     (element: HTMLUListElement | null) => {
@@ -300,7 +292,7 @@ function SortableListImpl<TKey extends keyof ComponentsAndVariants = 'list'>(pro
   const grab = (value: string, name: string, event: React.SyntheticEvent) => {
     const order = orderOf(listRef.current);
     setHeld({ value, name, origin: order });
-    reportGrab(value, { reason: event.type === 'keydown' ? 'keyboard' : 'pointer', event, from: order.indexOf(value) });
+    report('grab', value, { reason: event.type === 'keydown' ? 'keyboard' : 'pointer', event, from: order.indexOf(value) });
     setAnnouncement(`${name} picked up at ${positionOf(order, value)}. Use the arrow keys to move it, Enter to drop it.`);
     event.preventDefault();
   };
@@ -315,7 +307,10 @@ function SortableListImpl<TKey extends keyof ComponentsAndVariants = 'list'>(pro
 
   const cancel = useEventCallback((grip: Hold, event: React.SyntheticEvent | Event) => {
     const order = orderOf(listRef.current);
-    reportCancel(grip.value, { reason: event.type === 'keydown' ? 'escape' : event.type === 'blur' ? 'blur' : 'pointercancel', event });
+    report('grabCancel', grip.value, {
+      reason: event.type === 'keydown' ? 'escape' : event.type === 'blur' ? 'blur' : 'pointercancel',
+      event,
+    });
     setHeld(null);
     setTravel(0);
     if (!same(order, grip.origin)) {

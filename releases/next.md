@@ -10,22 +10,34 @@ _Unreleased. A PR that changes what a consumer sees adds its section here — se
 
 <!-- One `##` per change, above Breaking changes: a sentence for the heading, a paragraph on what and why, an example if it helps. -->
 
-## Every interaction a component reports now reaches one handler
+## Every interaction on the page now reaches one handler
 
-`Box.onInteraction(listener)` hears what every component does, in one shape: a dialog opening and why, a tab chosen, a menu command, a slider let go, a DataGrid sorted, filtered, paged, edited, pasted into, grouped or exported, a toast shown and dismissed. Each event is `{ component, type, reason, value, details, event, target, timeStamp }`. `component` is the component's key (`'dialog'`, `'datagrid'`, `'menu.item'`). `type` is the callback it mirrors, without its `on` (`'openChange'`, `'sortingChange'`, `'cellEdit'`). `reason` is the same word that callback is given. The DataGrid also reports the changes it has no callback for: a column pinned, hidden, resized or grouped, and an export. The grid also reports copy, a cell edit started, cancelled or refused, a data-source retry, and on a phone the record view, the sort and filter sheets, select mode and Show more. A form reports the names of the fields it sent, never what was typed into them. Nothing reports per frame, per hover or per keystroke: a drag reports where it ends, so a slider is `valueCommit` and a dashboard `layoutCommit`. It is the hook analytics, an audit log or a session recorder needs, with nothing to wire per component. Delivery is fire and forget: events are queued as they happen and handed to the listener in order, in a background task after the handler, so a slow listener never delays the interaction it reports. `pagehide` delivers what is still queued, and `flushInteractions()` delivers it now. With no listener, a change costs one size check.
+`Box.onInteraction(listener)` hears everything a person does with the library in one stream: a dialog opening and why, a tab chosen, a menu command, a slider let go, a DataGrid sorted, filtered, paged, edited, pasted into, grouped or exported, a toast shown and dismissed, and a press on any element a component styled. Each event is `{ kind, component, type, reason, value, details, source, event, target, timeStamp, time }`:
+
+- **`kind`** says what reported it. `'change'` is a component's own change, and `type` is the callback it mirrors without its `on` (`'openChange'`, `'sortingChange'`, `'cellEdit'`). `'dom'` is a `click` or `change` on anything a component styled. `'custom'` is the app's own.
+- **`component`** names it: `'dialog'`, `'datagrid'`, `'menu.item'`, or for a press the nearest `data-bk`. `reason` is the word the callback is given.
+- **`source`** is `'app'` when code did it — a call through a ref, a timer, a `toast()` — and `'user'` otherwise, so a dashboard counts what people did.
+- **`value` and `details` are plain JSON copies**, safe to send as they stand: a `Date` is its ISO string, and a function, a React element or a DOM node is left out. A form reports the names of the fields it sent and a `change` on a checkbox its `checked` state, never what was typed.
+- **`event` and `target`** are the DOM event behind it and the control that handled it — also for a change the component was never handed an event for, like a DataGrid header sorted by a press.
+- **The events are typed.** Narrow on `kind` and then `component` and `type`, and `value` is the type that change carries.
 
 ```tsx
-const stop = Box.onInteraction(({ component, type, reason, value }) => {
-  analytics.track(`${component}.${type}`, { reason, value });
+const stop = Box.onInteraction((event) => {
+  if (event.kind === 'change' && event.component === 'datagrid' && event.type === 'sortingChange') {
+    console.log(event.value?.columnKey, event.value?.direction);
+  }
+  analytics.track(`${event.component}.${event.type}`, { kind: event.kind, source: event.source, value: event.value, at: event.time });
 });
 ```
 
-One choice is one event: a component built from others keeps its parts quiet, so a day picked in a `DatePicker` reports `datePicker.valueChange` and `datePicker.openChange`, not the `Calendar` inside it as well. A click on a plain button or link reports no change, so it is not an event here. Instead, `Box.configure({ componentAttribute: true })` writes `data-bk="<component key>"` on every element a component styles, so one delegated `click` listener can name what was pressed with `event.target.closest('[data-bk]')`. Set it in a module that runs on both the server and the browser, or hydration sees two different trees. A value is shared with the app rather than copied, and it can hold what someone typed (a combobox query, an edited cell), so redact it before it leaves the page.
+Delivery is fire and forget: events are queued as they happen and handed over in order, in a background task after the handler, so a slow listener never delays the interaction it reports, and a listener that throws is reported rather than breaking the control. `pagehide` delivers what is still queued, and `Box.flushInteractions()` delivers it now. Up to fifty events that happen before anything listens are kept for the first listener, so an analytics bundle that loads late still hears the first page view. Nothing reports per frame, per hover or per keystroke: a drag reports where it ends, so a slider is `valueCommit` and a dashboard `layoutCommit`. One choice is one event: a component built from others keeps its parts quiet, so a day picked in a `DatePicker` reports `datePicker.valueChange` and `datePicker.openChange`, not the `Calendar` inside it as well. A `Menu.Item` takes a `value`, which is what its `select` reports.
 
-An app reports its own moments on the same channel with `reportInteraction({ component, type, reason, value, details, event })`, a named export of `@box-kite/react`: a hover, a section scrolled into view, a wizard step. Box does not wrap the handlers an app passes in `props`, because that would cost every render and report a hover per frame, so a moment worth counting is named where it happens:
+Presses need one line of configuration. `Box.configure({ componentAttribute: true })` writes `data-bk="<component key>"` on every element a component styles, which is how a press is named. Set it in a module that runs on both the server and the browser, or hydration sees two different trees. The half of the channel that watches the page is a chunk of under 0.7 KB, fetched with the first subscription, so an app that never listens never loads it.
+
+An app reports its own moments on the same stream with `Box.reportInteraction({ component, type, reason, value, details, event })`: a page view, a hover, a wizard step. Box does not wrap the handlers an app passes in `props`, because that would cost every render and report a hover per frame, so a moment worth counting is named where it happens:
 
 ```tsx
-<Button props={{ onMouseEnter: (event) => reportInteraction({ component: 'pricing-cta', type: 'mouseEnter', event }) }}>Pricing</Button>
+<Button props={{ onMouseEnter: (event) => Box.reportInteraction({ component: 'pricing-cta', type: 'mouseEnter', event }) }}>Pricing</Button>
 ```
 
 ## Breaking changes

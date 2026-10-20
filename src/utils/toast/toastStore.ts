@@ -203,7 +203,7 @@ export default function createToastStore<TContent>(options?: { limit?: number; d
     if (!changed) return;
 
     publish();
-    emitInteraction({ component: 'toaster', type: 'update', reason: updateOptions?.kind, value: message, details: { id } });
+    emitInteraction({ component: 'toaster', type: 'update', reason: updateOptions?.kind, value: message, details: { id }, source: 'app' });
   }
 
   function add(message: TContent, addOptions?: ToastOptions<TContent>): string {
@@ -234,7 +234,8 @@ export default function createToastStore<TContent>(options?: { limit?: number; d
     ];
 
     publish();
-    emitInteraction({ component: 'toaster', type: 'show', reason: kind, value: message, details: { id, kind } });
+    // `toast()` is the app talking; a dismissal is the user's unless a timer or a call made it.
+    emitInteraction({ component: 'toaster', type: 'show', reason: kind, value: message, details: { id, kind }, source: 'app' });
 
     return id;
   }

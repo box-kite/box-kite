@@ -2,13 +2,13 @@ import { FunctionComponent, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useSyncExternalStore } from 'use-sync-external-store/shim';
 import Box, { BoxProps } from '../box';
+import { useInteractionReporter } from '../react/a11y/interactions';
 import usePresence from '../react/animation/usePresence';
 import { useIsomorphicLayoutEffect } from '../react/effects';
 import usePortalContainer from '../react/hooks/usePortalContainer';
 import useTopLayer from '../react/popover/useTopLayer';
 import { ComponentsAndVariants } from '../types';
 import { documentOrNull, supportsPopover } from '../utils/environment/environmentUtils';
-import { emitInteraction } from '../utils/interactions/interactionChannel';
 import createToastStore, { Toast, ToastAction, ToastDismissReason, ToastKind, ToastOptions, ToastStore } from '../utils/toast/toastStore';
 
 export { default as createToastStore } from '../utils/toast/toastStore';
@@ -115,6 +115,7 @@ function ToastItem(props: ToastItemProps) {
   // Destructured on the spot: the object carries a ref callback, so every later read off it in render is
   // a ref access to the compiler's lint rules — the shape Popover already ran into.
   const { mounted, ref, props: stateProps } = usePresence({ present: entry.open });
+  const report = useInteractionReporter('toaster');
 
   useIsomorphicLayoutEffect(() => {
     if (!mounted) store.remove(entry.id);
@@ -128,14 +129,7 @@ function ToastItem(props: ToastItemProps) {
 
     // A closing action reports as the dismissal it causes; one that leaves the toast up reports itself.
     if (action?.closeOnClick !== false) store.dismiss(entry.id, 'action');
-    else
-      emitInteraction({
-        component: 'toaster',
-        type: 'action',
-        reason: 'action',
-        value: entry.message,
-        details: { id: entry.id, kind: entry.kind },
-      });
+    else report('action', entry.message, { reason: 'action', id: entry.id, kind: entry.kind });
   };
 
   return (

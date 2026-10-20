@@ -2,7 +2,7 @@
 import { useContext } from 'react';
 import { getDefaultEngine, StylesConfiguration } from '../core';
 import { BoxStyleProps } from '../types';
-import { setComponentAttribute } from '../utils/interactions/interactionChannel';
+import { setAttributeWarnings, setComponentAttribute } from '../utils/interactions/componentAttribute';
 import ComponentsContext from './componentsContext';
 import { useIsomorphicInsertionEffect } from './effects';
 import resolveStyles, { ResolvedBoxStyles } from './resolveStyles';
@@ -80,6 +80,8 @@ export namespace StylesContext {
   /** Apply explicit engine configuration. Call before the first render — cached class names are dropped when the configuration changes. */
   export function configure({ componentAttribute, ...config }: BoxConfiguration) {
     if (componentAttribute !== undefined) setComponentAttribute(componentAttribute);
+    // The channel's one warning follows the engine's.
+    if (config.warnings !== undefined) setAttributeWarnings(config.warnings);
     if (Object.keys(config).length > 0) getDefaultEngine().configure(config);
   }
 }

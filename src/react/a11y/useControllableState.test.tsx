@@ -22,6 +22,18 @@ describe('useControllableState', () => {
       expect(result.current[0]).toBe(true);
     });
 
+    it('drops a second call in the same handler that asks for the value the first already set', () => {
+      const onChange = vi.fn();
+      const { result } = setup({ onChange });
+
+      act(() => {
+        result.current[1](true, { reason: 'trigger' });
+        result.current[1](true, { reason: 'escape' });
+      });
+
+      expect(onChange).toHaveBeenCalledTimes(1);
+    });
+
     it('calls the default value factory once, not on every render', () => {
       const factory = vi.fn(() => 'first');
       const { rerender } = renderHook(() => useControllableState({ defaultValue: factory }));
@@ -69,6 +81,16 @@ describe('useControllableState', () => {
       rerender({});
 
       expect(result.current[0]).toBe(true);
+    });
+
+    it('asks again when the consumer refused the first request', () => {
+      const onChange = vi.fn();
+      const { result } = setup({ value: false, defaultValue: true, onChange });
+
+      act(() => result.current[1](true, { reason: 'trigger' }));
+      act(() => result.current[1](true, { reason: 'trigger' }));
+
+      expect(onChange).toHaveBeenCalledTimes(2);
     });
   });
 

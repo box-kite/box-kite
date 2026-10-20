@@ -1,6 +1,7 @@
 import { FunctionComponent, useRef, useState } from 'react';
 import Box, { BoxProps } from '../box';
-import { useEventCallback, useInteractionCallback, useLatest } from '../react/a11y/callbacks';
+import { useEventCallback, useLatest } from '../react/a11y/callbacks';
+import { useInteractionCallback } from '../react/a11y/interactions';
 import useControllableState, { ChangeDetails, ChangeHandler } from '../react/a11y/useControllableState';
 import { ComponentsAndVariants } from '../types';
 import { isRtl } from '../utils/dom/domUtils';

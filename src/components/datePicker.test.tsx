@@ -1,7 +1,7 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ignoreLogs, installPopoverApi } from '../../dev/tests';
-import Box, { flushInteractions } from '../box';
+import Box from '../box';
 import { configureDates, DateSettings } from '../utils/date/settings';
 import DatePicker, { DateRangePicker } from './datePicker';
 
@@ -49,7 +49,7 @@ describe('DatePicker', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Choose date' }));
     fireEvent.click(day('2026-10-23'));
-    flushInteractions();
+    Box.flushInteractions();
     stop();
 
     expect(heard).toEqual(['datePicker.openChange:trigger', 'datePicker.valueChange:select', 'datePicker.openChange:select']);

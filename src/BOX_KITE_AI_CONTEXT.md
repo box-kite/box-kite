@@ -3939,52 +3939,49 @@ Full reference: `docs/interop.md`.
 
 ## Interaction events (`Box.onInteraction`)
 
-One listener hears every change any component reports. Each event has the same shape, so an analytics call, an audit log or a session recorder is one function:
+One listener hears every interaction, in one typed stream, so an analytics call, an audit log or a session recorder is one function:
 
 ```tsx
-const stop = Box.onInteraction(({ component, type, reason, value, details, event, target, timeStamp }) => {
-  analytics.track(`${component}.${type}`, { reason, value, ...details });
+const stop = Box.onInteraction((event) => {
+  analytics.track(`${event.component}.${event.type}`, { kind: event.kind, source: event.source, reason: event.reason, value: event.value, at: event.time });
 });
 ```
 
-- **`component`** is the component's key: `'dialog'`, `'datagrid'`, `'menu.item'`. **`type`** is the callback it mirrors, without its `on`. **`reason`** is the word that callback is given (`'escape'`, `'outside-pointer'`, `'keyboard'`…). **`value`** is the new value, and **`details`** holds the rest of the callback's details.
-- **`event`** is the DOM event behind the change, unwrapped from React's synthetic one. **`target`** is the element that handled it (the tab, not the icon inside it), or the component's own element where no event was involved (the DataGrid's).
-- **It fires whether or not the app passed the callback, and it is fire and forget.** An event is queued as it happens (its `target` and `timeStamp` read at once) and delivered in order, batched, in a **background task** after the handler that caused it (`scheduler.postTask` at `background` priority, `setTimeout` where there is none). A listener is therefore never on the input's path: a slow one cannot delay the click, the render or the paint it reports. `pagehide` delivers whatever is still queued, and **`flushInteractions()`** (from `@box-kite/react`) delivers it now, which is what an analytics sender calls before it sends its last batch, and what a test calls before it asserts.
-- **One choice is one event, from the component the app rendered.** A component built from others keeps its parts quiet: a day picked in a `DatePicker` is `datePicker.valueChange` and `datePicker.openChange` (`select`), never `calendar.valueChange` as well. The same holds for the `Combobox` in a `TimeZoneSelect` and for the DataGrid's own filters, editors and panels, whose changes the grid reports itself. Focus moving inside a calendar is not an interaction and reports nothing.
-- **A listener that throws is rethrown on a timer and the rest still run**, so analytics can never break the control it watches. With no listener, a change costs one size check.
-- **`value` is shared, not copied**: never mutate it. It can hold what someone typed (a `Combobox` query, an edited cell, a toast's message), so redact it before it leaves the page.
-- **The channel lives on `globalThis`** under `Symbol.for('box-kite.interactions')`. Two copies of the package, or a server and a browser build in one process, share it.
+- **`kind`** is who reported it. `'change'` is a component's own change: `type` is the callback it mirrors without its `on`, `reason` is the word that callback is given (`'escape'`, `'outside-pointer'`, `'keyboard'`…), `value` the new value and `details` the rest of what the callback is told. `'dom'` is a `click` or a `change` on anything a component styled, named by the nearest `data-bk` (below). `'custom'` is the app's own, from `Box.reportInteraction`.
+- **The stream is typed**: narrow on `kind`, then `component` and `type`, and `value` is what that change carries — `if (e.kind === 'change' && e.component === 'datagrid' && e.type === 'sortingChange') e.value?.columnKey`. The whole map is `ComponentInteractions`, exported from `@box-kite/react` with `InteractionEvent`.
+- **`value` and `details` are plain JSON copies**, so an event goes to a log or a beacon as it stands: a `Date` is its ISO string, a `Set` an array, and a function, a React element, a DOM node or a class instance is left out. They can still hold what someone typed (a `Combobox` choice, an edited cell, a toast's message), so redact before they leave the page.
+- **`source`** is `'app'` when code did it — the reasons `imperative`, `programmatic` and `timeout`, a `toast()` call, an untrusted DOM event — and `'user'` otherwise.
+- **`event` is the DOM event behind it** — passed by the component, or the one the browser was dispatching when the change happened, so a DataGrid sorted by a header press carries that press. **`target`** is the control that handled it (the tab, not the icon inside it), else the component's own element. `timeStamp` is `performance.now()` and `time` is `Date.now()`.
+- **It fires whether or not the app passed the callback, and it is fire and forget.** An event is queued as it happens and delivered in order, batched, in a **background task** after the handler that caused it (`scheduler.postTask` at `background` priority, `setTimeout` where there is none), so a slow listener cannot delay the click, the render or the paint it reports, and a listener that throws goes to `reportError` while the rest still run. `pagehide` delivers whatever is still queued, and **`Box.flushInteractions()`** delivers it now, which is what an analytics sender calls before it sends its last batch, and what a test calls before it asserts.
+- **Up to fifty events from before anything listened are kept** and handed to the first listener, so analytics that loads late still hears the first page view. Once something has listened, nothing is kept while nobody is.
+- **One choice is one event, from the component the app rendered.** A component built from others keeps its parts quiet: a day picked in a `DatePicker` is `datePicker.valueChange` and `datePicker.openChange` (`select`), never `calendar.valueChange` as well. The same holds for the `Combobox` in a `TimeZoneSelect` and for the DataGrid's own filters, editors and panels, whose changes the grid reports itself — while a column's `Cell` and a `rowDetail`, which are the app's, report as usual wherever the grid renders them.
+- **On a server nothing is queued** — no person is interacting there — and the channel lives on `globalThis` under `Symbol.for('box-kite.interactions@1')`, so two copies of the package share it.
 
 | `component` | `type` (and `reason`) |
 | --- | --- |
-| `dialog`, `alertDialog`, `popover`, `menu`, `datePicker`, `combobox`, `dropdown`, `timeZoneSelect`, `collapsible`, `toolCall`, `reasoning`, `swipeItem` | `openChange` · `menu.sub` `openChange` only when the keyboard opens it |
+| `dialog`, `alertDialog`, `popover`, `menu`, `datePicker`, `combobox`, `dropdown`, `timeZoneSelect`, `collapsible`, `toolCall`, `reasoning`, `swipeItem` | `openChange` · `menu.sub` `openChange` only when the keyboard opens it, with `details.item` |
 | `tabs`, `accordion`, `radioGroup`, `dropdown`, `combobox`, `calendar`, `dateField`, `datePicker`, `dateRangePicker`, `timeZoneSelect`, `menu.radioGroup` | `valueChange` |
-| `menu.item` | `select` · `menu.checkboxItem` `checkedChange` · `approval` `decisionChange` |
+| `menu.item` | `select` — the value is the item's `value` prop, else its text · `menu.checkboxItem` `checkedChange`, with `details.item` · `approval` `decisionChange` |
 | `calendar` | `pageChange` (`next`/`previous`), `viewChange` (`zoom-in`/`zoom-out`) |
 | `slider` | `valueCommit` · `dashboard` `layoutCommit`, `grab`, `grabCancel` · `widget` `refresh` (`refresh`/`retry`) · `sortableList` `orderChange`, `orderCommit`, `grab`, `grabCancel` · `swipeItem` `fullSwipe` |
 | `form` | `submit` — the value is the **field names**, never what was typed into them |
 | `toaster` | `show` (reason: the kind), `update`, `dismiss` (`timeout`/`close`/`action`/`imperative`), `action` (an action that leaves the toast up) |
 | `datagrid` | `sortingChange`, `globalFilterChange`, `columnFiltersChange`, `paginationChange`, `selectedRowKeysChange`, `expandedRowKeysChange`, `expandedTreeKeysChange`, `rangeChange` (a marked block only), `copy`, `cellEditStart`, `cellEdit`, `cellEditCancel`, `cellEditReject`, `paste`, `columnPinChange`, `columnVisibilityChange`, `columnResize`, `groupingChange`, `groupExpandedChange`, `selectionViewChange`, `export`, `retry` — and on a phone `recordChange`, `sheetChange`, `selectModeChange`, `showMore` |
 
-**Nothing reports per frame, per hover or per keystroke.** A drag reports where it ends (`valueCommit`, `layoutCommit`, `columnResize`, a range block), so a slider's `valueChange` and a dashboard's `layoutChange` are not events here; neither is a tooltip shown on hover, a submenu opened by the pointer, the text typed into a combobox or a dropdown's search, focus moving in a calendar or a grid, nor a page reset that a sort or a filter caused. A change the app makes through a ref (`exportCsv()`, `clearEdits()`, `refresh()`) is not the user's and does not report.
+**Nothing reports per frame, per hover or per keystroke.** A drag reports where it ends (`valueCommit`, `layoutCommit`, `columnResize`, a range block), so a slider's `valueChange` and a dashboard's `layoutChange` are not events here; neither is a tooltip shown on hover, a submenu opened by the pointer, the text typed into a combobox or a dropdown's search, focus moving in a calendar or a grid, nor a page reset that a sort or a filter caused. A change the app makes through a ref (`exportCsv()`, `clearEdits()`, `refresh()`) does not report; one that goes through a component's state (closing a `Dialog` from code) reports with `source: 'app'`.
 
-**A plain press is not a change**, so a `Button`, a `Link`, a `Checkbox` or a `Textbox` reports nothing here; those are native elements whose own events already bubble. To name them, `Box.configure({ componentAttribute: true })` writes `data-bk="<component key>"` on every element a component styles, user components from `Box.components()` included, and one delegated listener does the rest:
+**A press is a `dom` event, and it needs `data-bk`.** `Box.configure({ componentAttribute: true })` writes `data-bk="<component key>"` on every element a component styles, user components from `Box.components()` included, and the channel names a `click` or a `change` by the nearest one — on the control it hit, with `details.interactive` saying whether a control was hit at all, so a dead click is countable. A press that also changed something arrives first, then the change (`click tabs.tab`, then `tabs.valueChange`). Without the attribute nothing can be named, and development says so once in the console.
 
 ```tsx
 Box.configure({ componentAttribute: true }); // in a module both the server and the browser run
-
-document.addEventListener('click', (event) => {
-  const part = (event.target as Element).closest('[data-bk]');
-  if (part) analytics.track('click', { component: part.getAttribute('data-bk') });
-}, true);
 ```
 
-An app's own `data-bk` in `props` wins. Set the flag before the first render, on both sides, or a hydrating browser sees attributes the server never wrote.
+An app's own `data-bk` in `props` wins. Set the flag before the first render, on both sides, or a hydrating browser sees attributes the server never wrote. The half of the channel that watches the page is a chunk of under 0.7 KB, fetched with the first subscription; in a test, `await vi.dynamicImportSettled()` after subscribing, before the first press.
 
-**A moment of the app's own is `reportInteraction`** (from `@box-kite/react`). Box never wraps the handlers an app passes in `props`: wrapping them all would cost every render, report a hover or a scroll per frame, and name nothing better than `button`. So a hover, a section scrolled into view or a wizard step is reported where it happens, in the same shape, to the same listeners, fire and forget:
+**A moment of the app's own is `Box.reportInteraction`.** Box never wraps the handlers an app passes in `props`: wrapping them all would cost every render, report a hover or a scroll per frame, and name nothing better than `button`. So a hover, a section scrolled into view or a wizard step is reported where it happens, in the same shape, to the same listeners, fire and forget:
 
 ```tsx
-<Button props={{ onMouseEnter: (event) => reportInteraction({ component: 'pricing-cta', type: 'mouseEnter', event }) }}>Pricing</Button>
+<Button props={{ onMouseEnter: (event) => Box.reportInteraction({ component: 'pricing-cta', type: 'mouseEnter', event }) }}>Pricing</Button>
 ```
 
-It is a function, not a hook and not a `Box` static, so an app that never calls it ships none of the queue, and it works in an effect, a fetch callback or a module with no React in it. `event` may be React's synthetic one; `target` and `timeStamp` are filled in, and with no listener it costs one size check. Keep it to discrete moments, the rule the components follow.
+It is a plain function, not a hook, so it works in an effect, a fetch callback or a module with no React in it. `event` may be React's synthetic one; `target`, `source`, `timeStamp` and `time` are filled in. Keep it to discrete moments, the rule the components follow.

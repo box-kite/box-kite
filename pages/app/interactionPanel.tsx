@@ -17,7 +17,7 @@ export default function InteractionPanel({ onClose }: { onClose(): void }) {
   const panelRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
-    interactionFeed.ignore((target) => !!panelRef.current?.contains(target as Node));
+    interactionFeed.ignore((target) => !!target && !!panelRef.current?.contains(target));
   }, []);
 
   return (

@@ -122,10 +122,11 @@
         "react",
         "react-dom",
         "./diagnostics-*",
-        "./themeReveal-*"
+        "./themeReveal-*",
+        "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "40.95 kB"
+      "limit": "41.47 kB"
     },
     {
       "name": "Box in a Server Component (react-server entry)",
@@ -134,7 +135,8 @@
         "react",
         "react-dom",
         "./diagnostics-*",
-        "./themeReveal-*"
+        "./themeReveal-*",
+        "./interactionListening.mjs"
       ],
       "gzip": true,
       "limit": "38.30 kB"
@@ -146,10 +148,11 @@
         "react",
         "react-dom",
         "./diagnostics-*",
-        "./themeReveal-*"
+        "./themeReveal-*",
+        "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "3.64 kB"
+      "limit": "4.09 kB"
     },
     {
       "name": "Anchor positioning (anchor entry)",
@@ -158,10 +161,11 @@
         "react",
         "react-dom",
         "./diagnostics-*",
-        "./themeReveal-*"
+        "./themeReveal-*",
+        "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "2.25 KB"
+      "limit": "2.27 kB"
     },
     {
       "name": "Component catalog (catalog entry)",
@@ -170,10 +174,11 @@
         "react",
         "react-dom",
         "./diagnostics-*",
-        "./themeReveal-*"
+        "./themeReveal-*",
+        "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "61.82 kB"
+      "limit": "61.84 kB"
     },
     {
       "name": "Spec renderer (spec entry)",
@@ -182,10 +187,11 @@
         "react",
         "react-dom",
         "./diagnostics-*",
-        "./themeReveal-*"
+        "./themeReveal-*",
+        "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "4.7 KB"
+      "limit": "4.72 kB"
     },
     {
       "name": "Ecosystem interop (interop entry)",
@@ -194,7 +200,8 @@
         "react",
         "react-dom",
         "./diagnostics-*",
-        "./themeReveal-*"
+        "./themeReveal-*",
+        "./interactionListening.mjs"
       ],
       "gzip": true,
       "limit": "4 KB"
@@ -206,7 +213,8 @@
         "react",
         "react-dom",
         "./diagnostics-*",
-        "./themeReveal-*"
+        "./themeReveal-*",
+        "./interactionListening.mjs"
       ],
       "gzip": true,
       "limit": "7.59 KB"
@@ -218,7 +226,8 @@
       "limit": "39.43 kB",
       "ignore": [
         "./diagnostics-*",
-        "./themeReveal-*"
+        "./themeReveal-*",
+        "./interactionListening.mjs"
       ]
     },
     {
@@ -228,10 +237,11 @@
         "react",
         "react-dom",
         "./diagnostics-*",
-        "./themeReveal-*"
+        "./themeReveal-*",
+        "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "43.13 kB"
+      "limit": "43.66 kB"
     },
     {
       "name": "Popover",
@@ -240,10 +250,11 @@
         "react",
         "react-dom",
         "./diagnostics-*",
-        "./themeReveal-*"
+        "./themeReveal-*",
+        "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "44.64 kB"
+      "limit": "45.21 kB"
     },
     {
       "name": "Menu",
@@ -252,10 +263,11 @@
         "react",
         "react-dom",
         "./diagnostics-*",
-        "./themeReveal-*"
+        "./themeReveal-*",
+        "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "46.97 kB"
+      "limit": "47.55 kB"
     },
     {
       "name": "Accordion",
@@ -264,10 +276,11 @@
         "react",
         "react-dom",
         "./diagnostics-*",
-        "./themeReveal-*"
+        "./themeReveal-*",
+        "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "42.39 kB"
+      "limit": "42.92 kB"
     },
     {
       "name": "Agent",
@@ -276,10 +289,11 @@
         "react",
         "react-dom",
         "./diagnostics-*",
-        "./themeReveal-*"
+        "./themeReveal-*",
+        "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "43.17 kB"
+      "limit": "43.70 kB"
     },
     {
       "name": "Markdown",
@@ -288,10 +302,11 @@
         "react",
         "react-dom",
         "./diagnostics-*",
-        "./themeReveal-*"
+        "./themeReveal-*",
+        "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "41.24 kB"
+      "limit": "42.04 kB"
     },
     {
       "name": "List",
@@ -300,10 +315,11 @@
         "react",
         "react-dom",
         "./diagnostics-*",
-        "./themeReveal-*"
+        "./themeReveal-*",
+        "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "42.59 kB"
+      "limit": "43.39 kB"
     },
     {
       "name": "SwipeItem",
@@ -312,10 +328,11 @@
         "react",
         "react-dom",
         "./diagnostics-*",
-        "./themeReveal-*"
+        "./themeReveal-*",
+        "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "46.15 kB"
+      "limit": "46.64 kB"
     },
     {
       "name": "SortableList",
@@ -324,10 +341,11 @@
         "react",
         "react-dom",
         "./diagnostics-*",
-        "./themeReveal-*"
+        "./themeReveal-*",
+        "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "46.47 kB"
+      "limit": "46.95 kB"
     },
     {
       "name": "VirtualList",
@@ -336,10 +354,11 @@
         "react",
         "react-dom",
         "./diagnostics-*",
-        "./themeReveal-*"
+        "./themeReveal-*",
+        "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "44.76 kB"
+      "limit": "45.58 kB"
     },
     {
       "name": "Skeleton",
@@ -348,10 +367,11 @@
         "react",
         "react-dom",
         "./diagnostics-*",
-        "./themeReveal-*"
+        "./themeReveal-*",
+        "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "40.57 kB"
+      "limit": "41.38 kB"
     },
     {
       "name": "Tabs",
@@ -360,10 +380,11 @@
         "react",
         "react-dom",
         "./diagnostics-*",
-        "./themeReveal-*"
+        "./themeReveal-*",
+        "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "43.59 kB"
+      "limit": "44.13 kB"
     },
     {
       "name": "Slider",
@@ -372,10 +393,11 @@
         "react",
         "react-dom",
         "./diagnostics-*",
-        "./themeReveal-*"
+        "./themeReveal-*",
+        "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "42.80 kB"
+      "limit": "43.32 kB"
     },
     {
       "name": "Progress",
@@ -384,10 +406,11 @@
         "react",
         "react-dom",
         "./diagnostics-*",
-        "./themeReveal-*"
+        "./themeReveal-*",
+        "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "40.53 kB"
+      "limit": "41.34 kB"
     },
     {
       "name": "Toaster",
@@ -396,10 +419,11 @@
         "react",
         "react-dom",
         "./diagnostics-*",
-        "./themeReveal-*"
+        "./themeReveal-*",
+        "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "44.37 kB"
+      "limit": "44.95 kB"
     },
     {
       "name": "DateField",
@@ -408,10 +432,11 @@
         "react",
         "react-dom",
         "./diagnostics-*",
-        "./themeReveal-*"
+        "./themeReveal-*",
+        "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "49.64 kB"
+      "limit": "50.14 kB"
     },
     {
       "name": "Calendar",
@@ -420,10 +445,11 @@
         "react",
         "react-dom",
         "./diagnostics-*",
-        "./themeReveal-*"
+        "./themeReveal-*",
+        "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "49.08 kB"
+      "limit": "49.61 kB"
     },
     {
       "name": "DatePicker",
@@ -432,10 +458,11 @@
         "react",
         "react-dom",
         "./diagnostics-*",
-        "./themeReveal-*"
+        "./themeReveal-*",
+        "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "61.85 kB"
+      "limit": "62.37 kB"
     },
     {
       "name": "DateTime",
@@ -444,10 +471,11 @@
         "react",
         "react-dom",
         "./diagnostics-*",
-        "./themeReveal-*"
+        "./themeReveal-*",
+        "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "44.12 kB"
+      "limit": "44.90 kB"
     },
     {
       "name": "TimeZoneSelect",
@@ -456,10 +484,11 @@
         "react",
         "react-dom",
         "./diagnostics-*",
-        "./themeReveal-*"
+        "./themeReveal-*",
+        "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "52.22 kB"
+      "limit": "52.71 kB"
     },
     {
       "name": "Combobox",
@@ -468,10 +497,11 @@
         "react",
         "react-dom",
         "./diagnostics-*",
-        "./themeReveal-*"
+        "./themeReveal-*",
+        "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "50.17 kB"
+      "limit": "50.70 kB"
     },
     {
       "name": "Dashboard",
@@ -480,10 +510,11 @@
         "react",
         "react-dom",
         "./diagnostics-*",
-        "./themeReveal-*"
+        "./themeReveal-*",
+        "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "46.80 kB"
+      "limit": "47.28 kB"
     },
     {
       "name": "DataGrid",
@@ -493,11 +524,22 @@
         "react-dom",
         "./diagnostics-*",
         "./themeReveal-*",
+        "./interactionListening.mjs",
         "../dataGridList.mjs",
         "../dataGridDateParts.mjs"
       ],
       "gzip": true,
-      "limit": "97.25 kB"
+      "limit": "97.80 kB"
+    },
+    {
+      "name": "Interaction listening, the chunk the first Box.onInteraction fetches",
+      "path": "dist/interactionListening.mjs",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "gzip": true,
+      "limit": "0.67 kB"
     },
     {
       "name": "DataGrid export, the chunk fetched on the first press",
@@ -506,10 +548,11 @@
         "react",
         "react-dom",
         "./diagnostics-*",
-        "./themeReveal-*"
+        "./themeReveal-*",
+        "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "3.8 KB"
+      "limit": "3.86 kB"
     },
     {
       "name": "DataGrid list layout, the chunk a narrow grid fetches on top of the grid",
@@ -519,6 +562,7 @@
         "react-dom",
         "./diagnostics-*",
         "./themeReveal-*",
+        "./interactionListening.mjs",
         "./box.mjs",
         "./components/*"
       ],
@@ -533,6 +577,7 @@
         "react-dom",
         "./diagnostics-*",
         "./themeReveal-*",
+        "./interactionListening.mjs",
         "./box.mjs",
         "./components/*"
       ],
@@ -546,10 +591,11 @@
         "react",
         "react-dom",
         "./diagnostics-*",
-        "./themeReveal-*"
+        "./themeReveal-*",
+        "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "165.56 kB"
+      "limit": "166.05 kB"
     }
   ],
   "repository": {

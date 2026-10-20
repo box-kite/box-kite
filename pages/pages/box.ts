@@ -622,16 +622,23 @@ export const boxMembers: readonly BoxMember[] = [
   {
     id: 'oninteraction',
     name: 'Box.onInteraction()',
-    signature: 'const stop = Box.onInteraction(({ component, type, reason, value }) => …)',
+    signature: 'const stop = Box.onInteraction(({ kind, component, type, reason, value, source }) => …)',
     summary:
-      'Hear every change any component reports — a dialog opened and why, a tab chosen, a DataGrid sorted or edited — in one shape, for analytics or an audit log.',
+      'Hear every interaction in one typed stream — a dialog opened and why, a tab chosen, a DataGrid sorted, a press on anything a component styled — as plain JSON, fire and forget, for analytics or an audit log.',
   },
   {
     id: 'reportinteraction',
-    name: 'reportInteraction()',
-    signature: "reportInteraction({ component: 'pricing-cta', type: 'mouseEnter', event })",
+    name: 'Box.reportInteraction()',
+    signature: "Box.reportInteraction({ component: 'pricing-cta', type: 'mouseEnter', event })",
     summary:
-      "Report a moment of the app's own — a hover, a page view, a custom step — to the same Box.onInteraction listeners, fire and forget. A named export, so an app that never calls it ships none of it.",
+      "Report a moment of the app's own — a hover, a page view, a custom step — to the same Box.onInteraction listeners, fire and forget.",
+  },
+  {
+    id: 'flushinteractions',
+    name: 'Box.flushInteractions()',
+    signature: 'Box.flushInteractions()',
+    summary:
+      'Deliver what is queued now, rather than in the next background task: what an analytics sender calls before its last batch, and a test before it asserts.',
   },
   {
     id: 'getvariablevalue',

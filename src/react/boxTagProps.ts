@@ -2,7 +2,7 @@
 import { classNames, ClassNameType } from '../core';
 import { BoxStyleProps } from '../types';
 import BoxUtils from '../utils/box/boxUtils';
-import { marksComponents } from '../utils/interactions/interactionChannel';
+import { marksComponents } from '../utils/interactions/componentAttribute';
 
 /**
  * The props that reach the HTML tag: whatever the caller put in `props`, the resolved class list,

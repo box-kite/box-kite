@@ -1,11 +1,13 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ignoreLogs } from '../../dev/tests';
-import Box, { reportInteraction } from '../box';
-import { flushInteractions, InteractionEvent } from '../utils/interactions/interactionChannel';
+import Box, { InteractionEvent } from '../box';
+import { QuietInteractions, ReportInteractions } from '../react/a11y/interactions';
 import createToastStore from '../utils/toast/toastStore';
 import Button from './button';
+import DataGridListValue from './dataGrid/components/dataGridListValue';
 import GridModel from './dataGrid/models/gridModel';
+import RowModel from './dataGrid/models/rowModel';
 import Dialog from './dialog';
 import Dropdown from './dropdown';
 import Form from './form';
@@ -20,15 +22,17 @@ describe('Box.onInteraction', () => {
   let collected: InteractionEvent[];
   // Delivery is a background task, so a test reads what is queued by delivering it now.
   const heard = () => {
-    flushInteractions();
+    Box.flushInteractions();
 
     return collected;
   };
   let stop: () => void;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     collected = [];
     stop = Box.onInteraction((event) => collected.push(event));
+    // The half that watches the page is fetched with the first subscription.
+    await vi.dynamicImportSettled();
   });
 
   afterEach(() => {
@@ -54,14 +58,16 @@ describe('Box.onInteraction', () => {
 
   it('hears a moment the app reports itself, from a handler of its own in props', () => {
     render(
-      <Button props={{ onMouseEnter: (event) => reportInteraction({ component: 'pricing-cta', type: 'mouseEnter', event }) }}>
+      <Button props={{ onMouseEnter: (event) => Box.reportInteraction({ component: 'pricing-cta', type: 'mouseEnter', event }) }}>
         Pricing
       </Button>,
     );
 
     fireEvent.mouseEnter(screen.getByRole('button'));
 
-    expect(heard()).toEqual([expect.objectContaining({ component: 'pricing-cta', type: 'mouseEnter', event: expect.any(MouseEvent) })]);
+    expect(heard()).toEqual([
+      expect.objectContaining({ kind: 'custom', component: 'pricing-cta', type: 'mouseEnter', event: expect.any(MouseEvent) }),
+    ]);
     expect(heard()[0].target).toBe(screen.getByRole('button'));
   });
 
@@ -96,6 +102,7 @@ describe('Box.onInteraction', () => {
       ['menu.item', 'select', 'select'],
       ['menu', 'openChange', 'select'],
     ]);
+    expect(heard()[0].value).toBe('Duplicate');
   });
 
   it('says nothing for a component that never changed', () => {
@@ -126,6 +133,11 @@ describe('Box.onInteraction', () => {
       ['datagrid', 'columnVisibilityChange', 'hide'],
     ]);
     expect(heard()[0].value).toEqual({ columnKey: 'name', direction: 'ASC' });
+    // Narrowed by kind, component and type, the value is typed: this line is the compile-time half of the test.
+    const sorted = heard()[0];
+    if (sorted.kind === 'change' && sorted.component === 'datagrid' && sorted.type === 'sortingChange') {
+      expect(sorted.value?.direction).toBe('ASC');
+    }
     expect(heard().every((event) => event.target === element)).toBe(true);
   });
 
@@ -233,10 +245,123 @@ describe('Box.onInteraction', () => {
     const id = store.add('Saved', { kind: 'success' });
     store.dismiss(id, 'close');
 
-    expect(heard().map(({ type, reason, value }) => [type, reason, value])).toEqual([
-      ['show', 'success', 'Saved'],
-      ['dismiss', 'close', 'Saved'],
+    expect(heard().map(({ type, reason, value, source }) => [type, reason, value, source])).toEqual([
+      ['show', 'success', 'Saved', 'app'],
+      ['dismiss', 'close', 'Saved', 'user'],
     ]);
+  });
+
+  it('names a menu command by its value, and a checkbox item by the item it is', () => {
+    render(
+      <Menu trigger={(bag) => <Button {...bag}>View</Button>} defaultOpen>
+        <Menu.Item value="duplicate-view">Duplicate</Menu.Item>
+        <Menu.CheckboxItem>Show grid</Menu.CheckboxItem>
+      </Menu>,
+    );
+
+    fireEvent.click(screen.getByRole('menuitemcheckbox', { name: 'Show grid' }));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Duplicate' }));
+
+    expect(heard().map(({ component, value, details }) => [component, value, details])).toEqual([
+      ['menu.checkboxItem', true, { item: 'Show grid' }],
+      ['menu.item', 'duplicate-view', undefined],
+      ['menu', false, undefined],
+    ]);
+  });
+
+  it("keeps a composite's parts quiet, but not the app's own content rendered inside them", () => {
+    const tabs = (
+      <Tabs defaultValue="a">
+        <Tabs.List label="Inner">
+          <Tabs.Tab value="a">A</Tabs.Tab>
+          <Tabs.Tab value="b">B</Tabs.Tab>
+        </Tabs.List>
+      </Tabs>
+    );
+    render(
+      <QuietInteractions>
+        <div data-testid="part">{tabs}</div>
+        <ReportInteractions>
+          <div data-testid="app">{tabs}</div>
+        </ReportInteractions>
+      </QuietInteractions>,
+    );
+
+    fireEvent.click(within(screen.getByTestId('part')).getByRole('tab', { name: 'B' }));
+    fireEvent.click(within(screen.getByTestId('app')).getByRole('tab', { name: 'B' }));
+
+    expect(heard()).toEqual([expect.objectContaining({ component: 'tabs', value: 'b' })]);
+    expect(screen.getByTestId('app').contains(heard()[0].target!)).toBe(true);
+  });
+
+  it("hears a column's own Cell in the phone layout, whose sheet keeps the grid's parts quiet", () => {
+    const Cell = () => (
+      <Tabs defaultValue="a">
+        <Tabs.List label="Cell">
+          <Tabs.Tab value="a">A</Tabs.Tab>
+          <Tabs.Tab value="b">B</Tabs.Tab>
+        </Tabs.List>
+      </Tabs>
+    );
+    const grid = new GridModel<{ id: number; name: string }>(
+      { data: [{ id: 1, name: 'Ada' }], def: { rowKey: 'id', columns: [{ key: 'name', header: 'Name', Cell }] } },
+      vi.fn(),
+    );
+    render(
+      <QuietInteractions>
+        <DataGridListValue row={grid.flatRows.value[0] as RowModel<{ id: number; name: string }>} column={grid.columns.value.flat[0]} />
+      </QuietInteractions>,
+    );
+
+    fireEvent.click(screen.getByRole('tab', { name: 'B' }));
+
+    expect(heard()).toEqual([expect.objectContaining({ component: 'tabs', type: 'valueChange', value: 'b' })]);
+  });
+
+  it('hears a press and the change it made from one stream, the press first', () => {
+    Box.configure({ componentAttribute: true });
+    render(
+      <Tabs defaultValue="overview">
+        <Tabs.List label="Project">
+          <Tabs.Tab value="overview">Overview</Tabs.Tab>
+          <Tabs.Tab value="activity">Activity</Tabs.Tab>
+        </Tabs.List>
+      </Tabs>,
+    );
+
+    fireEvent.click(screen.getByRole('tab', { name: 'Activity' }));
+
+    expect(heard().map(({ kind, component, type }) => [kind, component, type])).toEqual([
+      ['dom', 'tabs.tab', 'click'],
+      ['change', 'tabs', 'valueChange'],
+    ]);
+    expect(heard()[0].target).toBe(screen.getByRole('tab', { name: 'Activity' }));
+  });
+
+  it('hears a press on a plain Button, which reports no change of its own', () => {
+    Box.configure({ componentAttribute: true });
+    render(<Button>Save</Button>);
+
+    fireEvent.click(screen.getByRole('button'));
+
+    expect(heard()).toEqual([expect.objectContaining({ kind: 'dom', component: 'button', type: 'click', details: { interactive: true } })]);
+  });
+
+  it('gives a DataGrid change the press behind it, which the model was never handed', () => {
+    const grid = new GridModel<{ id: number; name: string }>(
+      { data: [{ id: 1, name: 'Ada' }], def: { rowKey: 'id', columns: [{ key: 'name', header: 'Name' }] } },
+      vi.fn(),
+    );
+    render(
+      <div role="columnheader" tabIndex={-1} onClick={() => grid.setSortColumn('name')}>
+        <span>Name</span>
+      </div>,
+    );
+
+    fireEvent.click(screen.getByText('Name'));
+
+    expect(heard()).toEqual([expect.objectContaining({ component: 'datagrid', type: 'sortingChange', event: expect.any(MouseEvent) })]);
+    expect(heard()[0].target).toBe(screen.getByRole('columnheader'));
   });
 
   describe('componentAttribute', () => {

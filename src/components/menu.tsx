@@ -1,7 +1,7 @@
 import { createContext, FunctionComponent, useCallback, useContext, useMemo, useRef, useState } from 'react';
 import Box, { BoxProps } from '../box';
 import { useEventCallback } from '../react/a11y/callbacks';
-import { InteractionsQuiet } from '../react/a11y/quietInteractions';
+import { useInteractionReporter } from '../react/a11y/interactions';
 import useControllableState, { ChangeDetails, ChangeHandler } from '../react/a11y/useControllableState';
 import useAnchorPosition from '../react/anchor/useAnchorPosition';
 import { useIsomorphicLayoutEffect } from '../react/effects';
@@ -15,7 +15,6 @@ import usePopoverLayer, {
 import { ComponentsAndVariants } from '../types';
 import { AnchorAlign, AnchorSide } from '../utils/anchor/anchorUtils';
 import { isEventInside, isRtl } from '../utils/dom/domUtils';
-import { emitInteraction } from '../utils/interactions/interactionChannel';
 import TypeaheadUtils from '../utils/keyboard/typeaheadUtils';
 import MenuUtils from '../utils/menu/menuUtils';
 import Overlay from './overlay';
@@ -116,6 +115,8 @@ export interface MenuItemProps<TKey extends keyof ComponentsAndVariants = 'menu.
   disabled?: boolean;
   /** Whether choosing it closes the whole menu. Default `true`. */
   closeOnSelect?: boolean;
+  /** What `Box.onInteraction` calls the item when it is chosen. Default: its text, when that is all it holds. */
+  value?: string;
 }
 
 /** Every Box prop, on the `<button>` that is one checkbox item. */
@@ -573,7 +574,7 @@ function MenuSub<TKey extends keyof ComponentsAndVariants = 'menu'>(props: MenuS
   });
 
   const { panels, registerLayer } = useNestedLayers(parent.registerLayer);
-  const quiet = useContext(InteractionsQuiet);
+  const report = useInteractionReporter('menu.sub');
 
   const layer = usePopoverLayer<'menu', MenuReason>({
     haspopup: 'menu',
@@ -625,7 +626,7 @@ function MenuSub<TKey extends keyof ComponentsAndVariants = 'menu'>(props: MenuS
     event.preventDefault();
     layer.setOpen(true, { reason: 'trigger', event });
     // Only the deliberate open: hover opens one and focus following the pointer closes it, many times a visit.
-    if (!quiet) emitInteraction({ component: 'menu.sub', type: 'openChange', reason: 'keyboard', value: true, event });
+    report('openChange', true, { reason: 'keyboard', event, item: nameOf(label) });
   });
 
   const handlePointerEnter = useEventCallback((event: React.PointerEvent) => {
@@ -683,17 +684,20 @@ function MenuSub<TKey extends keyof ComponentsAndVariants = 'menu'>(props: MenuS
   );
 }
 
+/** What an item is called on `Box.onInteraction`: its `value`, else its text when that is all it holds. */
+const nameOf = (content: React.ReactNode, value?: string) => value ?? (typeof content === 'string' ? content : undefined);
+
 /** One command in the menu. A `<button>`, so Enter and Space are the browser's. */
 function MenuItem<TKey extends keyof ComponentsAndVariants = 'menu.item'>(props: MenuItemProps<TKey>) {
-  const { onSelect, disabled, closeOnSelect = true, props: itemProps, children, ...boxProps } = props;
+  const { onSelect, disabled, closeOnSelect = true, value, props: itemProps, children, ...boxProps } = props;
   const context = useMenuContext('Menu.Item');
-  const quiet = useContext(InteractionsQuiet);
+  const report = useInteractionReporter('menu.item');
 
   const handleClick = useEventCallback((event: React.MouseEvent) => {
     if (disabled) return;
 
     onSelect?.(event);
-    if (!quiet) emitInteraction({ component: 'menu.item', type: 'select', reason: 'select', event });
+    report('select', nameOf(children, value), { reason: 'select', event });
     if (closeOnSelect) context.closeAll({ reason: 'select', event });
   });
 
@@ -717,6 +721,7 @@ function MenuCheckboxItem<TKey extends keyof ComponentsAndVariants = 'menu.item'
     onCheckedChange,
     disabled,
     closeOnSelect = false,
+    value,
     props: itemProps,
     children,
     ...boxProps
@@ -726,13 +731,15 @@ function MenuCheckboxItem<TKey extends keyof ComponentsAndVariants = 'menu.item'
     value: checked,
     defaultValue: defaultChecked,
     onChange: onCheckedChange,
-    interaction: { component: 'menu.checkboxItem', type: 'checkedChange' },
   });
+  // Here rather than through the state, which knows the new state but not which item it belongs to.
+  const report = useInteractionReporter('menu.checkboxItem');
 
   const handleClick = useEventCallback((event: React.MouseEvent) => {
     if (disabled) return;
 
     setChecked(!isChecked, { reason: 'select', event });
+    report('checkedChange', !isChecked, { reason: 'select', event, item: nameOf(children, value) });
     if (closeOnSelect) context.closeAll({ reason: 'select', event });
   });
 

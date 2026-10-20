@@ -10,7 +10,7 @@ import { ExtractElementFromTag } from './react/reactTypes';
 import Theme from './react/theme/theme';
 import useStyles, { StylesContext } from './react/useStyles';
 import { ComponentsAndVariants } from './types';
-import { subscribeInteractions } from './utils/interactions/interactionChannel';
+import { flushInteractions, reportInteraction, subscribeInteractions } from './utils/interactions/interactionChannel';
 
 interface HoverElementProps {
   tag: string;
@@ -81,8 +81,12 @@ interface BoxType {
   configure: typeof StylesContext.configure;
   /** Run a DOM change inside a view transition where the browser has one, and plainly where it has not. */
   viewTransition: typeof startViewTransition;
-  /** Hear every interaction a component reports — opened, chosen, sorted, edited — until the returned function is called. */
+  /** Hear every interaction — a component's change, a press on anything it styled, the app's own — until the returned function is called. */
   onInteraction: typeof subscribeInteractions;
+  /** Report a moment of the app's own — a page view, a hover, a wizard step — to the same listeners, fire and forget. */
+  reportInteraction: typeof reportInteraction;
+  /** Deliver what is queued now: what an analytics sender calls before its last batch, and a test before it asserts. */
+  flushInteractions: typeof flushInteractions;
 }
 
 const Box = boxComponent(useBoxElement, 'Box') as unknown as BoxType;
@@ -101,6 +105,8 @@ Box.getVariableValue = (name: string) => getDefaultEngine().getVariableValue(nam
 Box.configure = StylesContext.configure;
 Box.viewTransition = startViewTransition;
 Box.onInteraction = subscribeInteractions;
+Box.reportInteraction = reportInteraction;
+Box.flushInteractions = flushInteractions;
 
 export default Box;
 
@@ -138,9 +144,16 @@ export function useClassNames<TKey extends keyof ComponentsAndVariants = never>(
 export { useVisibility };
 
 export type { BoxClassNames, BoxClassNameProps };
-// Named rather than static, so an app that never reports pays nothing for the queue.
-export { emitInteraction as reportInteraction, flushInteractions } from './utils/interactions/interactionChannel';
-export type { InteractionEvent, InteractionInput, InteractionListener } from './utils/interactions/interactionChannel';
+export type {
+  ComponentInteraction,
+  ComponentInteractions,
+  CustomInteraction,
+  DomInteraction,
+  InteractionEvent,
+  InteractionJson,
+  InteractionListener,
+  InteractionReport,
+} from './utils/interactions/interactionChannel';
 export type { BoxConfiguration } from './react/useStyles';
 // The two shapes a design file annotates with, so it needs no import from `@box-kite/core`, which pnpm hides.
 export type { BoxComponentStyles, BoxStyleProps } from './types';

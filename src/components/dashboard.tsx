@@ -1,6 +1,7 @@
 import { createContext, CSSProperties, FunctionComponent, ReactNode, useContext, useId, useMemo, useRef, useState } from 'react';
 import Box, { BoxProps } from '../box';
-import { useEventCallback, useInteractionCallback, useLatest } from '../react/a11y/callbacks';
+import { useEventCallback, useLatest } from '../react/a11y/callbacks';
+import { useInteractionCallback, useInteractionReporter } from '../react/a11y/interactions';
 import useControllableState, { ChangeDetails, ChangeHandler } from '../react/a11y/useControllableState';
 import { ComponentsAndVariants } from '../types';
 import DashboardUtils, { DashboardItem, DashboardLayout, DashboardStep } from '../utils/dashboard/dashboardUtils';
@@ -390,12 +391,11 @@ function DashboardGridImpl<TKey extends keyof ComponentsAndVariants = 'dashboard
   });
 
   // A keyboard grab and its cancel change nothing a layout callback hears until the drop, so they report alone.
-  const reportGrab = useInteractionCallback<string, ChangeDetails<HandleKind>>(undefined, 'dashboard', 'grab');
-  const reportCancel = useInteractionCallback<string, ChangeDetails<'escape' | 'blur'>>(undefined, 'dashboard', 'grabCancel');
+  const report = useInteractionReporter('dashboard');
 
   /** Put the widget back, layout and all — the one thing a cancelled grab has to be able to do. */
   const cancel = useEventCallback((grip: Held, event: React.SyntheticEvent) => {
-    reportCancel(grip.id, { reason: event.type === 'blur' ? 'blur' : 'escape', event });
+    report('grabCancel', grip.id, { reason: event.type === 'blur' ? 'blur' : 'escape', event });
     apply(grip.before, { reason: grip.kind, event });
     setHeld(null);
     setAnnouncement(`${grip.name} put back at ${positionOf(grip.origin)}.`);
@@ -414,7 +414,7 @@ function DashboardGridImpl<TKey extends keyof ComponentsAndVariants = 'dashboard
 
       event.preventDefault();
       setHeld({ id, kind, name, origin: item, before: latest.current });
-      reportGrab(id, { reason: kind, event });
+      report('grab', id, { reason: kind, event });
       setAnnouncement(
         kind === 'move'
           ? `${name} picked up at ${positionOf(item)}. Use the arrow keys to move it.`

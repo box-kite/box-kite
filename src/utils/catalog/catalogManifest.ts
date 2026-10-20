@@ -902,6 +902,7 @@ const catalogManifest: CatalogManifest = {
       props: {
         disabled: { type: 'boolean', description: 'Focusable, announced, and not activatable.' },
         closeOnSelect: { type: 'boolean', description: 'Whether choosing it closes the whole menu.' },
+        value: { type: 'string', description: 'What `Box.onInteraction` calls the item when it is chosen.' },
       },
       required: [],
       styled: true,
@@ -916,6 +917,7 @@ const catalogManifest: CatalogManifest = {
         defaultChecked: { type: 'boolean', description: 'Whether it starts checked, when the item owns its own state.' },
         closeOnSelect: { type: 'boolean', description: 'Whether toggling it closes the menu.' },
         disabled: { type: 'boolean', description: 'Focusable, announced, and not activatable.' },
+        value: { type: 'string', description: 'What `Box.onInteraction` calls the item when it is chosen.' },
       },
       required: [],
       styled: true,

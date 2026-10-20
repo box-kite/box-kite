@@ -1,19 +1,6 @@
-import {
-  forwardRef,
-  FunctionComponent,
-  ReactElement,
-  Ref,
-  RefAttributes,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { forwardRef, FunctionComponent, ReactElement, Ref, RefAttributes, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Box, { BoxProps } from '../box';
 import { useEventCallback } from '../react/a11y/callbacks';
-import { InteractionsQuiet } from '../react/a11y/quietInteractions';
 import useControllableState, { ChangeHandler } from '../react/a11y/useControllableState';
 import useDismiss from '../react/a11y/useDismiss';
 import useFocusReturn from '../react/a11y/useFocusReturn';
@@ -21,7 +8,6 @@ import useRovingFocus from '../react/a11y/useRovingFocus';
 import { useIsomorphicLayoutEffect } from '../react/effects';
 import useIdentifier from '../react/identity/useIdentifier';
 import { BoxStyleProps, ComponentsAndVariants } from '../types';
-import { emitInteraction } from '../utils/interactions/interactionChannel';
 import BaseSvg from './baseSvg';
 import Button from './button';
 import DropdownContext, { DropdownItemProps, DropdownRow } from './dropdown/dropdownContext';
@@ -226,7 +212,11 @@ function DropdownImpl<TVal>(props: Props<TVal>, ref: Ref<HTMLInputElement>): Rea
    */
   const [search, setSearch] = useState<string | null>(null);
 
-  const [isOpen, setOpen] = useState(!!defaultOpen);
+  // Every open and close goes through here, so each reports once to `Box.onInteraction`, with why.
+  const [isOpen, setOpen] = useControllableState<boolean>({
+    defaultValue: !!defaultOpen,
+    interaction: { component: 'dropdown', type: 'openChange' },
+  });
   const triggerRef = useRef<HTMLElement | null>(null);
   // A callback rather than a ref object: the trigger is a `<button>` in one mode and a `<div>` in
   // the other, and one `RefObject<T>` cannot be handed to both.
@@ -243,17 +233,9 @@ function DropdownImpl<TVal>(props: Props<TVal>, ref: Ref<HTMLInputElement>): Rea
   const hasLabel = label !== undefined && label !== null && label !== false;
   const optionId = useCallback((index: number) => `${identifier}-option-${index}`, [identifier]);
 
-  // Every open and close goes through here, so each reports once to `Box.onInteraction`, with why.
-  const quiet = useContext(InteractionsQuiet);
-  // A ref, since one keystroke can close twice — Tab commits the option, which closes, then leaves.
-  const openRef = useRef(isOpen);
-  const changeOpen = useEventCallback((open: boolean, reason: string, event?: React.SyntheticEvent | Event) => {
-    if (open === openRef.current) return;
-
-    openRef.current = open;
-    setOpen(open);
-    if (!quiet) emitInteraction({ component: 'dropdown', type: 'openChange', reason, value: open, event });
-  });
+  const changeOpen = useEventCallback((open: boolean, reason: string, event?: React.SyntheticEvent | Event) =>
+    setOpen(open, { reason, event }),
+  );
 
   /** Close the listbox, and let the field go back to the value — unless Escape said not to. */
   const close = useEventCallback((reason: string, event?: React.SyntheticEvent | Event, keepSearch = false) => {
