@@ -24,6 +24,17 @@ const HAIRLINE = 'color-mix(in oklab, currentColor 12%, transparent)';
 /** What a list item's icon, avatar or thumbnail sits on. */
 const MEDIA_FILL: BoxComponentStyles = { bgColor: 'currentColor/6' };
 
+/**
+ * A layer moving in or out by a transform is the containing block of every `position: fixed` descendant
+ * — a password manager's badge on a field included — so `overflow: auto` scrolled to it until the transform
+ * settled (#283). `overflow` waits for the end of the entrance and leaves at the start of the exit.
+ */
+const OVERFLOW_AFTER_ENTRANCE: BoxComponentStyles['css'] = {
+  transitionProperty: 'all, overflow',
+  transitionTimingFunction: 'ease, step-end',
+};
+const OVERFLOW_BEFORE_EXIT: BoxComponentStyles['css'] = { transitionTimingFunction: 'ease, step-start' };
+
 /** The keyboard's mark on a control in the DataGrid's list layout. */
 const FOCUS_RING: BoxComponentStyles = { outline: 2, outlineStyle: 'solid', outlineOffset: 2, outlineColor: 'accent-500' };
 
@@ -106,13 +117,14 @@ const baseComponents = {
       // `@starting-style` names; `allow-discrete` is what holds `display` and `overlay` back on the way
       // out, so the exit is a transition rather than a `<Presence>`. Every Box already transitions `all`,
       // which carries both of those (measured).
-      startingStyle: { opacity: 0, scale: 0.96 },
+      startingStyle: { opacity: 0, scale: 0.96, overflow: 'hidden' },
       transitionBehavior: 'allow-discrete',
+      css: OVERFLOW_AFTER_ENTRANCE,
       // `display: none` is declared here rather than left to the UA's own `dialog:not([open])` rule,
       // because any author rule outranks that one — and every Box carries `display: block`, so without
       // this a closed dialog stays laid out over the page. Measured: the one thing a test environment
       // cannot see, having no UA dialog styles of its own.
-      not: { open: { opacity: 0, scale: 0.96, display: 'none' } },
+      not: { open: { opacity: 0, scale: 0.96, display: 'none', overflow: 'hidden', css: OVERFLOW_BEFORE_EXIT } },
       // The backdrop is a pseudo-element, so it inherits none of the above and transitions nothing unless
       // it says so. Only a modal dialog has one to paint; the rule still resolves for the other kind,
       // there is simply no box (measured — a non-modal dialog computes this and shows nothing).
@@ -164,7 +176,7 @@ const baseComponents = {
       },
       // The panel is displayed when it opens — from `display: none` on the platform path, by mounting on
       // the other — and both are a first style resolution, which is the moment `@starting-style` names.
-      startingStyle: { opacity: 0, translateY: -1 },
+      startingStyle: { opacity: 0, translateY: -1, overflow: 'hidden' },
     },
     variants: {
       // The exit, on the top-layer path only, where the panel is hidden rather than unmounted: losing
@@ -178,7 +190,8 @@ const baseComponents = {
       // it is the one thing the test environment cannot see, since it has no UA popover styles either.
       topLayer: {
         transitionBehavior: 'allow-discrete',
-        not: { open: { opacity: 0, translateY: -1, display: 'none' } },
+        css: OVERFLOW_AFTER_ENTRANCE,
+        not: { open: { opacity: 0, translateY: -1, display: 'none', overflow: 'hidden', css: OVERFLOW_BEFORE_EXIT } },
       },
     },
   },
@@ -3540,10 +3553,10 @@ const baseComponents = {
               bgColor: 'white',
               color: 'base-900',
               shadow: 'large',
-              css: { maxWidth: 'none', maxHeight: 'calc(100dvh - 2rem)' },
-              startingStyle: { translateY: '1/1' },
+              css: { maxWidth: 'none', maxHeight: 'calc(100dvh - 2rem)', ...OVERFLOW_AFTER_ENTRANCE },
+              startingStyle: { translateY: '1/1', overflow: 'hidden' },
               transitionBehavior: 'allow-discrete',
-              not: { open: { translateY: '1/1', display: 'none' } },
+              not: { open: { translateY: '1/1', display: 'none', overflow: 'hidden', css: OVERFLOW_BEFORE_EXIT } },
               backdrop: { bgColor: 'black/40', transition: 'opacity', startingStyle: { opacity: 0 }, not: { open: { opacity: 0 } } },
               theme: { dark: { bgColor: 'base-900', color: 'base-100' } },
             },

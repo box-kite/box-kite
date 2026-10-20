@@ -17,3 +17,5 @@ None.
 ## Fixes
 
 <!-- One bullet per fix: **What was wrong.** What it does now. -->
+
+- **A `Dialog`, a `Popover` or the DataGrid's bottom sheet could flash scrollbars as it opened.** The entrance scales or slides the layer, and while a transform runs the layer is the containing block of every `position: fixed` element inside it, so a password manager's badge on a text field was placed relative to the dialog rather than the viewport and its `overflow: auto` scrolled to it until the transform settled. The layer now keeps `overflow: hidden` until its entrance has finished and goes back to it as its exit starts, so nothing inside it can scroll while it moves. Content too tall for the layer still scrolls once it is open.

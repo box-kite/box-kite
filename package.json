@@ -173,7 +173,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "61.80 kB"
+      "limit": "61.82 kB"
     },
     {
       "name": "Spec renderer (spec entry)",
@@ -231,7 +231,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "42.53 kB"
+      "limit": "42.55 kB"
     },
     {
       "name": "Popover",
@@ -255,7 +255,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "46.32 kB"
+      "limit": "46.34 kB"
     },
     {
       "name": "Accordion",
@@ -303,7 +303,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "42.38 kB"
+      "limit": "42.40 kB"
     },
     {
       "name": "SwipeItem",
@@ -351,7 +351,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "40.38 kB"
+      "limit": "40.40 kB"
     },
     {
       "name": "Tabs",
@@ -399,7 +399,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "43.78 kB"
+      "limit": "43.80 kB"
     },
     {
       "name": "DateField",
@@ -423,7 +423,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "48.39 kB"
+      "limit": "48.41 kB"
     },
     {
       "name": "DatePicker",
@@ -459,7 +459,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "51.50 kB"
+      "limit": "51.52 kB"
     },
     {
       "name": "Combobox",
@@ -549,7 +549,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "163.09 kB"
+      "limit": "163.11 kB"
     }
   ],
   "repository": {
