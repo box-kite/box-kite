@@ -48,7 +48,7 @@ describe('the interaction log', () => {
     tab.setAttribute('data-bk', 'tabs.tab');
     tab.textContent = 'Activity';
     tab.addEventListener('click', () =>
-      Box.reportInteraction({ component: 'tabs', type: 'valueChange', reason: 'click', value: 'activity' }),
+      Box.reportInteraction({ component: 'tabs', type: 'valueChange', reason: 'click', value: 'activity', details: { from: 'overview' } }),
     );
     document.body.append(tab);
 
@@ -56,8 +56,8 @@ describe('the interaction log', () => {
     Box.flushInteractions();
 
     expect(info.mock.calls).toEqual([
-      ['[interaction] click tabs.tab', 'Activity'],
-      ['[interaction] tabs.valueChange', 'click → activity'],
+      ['[interaction] click tabs.tab', 'Activity', expect.objectContaining({ kind: 'dom', details: { interactive: true } })],
+      ['[interaction] tabs.valueChange', 'click → activity', expect.objectContaining({ kind: 'custom', details: { from: 'overview' } })],
     ]);
     tab.remove();
     info.mockRestore();

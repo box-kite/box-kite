@@ -41,7 +41,7 @@ export function logInteractions(): void {
 
   Box.onInteraction((event) => {
     const { name, detail } = interactionLine(event);
-    console.info(`[interaction] ${name}`, detail);
+    console.info(`[interaction] ${name}`, detail, event);
   });
 }
 

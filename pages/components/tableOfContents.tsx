@@ -117,6 +117,21 @@ export default function TableOfContents({ entries }: { entries: TocEntry[] }) {
                     e.preventDefault();
                     scrollToSection(target);
                     history.replaceState(null, '', `#${entry.id}`);
+                    Box.reportInteraction({
+                      component: 'toc',
+                      type: 'jump',
+                      reason: 'click',
+                      value: entry.id,
+                      event: e,
+                      details: {
+                        label: entry.label,
+                        group: groupOf(entries, entry),
+                        position: links.indexOf(entry) + 1,
+                        of: links.length,
+                        from: links[active]?.id,
+                        page: location.pathname,
+                      },
+                    });
                   },
                 }}
                 fontSize={13}
@@ -140,6 +155,17 @@ export default function TableOfContents({ entries }: { entries: TocEntry[] }) {
       </Box>
     </Flex>
   );
+}
+
+/** The section heading a link sits under, if the list has any. */
+function groupOf(entries: TocEntry[], link: TocEntry): string | undefined {
+  let group: string | undefined;
+  for (const entry of entries) {
+    if (entry === link) return group;
+    if ('section' in entry) group = entry.label;
+  }
+
+  return undefined;
 }
 
 /** Which of `ids` the reader is in, followed on scroll — one read of the headings per frame at most. */
