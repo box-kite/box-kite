@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 import Box from '../../../box';
+import { QuietInteractions } from '../../../react/a11y/quietInteractions';
 import FilterDraftUtils, { type NumberFilterDraft } from '../../../utils/dataGrid/filterDraftUtils';
 import Button from '../../button';
 import Dropdown from '../../dropdown';
@@ -149,27 +150,29 @@ function NumberFilter<TRow>({ column }: Props<TRow>) {
 
   return (
     <Flex component={`${componentName}.filter.cell.input` as never} ai={operator === 'between' ? 'start' : 'center'} gap={1}>
-      <Dropdown<NumberFilterValue['operator']>
-        value={operator}
-        variant="compact"
-        onChange={(val) => val && handleOperatorChange(val)}
-        minWidth={6}
-        hideIcon
-        b={0}
-        bgColor="transparent"
-        focus={{ outline: 0 }}
-        // The trigger's content is a mathematical symbol, and a combobox is not named by its
-        // content anyway — without this the control announces as nothing at all.
-        props={{ tabIndex: -1, 'aria-label': text.filterComparison(columnName) }}
-      >
-        <Dropdown.Item value="eq">=</Dropdown.Item>
-        <Dropdown.Item value="ne">≠</Dropdown.Item>
-        <Dropdown.Item value="gt">&gt;</Dropdown.Item>
-        <Dropdown.Item value="gte">≥</Dropdown.Item>
-        <Dropdown.Item value="lt">&lt;</Dropdown.Item>
-        <Dropdown.Item value="lte">≤</Dropdown.Item>
-        <Dropdown.Item value="between">↔</Dropdown.Item>
-      </Dropdown>
+      <QuietInteractions>
+        <Dropdown<NumberFilterValue['operator']>
+          value={operator}
+          variant="compact"
+          onChange={(val) => val && handleOperatorChange(val)}
+          minWidth={6}
+          hideIcon
+          b={0}
+          bgColor="transparent"
+          focus={{ outline: 0 }}
+          // The trigger's content is a mathematical symbol, and a combobox is not named by its
+          // content anyway — without this the control announces as nothing at all.
+          props={{ tabIndex: -1, 'aria-label': text.filterComparison(columnName) }}
+        >
+          <Dropdown.Item value="eq">=</Dropdown.Item>
+          <Dropdown.Item value="ne">≠</Dropdown.Item>
+          <Dropdown.Item value="gt">&gt;</Dropdown.Item>
+          <Dropdown.Item value="gte">≥</Dropdown.Item>
+          <Dropdown.Item value="lt">&lt;</Dropdown.Item>
+          <Dropdown.Item value="lte">≤</Dropdown.Item>
+          <Dropdown.Item value="between">↔</Dropdown.Item>
+        </Dropdown>
+      </QuietInteractions>
       {operator === 'between' ? (
         <Flex d="column" gap={1} flex1>
           <Flex ai="center" position="relative" flex1>
@@ -253,44 +256,46 @@ function MultiselectFilter<TRow>({ column }: Props<TRow>) {
 
   return (
     <Flex component={`${componentName}.filter.cell.input` as never}>
-      <Dropdown<string | number | boolean | null>
-        multiple
-        showCheckbox
-        isSearchable
-        searchPlaceholder={text.filterSelectSearchPlaceholder}
-        value={selectedValues}
-        width="fit"
-        minWidth={0}
-        bgColor="transparent"
-        onChange={handleChange}
-        variant="compact"
-        b={0}
-        focus={{ outline: 0 }}
-        props={{ tabIndex: -1, 'aria-label': text.filterColumn(columnName) }}
-      >
-        <Dropdown.Display>
-          {(vals: (string | number | boolean | null)[]) => {
-            if (vals.length === 0)
-              return (
-                <Box tag="span" color="base-400">
-                  {column.filterConfig?.placeholder ?? text.filterSelectPlaceholder}
-                </Box>
-              );
-            if (vals.length === 1) {
-              const opt = options.find((o) => o.value === vals[0]);
-              return opt?.label ?? String(vals[0]);
-            }
-            return `${vals.length} selected`;
-          }}
-        </Dropdown.Display>
-        <Dropdown.Unselect>{text.filterSelectClear}</Dropdown.Unselect>
-        <Dropdown.SelectAll>{text.filterSelectAll}</Dropdown.SelectAll>
-        {options.map((option) => (
-          <Dropdown.Item<string | number | boolean | null> key={String(option.value)} value={option.value} ai="center" gap={2}>
-            {option.label}
-          </Dropdown.Item>
-        ))}
-      </Dropdown>
+      <QuietInteractions>
+        <Dropdown<string | number | boolean | null>
+          multiple
+          showCheckbox
+          isSearchable
+          searchPlaceholder={text.filterSelectSearchPlaceholder}
+          value={selectedValues}
+          width="fit"
+          minWidth={0}
+          bgColor="transparent"
+          onChange={handleChange}
+          variant="compact"
+          b={0}
+          focus={{ outline: 0 }}
+          props={{ tabIndex: -1, 'aria-label': text.filterColumn(columnName) }}
+        >
+          <Dropdown.Display>
+            {(vals: (string | number | boolean | null)[]) => {
+              if (vals.length === 0)
+                return (
+                  <Box tag="span" color="base-400">
+                    {column.filterConfig?.placeholder ?? text.filterSelectPlaceholder}
+                  </Box>
+                );
+              if (vals.length === 1) {
+                const opt = options.find((o) => o.value === vals[0]);
+                return opt?.label ?? String(vals[0]);
+              }
+              return `${vals.length} selected`;
+            }}
+          </Dropdown.Display>
+          <Dropdown.Unselect>{text.filterSelectClear}</Dropdown.Unselect>
+          <Dropdown.SelectAll>{text.filterSelectAll}</Dropdown.SelectAll>
+          {options.map((option) => (
+            <Dropdown.Item<string | number | boolean | null> key={String(option.value)} value={option.value} ai="center" gap={2}>
+              {option.label}
+            </Dropdown.Item>
+          ))}
+        </Dropdown>
+      </QuietInteractions>
     </Flex>
   );
 }

@@ -1,6 +1,7 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ignoreLogs, installPopoverApi } from '../../dev/tests';
+import Box from '../box';
 import { configureDates, DateSettings } from '../utils/date/settings';
 import DatePicker, { DateRangePicker } from './datePicker';
 
@@ -39,6 +40,18 @@ describe('DatePicker', () => {
     expect(segments().map((segment) => segment.textContent)).toEqual(['10', '23', '2026']);
     // Back on the button, rather than on the page: the day that had focus unmounted with the panel.
     expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Choose date, Oct 23, 2026' }));
+  });
+
+  it('tells Box.onInteraction about a choice once, as the picker — the calendar inside it stays quiet', () => {
+    const heard: string[] = [];
+    const stop = Box.onInteraction(({ component, type, reason }) => heard.push(`${component}.${type}:${reason}`));
+    render(<DatePicker label="Check-in" />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Choose date' }));
+    fireEvent.click(day('2026-10-23'));
+    stop();
+
+    expect(heard).toEqual(['datePicker.openChange:trigger', 'datePicker.valueChange:select', 'datePicker.openChange:select']);
   });
 
   it('keeps the field typed into and the calendar in step', () => {

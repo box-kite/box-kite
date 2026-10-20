@@ -1,6 +1,7 @@
 import { useCallback, useRef } from 'react';
 import Box from '../../../box';
 import CloseIcon from '../../../icons/closeIcon';
+import { QuietInteractions } from '../../../react/a11y/quietInteractions';
 import Button from '../../button';
 import Dialog, { DialogTrigger } from '../../dialog';
 import Flex from '../../flex';
@@ -75,66 +76,68 @@ export default function DataGridListSheet<TRow>(props: Props<TRow>) {
   }, [onClose]);
 
   return (
-    <Dialog
-      component={`${name}.list.sheet` as never}
-      display="flex"
-      d="column"
-      // The record view takes the height a long row needs, up to the screen's, so it reads in one sheet.
-      css={tall ? { minHeight: 'min(32rem, calc(100dvh - 2rem))' } : undefined}
-      open={open}
-      onOpenChange={(next) => (next ? onOpen?.() : onClose())}
-      trigger={trigger}
-      props={{ onKeyDown }}
-    >
-      <Flex
+    <QuietInteractions>
+      <Dialog
+        component={`${name}.list.sheet` as never}
+        display="flex"
         d="column"
-        flexShrink={0}
-        css={{ touchAction: 'none' }}
-        props={{ onPointerDown, onPointerMove, onPointerUp, onPointerCancel: onPointerUp }}
+        // The record view takes the height a long row needs, up to the screen's, so it reads in one sheet.
+        css={tall ? { minHeight: 'min(32rem, calc(100dvh - 2rem))' } : undefined}
+        open={open}
+        onOpenChange={(next) => (next ? onOpen?.() : onClose())}
+        trigger={trigger}
+        props={{ onKeyDown }}
       >
+        <Flex
+          d="column"
+          flexShrink={0}
+          css={{ touchAction: 'none' }}
+          props={{ onPointerDown, onPointerMove, onPointerUp, onPointerCancel: onPointerUp }}
+        >
+          <Box
+            width={9}
+            height={1.25}
+            mt={2}
+            mx="auto"
+            borderRadius={999}
+            bgColor="base-300"
+            theme={{ dark: { bgColor: 'base-600' } }}
+            props={{ 'aria-hidden': true }}
+          />
+          <Flex component={`${line}` as never} ai="center" gap={2} ps={4} pe={2} py={2} bb={1}>
+            <Dialog.Title flex1 minWidth={0} m={0} fontSize={17} fontWeight={600} lineHeight={24} {...DataGridListLayout.TRUNCATE}>
+              {title}
+            </Dialog.Title>
+            {actions}
+            <Button
+              type="button"
+              component={`${name}.list.sheet.button` as never}
+              {...DataGridListLayout.ICON_BUTTON}
+              onClick={onClose}
+              props={{ 'aria-label': grid.localeText.close }}
+            >
+              <CloseIcon />
+            </Button>
+          </Flex>
+        </Flex>
         <Box
-          width={9}
-          height={1.25}
-          mt={2}
-          mx="auto"
-          borderRadius={999}
-          bgColor="base-300"
-          theme={{ dark: { bgColor: 'base-600' } }}
-          props={{ 'aria-hidden': true }}
-        />
-        <Flex component={`${line}` as never} ai="center" gap={2} ps={4} pe={2} py={2} bb={1}>
-          <Dialog.Title flex1 minWidth={0} m={0} fontSize={17} fontWeight={600} lineHeight={24} {...DataGridListLayout.TRUNCATE}>
-            {title}
-          </Dialog.Title>
-          {actions}
-          <Button
-            type="button"
-            component={`${name}.list.sheet.button` as never}
-            {...DataGridListLayout.ICON_BUTTON}
-            onClick={onClose}
-            props={{ 'aria-label': grid.localeText.close }}
-          >
-            <CloseIcon />
-          </Button>
-        </Flex>
-      </Flex>
-      <Box
-        ref={bodyRef}
-        flex1
-        overflowY="auto"
-        px={4}
-        py={2}
-        css={{ overscrollBehavior: 'contain', touchAction: 'pan-y' }}
-        props={bodyProps}
-      >
-        {children}
-      </Box>
-      {footer && (
-        <Flex component={line as never} gap={3} flexShrink={0} px={4} pt={3} pb={4} bt={1}>
-          {footer}
-        </Flex>
-      )}
-    </Dialog>
+          ref={bodyRef}
+          flex1
+          overflowY="auto"
+          px={4}
+          py={2}
+          css={{ overscrollBehavior: 'contain', touchAction: 'pan-y' }}
+          props={bodyProps}
+        >
+          {children}
+        </Box>
+        {footer && (
+          <Flex component={line as never} gap={3} flexShrink={0} px={4} pt={3} pb={4} bt={1}>
+            {footer}
+          </Flex>
+        )}
+      </Dialog>
+    </QuietInteractions>
   );
 }
 

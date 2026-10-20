@@ -1,6 +1,7 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useContext, useRef } from 'react';
 import { emitInteraction } from '../../utils/interactions/interactionChannel';
 import { useIsomorphicLayoutEffect } from '../effects';
+import { InteractionsQuiet } from './quietInteractions';
 import type { ChangeDetails } from './useControllableState';
 
 /**
@@ -39,15 +40,17 @@ export function useInteractionCallback<T, TDetails extends ChangeDetails>(
   type: string,
 ): (value: T, details: TDetails) => void {
   const ref = useLatest(fn);
+  const quiet = useContext(InteractionsQuiet);
 
   return useCallback(
     (value: T, details: TDetails) => {
       ref.current?.(value, details);
+      if (quiet) return;
 
       const { reason, event, ...rest } = details;
 
       emitInteraction({ component, type, reason, value, details: rest, event });
     },
-    [ref, component, type],
+    [ref, quiet, component, type],
   );
 }

@@ -20,7 +20,7 @@ const stop = Box.onInteraction(({ component, type, reason, value }) => {
 });
 ```
 
-A click on a plain button or link reports no change, so it is not an event here. Instead, `Box.configure({ componentAttribute: true })` writes `data-bk="<component key>"` on every element a component styles, so one delegated `click` listener can name what was pressed with `event.target.closest('[data-bk]')`. Set it in a module that runs on both the server and the browser, or hydration sees two different trees. A value is shared with the app rather than copied, and it can hold what someone typed (a combobox query, an edited cell), so redact it before it leaves the page.
+One choice is one event: a component built from others keeps its parts quiet, so a day picked in a `DatePicker` reports `datePicker.valueChange` and `datePicker.openChange`, not the `Calendar` inside it as well. A click on a plain button or link reports no change, so it is not an event here. Instead, `Box.configure({ componentAttribute: true })` writes `data-bk="<component key>"` on every element a component styles, so one delegated `click` listener can name what was pressed with `event.target.closest('[data-bk]')`. Set it in a module that runs on both the server and the browser, or hydration sees two different trees. A value is shared with the app rather than copied, and it can hold what someone typed (a combobox query, an edited cell), so redact it before it leaves the page.
 
 ## Breaking changes
 
@@ -29,5 +29,7 @@ None.
 ## Fixes
 
 <!-- One bullet per fix: **What was wrong.** What it does now. -->
+
+- **A day clicked in a `Calendar` reported its focus moving with the reason `'keyboard'`.** `onFocusedDateChange` now says `'select'` for a day chosen by any device, so `'keyboard'` means an arrow key.
 
 - **A `Dialog`, a `Popover` or the DataGrid's bottom sheet could flash scrollbars as it opened.** The entrance scales or slides the layer, and while a transform runs the layer is the containing block of every `position: fixed` element inside it, so a password manager's badge on a text field was placed relative to the dialog rather than the viewport and its `overflow: auto` scrolled to it until the transform settled. The layer now keeps `overflow: hidden` until its entrance has finished and goes back to it as its exit starts, so nothing inside it can scroll while it moves. Content too tall for the layer still scrolls once it is open.

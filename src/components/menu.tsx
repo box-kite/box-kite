@@ -1,6 +1,7 @@
 import { createContext, FunctionComponent, useCallback, useContext, useMemo, useRef, useState } from 'react';
 import Box, { BoxProps } from '../box';
 import { useEventCallback } from '../react/a11y/callbacks';
+import { InteractionsQuiet } from '../react/a11y/quietInteractions';
 import useControllableState, { ChangeDetails, ChangeHandler } from '../react/a11y/useControllableState';
 import useAnchorPosition from '../react/anchor/useAnchorPosition';
 import { useIsomorphicLayoutEffect } from '../react/effects';
@@ -684,12 +685,13 @@ function MenuSub<TKey extends keyof ComponentsAndVariants = 'menu'>(props: MenuS
 function MenuItem<TKey extends keyof ComponentsAndVariants = 'menu.item'>(props: MenuItemProps<TKey>) {
   const { onSelect, disabled, closeOnSelect = true, props: itemProps, children, ...boxProps } = props;
   const context = useMenuContext('Menu.Item');
+  const quiet = useContext(InteractionsQuiet);
 
   const handleClick = useEventCallback((event: React.MouseEvent) => {
     if (disabled) return;
 
     onSelect?.(event);
-    emitInteraction({ component: 'menu.item', type: 'select', reason: 'select', event });
+    if (!quiet) emitInteraction({ component: 'menu.item', type: 'select', reason: 'select', event });
     if (closeOnSelect) context.closeAll({ reason: 'select', event });
   });
 

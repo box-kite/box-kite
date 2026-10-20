@@ -1,4 +1,4 @@
-import type { InteractionEvent } from '../../src/box';
+import { InteractionEvent, subscribeInteractions } from '../../src/utils/interactions/interactionChannel';
 
 /** One row of the site's interaction log: what happened, and a short reading of the value it carried. */
 export interface InteractionLine {
@@ -12,6 +12,9 @@ export interface InteractionLine {
 export const LOG_FLAG = 'interactions';
 
 const MAX_TEXT = 48;
+const KEEP = 50;
+// How long a press waits to hear whether it changed anything: a popover's toggle arrives a task after the click.
+const CLICK_WINDOW_MS = 50;
 let sequence = 0;
 
 const clip = (text: string) => (text.length > MAX_TEXT ? `${text.slice(0, MAX_TEXT - 1)}…` : text);
@@ -30,11 +33,10 @@ export function describeValue(value: unknown): string {
 }
 
 const clock = () => new Date().toLocaleTimeString(undefined, { hour12: false });
+const line = (name: string, detail: string): InteractionLine => ({ id: ++sequence, time: clock(), name, detail });
 
 export function interactionLine({ component, type, reason, value }: InteractionEvent): InteractionLine {
-  const reading = describeValue(value);
-
-  return { id: ++sequence, time: clock(), name: `${component}.${type}`, detail: [reason, reading].filter(Boolean).join(' → ') };
+  return line(`${component}.${type}`, [reason, describeValue(value)].filter(Boolean).join(' → '));
 }
 
 /** A press on anything a component styled, named by its `data-bk` — the half `Box.onInteraction` does not report. */
@@ -44,8 +46,80 @@ export function clickLine(target: EventTarget | null): InteractionLine | null {
 
   const label = part.getAttribute('aria-label') ?? part.textContent?.trim().replace(/\s+/g, ' ') ?? '';
 
-  return { id: ++sequence, time: clock(), name: `click ${part.getAttribute('data-bk')}`, detail: clip(label) };
+  return line(`click ${part.getAttribute('data-bk')}`, clip(label));
 }
+
+export const navigationLine = (path: string): InteractionLine => line('navigate', path);
+
+let lines: InteractionLine[] = [];
+const listeners = new Set<() => void>();
+let toConsole = false;
+let started = false;
+let lastPath: string | undefined;
+// Outside the log: a press on the panel itself is not something the page did.
+let ignored: (target: EventTarget | null) => boolean = () => false;
+
+function publish(next: InteractionLine | null) {
+  if (!next) return;
+
+  lines = [next, ...lines].slice(0, KEEP);
+  listeners.forEach((listener) => listener());
+  if (toConsole) console.info(`[interaction] ${next.name}`, next.detail);
+}
+
+/**
+ * The site's one subscription. A press is logged only when it changed nothing a component reports — a press that
+ * picked a date is the date it picked, not a click as well.
+ */
+export const interactionFeed = {
+  start(options: { console: boolean }): void {
+    toConsole ||= options.console;
+    if (started) return;
+    started = true;
+
+    let pending: { line: InteractionLine | null } | null = null;
+
+    subscribeInteractions((event) => {
+      if (pending) pending.line = null;
+      publish(interactionLine(event));
+    });
+    document.addEventListener(
+      'click',
+      (event) => {
+        if (ignored(event.target)) return;
+
+        const press = { line: clickLine(event.target) };
+        pending = press;
+        setTimeout(() => {
+          if (pending === press) pending = null;
+          publish(press.line);
+        }, CLICK_WINDOW_MS);
+      },
+      // Capture, so a press a component stops from bubbling is still heard.
+      true,
+    );
+  },
+  navigate(path: string): void {
+    // A repeat is StrictMode running the effect twice, not a second visit.
+    if (!started || path === lastPath) return;
+
+    lastPath = path;
+    publish(navigationLine(path));
+  },
+  ignore(test: (target: EventTarget | null) => boolean): void {
+    ignored = test;
+  },
+  clear(): void {
+    lines = [];
+    listeners.forEach((listener) => listener());
+  },
+  subscribe(listener: () => void): () => void {
+    listeners.add(listener);
+
+    return () => void listeners.delete(listener);
+  },
+  snapshot: (): InteractionLine[] => lines,
+};
 
 /** Whether this tab asked for the log, remembering a `?interactions` it arrived with. */
 export function logRequested(search: string): boolean {

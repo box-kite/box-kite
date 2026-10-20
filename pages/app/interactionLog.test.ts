@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { clickLine, describeValue, forgetLog, interactionLine, logRequested } from './interactionLog';
+import { emitInteraction } from '../../src/utils/interactions/interactionChannel';
+import { clickLine, describeValue, forgetLog, interactionFeed, interactionLine, logRequested } from './interactionLog';
 
 describe('the interaction log', () => {
   afterEach(() => {
@@ -34,5 +35,29 @@ describe('the interaction log', () => {
     expect(logRequested('')).toBe(false);
     expect(logRequested('?interactions')).toBe(true);
     expect(logRequested('')).toBe(true);
+  });
+});
+
+describe('the interaction feed', () => {
+  it('logs a press only when it changed nothing a component reports', async () => {
+    interactionFeed.start({ console: false });
+    interactionFeed.clear();
+
+    const plain = document.createElement('button');
+    plain.setAttribute('data-bk', 'button');
+    plain.textContent = 'Copy';
+    const tab = document.createElement('button');
+    tab.setAttribute('data-bk', 'tabs.tab');
+    tab.textContent = 'Activity';
+    tab.addEventListener('click', () => emitInteraction({ component: 'tabs', type: 'valueChange', reason: 'click', value: 'activity' }));
+    document.body.append(plain, tab);
+
+    plain.click();
+    tab.click();
+    await new Promise((resolve) => setTimeout(resolve, 80));
+
+    expect(interactionFeed.snapshot().map((line) => line.name)).toEqual(['click button', 'tabs.valueChange']);
+    plain.remove();
+    tab.remove();
   });
 });

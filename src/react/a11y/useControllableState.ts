@@ -1,6 +1,7 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useContext, useState } from 'react';
 import { emitInteraction, InteractionSource } from '../../utils/interactions/interactionChannel';
 import { useEventCallback, useLatest } from './callbacks';
+import { InteractionsQuiet } from './quietInteractions';
 
 /**
  * Why a change happened, and the event that caused it — the reason being the point. A component that only
@@ -44,7 +45,8 @@ export default function useControllableState<T, TReason extends string = string>
 ): [T, SetControllableState<T, TReason>] {
   const { value, defaultValue, onChange, interaction } = options;
   // Two literals at every call site, so the strings rather than the object keep the setter stable.
-  const component = interaction?.component;
+  const quiet = useContext(InteractionsQuiet);
+  const component = quiet ? undefined : interaction?.component;
   const type = interaction?.type;
 
   const isControlled = value !== undefined;

@@ -72,7 +72,7 @@
     },
     {
       "name": "onFocusedDateChange",
-      "type": "ChangeHandler<string, 'keyboard' | 'navigate'>",
+      "type": "ChangeHandler<string, CalendarFocusReason>",
       "required": false,
       "default": null,
       "description": "Fires when the keyboard or the paging buttons move to another day."

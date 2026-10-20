@@ -35,6 +35,8 @@ export interface DateRange {
 
 /** Which grid is on show: days, the months of a year, or a run of years. */
 export type CalendarView = 'day' | 'month' | 'year';
+/** Why the focused day moved: an arrow key, a month or year step, or a day being chosen (by any device). */
+export type CalendarFocusReason = 'keyboard' | 'navigate' | 'select';
 
 const DATE = 'data-date';
 const YEARS_PER_PAGE = 12;
@@ -68,7 +70,7 @@ interface BaseProps<TKey extends keyof ComponentsAndVariants> extends CalendarBo
   /** Where the keyboard starts when the calendar owns it. Default the value, or today. */
   defaultFocusedDate?: string;
   /** Fires when the keyboard or the paging buttons move to another day. */
-  onFocusedDateChange?: ChangeHandler<string, 'keyboard' | 'navigate'>;
+  onFocusedDateChange?: ChangeHandler<string, CalendarFocusReason>;
   /** Nothing can be chosen and nothing is focusable. */
   disabled?: boolean;
   /** Can be read and navigated, but not chosen in. */
@@ -205,11 +207,10 @@ function CalendarImpl<TKey extends keyof ComponentsAndVariants = 'calendar'>(pro
   const [hovered, setHovered] = useState<DateFields | null>(null);
 
   const initialFocus = dayText(clampDay(dayOf(defaultFocusedDate) ?? selectedDay ?? dayOf(selectedRange?.start) ?? todayDay, bounds));
-  const [focusedText, setFocusedText] = useControllableState<string, 'keyboard' | 'navigate'>({
+  const [focusedText, setFocusedText] = useControllableState<string, CalendarFocusReason>({
     value: focusedProp,
     defaultValue: initialFocus,
     onChange: onFocusedDateChange,
-    interaction: { component: 'calendar', type: 'focusedDateChange' },
   });
   const focused = dayOf(focusedText) ?? todayDay;
   const [view, setView] = useState<CalendarView>('day');
@@ -237,14 +238,14 @@ function CalendarImpl<TKey extends keyof ComponentsAndVariants = 'calendar'>(pro
   const isBlocked = (date: DateFields) => isOutOfBounds(date, bounds);
   const isUnavailable = (date: DateFields) => isDateUnavailable?.(dayText(date)) ?? false;
 
-  const focusDay = (date: DateFields, reason: 'keyboard' | 'navigate', keyboard: boolean) => {
+  const focusDay = (date: DateFields, reason: CalendarFocusReason, keyboard: boolean) => {
     moveFocusRef.current = keyboard;
     setFocusedText(dayText(clampDay(date, bounds)), { reason });
   };
 
   const choose = (date: DateFields, event: React.SyntheticEvent) => {
     if (disabled || readOnly || isBlocked(date) || isUnavailable(date)) return;
-    focusDay(date, 'keyboard', false);
+    focusDay(date, 'select', false);
 
     if (!range) {
       setCurrent(dayText(date), { reason: 'select', event });

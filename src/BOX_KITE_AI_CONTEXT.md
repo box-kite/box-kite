@@ -3950,6 +3950,7 @@ const stop = Box.onInteraction(({ component, type, reason, value, details, event
 - **`component`** is the component's key: `'dialog'`, `'datagrid'`, `'menu.item'`. **`type`** is the callback it mirrors, without its `on`. **`reason`** is the word that callback is given (`'escape'`, `'outside-pointer'`, `'keyboard'`…). **`value`** is the new value, and **`details`** holds the rest of the callback's details.
 - **`event`** is the DOM event behind the change, unwrapped from React's synthetic one. **`target`** is the element that handled it (the tab, not the icon inside it), or the component's own element where no event was involved (the DataGrid's).
 - **It fires whether or not the app passed the callback**, and after it, so the app's handler has already run.
+- **One choice is one event, from the component the app rendered.** A component built from others keeps its parts quiet: a day picked in a `DatePicker` is `datePicker.valueChange` and `datePicker.openChange` (`select`), never `calendar.valueChange` as well. The same holds for the `Combobox` in a `TimeZoneSelect` and for the DataGrid's own filters, editors and panels, whose changes the grid reports itself. Focus moving inside a calendar is not an interaction and reports nothing.
 - **A listener that throws is reported (`reportError`) and skipped**, so analytics can never break the control it watches. With no listener, a change costs one size check.
 - **`value` is shared, not copied**: never mutate it. It can hold what someone typed (a `Combobox` query, an edited cell, a toast's message), so redact it before it leaves the page.
 - **The channel lives on `globalThis`** under `Symbol.for('box-kite.interactions')`. Two copies of the package, or a server and a browser build in one process, share it.
@@ -3959,7 +3960,7 @@ const stop = Box.onInteraction(({ component, type, reason, value, details, event
 | `dialog`, `alertDialog`, `popover`, `tooltip`, `menu`, `menu.sub`, `datePicker`, `combobox`, `collapsible`, `toolCall`, `reasoning`, `swipeItem` | `openChange` |
 | `tabs`, `accordion`, `radioGroup`, `dropdown`, `combobox`, `slider`, `calendar`, `dateField`, `datePicker`, `dateRangePicker`, `timeZoneSelect`, `menu.radioGroup` | `valueChange` |
 | `menu.item` | `select` · `menu.checkboxItem` `checkedChange` |
-| `combobox` | `queryChange` · `calendar` `focusedDateChange` · `approval` `decisionChange` |
+| `combobox` | `queryChange` · `approval` `decisionChange` |
 | `slider` | `valueCommit` · `dashboard` `layoutChange`, `layoutCommit` · `sortableList` `orderChange`, `orderCommit` |
 | `toaster` | `show` (reason: the kind), `update`, `dismiss` (`timeout`/`close`/`action`/`imperative`) |
 | `datagrid` | `sortingChange`, `globalFilterChange`, `columnFiltersChange`, `paginationChange`, `selectedRowKeysChange`, `expandedRowKeysChange`, `expandedTreeKeysChange`, `rangeChange`, `cellEdit`, `cellEditsChange`, `paste` — plus the changes with no callback: `columnPinChange`, `columnVisibilityChange`, `columnResize`, `groupingChange`, `groupExpandedChange`, `selectionViewChange`, `export` |

@@ -1,34 +1,23 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useSyncExternalStore } from 'react';
 import Box from '../../src/box';
 import Button from '../../src/components/button';
 import Flex from '../../src/components/flex';
 import { Aside, Span } from '../../src/components/semantics';
-import { clickLine, forgetLog, InteractionLine, interactionLine } from './interactionLog';
+import { forgetLog, interactionFeed } from './interactionLog';
 
-const KEEP = 50;
+const NO_LINES: never[] = [];
 
 /**
- * The site eating its own `Box.onInteraction`: every change a component reports, plus every press `data-bk`
- * names, newest first. Opened by `?interactions`, loaded only then, and nothing in it leaves the page.
+ * The site eating its own `Box.onInteraction`: every change a component reports, every press that changed nothing
+ * (named by `data-bk`) and every navigation, newest first. Opened by `?interactions`, loaded only then, and nothing
+ * in it leaves the page.
  */
 export default function InteractionPanel({ onClose }: { onClose(): void }) {
-  const [lines, setLines] = useState<InteractionLine[]>([]);
+  const lines = useSyncExternalStore(interactionFeed.subscribe, interactionFeed.snapshot, () => NO_LINES);
   const panelRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
-    const add = (line: InteractionLine | null) => line && setLines((current) => [line, ...current].slice(0, KEEP));
-    const stop = Box.onInteraction((event) => add(interactionLine(event)));
-    // Capture, so a press a component stops from bubbling is still heard.
-    const onClick = (event: MouseEvent) => {
-      if (!panelRef.current?.contains(event.target as Node)) add(clickLine(event.target));
-    };
-
-    document.addEventListener('click', onClick, true);
-
-    return () => {
-      stop();
-      document.removeEventListener('click', onClick, true);
-    };
+    interactionFeed.ignore((target) => !!panelRef.current?.contains(target as Node));
   }, []);
 
   return (
@@ -58,7 +47,7 @@ export default function InteractionPanel({ onClose }: { onClose(): void }) {
       >
         <Span fontWeight={600}>Box.onInteraction</Span>
         <Flex gap={1}>
-          <Button variant="ghost" px={2} py={1} fontSize={12} onClick={() => setLines([])}>
+          <Button variant="ghost" px={2} py={1} fontSize={12} onClick={interactionFeed.clear}>
             Clear
           </Button>
           <Button

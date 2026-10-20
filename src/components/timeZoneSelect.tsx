@@ -1,5 +1,6 @@
 import { FunctionComponent, useMemo } from 'react';
 import Box, { BoxProps } from '../box';
+import { QuietInteractions } from '../react/a11y/quietInteractions';
 import useControllableState, { ChangeHandler } from '../react/a11y/useControllableState';
 import { useDateEnvironment } from '../react/date/dateEnvironment';
 import { matchZone, ZoneOption, zoneOptions } from '../utils/date/zoneOptions';
@@ -83,32 +84,34 @@ function TimeZoneSelectImpl(props: TimeZoneSelectProps) {
   });
 
   return (
-    <Combobox<ZoneOption>
-      {...boxProps}
-      data={options}
-      def={{
-        label: 'label',
-        key: 'id',
-        display: (option) => (
-          <Box display="flex" jc="space-between" gap={4} width="fit">
-            <Box tag="span">{option.city}</Box>
-            <Box tag="span" opacity={0.7} fontSize={12} css={{ fontVariantNumeric: 'tabular-nums' }}>
-              {option.region ? `${option.region} · ` : ''}
-              {option.offsetText}
+    <QuietInteractions>
+      <Combobox<ZoneOption>
+        {...boxProps}
+        data={options}
+        def={{
+          label: 'label',
+          key: 'id',
+          display: (option) => (
+            <Box display="flex" jc="space-between" gap={4} width="fit">
+              <Box tag="span">{option.city}</Box>
+              <Box tag="span" opacity={0.7} fontSize={12} css={{ fontVariantNumeric: 'tabular-nums' }}>
+                {option.region ? `${option.region} · ` : ''}
+                {option.offsetText}
+              </Box>
             </Box>
-          </Box>
-        ),
-      }}
-      value={(current ? byId.get(current) : undefined) ?? null}
-      onValueChange={(option, details) => setCurrent(option?.id ?? null, details)}
-      filter={(rows, query) => rows.filter((row) => matchZone(row, query))}
-      label={label}
-      placeholder={placeholder}
-      name={name}
-      disabled={disabled}
-      emptyText={emptyText}
-      props={inputProps}
-    />
+          ),
+        }}
+        value={(current ? byId.get(current) : undefined) ?? null}
+        onValueChange={(option, details) => setCurrent(option?.id ?? null, details)}
+        filter={(rows, query) => rows.filter((row) => matchZone(row, query))}
+        label={label}
+        placeholder={placeholder}
+        name={name}
+        disabled={disabled}
+        emptyText={emptyText}
+        props={inputProps}
+      />
+    </QuietInteractions>
   );
 }
 

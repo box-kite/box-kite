@@ -435,7 +435,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "61.54 kB"
+      "limit": "61.58 kB"
     },
     {
       "name": "DateTime",
@@ -459,7 +459,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "51.96 kB"
+      "limit": "52.01 kB"
     },
     {
       "name": "Combobox",
@@ -497,7 +497,7 @@
         "../dataGridDateParts.mjs"
       ],
       "gzip": true,
-      "limit": "96.53 kB"
+      "limit": "96.57 kB"
     },
     {
       "name": "DataGrid export, the chunk fetched on the first press",
@@ -523,7 +523,7 @@
         "./components/*"
       ],
       "gzip": true,
-      "limit": "7.83 KB"
+      "limit": "7.89 kB"
     },
     {
       "name": "DataGrid dates, the chunk a grid with a date column fetches on top of the grid",
@@ -537,7 +537,7 @@
         "./components/*"
       ],
       "gzip": true,
-      "limit": "7.49 KB"
+      "limit": "7.59 kB"
     },
     {
       "name": "Full library (Box + ssg + every component)",
@@ -549,7 +549,7 @@
         "./themeReveal-*"
       ],
       "gzip": true,
-      "limit": "164.42 kB"
+      "limit": "164.51 kB"
     }
   ],
   "repository": {
