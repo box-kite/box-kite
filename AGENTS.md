@@ -173,7 +173,7 @@ Pre-built components wrap Box with the correct HTML tag. Each is a separate entr
 
 - `pages/` — Full React SPA (React Router) showcasing all components, built with `npm run build:pages` (into `dist-pages/`, never `dist/` — that is the library build)
 - The build **prerenders every route**: `pages/entry-server.tsx` renders each page in Node on the library's own `getStyles()`, and `scripts/prerender-pages.mjs` writes that HTML and CSS into the route's shell — so a docs page paints with no JavaScript, and the site dogfoods the SSG path. Pages are one dynamic import each (`pages/app/routePages.ts`). The four rules that keep hydration matching the HTML — stable class names, the route chunk preloaded, the theme on `<html>` before the first paint, no content starting at `opacity: 0` — are in `docs/WEBSITE.md`, "Prerendering"
-- The site dogfoods `Box.onInteraction`: in `npm run dev` every event is a `console.info` (a page view too: `AfterHydration` reports `router.navigate` with `Box.reportInteraction`; a press is a `dom` event in the same stream), logged by `pages/app/interactionLog.ts`; nothing leaves the page. Both entries set `componentAttribute: true`, so the prerender and the browser agree on `data-bk`
+- The site dogfoods `Box.onInteraction`: in `npm run dev` — and with `?interactions` on any URL of a production build, for the rest of the tab — every event is a `console.info` (a page view too: `AfterHydration` reports `router.navigate` with `Box.reportInteraction`; a press is a `dom` event in the same stream), logged by `pages/app/interactionLog.ts`; nothing leaves the page. Both entries set `componentAttribute: true`, so the prerender and the browser agree on `data-bk`
 
 ## Key Conventions
 

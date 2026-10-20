@@ -1,10 +1,14 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import Box, { InteractionEvent } from '../../src/box';
-import { describeValue, interactionLine, logInteractions } from './interactionLog';
+import { describeValue, interactionLine, LOG_FLAG, logInteractions, logRequested } from './interactionLog';
 
 const at = { source: 'user', timeStamp: 0, time: 0 } as const;
 
 describe('the interaction log', () => {
+  afterEach(() => {
+    sessionStorage.removeItem(LOG_FLAG);
+  });
+
   it('reads a value as one short line, however big it is', () => {
     expect(describeValue(true)).toBe('true');
     expect(describeValue(['a', 'b'])).toBe('["a","b"]');
@@ -26,6 +30,12 @@ describe('the interaction log', () => {
     const press: InteractionEvent = { ...at, kind: 'dom', component: 'button', type: 'click', target: button };
 
     expect(interactionLine(press)).toEqual({ name: 'click button', detail: 'Save draft' });
+  });
+
+  it('keeps ?interactions for the rest of the tab', () => {
+    expect(logRequested('')).toBe(false);
+    expect(logRequested('?interactions')).toBe(true);
+    expect(logRequested('')).toBe(true);
   });
 
   it('logs a press and the change it made from one stream, in order', async () => {

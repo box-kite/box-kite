@@ -6,6 +6,9 @@ export interface InteractionLine {
   detail: string;
 }
 
+/** `?interactions` in a URL turns the console log on in a production build, for the rest of the tab. */
+export const LOG_FLAG = 'interactions';
+
 const MAX_TEXT = 48;
 let started = false;
 
@@ -40,4 +43,15 @@ export function logInteractions(): void {
     const { name, detail } = interactionLine(event);
     console.info(`[interaction] ${name}`, detail);
   });
+}
+
+/** Whether this tab asked for the log, remembering a `?interactions` it arrived with. */
+export function logRequested(search: string): boolean {
+  try {
+    if (new URLSearchParams(search).has(LOG_FLAG)) sessionStorage.setItem(LOG_FLAG, '1');
+
+    return sessionStorage.getItem(LOG_FLAG) === '1';
+  } catch {
+    return new URLSearchParams(search).has(LOG_FLAG);
+  }
 }
