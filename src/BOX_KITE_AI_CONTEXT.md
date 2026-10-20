@@ -3936,3 +3936,43 @@ call being shown and `renderAndWaitForResponse` is a question whose `respond` is
 `onDecisionChange` calls. json-render is the same `z.fromJSONSchema` over `catalog()` itself.
 
 Full reference: `docs/interop.md`.
+
+## Interaction events (`Box.onInteraction`)
+
+One listener hears every change any component reports. Each event has the same shape, so an analytics call, an audit log or a session recorder is one function:
+
+```tsx
+const stop = Box.onInteraction(({ component, type, reason, value, details, event, target, timeStamp }) => {
+  analytics.track(`${component}.${type}`, { reason, value, ...details });
+});
+```
+
+- **`component`** is the component's key: `'dialog'`, `'datagrid'`, `'menu.item'`. **`type`** is the callback it mirrors, without its `on`. **`reason`** is the word that callback is given (`'escape'`, `'outside-pointer'`, `'keyboard'`…). **`value`** is the new value, and **`details`** holds the rest of the callback's details.
+- **`event`** is the DOM event behind the change, unwrapped from React's synthetic one. **`target`** is the element that handled it (the tab, not the icon inside it), or the component's own element where no event was involved (the DataGrid's).
+- **It fires whether or not the app passed the callback**, and after it, so the app's handler has already run.
+- **A listener that throws is reported (`reportError`) and skipped**, so analytics can never break the control it watches. With no listener, a change costs one size check.
+- **`value` is shared, not copied**: never mutate it. It can hold what someone typed (a `Combobox` query, an edited cell, a toast's message), so redact it before it leaves the page.
+- **The channel lives on `globalThis`** under `Symbol.for('box-kite.interactions')`. Two copies of the package, or a server and a browser build in one process, share it.
+
+| `component` | `type` (and `reason`) |
+| --- | --- |
+| `dialog`, `alertDialog`, `popover`, `tooltip`, `menu`, `menu.sub`, `datePicker`, `combobox`, `collapsible`, `toolCall`, `reasoning`, `swipeItem` | `openChange` |
+| `tabs`, `accordion`, `radioGroup`, `dropdown`, `combobox`, `slider`, `calendar`, `dateField`, `datePicker`, `dateRangePicker`, `timeZoneSelect`, `menu.radioGroup` | `valueChange` |
+| `menu.item` | `select` · `menu.checkboxItem` `checkedChange` |
+| `combobox` | `queryChange` · `calendar` `focusedDateChange` · `approval` `decisionChange` |
+| `slider` | `valueCommit` · `dashboard` `layoutChange`, `layoutCommit` · `sortableList` `orderChange`, `orderCommit` |
+| `toaster` | `show` (reason: the kind), `update`, `dismiss` (`timeout`/`close`/`action`/`imperative`) |
+| `datagrid` | `sortingChange`, `globalFilterChange`, `columnFiltersChange`, `paginationChange`, `selectedRowKeysChange`, `expandedRowKeysChange`, `expandedTreeKeysChange`, `rangeChange`, `cellEdit`, `cellEditsChange`, `paste` — plus the changes with no callback: `columnPinChange`, `columnVisibilityChange`, `columnResize`, `groupingChange`, `groupExpandedChange`, `selectionViewChange`, `export` |
+
+**A plain press is not a change**, so a `Button`, a `Link`, a `Checkbox` or a `Textbox` reports nothing here; those are native elements whose own events already bubble. To name them, `Box.configure({ componentAttribute: true })` writes `data-bk="<component key>"` on every element a component styles, user components from `Box.components()` included, and one delegated listener does the rest:
+
+```tsx
+Box.configure({ componentAttribute: true }); // in a module both the server and the browser run
+
+document.addEventListener('click', (event) => {
+  const part = (event.target as Element).closest('[data-bk]');
+  if (part) analytics.track('click', { component: part.getAttribute('data-bk') });
+}, true);
+```
+
+An app's own `data-bk` in `props` wins. Set the flag before the first render, on both sides, or a hydrating browser sees attributes the server never wrote.

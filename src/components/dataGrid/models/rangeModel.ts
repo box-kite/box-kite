@@ -311,6 +311,7 @@ export default class RangeModel<TRow> {
 
   private emit(reason: DataGridRangeReason): void {
     this.grid.props.onRangeChange?.(this.range, { reason });
+    this.grid.reportInteraction('rangeChange', this.range, reason);
   }
 
   // ========== The clipboard ==========

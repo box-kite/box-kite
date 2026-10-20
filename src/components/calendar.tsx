@@ -195,6 +195,7 @@ function CalendarImpl<TKey extends keyof ComponentsAndVariants = 'calendar'>(pro
       const handler = onValueChange as ((value: unknown, details: unknown) => void) | undefined;
       handler?.(next, range ? details : { ...details, ...readingsOf(next as string | null, environment.zone) });
     },
+    interaction: { component: 'calendar', type: 'valueChange' },
   });
   const selectedDay = range ? null : dayOf(current as string | null);
   const selectedRange = range && current ? (current as DateRange) : null;
@@ -208,6 +209,7 @@ function CalendarImpl<TKey extends keyof ComponentsAndVariants = 'calendar'>(pro
     value: focusedProp,
     defaultValue: initialFocus,
     onChange: onFocusedDateChange,
+    interaction: { component: 'calendar', type: 'focusedDateChange' },
   });
   const focused = dayOf(focusedText) ?? todayDay;
   const [view, setView] = useState<CalendarView>('day');

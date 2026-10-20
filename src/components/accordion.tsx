@@ -200,6 +200,7 @@ function AccordionImpl<TKey extends keyof ComponentsAndVariants = 'accordion'>(p
     value,
     defaultValue: defaultValue ?? [],
     onChange: onValueChange,
+    interaction: { component: 'accordion', type: 'valueChange' },
   });
 
   const toggle = useEventCallback((forValue: string, details: ChangeDetails<DisclosureReason>) => {
@@ -356,6 +357,7 @@ function Collapsible<TKey extends keyof ComponentsAndVariants = 'collapsible'>(p
     value: open,
     defaultValue: defaultOpen,
     onChange: onOpenChange,
+    interaction: { component: 'collapsible', type: 'openChange' },
   });
 
   const handleClick = useEventCallback((event: React.MouseEvent) => setOpen((current) => !current, { reason: 'trigger', event }));

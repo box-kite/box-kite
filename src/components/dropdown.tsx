@@ -203,6 +203,7 @@ function DropdownImpl<TVal>(props: Props<TVal>, ref: Ref<HTMLInputElement>): Rea
     value: controlledValues,
     defaultValue: () => toValues(defaultValue),
     onChange: report,
+    interaction: { component: 'dropdown', type: 'valueChange' },
   });
 
   /**

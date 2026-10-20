@@ -251,6 +251,9 @@ export default defineConfig(({ mode }) => {
                   // reason `identity` has one: left in `client` the /a11y entry would import the styling binding, the theme
                   // provider and the engine behind them to answer which item a letter points at.
                   if (module.startsWith('src/utils/keyboard/')) return 'keyboard';
+                  // `Box.onInteraction`'s channel, which Box, the behaviour primitives and the DataGrid all emit into.
+                  // In `react-shared` it made the /a11y entry import that whole chunk: 628 B for ~300 B of code.
+                  if (module.startsWith('src/utils/interactions/')) return 'interactions';
                   // What scrolls a list and which row a scroll lands in, asked by `VirtualList`, `SortableList` and `DataGrid`
                   // between them. In `platform` or `client` every component would carry them.
                   if (module.startsWith('src/utils/scroll/') || module === 'src/utils/virtual/rowSearch.ts') return 'scrolling';

@@ -1,6 +1,7 @@
 import { ComponentsAndVariants } from '../../../types';
 import ArrayUtils from '../../../utils/array/arrayUtils';
 import { isRtl } from '../../../utils/dom/domUtils';
+import { emitInteraction } from '../../../utils/interactions/interactionChannel';
 import memo from '../../../utils/memo';
 import { fuzzySearch } from '../../../utils/string/fuzzySearch';
 import DataGridCellRowDetail from '../components/dataGridCellRowDetail';
@@ -539,6 +540,11 @@ export default class GridModel<TRow> {
     return this.data.filter((row) => this.rowMatchesFilters(row));
   }
 
+  /** What the grid tells `Box.onInteraction`, beside whatever callback the host passed for the same change. */
+  public reportInteraction(type: string, value: unknown, reason?: string, details?: Record<string, unknown>): void {
+    emitInteraction({ component: 'datagrid', type, reason, value, details, target: this._sizingElement ?? undefined });
+  }
+
   private fireServerStateChange(reason: DataGridChangeReason, overrides?: Partial<ServerState<TRow>>): void {
     this.props.onServerStateChange?.(
       {
@@ -556,6 +562,7 @@ export default class GridModel<TRow> {
   /** Both pager callbacks: the one carrying a reason, and the `(page, pageSize)` pair it replaces. */
   private firePaginationChange(page: number, pageSize: number, reason: DataGridChangeReason): void {
     this.props.onPaginationChange?.({ page, pageSize }, { reason });
+    this.reportInteraction('paginationChange', { page, pageSize }, reason);
     this.props.onPageChange?.(page, pageSize);
   }
 
@@ -583,6 +590,7 @@ export default class GridModel<TRow> {
     this._globalFilterValue = value;
     this.leaveSelectionView();
     this.props.onGlobalFilterChange?.(value, { reason });
+    this.reportInteraction('globalFilterChange', value, reason);
 
     const nextPage = this.resetToFirstPage(reason);
 
@@ -610,6 +618,7 @@ export default class GridModel<TRow> {
     this._columnFilters = newFilters;
     this.leaveSelectionView();
     this.props.onColumnFiltersChange?.(newFilters, { reason });
+    this.reportInteraction('columnFiltersChange', newFilters, reason, { columnKey, filter });
 
     const nextPage = this.resetToFirstPage(reason);
 
@@ -628,6 +637,7 @@ export default class GridModel<TRow> {
     this._columnFilters = {};
     this.leaveSelectionView();
     this.props.onColumnFiltersChange?.({}, { reason: 'clear' });
+    this.reportInteraction('columnFiltersChange', {}, 'clear');
 
     this.fireServerStateChange('clear', { columnFilters: {} });
 
@@ -982,6 +992,7 @@ export default class GridModel<TRow> {
 
     this._expandedDetailRows = expandedKeys;
     this.props.onExpandedRowKeysChange?.(Array.from(expandedKeys), { reason: expanded ? 'expand' : 'collapse' });
+    this.reportInteraction('expandedRowKeysChange', Array.from(expandedKeys), expanded ? 'expand' : 'collapse', { rowKey });
 
     this.rows.clear(); // cascades to flatRows/rowOffsets
     this.notify();
@@ -1145,6 +1156,7 @@ export default class GridModel<TRow> {
     const { downloadCsv } = await import('../export/gridExport');
 
     downloadCsv(this.exporter.table(options), this.exporter.fileName(options), options);
+    this.reportInteraction('export', 'csv', 'export', { fileName: this.exporter.fileName(options) });
   };
 
   /** Download the grid as an `.xlsx`, with its groups as Excel's own outline levels. */
@@ -1152,6 +1164,7 @@ export default class GridModel<TRow> {
     const { downloadXlsx } = await import('../export/gridExport');
 
     downloadXlsx(this.exporter.table(options), this.exporter.fileName(options), options);
+    this.reportInteraction('export', 'xlsx', 'export', { fileName: this.exporter.fileName(options) });
   };
 
   /** Whether any user-facing column is currently visible (else the empty-columns state shows). */
@@ -1235,6 +1248,7 @@ export default class GridModel<TRow> {
   /** "Show selected" sets the filters aside rather than adding to them: the rows it is for are the hidden ones. */
   public toggleSelectionView = (): void => {
     this._selectionView = this._selectionView ? null : new Set(this.selectedRows);
+    this.reportInteraction('selectionViewChange', this._selectionView !== null, this._selectionView ? 'show' : 'hide');
     this.rows.clear(); // cascades to flatRows/rowOffsets
     this.notify();
   };
@@ -1320,6 +1334,7 @@ export default class GridModel<TRow> {
         : undefined;
 
     this.props.onSortingChange?.(sorting, { reason: sorting ? 'sort' : 'clear' });
+    this.reportInteraction('sortingChange', sorting, sorting ? 'sort' : 'clear', { columnKey });
     this.props.onSortChange?.(this._sortColumn, this._sortDirection);
 
     const nextPage = this.resetToFirstPage('sort');
@@ -1339,6 +1354,7 @@ export default class GridModel<TRow> {
     const column = ArrayUtils.findOrThrow(this.columns.value.flat, (c) => c.uniqueKey === uniqueKey);
     if (column.pin !== side) {
       column.pinColumn(side);
+      this.reportInteraction('columnPinChange', side, side ? 'pin' : 'unpin', { columnKey: column.key });
     }
 
     this.columns.clear(); // cascades to headerRows/gridTemplateColumns/flexWidths/sizes/rows/flatRows/rowOffsets
@@ -1358,6 +1374,10 @@ export default class GridModel<TRow> {
       this.hiddenColumns.add(columnKey);
     }
 
+    this.reportInteraction('groupingChange', Array.from(this.groupColumns), this.groupColumns.has(columnKey) ? 'group' : 'ungroup', {
+      columnKey,
+    });
+
     this.collapseGroups();
     this.sourceColumns.clear(); // cascades to columns → headerRows/gridTemplateColumns/flexWidths/sizes/rows/flatRows/rowOffsets
 
@@ -1369,6 +1389,7 @@ export default class GridModel<TRow> {
     this.groupColumns = new Set();
     // Ensure previously grouped columns are made visible again
     this.hiddenColumns = new Set(Array.from(this.hiddenColumns).filter((key) => !prevGroupColumns.has(key)));
+    this.reportInteraction('groupingChange', [], 'clear');
 
     this.collapseGroups();
     this.sourceColumns.clear(); // cascades to columns → headerRows/gridTemplateColumns/flexWidths/sizes/rows/flatRows/rowOffsets
@@ -1419,6 +1440,8 @@ export default class GridModel<TRow> {
       this.expandedGroupRow.add(groupRowKey);
       this._collapsedGroupRow.delete(groupRowKey);
     }
+
+    this.reportInteraction('groupExpandedChange', !expanded, expanded ? 'collapse' : 'expand', { groupRowKey });
 
     this.source.expansionChanged();
     this.rows.clear(); // required to update rowIndex; cascades to flatRows/rowOffsets
@@ -1488,6 +1511,7 @@ export default class GridModel<TRow> {
     const selectedRowKeys = Array.from(this.selectedRows);
 
     this.props.onSelectedRowKeysChange?.(selectedRowKeys, { reason });
+    this.reportInteraction('selectedRowKeysChange', selectedRowKeys, reason, { action, affectedRowKeys });
     this.props.onSelectionChange?.({
       action,
       affectedRowKeys,
@@ -1505,6 +1529,14 @@ export default class GridModel<TRow> {
       this.hiddenColumns.add(columnKey);
     }
 
+    this.reportInteraction(
+      'columnVisibilityChange',
+      !this.hiddenColumns.has(columnKey),
+      this.hiddenColumns.has(columnKey) ? 'hide' : 'show',
+      {
+        columnKey,
+      },
+    );
     this.columns.clear(); // cascades to headerRows/gridTemplateColumns/flexWidths/sizes/rows/flatRows/rowOffsets
 
     this.notify();

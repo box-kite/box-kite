@@ -195,6 +195,7 @@ function DateFieldImpl<TKey extends keyof ComponentsAndVariants = 'dateField'>(p
     value,
     defaultValue,
     onChange: (next, details) => onValueChange?.(next, { ...details, ...readingsOf(next, zone ?? environment.zone) }),
+    interaction: { component: 'dateField', type: 'valueChange' },
   });
 
   // The draft is what the segments show, which can be more than the value: a half-typed date has no value.

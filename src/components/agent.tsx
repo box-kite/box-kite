@@ -155,6 +155,7 @@ function ToolCallCardImpl<TKey extends keyof ComponentsAndVariants = 'toolCall'>
     value: open,
     defaultValue: defaultOpen,
     onChange: onOpenChange,
+    interaction: { component: 'toolCall', type: 'openChange' },
   });
 
   const handleClick = useEventCallback((event: React.MouseEvent) => setOpen((current) => !current, { reason: 'trigger', event }));
@@ -322,6 +323,7 @@ function ApprovalCardImpl<TKey extends keyof ComponentsAndVariants = 'approval'>
     value: decision,
     defaultValue: defaultDecision,
     onChange: onDecisionChange,
+    interaction: { component: 'approval', type: 'decisionChange' },
   });
 
   const decide = (next: ApprovalDecision, reason: ApprovalReason) => (event: React.MouseEvent) => setDecision(next, { reason, event });
@@ -430,6 +432,7 @@ function ReasoningImpl<TKey extends keyof ComponentsAndVariants = 'reasoning'>(p
     value: open,
     defaultValue: defaultOpen,
     onChange: onOpenChange,
+    interaction: { component: 'reasoning', type: 'openChange' },
   });
 
   const handleClick = useEventCallback((event: React.MouseEvent) => setOpen((current) => !current, { reason: 'trigger', event }));

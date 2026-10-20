@@ -2,6 +2,7 @@
 import { classNames, ClassNameType } from '../core';
 import { BoxStyleProps } from '../types';
 import BoxUtils from '../utils/box/boxUtils';
+import { marksComponents } from '../utils/interactions/interactionChannel';
 
 /**
  * The props that reach the HTML tag: whatever the caller put in `props`, the resolved class list,
@@ -13,6 +14,8 @@ export default function buildTagProps(source: BoxStyleProps<any>, styleClasses: 
   const { props: tagProps, className: userClassName, disabled, required, checked, selected } = props;
 
   const propsToUse: Record<string, any> = { ...tagProps, className: classNames(styleClasses, userClassName).join(' ') };
+
+  if (typeof props.component === 'string' && marksComponents()) propsToUse['data-bk'] ??= props.component;
 
   BoxUtils.assignBooleanProp(disabled, 'disabled', propsToUse);
   BoxUtils.assignBooleanProp(required, 'required', propsToUse);

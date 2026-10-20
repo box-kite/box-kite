@@ -10,6 +10,7 @@ import { ExtractElementFromTag } from './react/reactTypes';
 import Theme from './react/theme/theme';
 import useStyles, { StylesContext } from './react/useStyles';
 import { ComponentsAndVariants } from './types';
+import { subscribeInteractions } from './utils/interactions/interactionChannel';
 
 interface HoverElementProps {
   tag: string;
@@ -80,6 +81,8 @@ interface BoxType {
   configure: typeof StylesContext.configure;
   /** Run a DOM change inside a view transition where the browser has one, and plainly where it has not. */
   viewTransition: typeof startViewTransition;
+  /** Hear every interaction a component reports — opened, chosen, sorted, edited — until the returned function is called. */
+  onInteraction: typeof subscribeInteractions;
 }
 
 const Box = boxComponent(useBoxElement, 'Box') as unknown as BoxType;
@@ -97,6 +100,7 @@ Box.useDesign = Theme.useDesign;
 Box.getVariableValue = (name: string) => getDefaultEngine().getVariableValue(name);
 Box.configure = StylesContext.configure;
 Box.viewTransition = startViewTransition;
+Box.onInteraction = subscribeInteractions;
 
 export default Box;
 
@@ -134,5 +138,7 @@ export function useClassNames<TKey extends keyof ComponentsAndVariants = never>(
 export { useVisibility };
 
 export type { BoxClassNames, BoxClassNameProps };
+export type { InteractionEvent, InteractionListener } from './utils/interactions/interactionChannel';
+export type { BoxConfiguration } from './react/useStyles';
 // The two shapes a design file annotates with, so it needs no import from `@box-kite/core`, which pnpm hides.
 export type { BoxComponentStyles, BoxStyleProps } from './types';

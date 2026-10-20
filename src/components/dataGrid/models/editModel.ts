@@ -339,6 +339,11 @@ export default class EditModel<TRow> {
     this._active = undefined;
     this.grid.notify();
     this.grid.props.onCellEditsChange?.(this._edits, { reason: 'edit' });
+    this.grid.reportInteraction('cellEdit', edit.value, 'edit', {
+      rowKey: edit.rowKey,
+      columnKey: edit.columnKey,
+      oldValue: edit.oldValue,
+    });
   }
 
   // ========== The values the grid has accepted ==========
@@ -370,6 +375,7 @@ export default class EditModel<TRow> {
     this._edits = [];
     this.grid.notify();
     this.grid.props.onCellEditsChange?.(this._edits, { reason: 'clear' });
+    this.grid.reportInteraction('cellEditsChange', this._edits, 'clear');
   };
 
   // ========== A block at a time ==========
@@ -472,6 +478,7 @@ export default class EditModel<TRow> {
     if (applied.length > 0) this.grid.props.onCellEditsChange?.(this._edits, { reason: 'paste' });
 
     this.grid.props.onPaste?.({ range: this.grid.range.rangeOf(bounds), applied, rejected, skipped });
+    this.grid.reportInteraction('paste', applied, 'paste', { range: this.grid.range.rangeOf(bounds), rejected, skipped });
   }
 
   // ========== Where Tab goes ==========

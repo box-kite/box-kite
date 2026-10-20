@@ -79,6 +79,7 @@ function TimeZoneSelectImpl(props: TimeZoneSelectProps) {
     value: value === undefined ? undefined : value && (normalizeZone(value) ?? value),
     defaultValue: defaultValue === undefined ? environment.readerZone : defaultValue,
     onChange: onValueChange,
+    interaction: { component: 'timeZoneSelect', type: 'valueChange' },
   });
 
   return (

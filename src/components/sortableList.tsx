@@ -1,6 +1,6 @@
 import { createContext, Ref, RefAttributes, useCallback, useContext, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { BoxProps, useBoxElement } from '../box';
-import { useEventCallback, useLatest } from '../react/a11y/callbacks';
+import { useEventCallback, useInteractionCallback, useLatest } from '../react/a11y/callbacks';
 import { ChangeDetails, ChangeHandler } from '../react/a11y/useControllableState';
 import boxComponent from '../react/boxComponent';
 import { useIsomorphicLayoutEffect } from '../react/effects';
@@ -168,8 +168,8 @@ function SortableListImpl<TKey extends keyof ComponentsAndVariants = 'list'>(pro
   const instructionsId = `${useId()}-sortable`;
   const latest = useLatest(held);
 
-  const changeHandler = useEventCallback(onOrderChange);
-  const commitHandler = useEventCallback(onOrderCommit);
+  const changeHandler = useInteractionCallback(onOrderChange, 'sortableList', 'orderChange');
+  const commitHandler = useInteractionCallback(onOrderCommit, 'sortableList', 'orderCommit');
 
   const setRefs = useCallback(
     (element: HTMLUListElement | null) => {

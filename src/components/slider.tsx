@@ -1,6 +1,6 @@
 import { FunctionComponent, useRef, useState } from 'react';
 import Box, { BoxProps } from '../box';
-import { useEventCallback, useLatest } from '../react/a11y/callbacks';
+import { useEventCallback, useInteractionCallback, useLatest } from '../react/a11y/callbacks';
 import useControllableState, { ChangeDetails, ChangeHandler } from '../react/a11y/useControllableState';
 import { ComponentsAndVariants } from '../types';
 import { isRtl } from '../utils/dom/domUtils';
@@ -168,13 +168,14 @@ function SliderImpl<TKey extends keyof ComponentsAndVariants = 'slider', TValue 
     value,
     defaultValue: defaultValue ?? (min as TValue),
     onChange: onValueChange,
+    interaction: { component: 'slider', type: 'valueChange' },
   });
 
   const scale = scaleOf(min, max, step);
   const vertical = orientation === 'vertical';
   const values = SliderUtils.thumbs(current);
   const latest = useLatest(current);
-  const commitHandler = useEventCallback(onValueCommit);
+  const commitHandler = useInteractionCallback(onValueCommit, 'slider', 'valueCommit');
 
   /** One place a change goes through, so a move that changed nothing is not a render and not a callback. */
   const apply = useEventCallback((next: readonly number[], details: ChangeDetails<SliderReason>) => {

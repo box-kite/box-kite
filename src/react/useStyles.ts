@@ -2,6 +2,7 @@
 import { useContext } from 'react';
 import { getDefaultEngine, StylesConfiguration } from '../core';
 import { BoxStyleProps } from '../types';
+import { setComponentAttribute } from '../utils/interactions/interactionChannel';
 import ComponentsContext from './componentsContext';
 import { useIsomorphicInsertionEffect } from './effects';
 import resolveStyles, { ResolvedBoxStyles } from './resolveStyles';
@@ -12,6 +13,14 @@ import styleElementsOf from './styleElements';
 const useFlushEffect = useIsomorphicInsertionEffect;
 
 export type { StylesConfiguration };
+
+export interface BoxConfiguration extends StylesConfiguration {
+  /**
+   * Write `data-bk="<component key>"` on every element a component styles, so one delegated listener can
+   * name what was pressed. Set it where the server and the browser both run, or hydration sees two trees.
+   */
+  componentAttribute?: boolean;
+}
 
 export default function useStyles(props: BoxStyleProps<any>, isSvg: boolean): ResolvedBoxStyles {
   const { classNames, signature, styleElements } = resolveStyles(props, isSvg, useContext(ComponentsContext));
@@ -69,7 +78,8 @@ export namespace StylesContext {
   }
 
   /** Apply explicit engine configuration. Call before the first render — cached class names are dropped when the configuration changes. */
-  export function configure(config: StylesConfiguration) {
-    getDefaultEngine().configure(config);
+  export function configure({ componentAttribute, ...config }: BoxConfiguration) {
+    if (componentAttribute !== undefined) setComponentAttribute(componentAttribute);
+    if (Object.keys(config).length > 0) getDefaultEngine().configure(config);
   }
 }

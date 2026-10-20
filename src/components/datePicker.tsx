@@ -220,6 +220,7 @@ function usePickerLayer(options: LayerOptions) {
     open: options.open,
     defaultOpen: options.defaultOpen,
     onOpenChange: options.onOpenChange,
+    interaction: { component: 'datePicker', type: 'openChange' },
     onOpened: handleOpened,
     // Escape and a press outside close it while a day inside has focus, which unmounts as it closes — so the
     // browser, returning focus only from inside the layer, would leave it on the page. Put it on the button now.
@@ -446,6 +447,7 @@ function DatePickerImpl<TKey extends keyof ComponentsAndVariants = 'dateField'>(
     value,
     defaultValue,
     onChange: (next, details) => onValueChange?.(next, { ...details, ...readingsOf(next, readZone) }),
+    interaction: { component: 'datePicker', type: 'valueChange' },
   });
 
   const buttonName = triggerLabel ?? (type === 'time' ? 'Choose time' : 'Choose date');
@@ -664,7 +666,12 @@ function DateRangePickerImpl<TKey extends keyof ComponentsAndVariants = 'dateFie
   } = props;
 
   const { locale } = useDateEnvironment({ locale: localeProp });
-  const [current, setCurrent] = useControllableState<DateRange | null, DateChangeReason>({ value, defaultValue, onChange: onValueChange });
+  const [current, setCurrent] = useControllableState<DateRange | null, DateChangeReason>({
+    value,
+    defaultValue,
+    onChange: onValueChange,
+    interaction: { component: 'dateRangePicker', type: 'valueChange' },
+  });
   // Each end as typed, which can be more than the value: one end filled in is no range yet.
   const [ends, setEnds] = useState<{ start: string | null; end: string | null; source: DateRange | null }>({
     start: current?.start ?? null,

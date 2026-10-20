@@ -137,6 +137,7 @@ function SwipeItemImpl<TKey extends keyof ComponentsAndVariants = 'list.item'>(p
     value: open,
     defaultValue: defaultOpen,
     onChange: onOpenChange,
+    interaction: { component: 'swipeItem', type: 'openChange' },
   });
   const [live, setLive] = useState<number | null>(null);
   const [full, setFull] = useState<SwipeSide | null>(null);

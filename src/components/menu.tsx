@@ -14,6 +14,7 @@ import usePopoverLayer, {
 import { ComponentsAndVariants } from '../types';
 import { AnchorAlign, AnchorSide } from '../utils/anchor/anchorUtils';
 import { isEventInside, isRtl } from '../utils/dom/domUtils';
+import { emitInteraction } from '../utils/interactions/interactionChannel';
 import TypeaheadUtils from '../utils/keyboard/typeaheadUtils';
 import MenuUtils from '../utils/menu/menuUtils';
 import Overlay from './overlay';
@@ -347,6 +348,7 @@ function MenuImpl<TKey extends keyof ComponentsAndVariants = 'menu'>(props: Menu
     open,
     defaultOpen,
     onOpenChange,
+    interaction: { component: 'menu', type: 'openChange' },
     onOpened: handleOpened,
     inside: panels,
   });
@@ -575,6 +577,7 @@ function MenuSub<TKey extends keyof ComponentsAndVariants = 'menu'>(props: MenuS
     haspopup: 'menu',
     idPrefix: 'menu-sub',
     id: restProps.id,
+    interaction: { component: 'menu.sub', type: 'openChange' },
     onOpened: handleOpened,
     onClosing: handleClosing,
     inside: panels,
@@ -686,6 +689,7 @@ function MenuItem<TKey extends keyof ComponentsAndVariants = 'menu.item'>(props:
     if (disabled) return;
 
     onSelect?.(event);
+    emitInteraction({ component: 'menu.item', type: 'select', reason: 'select', event });
     if (closeOnSelect) context.closeAll({ reason: 'select', event });
   });
 
@@ -718,6 +722,7 @@ function MenuCheckboxItem<TKey extends keyof ComponentsAndVariants = 'menu.item'
     value: checked,
     defaultValue: defaultChecked,
     onChange: onCheckedChange,
+    interaction: { component: 'menu.checkboxItem', type: 'checkedChange' },
   });
 
   const handleClick = useEventCallback((event: React.MouseEvent) => {
@@ -755,6 +760,7 @@ function MenuRadioGroup<TKey extends keyof ComponentsAndVariants = 'menu.group'>
     value,
     defaultValue,
     onChange: onValueChange,
+    interaction: { component: 'menu.radioGroup', type: 'valueChange' },
   });
 
   const select = useEventCallback((next: string, event: React.MouseEvent) => setValue(next, { reason: 'select', event }));

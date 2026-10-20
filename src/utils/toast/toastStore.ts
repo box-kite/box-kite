@@ -1,3 +1,4 @@
+import { emitInteraction } from '../interactions/interactionChannel';
 /** What a toast is saying, which is the only thing that changes its colour and its urgency. */
 export type ToastKind = 'default' | 'success' | 'error' | 'warning' | 'info' | 'loading';
 
@@ -169,7 +170,10 @@ export default function createToastStore<TContent>(options?: { limit?: number; d
     publish();
     // After the state is settled and published: a handler that adds a toast of its own is the normal
     // case (an "Undo" that reports what it undid), and it must not run against a half-updated queue.
-    dismissed.forEach((toast) => toast.onDismiss?.(reason));
+    dismissed.forEach((toast) => {
+      toast.onDismiss?.(reason);
+      emitInteraction({ component: 'toaster', type: 'dismiss', reason, value: toast.message, details: { id: toast.id, kind: toast.kind } });
+    });
   }
 
   function update(id: string, message: TContent, updateOptions?: ToastOptions<TContent>) {
@@ -196,7 +200,10 @@ export default function createToastStore<TContent>(options?: { limit?: number; d
       };
     });
 
-    if (changed) publish();
+    if (!changed) return;
+
+    publish();
+    emitInteraction({ component: 'toaster', type: 'update', reason: updateOptions?.kind, value: message, details: { id } });
   }
 
   function add(message: TContent, addOptions?: ToastOptions<TContent>): string {
@@ -227,6 +234,7 @@ export default function createToastStore<TContent>(options?: { limit?: number; d
     ];
 
     publish();
+    emitInteraction({ component: 'toaster', type: 'show', reason: kind, value: message, details: { id, kind } });
 
     return id;
   }

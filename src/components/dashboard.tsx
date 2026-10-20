@@ -1,6 +1,6 @@
 import { createContext, CSSProperties, FunctionComponent, ReactNode, useContext, useId, useMemo, useRef, useState } from 'react';
 import Box, { BoxProps } from '../box';
-import { useEventCallback, useLatest } from '../react/a11y/callbacks';
+import { useEventCallback, useInteractionCallback, useLatest } from '../react/a11y/callbacks';
 import useControllableState, { ChangeDetails, ChangeHandler } from '../react/a11y/useControllableState';
 import { ComponentsAndVariants } from '../types';
 import DashboardUtils, { DashboardItem, DashboardLayout, DashboardStep } from '../utils/dashboard/dashboardUtils';
@@ -253,13 +253,14 @@ function DashboardGridImpl<TKey extends keyof ComponentsAndVariants = 'dashboard
     value: layout,
     defaultValue: defaultLayout ?? { version: DashboardUtils.VERSION, columns: 12, items: [] },
     onChange: onLayoutChange,
+    interaction: { component: 'dashboard', type: 'layoutChange' },
   });
 
   // Normalized for rendering rather than on the way into state: a controlled consumer owns what it gave
   // us, and copying a tidied version back would be the second source of truth the contract forbids.
   const resolved = useMemo(() => DashboardUtils.normalize(current), [current]);
   const latest = useLatest(resolved);
-  const commitHandler = useEventCallback(onLayoutCommit);
+  const commitHandler = useInteractionCallback(onLayoutCommit, 'dashboard', 'layoutCommit');
 
   // The declared spaces as one string, so a `columns` object written inline is not a new set every render —
   // and every projection below it recomputed with them.

@@ -538,6 +538,12 @@ export default class ColumnModel<TRow> {
   /** End a resize drag. */
   public endResize = (): void => {
     this.grid.notify();
+    this.grid.reportInteraction(
+      'columnResize',
+      this.leafs.reduce((total, leaf) => total + (leaf.inlineWidth ?? leaf.baseWidth), 0),
+      'resize',
+      { columnKey: this.key },
+    );
   };
 
   /**
