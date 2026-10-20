@@ -1,4 +1,4 @@
-import { InteractionEvent, subscribeInteractions } from '../../src/utils/interactions/interactionChannel';
+import { flushInteractions, InteractionEvent, subscribeInteractions } from '../../src/utils/interactions/interactionChannel';
 
 /** One row of the site's interaction log: what happened, and a short reading of the value it carried. */
 export interface InteractionLine {
@@ -91,6 +91,8 @@ export const interactionFeed = {
         const press = { line: clickLine(event.target) };
         pending = press;
         setTimeout(() => {
+          // Delivery is a background task, so whatever this press queued is delivered before it is judged.
+          flushInteractions();
           if (pending === press) pending = null;
           publish(press.line);
         }, CLICK_WINDOW_MS);

@@ -138,6 +138,7 @@ export function useClassNames<TKey extends keyof ComponentsAndVariants = never>(
 export { useVisibility };
 
 export type { BoxClassNames, BoxClassNameProps };
+export { flushInteractions } from './utils/interactions/interactionChannel';
 export type { InteractionEvent, InteractionListener } from './utils/interactions/interactionChannel';
 export type { BoxConfiguration } from './react/useStyles';
 // The two shapes a design file annotates with, so it needs no import from `@box-kite/core`, which pnpm hides.

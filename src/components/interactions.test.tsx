@@ -2,7 +2,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ignoreLogs } from '../../dev/tests';
 import Box from '../box';
-import { InteractionEvent } from '../utils/interactions/interactionChannel';
+import { flushInteractions, InteractionEvent } from '../utils/interactions/interactionChannel';
 import createToastStore from '../utils/toast/toastStore';
 import Button from './button';
 import GridModel from './dataGrid/models/gridModel';
@@ -17,12 +17,18 @@ import Tooltip from './tooltip';
 describe('Box.onInteraction', () => {
   ignoreLogs();
 
-  let heard: InteractionEvent[];
+  let collected: InteractionEvent[];
+  // Delivery is a background task, so a test reads what is queued by delivering it now.
+  const heard = () => {
+    flushInteractions();
+
+    return collected;
+  };
   let stop: () => void;
 
   beforeEach(() => {
-    heard = [];
-    stop = Box.onInteraction((event) => heard.push(event));
+    collected = [];
+    stop = Box.onInteraction((event) => collected.push(event));
   });
 
   afterEach(() => {
@@ -42,8 +48,8 @@ describe('Box.onInteraction', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Rename' }));
 
     expect(onOpenChange).toHaveBeenCalledWith(true, expect.objectContaining({ reason: 'trigger' }));
-    expect(heard).toEqual([expect.objectContaining({ component: 'dialog', type: 'openChange', reason: 'trigger', value: true })]);
-    expect(heard[0].target).toBe(screen.getByRole('button', { name: 'Rename' }));
+    expect(heard()).toEqual([expect.objectContaining({ component: 'dialog', type: 'openChange', reason: 'trigger', value: true })]);
+    expect(heard()[0].target).toBe(screen.getByRole('button', { name: 'Rename' }));
   });
 
   it('hears a tab chosen, with the tab as its target', () => {
@@ -60,8 +66,8 @@ describe('Box.onInteraction', () => {
 
     fireEvent.click(screen.getByRole('tab', { name: 'Activity' }));
 
-    expect(heard).toEqual([expect.objectContaining({ component: 'tabs', type: 'valueChange', reason: 'click', value: 'activity' })]);
-    expect(heard[0].target).toBe(screen.getByRole('tab', { name: 'Activity' }));
+    expect(heard()).toEqual([expect.objectContaining({ component: 'tabs', type: 'valueChange', reason: 'click', value: 'activity' })]);
+    expect(heard()[0].target).toBe(screen.getByRole('tab', { name: 'Activity' }));
   });
 
   it('hears a menu command, and the menu closing because of it', () => {
@@ -73,7 +79,7 @@ describe('Box.onInteraction', () => {
 
     fireEvent.click(screen.getByRole('menuitem', { name: 'Duplicate' }));
 
-    expect(heard.map(({ component, type, reason }) => [component, type, reason])).toEqual([
+    expect(heard().map(({ component, type, reason }) => [component, type, reason])).toEqual([
       ['menu.item', 'select', 'select'],
       ['menu', 'openChange', 'select'],
     ]);
@@ -86,7 +92,7 @@ describe('Box.onInteraction', () => {
       </Dialog>,
     );
 
-    expect(heard).toEqual([]);
+    expect(heard()).toEqual([]);
   });
 
   it('hears what the DataGrid does, including the changes it has no callback for', () => {
@@ -101,13 +107,13 @@ describe('Box.onInteraction', () => {
     grid.toggleRowSelection(1);
     grid.toggleColumnVisibility('name');
 
-    expect(heard.map(({ component, type, reason }) => [component, type, reason])).toEqual([
+    expect(heard().map(({ component, type, reason }) => [component, type, reason])).toEqual([
       ['datagrid', 'sortingChange', 'sort'],
       ['datagrid', 'selectedRowKeysChange', 'select'],
       ['datagrid', 'columnVisibilityChange', 'hide'],
     ]);
-    expect(heard[0].value).toEqual({ columnKey: 'name', direction: 'ASC' });
-    expect(heard.every((event) => event.target === element)).toBe(true);
+    expect(heard()[0].value).toEqual({ columnKey: 'name', direction: 'ASC' });
+    expect(heard().every((event) => event.target === element)).toBe(true);
   });
 
   it('hears a dropdown open and close once per change, with why', () => {
@@ -121,7 +127,7 @@ describe('Box.onInteraction', () => {
     fireEvent.click(screen.getByRole('combobox'));
     fireEvent.click(screen.getByRole('option', { name: 'Beta' }));
 
-    expect(heard.map(({ component, type, reason, value }) => [component, type, reason, value])).toEqual([
+    expect(heard().map(({ component, type, reason, value }) => [component, type, reason, value])).toEqual([
       ['dropdown', 'openChange', 'trigger', true],
       ['dropdown', 'valueChange', 'select', ['b']],
       ['dropdown', 'openChange', 'select', false],
@@ -138,8 +144,8 @@ describe('Box.onInteraction', () => {
 
     fireEvent.submit(document.querySelector('form')!);
 
-    expect(heard).toEqual([expect.objectContaining({ component: 'form', type: 'submit', value: ['email', 'password'] })]);
-    expect(JSON.stringify(heard[0].value)).not.toContain('hunter2');
+    expect(heard()).toEqual([expect.objectContaining({ component: 'form', type: 'submit', value: ['email', 'password'] })]);
+    expect(JSON.stringify(heard()[0].value)).not.toContain('hunter2');
   });
 
   it('says nothing for a tooltip shown on hover', () => {
@@ -148,7 +154,7 @@ describe('Box.onInteraction', () => {
     fireEvent.pointerEnter(screen.getByRole('button'));
     fireEvent.focus(screen.getByRole('button'));
 
-    expect(heard).toEqual([]);
+    expect(heard()).toEqual([]);
   });
 
   it('reports a column pinned from its menu, which the grid never heard as a change', () => {
@@ -159,7 +165,7 @@ describe('Box.onInteraction', () => {
 
     grid.columns.value.flat.find((column) => column.key === 'name')!.pinColumn('START');
 
-    expect(heard).toEqual([expect.objectContaining({ component: 'datagrid', type: 'columnPinChange', reason: 'pin', value: 'START' })]);
+    expect(heard()).toEqual([expect.objectContaining({ component: 'datagrid', type: 'columnPinChange', reason: 'pin', value: 'START' })]);
   });
 
   it('reports a marked block, not every move of the current cell', () => {
@@ -182,7 +188,7 @@ describe('Box.onInteraction', () => {
     grid.range.setCurrent(0, 1);
     grid.range.setCurrent(0, 0, true);
 
-    expect(heard.map(({ type, reason }) => [type, reason])).toEqual([['rangeChange', 'extend']]);
+    expect(heard().map(({ type, reason }) => [type, reason])).toEqual([['rangeChange', 'extend']]);
   });
 
   it('reports show-all in the columns panel once, however many columns it shows', () => {
@@ -203,7 +209,7 @@ describe('Box.onInteraction', () => {
 
     grid.columnVisibility.setAll(true);
 
-    expect(heard).toEqual([
+    expect(heard()).toEqual([
       expect.objectContaining({ type: 'columnVisibilityChange', reason: 'show-all', details: { columnKeys: ['a', 'b'] } }),
     ]);
   });
@@ -214,7 +220,7 @@ describe('Box.onInteraction', () => {
     const id = store.add('Saved', { kind: 'success' });
     store.dismiss(id, 'close');
 
-    expect(heard.map(({ type, reason, value }) => [type, reason, value])).toEqual([
+    expect(heard().map(({ type, reason, value }) => [type, reason, value])).toEqual([
       ['show', 'success', 'Saved'],
       ['dismiss', 'close', 'Saved'],
     ]);
