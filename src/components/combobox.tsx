@@ -251,12 +251,14 @@ function ComboboxImpl<TRow>(props: Props<TRow>, ref: Ref<HTMLInputElement>): Rea
     value: controlledSelection,
     defaultValue: () => ComboboxUtils.toArray(defaultValue),
     onChange: handleSelectionChange,
+    interaction: { component: 'combobox', type: 'valueChange' },
   });
 
   const [open, setOpen] = useControllableState<boolean, ComboboxOpenReason>({
     value: openProp,
     defaultValue: defaultOpen ?? false,
     onChange: onOpenChange,
+    interaction: { component: 'combobox', type: 'openChange' },
   });
 
   const [query, setQuery] = useControllableState<string, ComboboxQueryReason>({

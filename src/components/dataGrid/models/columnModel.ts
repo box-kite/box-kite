@@ -538,6 +538,12 @@ export default class ColumnModel<TRow> {
   /** End a resize drag. */
   public endResize = (): void => {
     this.grid.notify();
+    this.grid.reportInteraction(
+      'columnResize',
+      this.leafs.reduce((total, leaf) => total + (leaf.inlineWidth ?? leaf.baseWidth), 0),
+      'resize',
+      { columnKey: this.key },
+    );
   };
 
   /**
@@ -559,14 +565,22 @@ export default class ColumnModel<TRow> {
   };
 
   public pinColumn = (pin?: PinPositionInput) => {
+    const before = this.pin;
+
+    this.setPin(pin);
+    // Here rather than in the grid: by the time the grid hears of it, the column already holds the new side.
+    if (this.pin !== before) this.grid.reportInteraction('columnPinChange', this.pin, this.pin ? 'pin' : 'unpin', { columnKey: this.key });
+  };
+
+  private setPin(pin?: PinPositionInput): void {
     if (this.isLeaf) {
       this._pin = pinPositionOf(pin);
     } else {
-      this.columns.forEach((c) => c.pinColumn(pin));
+      this.columns.forEach((c) => c.setPin(pin));
     }
 
     this.grid.pinColumn(this.uniqueKey, pin);
-  };
+  }
 
   public toggleGrouping = () => {
     this.grid.toggleGrouping(this.key);

@@ -6,6 +6,11 @@ import reactRefresh from 'eslint-plugin-react-refresh';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
+const INTERACTION_CHANNEL = {
+  group: ['**/utils/interactions/interactionChannel'],
+  message: 'Report through useInteractionReporter, useInteractionCallback or useControllableState({ interaction }), which know when to be quiet.',
+};
+
 export default tseslint.config(
   // Build output, ours and Next's (`.next/types/**` and `next-env.d.ts` the Next.js example rewrites on every
   // build), and `.playwright-mcp`, the browser tool's gitignored scratch.
@@ -123,6 +128,14 @@ export default tseslint.config(
     },
   },
   {
+    // A component reports through `src/react/a11y/interactions.ts`, which is where being quiet is decided.
+    files: ['src/components/**/*.{ts,tsx}'],
+    ignores: ['**/*.test.{ts,tsx}', 'src/components/dataGrid/models/**'],
+    rules: {
+      'no-restricted-imports': ['error', { patterns: [INTERACTION_CHANNEL] }],
+    },
+  },
+  {
     // The DataGrid engine must stay headless (framework-agnostic): no React, no DOM.
     // Rendering/adapter logic belongs in the components layer.
     files: ['src/components/dataGrid/models/**/*.ts'],
@@ -135,7 +148,10 @@ export default tseslint.config(
             { name: 'react', message: 'DataGrid models must stay headless — keep React in the components/adapter layer.' },
             { name: 'react-dom', message: 'DataGrid models must stay headless — keep React in the components/adapter layer.' },
           ],
-          patterns: ['react/*', 'react-dom/*'],
+          patterns: [
+            { group: ['react/*', 'react-dom/*'], message: 'DataGrid models must stay headless — keep React in the components/adapter layer.' },
+            INTERACTION_CHANNEL,
+          ],
         },
       ],
     },

@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState } from 'react';
 import { ElementLike, isEventInside } from '../../utils/dom/domUtils';
 import { supportsPopover } from '../../utils/environment/environmentUtils';
+import type { InteractionSource } from '../../utils/interactions/interactionChannel';
 import { useEventCallback } from '../a11y/callbacks';
 import useControllableState, { ChangeHandler, SetControllableState } from '../a11y/useControllableState';
 import useDismiss from '../a11y/useDismiss';
@@ -67,6 +68,8 @@ export interface PopoverLayerOptions<THasPopup extends PopoverHasPopup = Popover
    * one. The platform answers that question itself, by the popover nesting rules.
    */
   inside?: readonly ElementLike[];
+  /** Which component the layer is, so its open state also reaches `Box.onInteraction`. */
+  interaction?: InteractionSource;
 }
 
 export interface PopoverLayer<THasPopup extends PopoverHasPopup = PopoverHasPopup, TReason extends string = never> {
@@ -102,7 +105,7 @@ export interface PopoverLayer<THasPopup extends PopoverHasPopup = PopoverHasPopu
 export default function usePopoverLayer<THasPopup extends PopoverHasPopup, TReason extends string = never>(
   options: PopoverLayerOptions<THasPopup, TReason>,
 ): PopoverLayer<THasPopup, TReason> {
-  const { haspopup, id, idPrefix, open, defaultOpen = false, onOpenChange, onOpened, onClosing, inside } = options;
+  const { haspopup, id, idPrefix, open, defaultOpen = false, onOpenChange, onOpened, onClosing, inside, interaction } = options;
 
   const generatedId = useIdentifier(idPrefix);
   // A consumer id wins, and `aria-controls`/`popovertarget` both have to name whichever won.
@@ -111,6 +114,7 @@ export default function usePopoverLayer<THasPopup extends PopoverHasPopup, TReas
     value: open,
     defaultValue: defaultOpen,
     onChange: onOpenChange,
+    interaction,
   });
 
   // The trigger element, as state rather than a ref: it is read during render (it is what the layer is

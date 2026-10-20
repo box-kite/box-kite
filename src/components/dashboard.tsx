@@ -1,6 +1,7 @@
 import { createContext, CSSProperties, FunctionComponent, ReactNode, useContext, useId, useMemo, useRef, useState } from 'react';
 import Box, { BoxProps } from '../box';
 import { useEventCallback, useLatest } from '../react/a11y/callbacks';
+import { useInteractionCallback, useInteractionReporter } from '../react/a11y/interactions';
 import useControllableState, { ChangeDetails, ChangeHandler } from '../react/a11y/useControllableState';
 import { ComponentsAndVariants } from '../types';
 import DashboardUtils, { DashboardItem, DashboardLayout, DashboardStep } from '../utils/dashboard/dashboardUtils';
@@ -259,7 +260,7 @@ function DashboardGridImpl<TKey extends keyof ComponentsAndVariants = 'dashboard
   // us, and copying a tidied version back would be the second source of truth the contract forbids.
   const resolved = useMemo(() => DashboardUtils.normalize(current), [current]);
   const latest = useLatest(resolved);
-  const commitHandler = useEventCallback(onLayoutCommit);
+  const commitHandler = useInteractionCallback(onLayoutCommit, 'dashboard', 'layoutCommit');
 
   // The declared spaces as one string, so a `columns` object written inline is not a new set every render —
   // and every projection below it recomputed with them.
@@ -389,8 +390,12 @@ function DashboardGridImpl<TKey extends keyof ComponentsAndVariants = 'dashboard
     }
   });
 
+  // A keyboard grab and its cancel change nothing a layout callback hears until the drop, so they report alone.
+  const report = useInteractionReporter('dashboard');
+
   /** Put the widget back, layout and all — the one thing a cancelled grab has to be able to do. */
   const cancel = useEventCallback((grip: Held, event: React.SyntheticEvent) => {
+    report('grabCancel', grip.id, { reason: event.type === 'blur' ? 'blur' : 'escape', event });
     apply(grip.before, { reason: grip.kind, event });
     setHeld(null);
     setAnnouncement(`${grip.name} put back at ${positionOf(grip.origin)}.`);
@@ -409,6 +414,7 @@ function DashboardGridImpl<TKey extends keyof ComponentsAndVariants = 'dashboard
 
       event.preventDefault();
       setHeld({ id, kind, name, origin: item, before: latest.current });
+      report('grab', id, { reason: kind, event });
       setAnnouncement(
         kind === 'move'
           ? `${name} picked up at ${positionOf(item)}. Use the arrow keys to move it.`
@@ -600,6 +606,12 @@ function WidgetImpl<TKey extends keyof ComponentsAndVariants = 'widget'>(props: 
   const held = id === undefined ? undefined : dashboard?.heldOf(id);
   const label = name ?? (typeof title === 'string' ? title : undefined) ?? id ?? 'Widget';
   const editable = dashboard?.editable === true && placement !== undefined && !placement.fixed;
+  // The refresh button shares `widget.handle` with the grips, so a click alone cannot say which was pressed.
+  const refresh = useInteractionCallback(
+    (_id: string | undefined, _details: ChangeDetails<'refresh' | 'retry'>) => onRefresh?.(),
+    'widget',
+    'refresh',
+  );
 
   const handle = (kind: HandleKind) =>
     editable && id !== undefined ? (
@@ -630,7 +642,11 @@ function WidgetImpl<TKey extends keyof ComponentsAndVariants = 'widget'>(props: 
         <Box component="widget.message" variant={{ error: true }} props={{ role: 'status' }}>
           {error}
           {onRefresh && (
-            <Box tag="button" component="widget.retry" props={{ type: 'button', onClick: onRefresh }}>
+            <Box
+              tag="button"
+              component="widget.retry"
+              props={{ type: 'button', onClick: (event) => refresh(id, { reason: 'retry', event }) }}
+            >
               Try again
             </Box>
           )}
@@ -680,7 +696,11 @@ function WidgetImpl<TKey extends keyof ComponentsAndVariants = 'widget'>(props: 
               component="widget.handle"
               tag="button"
               variant={{ editable: true }}
-              props={{ type: 'button', 'aria-label': refreshLabel ?? `Refresh ${label}`, onClick: onRefresh }}
+              props={{
+                type: 'button',
+                'aria-label': refreshLabel ?? `Refresh ${label}`,
+                onClick: (event) => refresh(id, { reason: 'refresh', event }),
+              }}
             >
               <RefreshIcon />
             </Box>

@@ -200,6 +200,7 @@ export default class ListModel<TRow> {
   public showMore = (): void => {
     this._limit = { query: this.query, count: this.count + this.batch };
     this.grid.notify();
+    this.grid.reportInteraction('showMore', this._limit.count, 'more', { batch: this.batch });
   };
 
   // ========== Selecting ==========
@@ -219,6 +220,7 @@ export default class ListModel<TRow> {
 
     this._selecting = selecting;
     this.grid.notify();
+    this.grid.reportInteraction('selectModeChange', selecting, selecting ? 'enter' : 'exit');
   };
 
   /** The id of a row's checkbox, which the item's title is the label of — so a press anywhere on the item ticks it. */
@@ -240,6 +242,7 @@ export default class ListModel<TRow> {
 
     this._sheet = sheet;
     this.grid.notify();
+    this.grid.reportInteraction('sheetChange', sheet, sheet ? 'open' : 'close');
   };
 
   /** The columns the sort sheet offers. */
@@ -333,6 +336,7 @@ export default class ListModel<TRow> {
   public openRecord = (row: RowModel<TRow>, index: number): void => {
     this._record = { index, key: row.key };
     this.grid.notify();
+    this.grid.reportInteraction('recordChange', row.key, 'open', { index });
   };
 
   public closeRecord = (): void => {
@@ -340,6 +344,7 @@ export default class ListModel<TRow> {
 
     this._record = null;
     this.grid.notify();
+    this.grid.reportInteraction('recordChange', null, 'close');
   };
 
   private neighbour(step: 1 | -1): number {
@@ -369,6 +374,7 @@ export default class ListModel<TRow> {
     if (index === -1) return;
 
     this._record = { index, key: (this.grid.flatRows.value[index] as RowModel<TRow>).key };
+    this.grid.reportInteraction('recordChange', this._record.key, step === 1 ? 'next' : 'previous', { index });
 
     // A record past the items drawn draws them too, so closing the view lands next to an item that exists.
     if (this._limit && index >= this._limit.count) this._limit = { query: this.query, count: index + 1 };

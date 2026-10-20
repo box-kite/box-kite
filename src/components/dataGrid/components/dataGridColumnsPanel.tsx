@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Box from '../../../box';
 import SearchIcon from '../../../icons/searchIcon';
+import { QuietInteractions } from '../../../react/a11y/interactions';
 import Button from '../../button';
 import Flex from '../../flex';
 import Popover from '../../popover';
@@ -33,45 +34,47 @@ export default function DataGridColumnsPanel<TRow>(props: Props<TRow>) {
   }, []);
 
   return (
-    <Popover
-      label={localeText.columnsMenu}
-      side="bottom"
-      align="end"
-      open={open}
-      onOpenChange={handleOpenChange}
-      // The panel moves focus itself, onto the search field rather than onto the panel.
-      autoFocus={false}
-      p={0}
-      overflow="visible"
-      trigger={(trigger) => (
-        <Button
-          {...trigger}
-          component={`${componentName}.topBar.columnVisibility` as never}
-          props={{
-            ...trigger.props,
-            'aria-label': hasHidden ? localeText.columnsMenuLabel(visibleCount, total) : undefined,
-          }}
-        >
-          <Svg viewBox="0 0 20 20" width={16} height={16} fill="none" stroke="currentColor" strokeWidth={1.6}>
-            <Path d="M4.5 3.5h11a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1v-11a1 1 0 0 1 1-1ZM8 3.5v13M12 3.5v13" />
-          </Svg>
-          {localeText.columnsMenu}
-          {hasHidden && (
-            <Box
-              component={`${componentName}.topBar.columnVisibility.badge` as never}
-              tag="span"
-              variant={{ empty: visibleCount === 0 } as never}
-              props={{ 'aria-hidden': true }}
-            >
-              {visibleCount}/{total}
-            </Box>
-          )}
-        </Button>
-      )}
-    >
-      {/* Not gated on `open`: unmounting the focused field as the panel closes leaves the browser no focus to return. */}
-      <ColumnsPanelContent grid={grid} open={open} query={query} onQueryChange={setQuery} />
-    </Popover>
+    <QuietInteractions>
+      <Popover
+        label={localeText.columnsMenu}
+        side="bottom"
+        align="end"
+        open={open}
+        onOpenChange={handleOpenChange}
+        // The panel moves focus itself, onto the search field rather than onto the panel.
+        autoFocus={false}
+        p={0}
+        overflow="visible"
+        trigger={(trigger) => (
+          <Button
+            {...trigger}
+            component={`${componentName}.topBar.columnVisibility` as never}
+            props={{
+              ...trigger.props,
+              'aria-label': hasHidden ? localeText.columnsMenuLabel(visibleCount, total) : undefined,
+            }}
+          >
+            <Svg viewBox="0 0 20 20" width={16} height={16} fill="none" stroke="currentColor" strokeWidth={1.6}>
+              <Path d="M4.5 3.5h11a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1v-11a1 1 0 0 1 1-1ZM8 3.5v13M12 3.5v13" />
+            </Svg>
+            {localeText.columnsMenu}
+            {hasHidden && (
+              <Box
+                component={`${componentName}.topBar.columnVisibility.badge` as never}
+                tag="span"
+                variant={{ empty: visibleCount === 0 } as never}
+                props={{ 'aria-hidden': true }}
+              >
+                {visibleCount}/{total}
+              </Box>
+            )}
+          </Button>
+        )}
+      >
+        {/* Not gated on `open`: unmounting the focused field as the panel closes leaves the browser no focus to return. */}
+        <ColumnsPanelContent grid={grid} open={open} query={query} onQueryChange={setQuery} />
+      </Popover>
+    </QuietInteractions>
   );
 }
 

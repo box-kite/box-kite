@@ -141,6 +141,7 @@ function RadioGroupImpl<TKey extends keyof ComponentsAndVariants = 'radioGroup'>
     value,
     defaultValue,
     onChange: report,
+    interaction: { component: 'radioGroup', type: 'valueChange' },
   });
 
   const handleKeyDown = useEventCallback((event: React.KeyboardEvent) => {

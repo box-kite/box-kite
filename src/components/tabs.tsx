@@ -204,7 +204,12 @@ function TabsImpl<TKey extends keyof ComponentsAndVariants = 'tabs'>(props: Tabs
   } = props;
 
   const identifier = useIdentifier('tabs');
-  const [selected, setSelected] = useControllableState<string | undefined, TabsReason>({ value, defaultValue, onChange: onValueChange });
+  const [selected, setSelected] = useControllableState<string | undefined, TabsReason>({
+    value,
+    defaultValue,
+    onChange: onValueChange,
+    interaction: { component: 'tabs', type: 'valueChange' },
+  });
   const [stop, setStop] = useState<string>();
   // Set by the list once it has measured and read by every tab, so it lives here: a context change
   // reaches children that the list re-rendering on its own never would.

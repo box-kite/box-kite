@@ -1,5 +1,7 @@
 import { useCallback, useState } from 'react';
+import type { InteractionSource } from '../../utils/interactions/interactionChannel';
 import { useEventCallback, useLatest } from './callbacks';
+import { useInteractionReporter } from './interactions';
 
 /**
  * Why a change happened, and the event that caused it — the reason being the point. A component that only
@@ -24,6 +26,8 @@ export interface ControllableStateOptions<T, TReason extends string = string> {
   /** The starting value when the consumer does not own it. A function is called once, lazily. */
   defaultValue: T | (() => T);
   onChange?: ChangeHandler<T, TReason>;
+  /** Which component this value belongs to, so every change also reaches `Box.onInteraction`. */
+  interaction?: InteractionSource;
 }
 
 export type SetControllableState<T, TReason extends string = string> = (
@@ -39,7 +43,10 @@ export type SetControllableState<T, TReason extends string = string> = (
 export default function useControllableState<T, TReason extends string = string>(
   options: ControllableStateOptions<T, TReason>,
 ): [T, SetControllableState<T, TReason>] {
-  const { value, defaultValue, onChange } = options;
+  const { value, defaultValue, onChange, interaction } = options;
+  // Two literals at every call site, so the strings rather than the object keep the setter stable.
+  const report = useInteractionReporter(interaction?.component);
+  const type = interaction?.type;
 
   const isControlled = value !== undefined;
   const [uncontrolled, setUncontrolled] = useState(defaultValue);
@@ -57,13 +64,17 @@ export default function useControllableState<T, TReason extends string = string>
 
       if (Object.is(resolved, currentRef.current)) return;
 
+      // A second call in the same handler (Tab commits an option, which closes, then leaves) sees the first.
+      // Not when controlled: an owner that refuses the change must hear the next request for it too.
+      if (!isControlled) currentRef.current = resolved;
       // Written whether or not a value prop is present: one code path, and a consumer that stops
       // controlling the value carries on from the last one it was asked for rather than snapping
       // back to the default.
       setUncontrolled(resolved);
       changeHandler(resolved, details);
+      if (type) report(type as never, resolved, details);
     },
-    [changeHandler, currentRef],
+    [changeHandler, currentRef, isControlled, report, type],
   );
 
   return [current, setValue];

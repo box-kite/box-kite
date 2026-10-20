@@ -256,6 +256,10 @@ export default class EditModel<TRow> {
       pending: false,
     };
     this.grid.notify();
+    this.grid.reportInteraction('cellEditStart', value, initial === undefined ? 'open' : 'typing', {
+      rowKey: row.key,
+      columnKey: column.key,
+    });
   }
 
   /** Open the editor on a cell named by grid coordinates, which is where Tab lands. */
@@ -330,6 +334,12 @@ export default class EditModel<TRow> {
     if (typeof result === 'string' || result === false) {
       this._active = { ...this._active, pending: false, error: typeof result === 'string' ? result : this.invalidValue };
       this.grid.notify();
+      this.grid.reportInteraction('cellEditReject', edit.value, 'invalid', {
+        rowKey: edit.rowKey,
+        columnKey: edit.columnKey,
+        oldValue: edit.oldValue,
+        error: this._active.error,
+      });
 
       return;
     }
@@ -339,6 +349,11 @@ export default class EditModel<TRow> {
     this._active = undefined;
     this.grid.notify();
     this.grid.props.onCellEditsChange?.(this._edits, { reason: 'edit' });
+    this.grid.reportInteraction('cellEdit', edit.value, 'edit', {
+      rowKey: edit.rowKey,
+      columnKey: edit.columnKey,
+      oldValue: edit.oldValue,
+    });
   }
 
   // ========== The values the grid has accepted ==========
@@ -472,6 +487,7 @@ export default class EditModel<TRow> {
     if (applied.length > 0) this.grid.props.onCellEditsChange?.(this._edits, { reason: 'paste' });
 
     this.grid.props.onPaste?.({ range: this.grid.range.rangeOf(bounds), applied, rejected, skipped });
+    this.grid.reportInteraction('paste', applied, 'paste', { range: this.grid.range.rangeOf(bounds), rejected, skipped });
   }
 
   // ========== Where Tab goes ==========

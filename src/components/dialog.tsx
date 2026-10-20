@@ -208,6 +208,7 @@ function DialogBase<TKey extends keyof ComponentsAndVariants>(props: BaseProps<T
     value: open,
     defaultValue: defaultOpen,
     onChange: onOpenChange,
+    interaction: { component: role === 'alertdialog' ? 'alertDialog' : 'dialog', type: 'openChange' },
   });
 
   const [dialog, setDialog] = useState<HTMLDialogElement | null>(null);

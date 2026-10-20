@@ -16,9 +16,24 @@ export default function DataGridExport<TRow>(props: Props<TRow>) {
   const { grid } = props;
   const config = grid.exportConfig;
 
-  // Each press awaits the writer's chunk; a rejected import must not become an unhandled rejection.
-  const csv = useCallback(() => void grid.exportCsv(config).catch(() => undefined), [grid, config]);
-  const xlsx = useCallback(() => void grid.exportXlsx(config).catch(() => undefined), [grid, config]);
+  // Each press awaits the writer's chunk; a rejected import must not become an unhandled rejection. The press
+  // reports, not the model, so an export the host runs through the ref is not counted as the user's.
+  const csv = useCallback(
+    () =>
+      void grid.exportCsv(config).then(
+        () => grid.reportInteraction('export', 'csv', 'toolbar'),
+        () => undefined,
+      ),
+    [grid, config],
+  );
+  const xlsx = useCallback(
+    () =>
+      void grid.exportXlsx(config).then(
+        () => grid.reportInteraction('export', 'xlsx', 'toolbar'),
+        () => undefined,
+      ),
+    [grid, config],
+  );
 
   if (!config) return null;
 

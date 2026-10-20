@@ -148,6 +148,7 @@ function PopoverImpl<TKey extends keyof ComponentsAndVariants = 'popover'>(props
     haspopup: 'dialog',
     idPrefix: 'popover',
     id: restProps.id,
+    interaction: { component: 'popover', type: 'openChange' },
     open,
     defaultOpen,
     onOpenChange,

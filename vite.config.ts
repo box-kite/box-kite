@@ -239,6 +239,8 @@ export default defineConfig(({ mode }) => {
                   // `src/utils/object/` is deliberately *not* here: only five components reach it, and in `platform` it
                   // taxed the `/a11y` entry 85 B for something no behaviour primitive uses.
                   if (module.startsWith('src/utils/environment/') || module.startsWith('src/utils/dom/')) return 'platform';
+                  // The `data-bk` flag every Box reads, apart from the queue only a client entry needs.
+                  if (module === 'src/utils/interactions/componentAttribute.ts') return 'platform';
                   if (module === 'src/react/effects.ts') return 'effects';
                   // The id generator, shared by the behaviour primitives and the anchor hook, since an anchor name has
                   // to survive a hydration the way an `aria-controls` does. Left in `behavior` it would make `/anchor`
@@ -251,6 +253,11 @@ export default defineConfig(({ mode }) => {
                   // reason `identity` has one: left in `client` the /a11y entry would import the styling binding, the theme
                   // provider and the engine behind them to answer which item a letter points at.
                   if (module.startsWith('src/utils/keyboard/')) return 'keyboard';
+                  // `Box.onInteraction`'s channel, which Box, the behaviour primitives and the DataGrid all emit into.
+                  // In `react-shared` it made the /a11y entry import that whole chunk: 628 B for ~300 B of code.
+                  // Its listening half is fetched with the first subscription, so it stays a chunk of its own.
+                  if (module === 'src/utils/interactions/interactionListening.ts') return null;
+                  if (module.startsWith('src/utils/interactions/')) return 'interactions';
                   // What scrolls a list and which row a scroll lands in, asked by `VirtualList`, `SortableList` and `DataGrid`
                   // between them. In `platform` or `client` every component would carry them.
                   if (module.startsWith('src/utils/scroll/') || module === 'src/utils/virtual/rowSearch.ts') return 'scrolling';

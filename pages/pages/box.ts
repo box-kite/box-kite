@@ -614,10 +614,31 @@ export const boxMembers: readonly BoxMember[] = [
   {
     id: 'configure',
     name: 'Box.configure()',
-    signature: 'Box.configure({ classNames, sink, transition })',
+    signature: 'Box.configure({ classNames, sink, transition, componentAttribute })',
     summary:
-      'Tell the engine how to name classes, where to write rules and what the base class transitions. Call it once, before the first render.',
+      'Tell the engine how to name classes, where to write rules and what the base class transitions, and whether components mark themselves with data-bk. Call it once, before the first render.',
     more: { label: 'Server Components', to: '/server-components' },
+  },
+  {
+    id: 'oninteraction',
+    name: 'Box.onInteraction()',
+    signature: 'const stop = Box.onInteraction(({ kind, component, type, reason, value, source }) => …)',
+    summary:
+      'Hear every interaction in one typed stream — a dialog opened and why, a tab chosen, a DataGrid sorted, a press on anything a component styled — as plain JSON, fire and forget, for analytics or an audit log.',
+  },
+  {
+    id: 'reportinteraction',
+    name: 'Box.reportInteraction()',
+    signature: "Box.reportInteraction({ component: 'pricing-cta', type: 'mouseEnter', event })",
+    summary:
+      "Report a moment of the app's own — a hover, a page view, a custom step — to the same Box.onInteraction listeners, fire and forget.",
+  },
+  {
+    id: 'flushinteractions',
+    name: 'Box.flushInteractions()',
+    signature: 'Box.flushInteractions()',
+    summary:
+      'Deliver what is queued now, rather than in the next background task: what an analytics sender calls before its last batch, and a test before it asserts.',
   },
   {
     id: 'getvariablevalue',

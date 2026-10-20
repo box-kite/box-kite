@@ -533,7 +533,10 @@ export default class DataSourceModel<TRow> {
       retried = true;
     });
 
-    if (retried) this.changed();
+    if (!retried) return;
+
+    this.changed();
+    this.grid.reportInteraction('retry', undefined, 'retry');
   };
 
   /**

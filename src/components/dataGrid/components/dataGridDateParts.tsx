@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import Box from '../../../box';
+import { QuietInteractions } from '../../../react/a11y/interactions';
 import { useDateEnvironment } from '../../../react/date/dateEnvironment';
 import { normalize, toDate, toUtc } from '../../../utils/date/dateTime';
 import { format, FormatOptions, formatRange, formatRelative } from '../../../utils/date/format';
@@ -58,30 +59,32 @@ function DateEditor<TRow>(props: EditorProps<TRow>) {
   const draft = cell.draft instanceof Date || typeof cell.draft === 'string' ? normalize(cell.draft) : null;
 
   return (
-    <DateField
-      type={type as 'date' | 'time' | 'datetime'}
-      value={draft}
-      zone={zone}
-      min={typeof min === 'string' ? min : undefined}
-      max={typeof max === 'string' ? max : undefined}
-      onValueChange={(value) => cell.setDraft(type === 'datetime' ? shapedAs(cell.value, value) : value)}
-      width="fit"
-      variant="compact"
-      b={0}
-      bgColor="transparent"
-      focus={{ outline: 0 }}
-      invalid={errorId ? true : undefined}
-      describedBy={errorId}
-      // The editor may have opened before these parts arrived, when the cell's own focus call found nothing.
-      autoFocus
-      props={{
-        'aria-label': label,
-        // Moving between segments is focus moving inside the field: only leaving it commits.
-        onBlur: (event: React.FocusEvent<HTMLDivElement>) => {
-          if (!event.currentTarget.contains(event.relatedTarget as Node | null)) onBlur();
-        },
-      }}
-    />
+    <QuietInteractions>
+      <DateField
+        type={type as 'date' | 'time' | 'datetime'}
+        value={draft}
+        zone={zone}
+        min={typeof min === 'string' ? min : undefined}
+        max={typeof max === 'string' ? max : undefined}
+        onValueChange={(value) => cell.setDraft(type === 'datetime' ? shapedAs(cell.value, value) : value)}
+        width="fit"
+        variant="compact"
+        b={0}
+        bgColor="transparent"
+        focus={{ outline: 0 }}
+        invalid={errorId ? true : undefined}
+        describedBy={errorId}
+        // The editor may have opened before these parts arrived, when the cell's own focus call found nothing.
+        autoFocus
+        props={{
+          'aria-label': label,
+          // Moving between segments is focus moving inside the field: only leaving it commits.
+          onBlur: (event: React.FocusEvent<HTMLDivElement>) => {
+            if (!event.currentTarget.contains(event.relatedTarget as Node | null)) onBlur();
+          },
+        }}
+      />
+    </QuietInteractions>
   );
 }
 
@@ -146,22 +149,24 @@ function DateFilter<TRow>(props: { column: ColumnModel<TRow> }) {
     range: { min?: string; max?: string },
     clearable = false,
   ) => (
-    <DatePicker
-      value={current}
-      onValueChange={onChange}
-      min={range.min}
-      max={range.max}
-      clearable={clearable}
-      clearLabel={text.clearFilter(columnName)}
-      variant="compact"
-      width="fit"
-      minWidth={0}
-      b={0}
-      bgColor="transparent"
-      focus={{ outline: 0 }}
-      tabIndex={-1}
-      props={{ 'aria-label': label }}
-    />
+    <QuietInteractions>
+      <DatePicker
+        value={current}
+        onValueChange={onChange}
+        min={range.min}
+        max={range.max}
+        clearable={clearable}
+        clearLabel={text.clearFilter(columnName)}
+        variant="compact"
+        width="fit"
+        minWidth={0}
+        b={0}
+        bgColor="transparent"
+        focus={{ outline: 0 }}
+        tabIndex={-1}
+        props={{ 'aria-label': label }}
+      />
+    </QuietInteractions>
   );
 
   return (
@@ -170,23 +175,25 @@ function DateFilter<TRow>(props: { column: ColumnModel<TRow> }) {
       ai={state.operator === 'between' ? 'start' : 'center'}
       gap={1}
     >
-      <Dropdown<DateFilterValue['operator']>
-        value={state.operator}
-        variant="compact"
-        onChange={(next) => next && state.setOperator(next)}
-        minWidth={6}
-        hideIcon
-        b={0}
-        bgColor="transparent"
-        focus={{ outline: 0 }}
-        props={{ tabIndex: -1, 'aria-label': text.filterComparison(columnName) }}
-      >
-        {OPERATORS.map((op) => (
-          <Dropdown.Item key={op.value} value={op.value}>
-            {op.label}
-          </Dropdown.Item>
-        ))}
-      </Dropdown>
+      <QuietInteractions>
+        <Dropdown<DateFilterValue['operator']>
+          value={state.operator}
+          variant="compact"
+          onChange={(next) => next && state.setOperator(next)}
+          minWidth={6}
+          hideIcon
+          b={0}
+          bgColor="transparent"
+          focus={{ outline: 0 }}
+          props={{ tabIndex: -1, 'aria-label': text.filterComparison(columnName) }}
+        >
+          {OPERATORS.map((op) => (
+            <Dropdown.Item key={op.value} value={op.value}>
+              {op.label}
+            </Dropdown.Item>
+          ))}
+        </Dropdown>
+      </QuietInteractions>
       <Flex d="column" gap={1} flex1 minWidth={0}>
         {picker(
           state.value,
@@ -230,23 +237,27 @@ function ListDateFilter<TRow>(props: { column: ColumnModel<TRow> }) {
           </option>
         ))}
       </Box>
-      <DatePicker
-        value={state.value}
-        onValueChange={state.setValue}
-        min={bounds.from.min}
-        max={bounds.from.max}
-        flex1
-        props={{ 'aria-label': state.operator === 'between' ? text.filterFrom(columnName) : text.filterColumn(columnName) }}
-      />
-      {state.operator === 'between' && (
+      <QuietInteractions>
         <DatePicker
-          value={state.valueTo}
-          onValueChange={state.setValueTo}
-          min={bounds.to.min}
-          max={bounds.to.max}
+          value={state.value}
+          onValueChange={state.setValue}
+          min={bounds.from.min}
+          max={bounds.from.max}
           flex1
-          props={{ 'aria-label': text.filterTo(columnName) }}
+          props={{ 'aria-label': state.operator === 'between' ? text.filterFrom(columnName) : text.filterColumn(columnName) }}
         />
+      </QuietInteractions>
+      {state.operator === 'between' && (
+        <QuietInteractions>
+          <DatePicker
+            value={state.valueTo}
+            onValueChange={state.setValueTo}
+            min={bounds.to.min}
+            max={bounds.to.max}
+            flex1
+            props={{ 'aria-label': text.filterTo(columnName) }}
+          />
+        </QuietInteractions>
       )}
     </Flex>
   );

@@ -1,3 +1,4 @@
+import { ReportInteractions } from '../../../react/a11y/interactions';
 import ColumnModel from '../models/columnModel';
 import RowModel from '../models/rowModel';
 import DataGridDateValue, { dateFormatOf } from './dataGridDateValue';
@@ -16,7 +17,13 @@ export default function DataGridListValue<TRow>(props: Props<TRow>) {
   const cell = row.cells.find((c) => c.column === column);
   if (!cell) return null;
 
-  if (column.Cell) return <column.Cell cell={cell} />;
+  // The app's own component, which reports as usual even inside a sheet whose parts are quiet.
+  if (column.Cell)
+    return (
+      <ReportInteractions>
+        <column.Cell cell={cell} />
+      </ReportInteractions>
+    );
 
   const { value } = cell;
   if (typeof value === 'boolean') return <>{value ? cell.grid.localeText.booleanTrue : cell.grid.localeText.booleanFalse}</>;

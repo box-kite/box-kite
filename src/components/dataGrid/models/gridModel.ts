@@ -1,6 +1,9 @@
 import { ComponentsAndVariants } from '../../../types';
 import ArrayUtils from '../../../utils/array/arrayUtils';
 import { isRtl } from '../../../utils/dom/domUtils';
+// The grid's one door to the channel: a headless model has no hook to report through.
+// eslint-disable-next-line no-restricted-imports
+import { emitInteraction, InteractionType } from '../../../utils/interactions/interactionChannel';
 import memo from '../../../utils/memo';
 import { fuzzySearch } from '../../../utils/string/fuzzySearch';
 import DataGridCellRowDetail from '../components/dataGridCellRowDetail';
@@ -539,6 +542,25 @@ export default class GridModel<TRow> {
     return this.data.filter((row) => this.rowMatchesFilters(row));
   }
 
+  /** What the grid tells `Box.onInteraction`, beside whatever callback the host passed for the same change. */
+  public reportInteraction(type: InteractionType<'datagrid'>, value: unknown, reason?: string, details?: Record<string, unknown>): void {
+    if (this._batching) return;
+
+    emitInteraction({ component: 'datagrid', type, reason, value, details, target: this._sizingElement ?? undefined });
+  }
+
+  private _batching = false;
+
+  /** Run several changes that are one action, so they report once — the caller reports the whole. */
+  public quietly(changes: () => void): void {
+    this._batching = true;
+    try {
+      changes();
+    } finally {
+      this._batching = false;
+    }
+  }
+
   private fireServerStateChange(reason: DataGridChangeReason, overrides?: Partial<ServerState<TRow>>): void {
     this.props.onServerStateChange?.(
       {
@@ -556,6 +578,8 @@ export default class GridModel<TRow> {
   /** Both pager callbacks: the one carrying a reason, and the `(page, pageSize)` pair it replaces. */
   private firePaginationChange(page: number, pageSize: number, reason: DataGridChangeReason): void {
     this.props.onPaginationChange?.({ page, pageSize }, { reason });
+    // A reset that a sort or a filter caused is that change's consequence, not a second interaction.
+    if (reason === 'page' || reason === 'page-size') this.reportInteraction('paginationChange', { page, pageSize }, reason);
     this.props.onPageChange?.(page, pageSize);
   }
 
@@ -577,12 +601,14 @@ export default class GridModel<TRow> {
    */
   public setGlobalFilter = (value: string): void => {
     const reason: DataGridFilterReason = value === '' ? 'clear' : 'filter';
+    const changed = value !== this.globalFilterValue;
 
     // Written whether or not `globalFilterValue` is present — a handler is a listener, not ownership
     // (bug #154). The getter prefers the prop, so a controlled grid still shows what its owner asked for.
     this._globalFilterValue = value;
     this.leaveSelectionView();
     this.props.onGlobalFilterChange?.(value, { reason });
+    if (changed) this.reportInteraction('globalFilterChange', value, reason);
 
     const nextPage = this.resetToFirstPage(reason);
 
@@ -600,6 +626,8 @@ export default class GridModel<TRow> {
   public setColumnFilter = (columnKey: Key, filter: FilterValue | undefined): void => {
     const newFilters = { ...this.columnFilters };
     const reason: DataGridFilterReason = filter === undefined ? 'clear' : 'filter';
+    // An operator changed on an empty filter clears a filter that was never set: nothing to report.
+    const changed = filter !== undefined || columnKey in newFilters;
 
     if (filter === undefined) {
       delete newFilters[columnKey as keyof TRow];
@@ -610,6 +638,7 @@ export default class GridModel<TRow> {
     this._columnFilters = newFilters;
     this.leaveSelectionView();
     this.props.onColumnFiltersChange?.(newFilters, { reason });
+    if (changed) this.reportInteraction('columnFiltersChange', newFilters, reason, { columnKey, filter });
 
     const nextPage = this.resetToFirstPage(reason);
 
@@ -625,9 +654,12 @@ export default class GridModel<TRow> {
    * Clear all column filters
    */
   public clearColumnFilters = (): void => {
+    const changed = Object.keys(this.columnFilters).length > 0;
+
     this._columnFilters = {};
     this.leaveSelectionView();
     this.props.onColumnFiltersChange?.({}, { reason: 'clear' });
+    if (changed) this.reportInteraction('columnFiltersChange', {}, 'clear');
 
     this.fireServerStateChange('clear', { columnFilters: {} });
 
@@ -982,6 +1014,7 @@ export default class GridModel<TRow> {
 
     this._expandedDetailRows = expandedKeys;
     this.props.onExpandedRowKeysChange?.(Array.from(expandedKeys), { reason: expanded ? 'expand' : 'collapse' });
+    this.reportInteraction('expandedRowKeysChange', Array.from(expandedKeys), expanded ? 'expand' : 'collapse', { rowKey });
 
     this.rows.clear(); // cascades to flatRows/rowOffsets
     this.notify();
@@ -1235,6 +1268,7 @@ export default class GridModel<TRow> {
   /** "Show selected" sets the filters aside rather than adding to them: the rows it is for are the hidden ones. */
   public toggleSelectionView = (): void => {
     this._selectionView = this._selectionView ? null : new Set(this.selectedRows);
+    this.reportInteraction('selectionViewChange', this._selectionView !== null, this._selectionView ? 'show' : 'hide');
     this.rows.clear(); // cascades to flatRows/rowOffsets
     this.notify();
   };
@@ -1320,6 +1354,7 @@ export default class GridModel<TRow> {
         : undefined;
 
     this.props.onSortingChange?.(sorting, { reason: sorting ? 'sort' : 'clear' });
+    this.reportInteraction('sortingChange', sorting, sorting ? 'sort' : 'clear', { columnKey });
     this.props.onSortChange?.(this._sortColumn, this._sortDirection);
 
     const nextPage = this.resetToFirstPage('sort');
@@ -1358,6 +1393,10 @@ export default class GridModel<TRow> {
       this.hiddenColumns.add(columnKey);
     }
 
+    this.reportInteraction('groupingChange', Array.from(this.groupColumns), this.groupColumns.has(columnKey) ? 'group' : 'ungroup', {
+      columnKey,
+    });
+
     this.collapseGroups();
     this.sourceColumns.clear(); // cascades to columns → headerRows/gridTemplateColumns/flexWidths/sizes/rows/flatRows/rowOffsets
 
@@ -1369,6 +1408,7 @@ export default class GridModel<TRow> {
     this.groupColumns = new Set();
     // Ensure previously grouped columns are made visible again
     this.hiddenColumns = new Set(Array.from(this.hiddenColumns).filter((key) => !prevGroupColumns.has(key)));
+    this.reportInteraction('groupingChange', [], 'clear');
 
     this.collapseGroups();
     this.sourceColumns.clear(); // cascades to columns → headerRows/gridTemplateColumns/flexWidths/sizes/rows/flatRows/rowOffsets
@@ -1419,6 +1459,8 @@ export default class GridModel<TRow> {
       this.expandedGroupRow.add(groupRowKey);
       this._collapsedGroupRow.delete(groupRowKey);
     }
+
+    this.reportInteraction('groupExpandedChange', !expanded, expanded ? 'collapse' : 'expand', { groupRowKey });
 
     this.source.expansionChanged();
     this.rows.clear(); // required to update rowIndex; cascades to flatRows/rowOffsets
@@ -1488,6 +1530,7 @@ export default class GridModel<TRow> {
     const selectedRowKeys = Array.from(this.selectedRows);
 
     this.props.onSelectedRowKeysChange?.(selectedRowKeys, { reason });
+    this.reportInteraction('selectedRowKeysChange', selectedRowKeys, reason, { action, affectedRowKeys });
     this.props.onSelectionChange?.({
       action,
       affectedRowKeys,
@@ -1505,6 +1548,14 @@ export default class GridModel<TRow> {
       this.hiddenColumns.add(columnKey);
     }
 
+    this.reportInteraction(
+      'columnVisibilityChange',
+      !this.hiddenColumns.has(columnKey),
+      this.hiddenColumns.has(columnKey) ? 'hide' : 'show',
+      {
+        columnKey,
+      },
+    );
     this.columns.clear(); // cascades to headerRows/gridTemplateColumns/flexWidths/sizes/rows/flatRows/rowOffsets
 
     this.notify();

@@ -1,4 +1,5 @@
 import { useCallback, useRef } from 'react';
+import { QuietInteractions } from '../../../react/a11y/interactions';
 import { useIsomorphicLayoutEffect } from '../../../react/effects';
 import useIdentifier from '../../../react/identity/useIdentifier';
 import Checkbox from '../../checkbox';
@@ -205,30 +206,32 @@ function EditorControl<TRow>(props: ControlProps<TRow>) {
 
   if (type === 'select') {
     return (
-      <Dropdown<string | number | boolean | null>
-        value={cell.draft as string | number | boolean | null}
-        // The list is the whole control: an editor that opened and then waited for a second press to
-        // show what can be chosen is the interaction AG Grid calls out as the one its native select
-        // cannot avoid. Every way in is a deliberate "change this cell", so every way in opens it.
-        defaultOpen
-        width="fit"
-        variant="compact"
-        b={0}
-        bgColor="transparent"
-        focus={{ outline: 0 }}
-        onValueChange={(value) => {
-          cell.setDraft(value ?? null);
-          cell.commitEdit();
-          onCommitted();
-        }}
-        props={named}
-      >
-        {optionsOf(cell).map((option) => (
-          <Dropdown.Item<string | number | boolean | null> key={String(option.value)} value={option.value}>
-            {option.label ?? String(option.value)}
-          </Dropdown.Item>
-        ))}
-      </Dropdown>
+      <QuietInteractions>
+        <Dropdown<string | number | boolean | null>
+          value={cell.draft as string | number | boolean | null}
+          // The list is the whole control: an editor that opened and then waited for a second press to
+          // show what can be chosen is the interaction AG Grid calls out as the one its native select
+          // cannot avoid. Every way in is a deliberate "change this cell", so every way in opens it.
+          defaultOpen
+          width="fit"
+          variant="compact"
+          b={0}
+          bgColor="transparent"
+          focus={{ outline: 0 }}
+          onValueChange={(value) => {
+            cell.setDraft(value ?? null);
+            cell.commitEdit();
+            onCommitted();
+          }}
+          props={named}
+        >
+          {optionsOf(cell).map((option) => (
+            <Dropdown.Item<string | number | boolean | null> key={String(option.value)} value={option.value}>
+              {option.label ?? String(option.value)}
+            </Dropdown.Item>
+          ))}
+        </Dropdown>
+      </QuietInteractions>
     );
   }
 

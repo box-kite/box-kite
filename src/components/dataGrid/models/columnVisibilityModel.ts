@@ -95,10 +95,12 @@ export default class ColumnVisibilityModel<TRow> {
 
   /** Show or hide every column in `entries` (all of them by default), leaving the rest as they are. */
   public setAll = (visible: boolean, entries: ColumnVisibilityEntry<TRow>[] = this.entries): void => {
-    entries.forEach((entry) => {
-      if (entry.visible !== visible) {
-        entry.column.toggleVisibility();
-      }
+    const changing = entries.filter((entry) => entry.visible !== visible);
+    if (changing.length === 0) return;
+
+    this.grid.quietly(() => changing.forEach((entry) => entry.column.toggleVisibility()));
+    this.grid.reportInteraction('columnVisibilityChange', visible, visible ? 'show-all' : 'hide-all', {
+      columnKeys: changing.map((entry) => entry.column.key),
     });
   };
 }
