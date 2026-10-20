@@ -4,7 +4,7 @@ import Box from '../../src/box';
 import Flex from '../../src/components/flex';
 import Icon from '../../src/components/icon';
 import { Link } from '../../src/components/semantics';
-import Markdown from '../components/markdown';
+import Markdown, { MarkdownDemos } from '../components/markdown';
 import PageHeader from '../components/pageHeader';
 import Reveal from '../components/reveal';
 import SiteLink from '../components/siteLink';
@@ -15,11 +15,15 @@ import { REPO_URL } from '../site/site';
 import { headings } from '../utils/markdownUtils';
 import NotFoundPage from './notFoundPage';
 
+// Eager, because a demo behind `lazy` would suspend the prerender; few posts have one.
+const demoModules = import.meta.glob<MarkdownDemos>('../postDemos/*.tsx', { eager: true });
+
 /** One article: `posts/<slug>.md`, which the pathname names. */
 export default function PostPage() {
   const { pathname } = useLocation();
   const post = posts.find((candidate) => candidate.path === pathname.replace(/\/+$/, ''));
   const body = post ? postBody(post.markdown) : '';
+  const demos = post ? demoModules[`../postDemos/${post.slug}.tsx`] : undefined;
 
   useTableOfContents(post ? [{ label: post.title, section: true }, ...headings(body)] : []);
 
@@ -35,7 +39,7 @@ export default function PostPage() {
       <PageHeader icon={Newspaper} title={post.title} badge={post.level} description={`${post.date} · ${post.readingTime} min read`} />
 
       <Reveal delay={0.1}>
-        <Markdown source={body} maxWidth={210} />
+        <Markdown source={body} demos={demos} maxWidth={210} />
       </Reveal>
 
       <Reveal delay={0.2}>

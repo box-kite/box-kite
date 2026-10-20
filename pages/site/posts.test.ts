@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { headings } from '../utils/markdownUtils';
@@ -88,7 +88,10 @@ describe('posts/', () => {
     for (const href of links.filter((link) => link.startsWith(SITE_URL))) {
       const path = new URL(href).pathname.replace(/\/+$/, '') || '/';
 
-      expect(routes.has(path), `${href} is not a page on the site`).toBe(true);
+      // A file — a screenshot the other platforms show — is served from `pages/public`, not routed.
+      if (/\.\w+$/.test(path))
+        expect(existsSync(resolve(root, 'pages/public', path.slice(1))), `${href} is not in pages/public`).toBe(true);
+      else expect(routes.has(path), `${href} is not a page on the site`).toBe(true);
     }
   });
 

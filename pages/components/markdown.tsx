@@ -1,20 +1,61 @@
 import { marked, Token, Tokens } from 'marked';
-import { Fragment, ReactNode, useMemo } from 'react';
+import { ComponentType, Fragment, ReactNode, useMemo } from 'react';
 import Box, { BoxProps } from '../../src/box';
-import { H2, H3, H4, Img, Li, Link, Ol, P, Ul } from '../../src/components/semantics';
+import { Figcaption, Figure, H2, H3, H4, Img, Li, Link, Ol, P, Ul } from '../../src/components/semantics';
 import { SITE_URL } from '../site/site';
 import { slugify } from '../utils/markdownUtils';
 import Code from './code';
+
+/** Live examples by component name: `filter-card.png` is `FilterCard`, and the screenshot is what other platforms show. */
+export type MarkdownDemos = Readonly<Record<string, ComponentType>>;
+
+const demoName = (href: string) =>
+  href
+    .split('/')
+    .pop()!
+    .replace(/\.\w+$/, '')
+    .replace(/(?:^|-)(\w)/g, (_, letter: string) => letter.toUpperCase());
 
 /**
  * Markdown rendered with Box components — the release notes and the blog posts, which are written once and
  * read elsewhere too. Only the constructs they use: headings, paragraphs, fenced code, lists, tables, links,
  * images, emphasis and inline code. Raw HTML in the source renders nothing.
  */
-export default function Markdown({ source, ...rest }: { source: string } & BoxProps) {
+export default function Markdown({ source, demos = {}, ...rest }: { source: string; demos?: MarkdownDemos } & BoxProps) {
   const tokens = useMemo(() => marked.lexer(source), [source]);
 
-  return <Box {...rest}>{blocks(tokens)}</Box>;
+  return (
+    <Box {...rest}>
+      {tokens.map((token, index) => (
+        <Fragment key={index}>{demoFor(token, demos) ?? block(token)}</Fragment>
+      ))}
+    </Box>
+  );
+}
+
+/** A paragraph that is one image with a demo of the same name renders the demo, captioned by the alt text. */
+function demoFor(token: Token, demos: MarkdownDemos): ReactNode {
+  const [image, ...rest] = token.type === 'paragraph' ? ((token as Tokens.Paragraph).tokens ?? []) : [];
+  const Demo = image?.type === 'image' && rest.length === 0 ? demos[demoName((image as Tokens.Image).href)] : undefined;
+  if (!Demo) return null;
+
+  return (
+    <Figure mx={0} my={6}>
+      {/* Tall enough for a layer to open inside the frame, which is what the screenshot captures. */}
+      <Box
+        p={6}
+        minHeight={75}
+        b={1}
+        borderRadius={3}
+        theme={{ dark: { borderColor: 'base-800', bgColor: 'base-900' }, light: { borderColor: 'base-200', bgColor: 'base-50' } }}
+      >
+        <Demo />
+      </Box>
+      <Figcaption mt={2} fontSize={13} lineHeight={20} theme={prose}>
+        {(image as Tokens.Image).text}
+      </Figcaption>
+    </Figure>
+  );
 }
 
 const LANGUAGES: Record<string, 'jsx' | 'shell' | 'css' | 'javascript'> = {
