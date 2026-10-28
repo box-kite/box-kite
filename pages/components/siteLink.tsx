@@ -23,7 +23,15 @@ export default function SiteLink<TKey extends keyof ComponentsAndVariants = neve
   return (
     <>
       {styles}
-      <NavLink to={to} className={className} aria-label={label} onPointerEnter={prefetch} onFocus={prefetch}>
+      {/* `useClassNames` writes no attributes, so the link names itself for `Box.onInteraction`; the site marks components on both sides. */}
+      <NavLink
+        to={to}
+        className={className}
+        aria-label={label}
+        data-bk={props.component ?? 'link'}
+        onPointerEnter={prefetch}
+        onFocus={prefetch}
+      >
         {children}
       </NavLink>
     </>

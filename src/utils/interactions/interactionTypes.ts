@@ -33,7 +33,8 @@ export interface ComponentInteractions {
     cellEdit: InteractionJson;
     cellEditCancel: InteractionJson;
     cellEditReject: InteractionJson;
-    paste: InteractionJson[];
+    /** How many cells took the pasted value: `details.cells`, the values themselves, are content. */
+    paste: number;
     columnPinChange: 'START' | 'END';
     columnVisibilityChange: boolean;
     columnResize: number;
@@ -92,7 +93,7 @@ interface InteractionBase {
   timeStamp: number;
   /** `Date.now()`: when it happened, for a log on another machine. */
   time: number;
-  /** `location.href` as it happened, so an event delivered after a navigation still names its own page. */
+  /** The page it happened on, so an event delivered after a navigation still names its own; no query or hash without `content`. */
   url: string;
 }
 
@@ -126,6 +127,15 @@ export type InteractionEvent = ComponentInteraction | DomInteraction | CustomInt
 
 export type InteractionListener = (event: InteractionEvent) => void;
 
+/** How much a listener is handed. */
+export interface InteractionOptions {
+  /**
+   * What people typed, pasted or picked as data (a search, a cell, a date), the text a toast showed them, and the URL's query
+   * and hash. Left out unless asked for, because a listener is usually a log on somebody else's machine.
+   */
+  content?: boolean;
+}
+
 /** What `Box.reportInteraction` takes: `event` may be React's synthetic one, and anything not JSON is dropped on the way out. */
 export interface InteractionReport {
   component: string;
@@ -137,4 +147,6 @@ export interface InteractionReport {
   target?: Element;
   /** Default: `'app'` for the reasons `imperative`, `programmatic` and `timeout`, `'user'` otherwise. */
   source?: 'user' | 'app';
+  /** Which of `'value'` and the `details` keys are content: a listener that did not ask for content is not handed them. */
+  content?: readonly string[];
 }

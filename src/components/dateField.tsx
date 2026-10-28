@@ -1,11 +1,12 @@
 import { Fragment, Ref, RefAttributes, useEffect, useMemo, useRef, useState } from 'react';
 import Box, { BoxProps } from '../box';
 import { useEventCallback, useLatest } from '../react/a11y/callbacks';
-import useControllableState, { ChangeHandler } from '../react/a11y/useControllableState';
+import { ChangeHandler } from '../react/a11y/useControllableState';
 import boxComponent from '../react/boxComponent';
 import { DateChangeDetails, DateChangeReason } from '../react/date/dateChange';
 import { useDateEnvironment } from '../react/date/dateEnvironment';
 import useIdentifier from '../react/identity/useIdentifier';
+import { useReportedState } from '../react/interactions/interactions';
 import { ComponentsAndVariants } from '../types';
 import { compare, readingsOf, toPlainDate, today } from '../utils/date/dateTime';
 import {
@@ -191,11 +192,11 @@ function DateFieldImpl<TKey extends keyof ComponentsAndVariants = 'dateField'>(p
   const segments = useMemo(() => segmentsFor(config), [config]);
   const configKey = `${type}|${locale}|${hourCycle}|${granularity}|${zone}`;
 
-  const [current, setCurrent] = useControllableState<string | null, DateChangeReason>({
+  const [current, setCurrent] = useReportedState<string | null, DateChangeReason>({
     value,
     defaultValue,
     onChange: (next, details) => onValueChange?.(next, { ...details, ...readingsOf(next, zone ?? environment.zone) }),
-    interaction: { component: 'dateField', type: 'valueChange' },
+    interaction: { component: 'dateField', type: 'valueChange', content: ['value'] },
   });
 
   // The draft is what the segments show, which can be more than the value: a half-typed date has no value.

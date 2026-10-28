@@ -1,11 +1,18 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { marksComponents, setComponentAttribute } from './componentAttribute';
-import { emitInteraction, flushInteractions, InteractionEvent, reportInteraction, subscribeInteractions } from './interactionChannel';
+import {
+  emitInteraction,
+  flushInteractions,
+  InteractionEvent,
+  InteractionOptions,
+  reportInteraction,
+  subscribeInteractions,
+} from './interactionChannel';
 
-const CHANNEL = Symbol.for('box-kite.interactions@1');
+const CHANNEL = Symbol.for('box-kite.interactions@2');
 const original = (globalThis as Record<symbol, unknown>)[CHANNEL];
 
-/** A channel nobody has listened on yet, which is the only state the early buffer is about. */
+/** A channel nobody has listened on yet, with its delivery half not loaded. */
 async function freshChannel() {
   delete (globalThis as Record<symbol, unknown>)[CHANNEL];
   vi.resetModules();
@@ -15,7 +22,11 @@ async function freshChannel() {
 
 describe('interaction channel', () => {
   const unsubscribers: (() => void)[] = [];
-  const listen = (listener: (event: InteractionEvent) => void) => unsubscribers.push(subscribeInteractions(listener));
+  // Delivery is fetched with the first subscription, so a test listens and then lets it arrive.
+  const listen = async (listener: (event: InteractionEvent) => void, options?: InteractionOptions) => {
+    unsubscribers.push(subscribeInteractions(listener, options));
+    await vi.dynamicImportSettled();
+  };
 
   afterEach(() => {
     flushInteractions();
@@ -30,7 +41,7 @@ describe('interaction channel', () => {
 
   it('never calls a listener inside the handler that emitted: delivery is a later task', async () => {
     const heard = vi.fn();
-    listen(heard);
+    await listen(heard);
 
     emitInteraction({ component: 'dialog', type: 'openChange', reason: 'trigger', value: true });
     expect(heard).not.toHaveBeenCalled();
@@ -41,9 +52,9 @@ describe('interaction channel', () => {
     );
   });
 
-  it('delivers a batch in order, once, with each time taken when it happened', () => {
+  it('delivers a batch in order, once, with each time taken when it happened', async () => {
     const heard = vi.fn();
-    listen(heard);
+    await listen(heard);
     const before = Date.now();
 
     emitInteraction({ component: 'menu.item', type: 'select' });
@@ -56,9 +67,9 @@ describe('interaction channel', () => {
     expect(heard.mock.calls[0][0].time).toBeGreaterThanOrEqual(before);
   });
 
-  it('names the page it happened on, not the one it was delivered on', () => {
+  it('names the page it happened on, not the one it was delivered on', async () => {
     const heard = vi.fn();
-    listen(heard);
+    await listen(heard);
     const page = location.href;
 
     reportInteraction({ component: 'router', type: 'navigate', value: '/next' });
@@ -69,10 +80,10 @@ describe('interaction channel', () => {
     expect(heard.mock.calls[0][0].url).toBe(page);
   });
 
-  it('hands every listener the event until it unsubscribes', () => {
+  it('hands every listener the event until it unsubscribes', async () => {
     const first = vi.fn();
     const second = vi.fn();
-    listen(first);
+    await listen(first);
     const stop = subscribeInteractions(second);
 
     emitInteraction({ component: 'dialog', type: 'openChange', reason: 'trigger', value: true });
@@ -85,9 +96,9 @@ describe('interaction channel', () => {
     expect(second).toHaveBeenCalledTimes(1);
   });
 
-  it("tells a component's change from the app's own report", () => {
+  it("tells a component's change from the app's own report", async () => {
     const heard = vi.fn();
-    listen(heard);
+    await listen(heard);
 
     emitInteraction({ component: 'tabs', type: 'valueChange', value: 'a' });
     reportInteraction({ component: 'router', type: 'navigate', value: '/pricing' });
@@ -99,9 +110,9 @@ describe('interaction channel', () => {
     ]);
   });
 
-  it('says the app did it when the reason is a call or a timer, and lets a caller say so itself', () => {
+  it('says the app did it when the reason is a call or a timer, and lets a caller say so itself', async () => {
     const heard = vi.fn();
-    listen(heard);
+    await listen(heard);
 
     emitInteraction({ component: 'dialog', type: 'openChange', reason: 'imperative', value: false });
     emitInteraction({ component: 'toaster', type: 'dismiss', reason: 'timeout' });
@@ -112,9 +123,9 @@ describe('interaction channel', () => {
     expect(heard.mock.calls.map(([event]) => event.source)).toEqual(['app', 'app', 'app', 'user']);
   });
 
-  it('hands over plain JSON, whatever the component held', () => {
+  it('hands over plain JSON, whatever the component held', async () => {
     const heard = vi.fn();
-    listen(heard);
+    await listen(heard);
     const cycle: Record<string, unknown> = { name: 'loop' };
     cycle.self = cycle;
 
@@ -133,48 +144,78 @@ describe('interaction channel', () => {
     expect(() => JSON.stringify(heard.mock.calls[0][0].details)).not.toThrow();
   });
 
-  it('keeps what happened before anyone listened, for an analytics bundle that loads late', async () => {
+  it('does nothing while nobody listens: nothing is queued, and nothing is kept for a later listener', async () => {
     const copy = await freshChannel();
-
-    for (let index = 0; index < 60; index++) copy.emitInteraction({ component: 'tabs', type: 'valueChange', value: String(index) });
-    const heard = vi.fn();
-    const stop = copy.subscribeInteractions(heard);
-    copy.flushInteractions();
-    stop();
-
-    expect(heard).toHaveBeenCalledTimes(50);
-    expect(heard.mock.calls[0][0].value).toBe('10');
-  });
-
-  it('keeps nothing once someone has listened and stopped', async () => {
-    const copy = await freshChannel();
-    copy.subscribeInteractions(() => undefined)();
 
     copy.emitInteraction({ component: 'tabs', type: 'valueChange', value: 'a' });
+    expect((globalThis as Record<symbol, { queue: unknown[] }>)[CHANNEL].queue).toHaveLength(0);
+
     const heard = vi.fn();
     const stop = copy.subscribeInteractions(heard);
+    await vi.dynamicImportSettled();
     copy.flushInteractions();
     stop();
 
     expect(heard).not.toHaveBeenCalled();
   });
 
-  it('does nothing on a server, where no person is interacting', () => {
+  it('holds what happens while the delivery half is still on its way', async () => {
+    const copy = await freshChannel();
     const heard = vi.fn();
-    listen(heard);
+    const stop = copy.subscribeInteractions(heard);
+
+    copy.emitInteraction({ component: 'tabs', type: 'valueChange', value: 'a' });
+    copy.flushInteractions();
+    expect(heard).not.toHaveBeenCalled();
+    await vi.dynamicImportSettled();
+    copy.flushInteractions();
+    stop();
+
+    expect(heard).toHaveBeenCalledWith(expect.objectContaining({ component: 'tabs', value: 'a' }));
+  });
+
+  it('leaves out what a person typed, and the query and hash, unless a listener asks for content', async () => {
+    const plain = vi.fn();
+    const full = vi.fn();
+    await listen(plain);
+    await listen(full, { content: true });
+    const page = location.href;
+    history.replaceState(null, '', '/orders?email=ada%40example.com#token');
+
+    emitInteraction({
+      component: 'datagrid',
+      type: 'cellEdit',
+      reason: 'edit',
+      value: 'Ada',
+      details: { columnKey: 'name', oldValue: 'Grace' },
+      content: ['value', 'oldValue'],
+    });
+    flushInteractions();
+    history.replaceState(null, '', page);
+
+    expect(plain.mock.calls[0][0]).toMatchObject({ value: undefined, details: { columnKey: 'name' } });
+    expect(plain.mock.calls[0][0].details).not.toHaveProperty('oldValue');
+    expect(plain.mock.calls[0][0].url).toMatch(/\/orders$/);
+    expect(full.mock.calls[0][0]).toMatchObject({ value: 'Ada', details: { columnKey: 'name', oldValue: 'Grace' } });
+    expect(full.mock.calls[0][0].url).toMatch(/\/orders\?email=ada%40example\.com#token$/);
+  });
+
+  it('does nothing on a server, where no person is interacting', () => {
     vi.stubGlobal('document', undefined);
+    const heard = vi.fn();
+    const stop = subscribeInteractions(heard);
+    vi.unstubAllGlobals();
 
     emitInteraction({ component: 'toaster', type: 'show', value: 'Saved' });
-    vi.unstubAllGlobals();
     flushInteractions();
+    stop();
 
     expect(heard).not.toHaveBeenCalled();
   });
 
   it('delivers what is queued when the page is hidden, before a background task would run', async () => {
     const heard = vi.fn();
-    listen(heard);
-    await vi.dynamicImportSettled();
+    await listen(heard);
 
     emitInteraction({ component: 'link', type: 'select' });
     dispatchEvent(new Event('pagehide'));
@@ -184,7 +225,7 @@ describe('interaction channel', () => {
 
   it('keeps one channel on globalThis, so a second copy of the module hears the first', async () => {
     const heard = vi.fn();
-    listen(heard);
+    await listen(heard);
 
     vi.resetModules();
     const copy = await import('./interactionChannel');
@@ -194,14 +235,14 @@ describe('interaction channel', () => {
     expect(heard).toHaveBeenCalledWith(expect.objectContaining({ component: 'tabs', value: 'b' }));
   });
 
-  it('reports a listener that throws, and still calls the rest', () => {
+  it('reports a listener that throws, and still calls the rest', async () => {
     const reportError = vi.fn();
     vi.stubGlobal('reportError', reportError);
     const after = vi.fn();
-    listen(() => {
+    await listen(() => {
       throw new Error('analytics is down');
     });
-    listen(after);
+    await listen(after);
 
     emitInteraction({ component: 'menu.item', type: 'select' });
     flushInteractions();
@@ -210,10 +251,10 @@ describe('interaction channel', () => {
     expect(reportError).toHaveBeenCalledWith(new Error('analytics is down'));
   });
 
-  it('rethrows on a timer where the platform has no reportError', () => {
+  it('rethrows on a timer where the platform has no reportError', async () => {
     vi.useFakeTimers();
     vi.stubGlobal('reportError', undefined);
-    listen(() => {
+    await listen(() => {
       throw new Error('analytics is down');
     });
 
@@ -223,9 +264,9 @@ describe('interaction channel', () => {
     expect(() => vi.runAllTimers()).toThrow('analytics is down');
   });
 
-  it("unwraps React's synthetic event and reads the handler's element while it still exists", () => {
+  it("unwraps React's synthetic event and reads the handler's element while it still exists", async () => {
     const heard = vi.fn();
-    listen(heard);
+    await listen(heard);
     const button = document.createElement('button');
     const icon = document.createElement('span');
     button.append(icon);
@@ -244,8 +285,7 @@ describe('interaction channel', () => {
 
   it('names the event being dispatched when a change made inside a handler was not handed one', async () => {
     const heard = vi.fn();
-    listen(heard);
-    await vi.dynamicImportSettled();
+    await listen(heard);
     const header = document.createElement('div');
     header.setAttribute('role', 'columnheader');
     header.tabIndex = -1;
@@ -264,9 +304,9 @@ describe('interaction channel', () => {
     expect(heard.mock.calls[1][0].target).toBe(document.body);
   });
 
-  it("falls back to the component's own element when there is no event", () => {
+  it("falls back to the component's own element when there is no event", async () => {
     const heard = vi.fn();
-    listen(heard);
+    await listen(heard);
     const grid = document.createElement('div');
 
     emitInteraction({ component: 'datagrid', type: 'sortingChange', target: grid });
@@ -278,8 +318,7 @@ describe('interaction channel', () => {
   describe('a press on anything a component styled', () => {
     it('is a dom interaction named by the nearest data-bk, on the control it hit', async () => {
       const heard = vi.fn();
-      listen(heard);
-      await vi.dynamicImportSettled();
+      await listen(heard);
       setComponentAttribute(true);
       document.body.innerHTML = '<div data-bk="widget"><p>Text</p><button><svg></svg></button></div>';
 
@@ -297,8 +336,7 @@ describe('interaction channel', () => {
 
     it('is left out when a change or a report in the same batch carries its event', async () => {
       const heard = vi.fn();
-      listen(heard);
-      await vi.dynamicImportSettled();
+      await listen(heard);
       setComponentAttribute(true);
       document.body.innerHTML =
         '<button data-bk="tabs.tab">Tab</button><a data-bk="a" href="#x">Link</a><button data-bk="button">Save</button>';
@@ -319,8 +357,7 @@ describe('interaction channel', () => {
 
     it("carries a checkbox's checked state, and never what was typed", async () => {
       const heard = vi.fn();
-      listen(heard);
-      await vi.dynamicImportSettled();
+      await listen(heard);
       setComponentAttribute(true);
       document.body.innerHTML = '<input data-bk="checkbox" type="checkbox" checked><input data-bk="textbox" value="hunter2">';
 

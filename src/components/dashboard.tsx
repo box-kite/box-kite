@@ -1,8 +1,8 @@
 import { createContext, CSSProperties, FunctionComponent, ReactNode, useContext, useId, useMemo, useRef, useState } from 'react';
 import Box, { BoxProps } from '../box';
 import { useEventCallback, useLatest } from '../react/a11y/callbacks';
-import { useInteractionCallback, useInteractionReporter } from '../react/a11y/interactions';
 import useControllableState, { ChangeDetails, ChangeHandler } from '../react/a11y/useControllableState';
+import { useInteractionCallback, useInteractionReporter } from '../react/interactions/interactions';
 import { ComponentsAndVariants } from '../types';
 import DashboardUtils, { DashboardItem, DashboardLayout, DashboardStep } from '../utils/dashboard/dashboardUtils';
 import { isRtl } from '../utils/dom/domUtils';

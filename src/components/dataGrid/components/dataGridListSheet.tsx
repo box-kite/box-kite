@@ -1,7 +1,7 @@
 import { useCallback, useRef } from 'react';
 import Box from '../../../box';
 import CloseIcon from '../../../icons/closeIcon';
-import { QuietInteractions } from '../../../react/a11y/interactions';
+import { QuietInteractions } from '../../../react/interactions/interactions';
 import Button from '../../button';
 import Dialog, { DialogTrigger } from '../../dialog';
 import Flex from '../../flex';

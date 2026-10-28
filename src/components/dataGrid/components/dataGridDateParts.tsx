@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Box from '../../../box';
-import { QuietInteractions } from '../../../react/a11y/interactions';
 import { useDateEnvironment } from '../../../react/date/dateEnvironment';
+import { QuietInteractions } from '../../../react/interactions/interactions';
 import { normalize, toDate, toUtc } from '../../../utils/date/dateTime';
 import { format, FormatOptions, formatRange, formatRelative } from '../../../utils/date/format';
 import { parse } from '../../../utils/date/parse';

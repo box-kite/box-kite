@@ -1,7 +1,7 @@
 import { useCallback, useRef } from 'react';
 import Box, { BoxProps } from '../box';
-import { useInteractionReporter } from '../react/a11y/interactions';
 import { OmitTagProps } from '../react/boxProps';
+import { useInteractionReporter } from '../react/interactions/interactions';
 import FormUtils from '../utils/form/formUtils';
 
 type BoxTagProps = Required<BoxProps<'form'>>['props'];

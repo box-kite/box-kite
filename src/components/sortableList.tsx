@@ -1,10 +1,10 @@
 import { createContext, Ref, RefAttributes, useCallback, useContext, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { BoxProps, useBoxElement } from '../box';
 import { useEventCallback, useLatest } from '../react/a11y/callbacks';
-import { useInteractionCallback, useInteractionReporter } from '../react/a11y/interactions';
 import { ChangeDetails, ChangeHandler } from '../react/a11y/useControllableState';
 import boxComponent from '../react/boxComponent';
 import { useIsomorphicLayoutEffect } from '../react/effects';
+import { useInteractionCallback, useInteractionReporter } from '../react/interactions/interactions';
 import { ComponentsAndVariants } from '../types';
 import { scrollParentOf } from '../utils/scroll/scrollUtils';
 import SortableUtils, { SortableSlot } from '../utils/sortable/sortableUtils';

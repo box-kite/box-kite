@@ -2,7 +2,7 @@ import { cleanup, fireEvent, render, screen, within } from '@testing-library/rea
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ignoreLogs } from '../../dev/tests';
 import Box, { InteractionEvent } from '../box';
-import { QuietInteractions, ReportInteractions } from '../react/a11y/interactions';
+import { QuietInteractions, ReportInteractions } from '../react/interactions/interactions';
 import createToastStore from '../utils/toast/toastStore';
 import Button from './button';
 import DataGridListValue from './dataGrid/components/dataGridListValue';
@@ -141,6 +141,38 @@ describe('Box.onInteraction', () => {
     expect(heard().every((event) => event.target === element)).toBe(true);
   });
 
+  it('leaves out what a person typed into the grid, and never the rows a paste touched', async () => {
+    const onGlobalFilterChange = vi.fn();
+    const grid = new GridModel<{ id: number; name: string; email: string }>(
+      {
+        data: [{ id: 1, name: 'Ada', email: 'ada@example.com' }],
+        def: {
+          rowKey: 'id',
+          columns: [
+            { key: 'name', header: 'Name', editable: true },
+            { key: 'email', header: 'Email' },
+          ],
+        },
+        onGlobalFilterChange,
+      },
+      vi.fn(),
+    );
+
+    grid.setGlobalFilter('ada@');
+    grid.edits.paste({ startRow: 0, endRow: 0, startColumn: 0, endColumn: 0 }, () => 'Grace');
+    await Promise.resolve();
+
+    expect(onGlobalFilterChange).toHaveBeenCalledWith('ada@', { reason: 'filter' });
+    const [search, paste] = heard();
+    expect(search).toMatchObject({ type: 'globalFilterChange', reason: 'filter', value: undefined });
+    expect(paste).toMatchObject({
+      type: 'paste',
+      value: 1,
+      details: { range: { startRow: 0, endRow: 0, columns: ['name'] }, rejected: 0 },
+    });
+    expect(JSON.stringify(heard().map(({ value, details }) => ({ value, details })))).not.toMatch(/ada@|Grace|example/);
+  });
+
   it('hears a dropdown open and close once per change, with why', () => {
     render(
       <Dropdown<string>>
@@ -239,16 +271,21 @@ describe('Box.onInteraction', () => {
     ]);
   });
 
-  it('hears a toast shown and dismissed', () => {
+  it('hears a toast shown and dismissed, and its text only when it asks for content', async () => {
+    const withText: InteractionEvent[] = [];
+    const stopText = Box.onInteraction((event) => withText.push(event), { content: true });
+    await vi.dynamicImportSettled();
     const store = createToastStore<string>();
 
-    const id = store.add('Saved', { kind: 'success' });
+    const id = store.add('Invite sent to Ada', { kind: 'success' });
     store.dismiss(id, 'close');
 
     expect(heard().map(({ type, reason, value, source }) => [type, reason, value, source])).toEqual([
-      ['show', 'success', 'Saved', 'app'],
-      ['dismiss', 'close', 'Saved', 'user'],
+      ['show', 'success', undefined, 'app'],
+      ['dismiss', 'close', undefined, 'user'],
     ]);
+    expect(withText.map(({ value }) => value)).toEqual(['Invite sent to Ada', 'Invite sent to Ada']);
+    stopText();
   });
 
   it('names a menu command by its value, and a checkbox item by the item it is', () => {

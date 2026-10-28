@@ -2,10 +2,10 @@ import { FunctionComponent, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useSyncExternalStore } from 'use-sync-external-store/shim';
 import Box, { BoxProps } from '../box';
-import { useInteractionReporter } from '../react/a11y/interactions';
 import usePresence from '../react/animation/usePresence';
 import { useIsomorphicLayoutEffect } from '../react/effects';
 import usePortalContainer from '../react/hooks/usePortalContainer';
+import { useInteractionReporter } from '../react/interactions/interactions';
 import useTopLayer from '../react/popover/useTopLayer';
 import { ComponentsAndVariants } from '../types';
 import { documentOrNull, supportsPopover } from '../utils/environment/environmentUtils';
@@ -129,7 +129,7 @@ function ToastItem(props: ToastItemProps) {
 
     // A closing action reports as the dismissal it causes; one that leaves the toast up reports itself.
     if (action?.closeOnClick !== false) store.dismiss(entry.id, 'action');
-    else report('action', entry.message, { reason: 'action', id: entry.id, kind: entry.kind });
+    else report('action', entry.message, { reason: 'action', id: entry.id, kind: entry.kind, content: ['value'] });
   };
 
   return (

@@ -1,11 +1,11 @@
 import { createContext, FunctionComponent, useCallback, useContext, useMemo, useRef, useState } from 'react';
 import Box, { BoxProps } from '../box';
 import { useEventCallback } from '../react/a11y/callbacks';
-import { useInteractionReporter } from '../react/a11y/interactions';
 import useControllableState, { ChangeDetails, ChangeHandler } from '../react/a11y/useControllableState';
 import useAnchorPosition from '../react/anchor/useAnchorPosition';
 import { useIsomorphicLayoutEffect } from '../react/effects';
 import useIdentifier from '../react/identity/useIdentifier';
+import { useInteractionReporter, useReportedState } from '../react/interactions/interactions';
 import usePopoverLayer, {
   PopoverLayer,
   PopoverReason,
@@ -767,7 +767,7 @@ function MenuCheckboxItem<TKey extends keyof ComponentsAndVariants = 'menu.item'
 /** A set of items of which one is chosen: `role="group"`, and `menuitemradio` inside it. */
 function MenuRadioGroup<TKey extends keyof ComponentsAndVariants = 'menu.group'>(props: MenuRadioGroupProps<TKey>) {
   const { label, value, defaultValue = '', onValueChange, children, ...boxProps } = props;
-  const [current, setValue] = useControllableState<string, 'select'>({
+  const [current, setValue] = useReportedState<string, 'select'>({
     value,
     defaultValue,
     onChange: onValueChange,

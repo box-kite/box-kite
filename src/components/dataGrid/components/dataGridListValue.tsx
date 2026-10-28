@@ -1,4 +1,4 @@
-import { ReportInteractions } from '../../../react/a11y/interactions';
+import { ReportInteractions } from '../../../react/interactions/interactions';
 import ColumnModel from '../models/columnModel';
 import RowModel from '../models/rowModel';
 import DataGridDateValue, { dateFormatOf } from './dataGridDateValue';

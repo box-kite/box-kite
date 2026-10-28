@@ -6,6 +6,7 @@ import useDismiss from '../react/a11y/useDismiss';
 import useRovingFocus from '../react/a11y/useRovingFocus';
 import { useIsomorphicLayoutEffect } from '../react/effects';
 import useIdentifier from '../react/identity/useIdentifier';
+import { useReportedState } from '../react/interactions/interactions';
 import { BoxStyleProps, ComponentsAndVariants } from '../types';
 import ComboboxUtils, { ComboboxFilter, ComboboxRow, ComboboxRowDef } from '../utils/combobox/comboboxUtils';
 import ComboboxChips from './combobox/comboboxChips';
@@ -247,14 +248,14 @@ function ComboboxImpl<TRow>(props: Props<TRow>, ref: Ref<HTMLInputElement>): Rea
   });
 
   const controlledSelection = useMemo(() => (value === undefined ? undefined : ComboboxUtils.toArray(value)), [value]);
-  const [selection, setSelection] = useControllableState<TRow[], ComboboxValueReason>({
+  const [selection, setSelection] = useReportedState<TRow[], ComboboxValueReason>({
     value: controlledSelection,
     defaultValue: () => ComboboxUtils.toArray(defaultValue),
     onChange: handleSelectionChange,
-    interaction: { component: 'combobox', type: 'valueChange' },
+    interaction: { component: 'combobox', type: 'valueChange', content: ['value'] },
   });
 
-  const [open, setOpen] = useControllableState<boolean, ComboboxOpenReason>({
+  const [open, setOpen] = useReportedState<boolean, ComboboxOpenReason>({
     value: openProp,
     defaultValue: defaultOpen ?? false,
     onChange: onOpenChange,

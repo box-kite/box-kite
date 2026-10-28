@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 import Box from '../../../box';
-import { QuietInteractions } from '../../../react/a11y/interactions';
+import { QuietInteractions } from '../../../react/interactions/interactions';
 import FilterDraftUtils, { type NumberFilterDraft } from '../../../utils/dataGrid/filterDraftUtils';
 import Button from '../../button';
 import Dropdown from '../../dropdown';

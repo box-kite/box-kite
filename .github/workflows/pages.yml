@@ -42,6 +42,9 @@ jobs:
 
       - run: npm ci
       - run: npm run build:pages
+        env:
+          # The collector the site's analytics posts to; with the variable unset, the site sends nothing.
+          VITE_ANALYTICS_URL: ${{ vars.ANALYTICS_URL }}
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Box from '../../../box';
 import SearchIcon from '../../../icons/searchIcon';
-import { QuietInteractions } from '../../../react/a11y/interactions';
+import { QuietInteractions } from '../../../react/interactions/interactions';
 import Button from '../../button';
 import Flex from '../../flex';
 import Popover from '../../popover';

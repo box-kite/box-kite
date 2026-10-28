@@ -1,12 +1,13 @@
 import { createContext, FunctionComponent, useCallback, useContext, useMemo, useRef, useState } from 'react';
 import Box, { BoxProps } from '../box';
 import { useEventCallback } from '../react/a11y/callbacks';
-import useControllableState, { ChangeHandler, SetControllableState } from '../react/a11y/useControllableState';
+import { ChangeHandler, SetControllableState } from '../react/a11y/useControllableState';
 import useDismiss from '../react/a11y/useDismiss';
 import useFocusReturn from '../react/a11y/useFocusReturn';
 import useScrollLock from '../react/dialog/useScrollLock';
 import { useIsomorphicLayoutEffect } from '../react/effects';
 import useIdentifier from '../react/identity/useIdentifier';
+import { useReportedState } from '../react/interactions/interactions';
 import { ComponentsAndVariants } from '../types';
 import { ElementLike, htmlElementOf, isEventInside } from '../utils/dom/domUtils';
 import { supportsDialogClosedBy } from '../utils/environment/environmentUtils';
@@ -204,7 +205,7 @@ function DialogBase<TKey extends keyof ComponentsAndVariants>(props: BaseProps<T
   const generatedId = useIdentifier('dialog');
   // A consumer id wins, and `aria-controls` has to name whichever won.
   const dialogId = restProps.id ?? generatedId;
-  const [isOpen, setOpen] = useControllableState<boolean, DialogReason>({
+  const [isOpen, setOpen] = useReportedState<boolean, DialogReason>({
     value: open,
     defaultValue: defaultOpen,
     onChange: onOpenChange,

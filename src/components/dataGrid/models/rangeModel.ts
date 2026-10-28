@@ -310,6 +310,13 @@ export default class RangeModel<TRow> {
     return bounds && this.rangeOf(bounds);
   }
 
+  /** The rectangle as `Box.onInteraction` hears it: no `values()`, which would keep the whole grid alive until delivery. */
+  private get block(): Omit<CellRange, 'values'> | undefined {
+    const bounds = this.bounds;
+
+    return bounds && { startRow: bounds.startRow, endRow: bounds.endRow, columns: this.columnsOf(bounds).map((column) => column.key) };
+  }
+
   private emit(reason: DataGridRangeReason): void {
     this.grid.props.onRangeChange?.(this.range, { reason });
     // Only a block marked on purpose: every arrow key moves the current cell, and a drag reports where it ends.
@@ -318,7 +325,7 @@ export default class RangeModel<TRow> {
 
   private reportBlock(): void {
     if (this.enabled && this._anchor && !samePosition(this._anchor, this._focus))
-      this.grid.reportInteraction('rangeChange', this.range, 'extend');
+      this.grid.reportInteraction('rangeChange', this.block, 'extend');
   }
 
   // ========== The clipboard ==========
@@ -336,7 +343,7 @@ export default class RangeModel<TRow> {
 
     event.clipboardData.setData('text/plain', toTsv(this.values()));
     event.preventDefault();
-    this.grid.reportInteraction('copy', this.range, 'copy');
+    this.grid.reportInteraction('copy', this.block, 'copy');
   };
 
   /**

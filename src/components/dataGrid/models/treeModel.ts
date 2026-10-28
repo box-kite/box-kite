@@ -320,8 +320,7 @@ export default class TreeModel<TRow> {
     this.grid.treeExpansionChanged();
     const expanded = this.expandedKeys();
 
-    this.grid.props.onExpandedTreeKeysChange?.(expanded, { reason: open ? 'expand' : 'collapse' });
-    this.grid.reportInteraction('expandedTreeKeysChange', expanded, open ? 'expand' : 'collapse', { rowKey: key });
+    this.grid.fire('expandedTreeKeysChange', expanded, open ? 'expand' : 'collapse', { details: { rowKey: key } });
     this.grid.notify();
   };
 }

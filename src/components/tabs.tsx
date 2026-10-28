@@ -1,9 +1,10 @@
 import { createContext, FunctionComponent, useContext, useMemo, useRef, useState } from 'react';
 import Box, { BoxProps } from '../box';
 import { useEventCallback } from '../react/a11y/callbacks';
-import useControllableState, { ChangeDetails, ChangeHandler } from '../react/a11y/useControllableState';
+import { ChangeDetails, ChangeHandler } from '../react/a11y/useControllableState';
 import { useIsomorphicLayoutEffect } from '../react/effects';
 import useIdentifier from '../react/identity/useIdentifier';
+import { useReportedState } from '../react/interactions/interactions';
 import { ComponentsAndVariants } from '../types';
 import AnimationUtils from '../utils/animation/animationUtils';
 import { isRtl } from '../utils/dom/domUtils';
@@ -204,7 +205,7 @@ function TabsImpl<TKey extends keyof ComponentsAndVariants = 'tabs'>(props: Tabs
   } = props;
 
   const identifier = useIdentifier('tabs');
-  const [selected, setSelected] = useControllableState<string | undefined, TabsReason>({
+  const [selected, setSelected] = useReportedState<string | undefined, TabsReason>({
     value,
     defaultValue,
     onChange: onValueChange,

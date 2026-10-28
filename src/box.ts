@@ -81,7 +81,7 @@ interface BoxType {
   configure: typeof StylesContext.configure;
   /** Run a DOM change inside a view transition where the browser has one, and plainly where it has not. */
   viewTransition: typeof startViewTransition;
-  /** Hear every interaction — a component's change, a press on anything it styled, the app's own — until the returned function is called. */
+  /** Hear every interaction (a component's change, a press on anything it styled, the app's own) until the returned function is called. `{ content: true }` adds what people typed. */
   onInteraction: typeof subscribeInteractions;
   /** Report a moment of the app's own — a page view, a hover, a wizard step — to the same listeners, fire and forget. */
   reportInteraction: typeof reportInteraction;
@@ -152,6 +152,7 @@ export type {
   InteractionEvent,
   InteractionJson,
   InteractionListener,
+  InteractionOptions,
   InteractionReport,
 } from './utils/interactions/interactionChannel';
 export type { BoxConfiguration } from './react/useStyles';

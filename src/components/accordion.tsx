@@ -1,8 +1,9 @@
 import { createContext, FunctionComponent, useContext, useMemo, useRef } from 'react';
 import Box, { BoxProps } from '../box';
 import { useEventCallback } from '../react/a11y/callbacks';
-import useControllableState, { ChangeDetails, ChangeHandler } from '../react/a11y/useControllableState';
+import { ChangeDetails, ChangeHandler } from '../react/a11y/useControllableState';
 import useIdentifier from '../react/identity/useIdentifier';
+import { useReportedState } from '../react/interactions/interactions';
 import { ComponentsAndVariants } from '../types';
 import AccordionUtils from '../utils/accordion/accordionUtils';
 
@@ -196,7 +197,7 @@ function AccordionImpl<TKey extends keyof ComponentsAndVariants = 'accordion'>(p
   const { children, value, defaultValue, onValueChange, multiple = false, loop = true, level = 3, props: tagProps, ...restProps } = props;
 
   const rootRef = useRef<HTMLDivElement>(null);
-  const [open, setOpen] = useControllableState<string[], DisclosureReason>({
+  const [open, setOpen] = useReportedState<string[], DisclosureReason>({
     value,
     defaultValue: defaultValue ?? [],
     onChange: onValueChange,
@@ -353,7 +354,7 @@ function Collapsible<TKey extends keyof ComponentsAndVariants = 'collapsible'>(p
   const identifier = useIdentifier('collapsible');
   const triggerId = `${identifier}-trigger`;
   const panelId = `${identifier}-panel`;
-  const [isOpen, setOpen] = useControllableState<boolean, DisclosureReason>({
+  const [isOpen, setOpen] = useReportedState<boolean, DisclosureReason>({
     value: open,
     defaultValue: defaultOpen,
     onChange: onOpenChange,

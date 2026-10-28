@@ -1,11 +1,11 @@
 import { FunctionComponent, useEffect, useMemo, useRef, useState } from 'react';
 import Box, { BoxProps } from '../box';
 import { useEventCallback } from '../react/a11y/callbacks';
-import { useInteractionReporter } from '../react/a11y/interactions';
 import useControllableState, { ChangeHandler } from '../react/a11y/useControllableState';
 import { DateChangeDetails, DateChangeReason } from '../react/date/dateChange';
 import { useDateEnvironment } from '../react/date/dateEnvironment';
 import useIdentifier from '../react/identity/useIdentifier';
+import { useInteractionReporter, useReportedState } from '../react/interactions/interactions';
 import { ComponentsAndVariants } from '../types';
 import { addMonths, DateFields, epochDay } from '../utils/date/calendar';
 import {
@@ -191,14 +191,14 @@ function CalendarImpl<TKey extends keyof ComponentsAndVariants = 'calendar'>(pro
   const range = mode === 'range';
   const bounds = useMemo(() => ({ min: dayOf(min), max: dayOf(max) }), [min, max]);
 
-  const [current, setCurrent] = useControllableState<string | DateRange | null, DateChangeReason>({
+  const [current, setCurrent] = useReportedState<string | DateRange | null, DateChangeReason>({
     value,
     defaultValue,
     onChange: (next, details) => {
       const handler = onValueChange as ((value: unknown, details: unknown) => void) | undefined;
       handler?.(next, range ? details : { ...details, ...readingsOf(next as string | null, environment.zone) });
     },
-    interaction: { component: 'calendar', type: 'valueChange' },
+    interaction: { component: 'calendar', type: 'valueChange', content: ['value'] },
   });
   const selectedDay = range ? null : dayOf(current as string | null);
   const selectedRange = range && current ? (current as DateRange) : null;
@@ -299,7 +299,7 @@ function CalendarImpl<TKey extends keyof ComponentsAndVariants = 'calendar'>(pro
 
     if (view === 'day') setShown(first + direction * months);
     focusDay(to, 'navigate', false);
-    report('pageChange', dayText(to), { reason: direction === 1 ? 'next' : 'previous' });
+    report('pageChange', dayText(to), { reason: direction === 1 ? 'next' : 'previous', content: ['value'] });
   };
 
   const monthsShown = Array.from({ length: months }, (_, index) => ({

@@ -1,7 +1,5 @@
 import { useCallback, useState } from 'react';
-import type { InteractionSource } from '../../utils/interactions/interactionChannel';
 import { useEventCallback, useLatest } from './callbacks';
-import { useInteractionReporter } from './interactions';
 
 /**
  * Why a change happened, and the event that caused it — the reason being the point. A component that only
@@ -26,8 +24,6 @@ export interface ControllableStateOptions<T, TReason extends string = string> {
   /** The starting value when the consumer does not own it. A function is called once, lazily. */
   defaultValue: T | (() => T);
   onChange?: ChangeHandler<T, TReason>;
-  /** Which component this value belongs to, so every change also reaches `Box.onInteraction`. */
-  interaction?: InteractionSource;
 }
 
 export type SetControllableState<T, TReason extends string = string> = (
@@ -43,10 +39,7 @@ export type SetControllableState<T, TReason extends string = string> = (
 export default function useControllableState<T, TReason extends string = string>(
   options: ControllableStateOptions<T, TReason>,
 ): [T, SetControllableState<T, TReason>] {
-  const { value, defaultValue, onChange, interaction } = options;
-  // Two literals at every call site, so the strings rather than the object keep the setter stable.
-  const report = useInteractionReporter(interaction?.component);
-  const type = interaction?.type;
+  const { value, defaultValue, onChange } = options;
 
   const isControlled = value !== undefined;
   const [uncontrolled, setUncontrolled] = useState(defaultValue);
@@ -72,9 +65,8 @@ export default function useControllableState<T, TReason extends string = string>
       // back to the default.
       setUncontrolled(resolved);
       changeHandler(resolved, details);
-      if (type) report(type as never, resolved, details);
     },
-    [changeHandler, currentRef, isControlled, report, type],
+    [changeHandler, currentRef, isControlled],
   );
 
   return [current, setValue];

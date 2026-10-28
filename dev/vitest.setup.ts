@@ -3,7 +3,6 @@
 import '@testing-library/jest-dom/vitest';
 import { Window } from 'happy-dom';
 import { StylesContext } from '../src/react/useStyles';
-import { forgetEarlyInteractions } from '../src/utils/interactions/interactionChannel';
 
 // Node 26 defines `localStorage` itself, as a global getter that is `undefined` unless the process was
 // started with --localstorage-file — and it outranks the one the happy-dom environment installs, so the
@@ -18,6 +17,3 @@ if (!globalThis.localStorage) {
 // Tests assert readable class names and rule text. Configure the engine explicitly —
 // this replaces the NODE_ENV === 'test' sniffing the engine used to do internally.
 StylesContext.configure({ classNames: 'readable', sink: 'textContent' });
-
-// One test's interactions are not the next one's: nothing is kept for a listener that subscribes later.
-forgetEarlyInteractions();

@@ -117,6 +117,6 @@ export default class CellModel<TRow> {
     const { draft } = this.grid.edits;
 
     this.grid.edits.cancel();
-    this.grid.reportInteraction('cellEditCancel', draft, 'cancel', { rowKey: this.row.key, columnKey: this.column.key });
+    this.grid.reportInteraction('cellEditCancel', draft, 'cancel', { rowKey: this.row.key, columnKey: this.column.key }, ['value']);
   };
 }

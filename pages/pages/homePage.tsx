@@ -2,7 +2,6 @@ import { ArrowRight, Bot, Check, CirclePlay, Keyboard, ShieldCheck, Type } from 
 import { ReactNode } from 'react';
 import { version } from '../../package.json';
 import Box from '../../src/box';
-import Button from '../../src/components/button';
 import Flex from '../../src/components/flex';
 import Grid from '../../src/components/grid';
 import Icon from '../../src/components/icon';
@@ -63,6 +62,9 @@ export default function HomePage() {
   );
 }
 
+const heroCta = { display: 'inline-flex', ai: 'center', jc: 'center', gap: 2, px: 6, py: 3, fontSize: 15 } as const;
+const secondaryText = { dark: { color: 'base-300' }, light: { color: 'base-700' } } as const;
+
 function Hero() {
   return (
     <Flex d="column" ai="center" textAlign="center" pt={6} lg={{ pt: 10 }}>
@@ -121,33 +123,22 @@ function Hero() {
 
       <Reveal delay={0.3}>
         <Flex gap={4} d="column" sm={{ d: 'row' }} mb={12}>
-          <SiteLink to="/installation">
-            <Button px={6} py={3} fontSize={15}>
-              <Flex ai="center" gap={2}>
-                Get started
-                <ArrowRight size={18} />
-              </Flex>
-            </Button>
+          {/* Links that look like buttons: a button inside a link is two controls, announced and focused twice. */}
+          <SiteLink to="/installation" component="button" {...heroCta}>
+            Get started
+            <ArrowRight size={18} />
           </SiteLink>
-          <SiteLink to="/ai-context">
-            <Button variant="secondary" px={6} py={3} fontSize={15} theme={{ dark: { color: 'base-300' }, light: { color: 'base-700' } }}>
-              <Flex ai="center" gap={2}>
-                <Icon size={4.5}>
-                  <Bot />
-                </Icon>
-                Set up your agent
-              </Flex>
-            </Button>
+          <SiteLink to="/ai-context" component="button" variant="secondary" {...heroCta} theme={secondaryText}>
+            <Icon size={4.5}>
+              <Bot />
+            </Icon>
+            Set up your agent
           </SiteLink>
-          <SiteLink to="/playground">
-            <Button variant="secondary" px={6} py={3} fontSize={15} theme={{ dark: { color: 'base-300' }, light: { color: 'base-700' } }}>
-              <Flex ai="center" gap={2}>
-                <Icon size={4.5}>
-                  <CirclePlay />
-                </Icon>
-                Try it
-              </Flex>
-            </Button>
+          <SiteLink to="/playground" component="button" variant="secondary" {...heroCta} theme={secondaryText}>
+            <Icon size={4.5}>
+              <CirclePlay />
+            </Icon>
+            Try it
           </SiteLink>
         </Flex>
       </Reveal>

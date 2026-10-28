@@ -1,7 +1,7 @@
 import { useCallback, useRef } from 'react';
-import { QuietInteractions } from '../../../react/a11y/interactions';
 import { useIsomorphicLayoutEffect } from '../../../react/effects';
 import useIdentifier from '../../../react/identity/useIdentifier';
+import { QuietInteractions } from '../../../react/interactions/interactions';
 import Checkbox from '../../checkbox';
 import Dropdown from '../../dropdown';
 import Flex from '../../flex';

@@ -42,6 +42,8 @@ const entry = {
   // The agentic runtimes' shapes, mapped onto this library's — see src/interop.ts. Framework-free and
   // engine-free: a route handler and a client both import from it.
   interop: path.resolve(import.meta.dirname, './src/interop.ts'),
+  // `Box.onInteraction`, collected: sessions, consent, batching — see src/analytics.ts. Framework-free; it reaches only the channel.
+  analytics: path.resolve(import.meta.dirname, './src/analytics.ts'),
   // Dates, times and zones with no React and no engine — see src/date.ts. A server formats with it as readily as a client.
   date: path.resolve(import.meta.dirname, './src/date.ts'),
   ...componentsEntry,
@@ -217,7 +219,10 @@ export default defineConfig(({ mode }) => {
 
                   // Entry modules stay their own chunks — grouping them would drag one entry's
                   // imports (`react-dom/server`, say) into every other entry that shares the group.
-                  if (!source.includes('/src/') || /^src\/(a11y|anchor|box|catalog|core|date|interop|rsc|spec|ssg)\.ts$/.test(module))
+                  if (
+                    !source.includes('/src/') ||
+                    /^src\/(a11y|analytics|anchor|box|catalog|core|date|interop|rsc|spec|ssg)\.ts$/.test(module)
+                  )
                     return null;
                   // The catalog's generated prose, 15 KB gzipped of it. Inlined into the one entry that
                   // imports it: grouped by the rules below it would land in `client`, and every component
@@ -230,6 +235,8 @@ export default defineConfig(({ mode }) => {
                   // Same again for the interop mappings: framework-free leaves an ecosystem entry reaches,
                   // which grouped into `client` would put the engine behind a pure JSON translation.
                   if (module.startsWith('src/utils/interop/')) return null;
+                  // The analytics model, which only its own entry reaches.
+                  if (module.startsWith('src/utils/analytics/')) return null;
                   // Component entries keep the chunks rolldown gives them, one per component.
                   if (module.startsWith('src/components/')) return null;
 
@@ -253,11 +260,13 @@ export default defineConfig(({ mode }) => {
                   // reason `identity` has one: left in `client` the /a11y entry would import the styling binding, the theme
                   // provider and the engine behind them to answer which item a letter points at.
                   if (module.startsWith('src/utils/keyboard/')) return 'keyboard';
-                  // `Box.onInteraction`'s channel, which Box, the behaviour primitives and the DataGrid all emit into.
-                  // In `react-shared` it made the /a11y entry import that whole chunk: 628 B for ~300 B of code.
-                  // Its listening half is fetched with the first subscription, so it stays a chunk of its own.
-                  if (module === 'src/utils/interactions/interactionListening.ts') return null;
+                  // `Box.onInteraction`'s channel, which Box, the components, the DataGrid and `/analytics` all reach: framework-free,
+                  // so `/analytics` carries no React. Delivery and the page listeners are fetched with the first subscription.
+                  if (module === 'src/utils/interactions/interactionListening.ts' || module === 'src/utils/interactions/interactionJson.ts')
+                    return null;
                   if (module.startsWith('src/utils/interactions/')) return 'interactions';
+                  // The hooks a component reports through. Only components reach them, so neither Box nor `/a11y` carries them.
+                  if (module.startsWith('src/react/interactions/')) return 'reporting';
                   // What scrolls a list and which row a scroll lands in, asked by `VirtualList`, `SortableList` and `DataGrid`
                   // between them. In `platform` or `client` every component would carry them.
                   if (module.startsWith('src/utils/scroll/') || module === 'src/utils/virtual/rowSearch.ts') return 'scrolling';
