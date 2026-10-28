@@ -45,6 +45,9 @@ jobs:
         env:
           # The collector the site's analytics posts to; with the variable unset, the site sends nothing.
           VITE_ANALYTICS_URL: ${{ vars.ANALYTICS_URL }}
+          # The project /admin signs in to: the publishable key is public by design, and RLS is what guards the rows.
+          VITE_SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.SUPABASE_PUBLISHABLE_KEY }}
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

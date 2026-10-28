@@ -84,6 +84,12 @@ const AUDIT_EXCEPTIONS = {
   '/blog/styling-server-components': ['the title is 62 characters'],
 };
 
+/** HTML floors below the usual ones, and why: a route whose content is only knowable in the browser. */
+const HTML_FLOORS = {
+  // Who is signed in lives in the browser, so the server renders the card that says it is checking.
+  '/admin': 500,
+};
+
 async function serverBundle() {
   await build({
     configFile: join(ROOT, 'pages.vite.config.ts'),
@@ -166,7 +172,7 @@ for (const { path, file } of targets) {
   const islands = html.split(CLIENT_ONLY_BOUNDARY).length - 1;
   const expected = CLIENT_ISLANDS[path] ?? 0;
   if (islands !== expected) failures.push(`${path}: ${islands} client-only boundaries, expected ${expected} — see CLIENT_ISLANDS`);
-  const minHtml = route?.chrome === 'bare' ? MIN_BARE_HTML : MIN_HTML;
+  const minHtml = HTML_FLOORS[path] ?? (route?.chrome === 'bare' ? MIN_BARE_HTML : MIN_HTML);
   if (html.length < minHtml) failures.push(`${path}: ${html.length} bytes of HTML, expected at least ${minHtml}`);
 
   auditWindow.document.body.innerHTML = html;

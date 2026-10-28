@@ -44,7 +44,7 @@ const link = (route: SiteRoute, siteUrl: string) => `- [${route.name}](${siteUrl
  * model's memory of a library with these prop names does not.
  */
 export function buildLlmsTxt({ packageName, version, routes, facts, deprecated, siteUrl = SITE_URL }: LlmsInput): string {
-  const pages = routes.filter((route) => !isRelease(route) && !isPost(route) && !isGallery(route));
+  const pages = routes.filter((route) => !isRelease(route) && !isPost(route) && !isGallery(route) && route.indexable !== false);
   // A template's demo is the template with no words around it; its page is the one worth reading.
   const galleries = routes.filter((route) => isGallery(route) && route.indexable !== false);
   const releases = routes.filter(isRelease);

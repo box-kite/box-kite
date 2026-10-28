@@ -72,7 +72,7 @@ export function siteMarkdown(entry) {
   async function everyPage() {
     const pages = [];
 
-    for (const route of entry.routes) pages.push({ path: route.path, markdown: await page(route) });
+    for (const route of entry.routes) if (route.indexable !== false) pages.push({ path: route.path, markdown: await page(route) });
 
     return pages;
   }
@@ -80,7 +80,8 @@ export function siteMarkdown(entry) {
   async function everySearchPage() {
     const pages = [];
 
-    for (const route of entry.routes) pages.push(searchFrom(route, (await entry.renderRoute(route.path)).html));
+    // An unlisted route is nothing to find: a template's bare demo, the admin dashboard.
+    for (const route of entry.routes) if (route.indexable !== false) pages.push(searchFrom(route, (await entry.renderRoute(route.path)).html));
 
     return pages;
   }

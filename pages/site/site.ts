@@ -8,6 +8,9 @@ export const SITE_URL = 'https://www.box-kite.dev';
 /** The repository, which is where a page's own source and the release notes are edited. */
 export const REPO_URL = 'https://github.com/box-kite/box-kite';
 
+/** The owner's analytics dashboard: unlisted, and never counted by the analytics it shows. */
+export const ADMIN_PATH = '/admin';
+
 /** Second half of every document title, and the Open Graph site name. */
 export const SITE_NAME = 'Box Kite';
 
@@ -395,6 +398,13 @@ export const siteRoutes = [
     name: 'Gradients & Effects',
     description:
       'A gradient written as a value, with palette tokens for stops — plus the shadow layers, filter functions and masks that stack instead of overwriting each other.',
+  },
+  {
+    path: ADMIN_PATH,
+    name: 'Analytics',
+    description: 'What people do on box-kite.dev, read from the Supabase project its beacon writes to. Signed-in owners only.',
+    indexable: false,
+    chrome: 'bare',
   },
 ] as const satisfies readonly SiteRoute[];
 
