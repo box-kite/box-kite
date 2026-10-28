@@ -1,4 +1,8 @@
 import { emitInteraction } from '../interactions/interactionChannel';
+
+// A message is the app's text, which often names a person or a record: a listener asks for it.
+const TEXT = ['value'];
+
 /** What a toast is saying, which is the only thing that changes its colour and its urgency. */
 export type ToastKind = 'default' | 'success' | 'error' | 'warning' | 'info' | 'loading';
 
@@ -172,7 +176,14 @@ export default function createToastStore<TContent>(options?: { limit?: number; d
     // case (an "Undo" that reports what it undid), and it must not run against a half-updated queue.
     dismissed.forEach((toast) => {
       toast.onDismiss?.(reason);
-      emitInteraction({ component: 'toaster', type: 'dismiss', reason, value: toast.message, details: { id: toast.id, kind: toast.kind } });
+      emitInteraction({
+        component: 'toaster',
+        type: 'dismiss',
+        reason,
+        value: toast.message,
+        details: { id: toast.id, kind: toast.kind },
+        content: TEXT,
+      });
     });
   }
 
@@ -203,7 +214,15 @@ export default function createToastStore<TContent>(options?: { limit?: number; d
     if (!changed) return;
 
     publish();
-    emitInteraction({ component: 'toaster', type: 'update', reason: updateOptions?.kind, value: message, details: { id }, source: 'app' });
+    emitInteraction({
+      component: 'toaster',
+      type: 'update',
+      reason: updateOptions?.kind,
+      value: message,
+      details: { id },
+      source: 'app',
+      content: TEXT,
+    });
   }
 
   function add(message: TContent, addOptions?: ToastOptions<TContent>): string {
@@ -235,7 +254,15 @@ export default function createToastStore<TContent>(options?: { limit?: number; d
 
     publish();
     // `toast()` is the app talking; a dismissal is the user's unless a timer or a call made it.
-    emitInteraction({ component: 'toaster', type: 'show', reason: kind, value: message, details: { id, kind }, source: 'app' });
+    emitInteraction({
+      component: 'toaster',
+      type: 'show',
+      reason: kind,
+      value: message,
+      details: { id, kind },
+      source: 'app',
+      content: TEXT,
+    });
 
     return id;
   }

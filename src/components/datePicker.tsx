@@ -1,13 +1,13 @@
 import { Ref, RefAttributes, useCallback, useEffect, useMemo, useState } from 'react';
 import Box, { BoxProps } from '../box';
 import { useEventCallback } from '../react/a11y/callbacks';
-import { QuietInteractions } from '../react/a11y/interactions';
-import useControllableState, { ChangeHandler } from '../react/a11y/useControllableState';
+import { ChangeHandler } from '../react/a11y/useControllableState';
 import useRovingFocus from '../react/a11y/useRovingFocus';
 import useAnchorPosition from '../react/anchor/useAnchorPosition';
 import boxComponent from '../react/boxComponent';
 import { DateChangeDetails, DateChangeReason } from '../react/date/dateChange';
 import { useDateEnvironment } from '../react/date/dateEnvironment';
+import { QuietInteractions, useReportedState } from '../react/interactions/interactions';
 import usePopoverLayer, { PopoverReason } from '../react/popover/usePopoverLayer';
 import { ComponentsAndVariants } from '../types';
 import { AnchorAlign, AnchorSide } from '../utils/anchor/anchorUtils';
@@ -444,11 +444,11 @@ function DatePickerImpl<TKey extends keyof ComponentsAndVariants = 'dateField'>(
   const zone = type === 'datetime' && zoneProp !== 'none' ? environment.zone : null;
   const readZone = zone ?? environment.zone;
 
-  const [current, setCurrent] = useControllableState<string | null, DateChangeReason>({
+  const [current, setCurrent] = useReportedState<string | null, DateChangeReason>({
     value,
     defaultValue,
     onChange: (next, details) => onValueChange?.(next, { ...details, ...readingsOf(next, readZone) }),
-    interaction: { component: 'datePicker', type: 'valueChange' },
+    interaction: { component: 'datePicker', type: 'valueChange', content: ['value'] },
   });
 
   const buttonName = triggerLabel ?? (type === 'time' ? 'Choose time' : 'Choose date');
@@ -667,11 +667,11 @@ function DateRangePickerImpl<TKey extends keyof ComponentsAndVariants = 'dateFie
   } = props;
 
   const { locale } = useDateEnvironment({ locale: localeProp });
-  const [current, setCurrent] = useControllableState<DateRange | null, DateChangeReason>({
+  const [current, setCurrent] = useReportedState<DateRange | null, DateChangeReason>({
     value,
     defaultValue,
     onChange: onValueChange,
-    interaction: { component: 'dateRangePicker', type: 'valueChange' },
+    interaction: { component: 'dateRangePicker', type: 'valueChange', content: ['value'] },
   });
   // Each end as typed, which can be more than the value: one end filled in is no range yet.
   const [ends, setEnds] = useState<{ start: string | null; end: string | null; source: DateRange | null }>({

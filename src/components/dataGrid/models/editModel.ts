@@ -68,6 +68,9 @@ function seedFor(type: CellEditorType, initial: string): unknown {
 }
 
 /** What a pasted field reads as on a checkbox column. A spreadsheet writes the first of each pair. */
+/** What an edit report carries that a person typed: `Box.onInteraction` hands it over only on request. */
+const CHANGED_CELL = ['value', 'oldValue', 'error'];
+
 const TRUE_TEXT = new Set(['true', '1', 'yes']);
 const FALSE_TEXT = new Set(['false', '0', 'no', '']);
 
@@ -256,10 +259,13 @@ export default class EditModel<TRow> {
       pending: false,
     };
     this.grid.notify();
-    this.grid.reportInteraction('cellEditStart', value, initial === undefined ? 'open' : 'typing', {
-      rowKey: row.key,
-      columnKey: column.key,
-    });
+    this.grid.reportInteraction(
+      'cellEditStart',
+      value,
+      initial === undefined ? 'open' : 'typing',
+      { rowKey: row.key, columnKey: column.key },
+      ['value'],
+    );
   }
 
   /** Open the editor on a cell named by grid coordinates, which is where Tab lands. */
@@ -334,12 +340,13 @@ export default class EditModel<TRow> {
     if (typeof result === 'string' || result === false) {
       this._active = { ...this._active, pending: false, error: typeof result === 'string' ? result : this.invalidValue };
       this.grid.notify();
-      this.grid.reportInteraction('cellEditReject', edit.value, 'invalid', {
-        rowKey: edit.rowKey,
-        columnKey: edit.columnKey,
-        oldValue: edit.oldValue,
-        error: this._active.error,
-      });
+      this.grid.reportInteraction(
+        'cellEditReject',
+        edit.value,
+        'invalid',
+        { rowKey: edit.rowKey, columnKey: edit.columnKey, oldValue: edit.oldValue, error: this._active.error },
+        CHANGED_CELL,
+      );
 
       return;
     }
@@ -349,11 +356,13 @@ export default class EditModel<TRow> {
     this._active = undefined;
     this.grid.notify();
     this.grid.props.onCellEditsChange?.(this._edits, { reason: 'edit' });
-    this.grid.reportInteraction('cellEdit', edit.value, 'edit', {
-      rowKey: edit.rowKey,
-      columnKey: edit.columnKey,
-      oldValue: edit.oldValue,
-    });
+    this.grid.reportInteraction(
+      'cellEdit',
+      edit.value,
+      'edit',
+      { rowKey: edit.rowKey, columnKey: edit.columnKey, oldValue: edit.oldValue },
+      CHANGED_CELL,
+    );
   }
 
   // ========== The values the grid has accepted ==========
@@ -486,8 +495,18 @@ export default class EditModel<TRow> {
 
     if (applied.length > 0) this.grid.props.onCellEditsChange?.(this._edits, { reason: 'paste' });
 
-    this.grid.props.onPaste?.({ range: this.grid.range.rangeOf(bounds), applied, rejected, skipped });
-    this.grid.reportInteraction('paste', applied, 'paste', { range: this.grid.range.rangeOf(bounds), rejected, skipped });
+    const range = this.grid.range.rangeOf(bounds);
+    this.grid.props.onPaste?.({ range, applied, rejected, skipped });
+    // Counts and keys, never the rows an edit carries; the values themselves are content.
+    const cells = applied.map(({ rowKey, columnKey, value, oldValue }) => ({ rowKey, columnKey, value, oldValue }));
+    const { startRow, endRow, columns } = range;
+    this.grid.reportInteraction(
+      'paste',
+      applied.length,
+      'paste',
+      { range: { startRow, endRow, columns }, rejected: rejected.length, skipped, cells },
+      ['cells'],
+    );
   }
 
   // ========== Where Tab goes ==========

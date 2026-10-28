@@ -51,6 +51,12 @@ export const DEFAULT_ROW_NUMBER_COLUMN_WIDTH = 70;
 /** What `def.export: true` means, as one record: every option at its default. */
 const DEFAULT_EXPORT: ExportConfig = {};
 
+/** A change the host hears through `on<Type>` and `Box.onInteraction` hears under the same type. */
+type GridCallback = {
+  [K in keyof DataGridProps<unknown>]-?: K extends `on${infer T}` ? Uncapitalize<T> : never;
+}[keyof DataGridProps<unknown>] &
+  InteractionType<'datagrid'>;
+
 /**
  * The day a cell's value falls on, on the runtime's calendar — the reader's, in a browser. A `YYYY-MM-DD` is that
  * day wherever it is read; anything else is a moment, placed by the platform's own clock rather than a date library.
@@ -542,11 +548,33 @@ export default class GridModel<TRow> {
     return this.data.filter((row) => this.rowMatchesFilters(row));
   }
 
-  /** What the grid tells `Box.onInteraction`, beside whatever callback the host passed for the same change. */
-  public reportInteraction(type: InteractionType<'datagrid'>, value: unknown, reason?: string, details?: Record<string, unknown>): void {
+  /** What the grid tells `Box.onInteraction` about a change no host callback carries; `content` names what a person typed. */
+  public reportInteraction(
+    type: InteractionType<'datagrid'>,
+    value: unknown,
+    reason?: string,
+    details?: Record<string, unknown>,
+    content?: readonly string[],
+  ): void {
     if (this._batching) return;
 
-    emitInteraction({ component: 'datagrid', type, reason, value, details, target: this._sizingElement ?? undefined });
+    emitInteraction({ component: 'datagrid', type, reason, value, details, content, target: this._sizingElement ?? undefined });
+  }
+
+  /**
+   * A host callback and its report in one call, so a callback cannot be added without the event `Box.onInteraction` hears.
+   * `report: false` is a change the person did not make: a reset that a sort or a filter caused, a value that stayed the same.
+   */
+  public fire<T extends GridCallback>(
+    type: T,
+    value: Parameters<NonNullable<DataGridProps<TRow>[`on${Capitalize<T>}`]>>[0],
+    reason: string,
+    report: false | { details?: Record<string, unknown>; content?: readonly string[] } = {},
+  ): void {
+    const callback = this.props[`on${type.charAt(0).toUpperCase()}${type.slice(1)}` as `on${Capitalize<T>}`];
+
+    (callback as ((value: unknown, details: { reason: string }) => void) | undefined)?.(value, { reason });
+    if (report) this.reportInteraction(type, value, reason, report.details, report.content);
   }
 
   private _batching = false;
@@ -577,9 +605,8 @@ export default class GridModel<TRow> {
 
   /** Both pager callbacks: the one carrying a reason, and the `(page, pageSize)` pair it replaces. */
   private firePaginationChange(page: number, pageSize: number, reason: DataGridChangeReason): void {
-    this.props.onPaginationChange?.({ page, pageSize }, { reason });
     // A reset that a sort or a filter caused is that change's consequence, not a second interaction.
-    if (reason === 'page' || reason === 'page-size') this.reportInteraction('paginationChange', { page, pageSize }, reason);
+    this.fire('paginationChange', { page, pageSize }, reason, (reason === 'page' || reason === 'page-size') && {});
     this.props.onPageChange?.(page, pageSize);
   }
 
@@ -607,8 +634,7 @@ export default class GridModel<TRow> {
     // (bug #154). The getter prefers the prop, so a controlled grid still shows what its owner asked for.
     this._globalFilterValue = value;
     this.leaveSelectionView();
-    this.props.onGlobalFilterChange?.(value, { reason });
-    if (changed) this.reportInteraction('globalFilterChange', value, reason);
+    this.fire('globalFilterChange', value, reason, changed && { content: ['value'] });
 
     const nextPage = this.resetToFirstPage(reason);
 
@@ -637,8 +663,7 @@ export default class GridModel<TRow> {
 
     this._columnFilters = newFilters;
     this.leaveSelectionView();
-    this.props.onColumnFiltersChange?.(newFilters, { reason });
-    if (changed) this.reportInteraction('columnFiltersChange', newFilters, reason, { columnKey, filter });
+    this.fire('columnFiltersChange', newFilters, reason, changed && { details: { columnKey, filter }, content: ['value', 'filter'] });
 
     const nextPage = this.resetToFirstPage(reason);
 
@@ -658,8 +683,7 @@ export default class GridModel<TRow> {
 
     this._columnFilters = {};
     this.leaveSelectionView();
-    this.props.onColumnFiltersChange?.({}, { reason: 'clear' });
-    if (changed) this.reportInteraction('columnFiltersChange', {}, 'clear');
+    this.fire('columnFiltersChange', {}, 'clear', changed && {});
 
     this.fireServerStateChange('clear', { columnFilters: {} });
 
@@ -1013,8 +1037,7 @@ export default class GridModel<TRow> {
     this._revealDetailKey = expanded && this.props.def.rowDetail?.scrollIntoView !== false ? rowKey : null;
 
     this._expandedDetailRows = expandedKeys;
-    this.props.onExpandedRowKeysChange?.(Array.from(expandedKeys), { reason: expanded ? 'expand' : 'collapse' });
-    this.reportInteraction('expandedRowKeysChange', Array.from(expandedKeys), expanded ? 'expand' : 'collapse', { rowKey });
+    this.fire('expandedRowKeysChange', Array.from(expandedKeys), expanded ? 'expand' : 'collapse', { details: { rowKey } });
 
     this.rows.clear(); // cascades to flatRows/rowOffsets
     this.notify();
@@ -1353,8 +1376,7 @@ export default class GridModel<TRow> {
         ? { columnKey: this._sortColumn, direction: this._sortDirection }
         : undefined;
 
-    this.props.onSortingChange?.(sorting, { reason: sorting ? 'sort' : 'clear' });
-    this.reportInteraction('sortingChange', sorting, sorting ? 'sort' : 'clear', { columnKey });
+    this.fire('sortingChange', sorting, sorting ? 'sort' : 'clear', { details: { columnKey } });
     this.props.onSortChange?.(this._sortColumn, this._sortDirection);
 
     const nextPage = this.resetToFirstPage('sort');
@@ -1529,8 +1551,7 @@ export default class GridModel<TRow> {
 
     const selectedRowKeys = Array.from(this.selectedRows);
 
-    this.props.onSelectedRowKeysChange?.(selectedRowKeys, { reason });
-    this.reportInteraction('selectedRowKeysChange', selectedRowKeys, reason, { action, affectedRowKeys });
+    this.fire('selectedRowKeysChange', selectedRowKeys, reason, { details: { action, affectedRowKeys } });
     this.props.onSelectionChange?.({
       action,
       affectedRowKeys,

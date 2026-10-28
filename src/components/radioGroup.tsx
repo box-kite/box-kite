@@ -1,8 +1,9 @@
 import { createContext, Ref, RefAttributes, useContext, useMemo, useRef } from 'react';
 import { BoxProps, BoxTagProps } from '../box';
 import { useEventCallback } from '../react/a11y/callbacks';
-import useControllableState, { ChangeHandler } from '../react/a11y/useControllableState';
+import { ChangeHandler } from '../react/a11y/useControllableState';
 import useIdentifier from '../react/identity/useIdentifier';
+import { useReportedState } from '../react/interactions/interactions';
 import { ComponentsAndVariants } from '../types';
 import Flex from './flex';
 import RadioButton from './radioButton';
@@ -137,7 +138,7 @@ function RadioGroupImpl<TKey extends keyof ComponentsAndVariants = 'radioGroup'>
     onChange?.(next, details);
   });
 
-  const [selected, setSelected] = useControllableState<string | undefined, RadioGroupReason>({
+  const [selected, setSelected] = useReportedState<string | undefined, RadioGroupReason>({
     value,
     defaultValue,
     onChange: report,

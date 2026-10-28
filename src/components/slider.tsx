@@ -1,8 +1,8 @@
 import { FunctionComponent, useRef, useState } from 'react';
 import Box, { BoxProps } from '../box';
 import { useEventCallback, useLatest } from '../react/a11y/callbacks';
-import { useInteractionCallback } from '../react/a11y/interactions';
 import useControllableState, { ChangeDetails, ChangeHandler } from '../react/a11y/useControllableState';
+import { useInteractionCallback } from '../react/interactions/interactions';
 import { ComponentsAndVariants } from '../types';
 import { isRtl } from '../utils/dom/domUtils';
 import SliderUtils, { SliderOrientation, SliderScale } from '../utils/slider/sliderUtils';

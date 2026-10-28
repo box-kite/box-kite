@@ -1,9 +1,9 @@
 import { FunctionComponent, useMemo } from 'react';
 import Box, { BoxProps } from '../box';
-import { useInteractionReporter } from '../react/a11y/interactions';
-import { QuietInteractions } from '../react/a11y/interactions';
-import useControllableState, { ChangeHandler } from '../react/a11y/useControllableState';
+import { ChangeHandler } from '../react/a11y/useControllableState';
 import { useDateEnvironment } from '../react/date/dateEnvironment';
+import { useInteractionReporter, useReportedState } from '../react/interactions/interactions';
+import { QuietInteractions } from '../react/interactions/interactions';
 import { matchZone, ZoneOption, zoneOptions } from '../utils/date/zoneOptions';
 import { normalizeZone } from '../utils/date/zones';
 import Combobox, { ComboboxValueReason } from './combobox';
@@ -77,7 +77,7 @@ function TimeZoneSelectImpl(props: TimeZoneSelectProps) {
 
   const options = useMemo(() => zoneOptions(zones), [zones]);
   const byId = useMemo(() => new Map(options.map((option) => [option.id, option])), [options]);
-  const [current, setCurrent] = useControllableState<string | null, ComboboxValueReason>({
+  const [current, setCurrent] = useReportedState<string | null, ComboboxValueReason>({
     value: value === undefined ? undefined : value && (normalizeZone(value) ?? value),
     defaultValue: defaultValue === undefined ? environment.readerZone : defaultValue,
     onChange: onValueChange,

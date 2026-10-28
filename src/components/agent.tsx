@@ -1,8 +1,9 @@
 import { FunctionComponent, ReactNode, useState } from 'react';
 import Box, { BoxProps } from '../box';
 import { useEventCallback } from '../react/a11y/callbacks';
-import useControllableState, { ChangeHandler } from '../react/a11y/useControllableState';
+import { ChangeHandler } from '../react/a11y/useControllableState';
 import useIdentifier from '../react/identity/useIdentifier';
+import { useReportedState } from '../react/interactions/interactions';
 import { ComponentsAndVariants } from '../types';
 import AgentUtils, { ApprovalDecision, ToolCallStatus } from '../utils/agent/agentUtils';
 
@@ -151,7 +152,7 @@ function ToolCallCardImpl<TKey extends keyof ComponentsAndVariants = 'toolCall'>
   const headerId = `${identifier}-header`;
   const bodyId = `${identifier}-body`;
 
-  const [isOpen, setOpen] = useControllableState<boolean, DisclosureReason>({
+  const [isOpen, setOpen] = useReportedState<boolean, DisclosureReason>({
     value: open,
     defaultValue: defaultOpen,
     onChange: onOpenChange,
@@ -319,7 +320,7 @@ function ApprovalCardImpl<TKey extends keyof ComponentsAndVariants = 'approval'>
   const identifier = useIdentifier('approval');
   const titleId = `${identifier}-title`;
 
-  const [current, setDecision] = useControllableState<ApprovalDecision | null, ApprovalReason>({
+  const [current, setDecision] = useReportedState<ApprovalDecision | null, ApprovalReason>({
     value: decision,
     defaultValue: defaultDecision,
     onChange: onDecisionChange,
@@ -428,7 +429,7 @@ function ReasoningImpl<TKey extends keyof ComponentsAndVariants = 'reasoning'>(p
   const triggerId = `${identifier}-trigger`;
   const bodyId = `${identifier}-body`;
 
-  const [isOpen, setOpen] = useControllableState<boolean, DisclosureReason>({
+  const [isOpen, setOpen] = useReportedState<boolean, DisclosureReason>({
     value: open,
     defaultValue: defaultOpen,
     onChange: onOpenChange,

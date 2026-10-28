@@ -1,12 +1,13 @@
 import { forwardRef, FunctionComponent, ReactElement, Ref, RefAttributes, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Box, { BoxProps } from '../box';
 import { useEventCallback } from '../react/a11y/callbacks';
-import useControllableState, { ChangeHandler } from '../react/a11y/useControllableState';
+import { ChangeHandler } from '../react/a11y/useControllableState';
 import useDismiss from '../react/a11y/useDismiss';
 import useFocusReturn from '../react/a11y/useFocusReturn';
 import useRovingFocus from '../react/a11y/useRovingFocus';
 import { useIsomorphicLayoutEffect } from '../react/effects';
 import useIdentifier from '../react/identity/useIdentifier';
+import { useReportedState } from '../react/interactions/interactions';
 import { BoxStyleProps, ComponentsAndVariants } from '../types';
 import BaseSvg from './baseSvg';
 import Button from './button';
@@ -199,7 +200,7 @@ function DropdownImpl<TVal>(props: Props<TVal>, ref: Ref<HTMLInputElement>): Rea
   // select an option its owner had refused.
   const isControlled = 'value' in props;
   const controlledValues = useMemo(() => (isControlled ? toValues(value) : undefined), [isControlled, value]);
-  const [valueToUse, setSelectedValues] = useControllableState<TVal[], DropdownValueReason>({
+  const [valueToUse, setSelectedValues] = useReportedState<TVal[], DropdownValueReason>({
     value: controlledValues,
     defaultValue: () => toValues(defaultValue),
     onChange: report,
@@ -213,7 +214,7 @@ function DropdownImpl<TVal>(props: Props<TVal>, ref: Ref<HTMLInputElement>): Rea
   const [search, setSearch] = useState<string | null>(null);
 
   // Every open and close goes through here, so each reports once to `Box.onInteraction`, with why.
-  const [isOpen, setOpen] = useControllableState<boolean>({
+  const [isOpen, setOpen] = useReportedState<boolean>({
     defaultValue: !!defaultOpen,
     interaction: { component: 'dropdown', type: 'openChange' },
   });

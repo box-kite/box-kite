@@ -42,9 +42,10 @@ describe('DatePicker', () => {
     expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Choose date, Oct 23, 2026' }));
   });
 
-  it('tells Box.onInteraction about a choice once, as the picker — the calendar inside it stays quiet', () => {
+  it('tells Box.onInteraction about a choice once, as the picker — the calendar inside it stays quiet', async () => {
     const heard: string[] = [];
     const stop = Box.onInteraction(({ component, type, reason }) => heard.push(`${component}.${type}:${reason}`));
+    await vi.dynamicImportSettled();
     render(<DatePicker label="Check-in" />);
 
     fireEvent.click(screen.getByRole('button', { name: 'Choose date' }));

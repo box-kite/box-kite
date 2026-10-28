@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react';
 import Box from '../../../box';
 import ExpandIcon from '../../../icons/expandIcon';
-import { ReportInteractions } from '../../../react/a11y/interactions';
+import { ReportInteractions } from '../../../react/interactions/interactions';
 import Button from '../../button';
 import Checkbox from '../../checkbox';
 import Flex from '../../flex';

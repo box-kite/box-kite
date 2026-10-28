@@ -1,10 +1,10 @@
 import { createContext, Ref, RefAttributes, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { BoxProps, useBoxElement } from '../box';
 import { useEventCallback, useLatest } from '../react/a11y/callbacks';
-import { useInteractionReporter } from '../react/a11y/interactions';
-import useControllableState, { ChangeDetails, ChangeHandler } from '../react/a11y/useControllableState';
+import { ChangeDetails, ChangeHandler } from '../react/a11y/useControllableState';
 import boxComponent from '../react/boxComponent';
 import { useIsomorphicLayoutEffect } from '../react/effects';
+import { useInteractionReporter, useReportedState } from '../react/interactions/interactions';
 import { ComponentsAndVariants } from '../types';
 import AnimationUtils from '../utils/animation/animationUtils';
 import { clearSelection, isEventInside, isRtl } from '../utils/dom/domUtils';
@@ -134,7 +134,7 @@ function SwipeItemImpl<TKey extends keyof ComponentsAndVariants = 'list.item'>(p
   const drag = useRef<Drag | null>(null);
   const suppressClick = useRef(false);
 
-  const [current, setOpen] = useControllableState<SwipeSide | null, SwipeReason>({
+  const [current, setOpen] = useReportedState<SwipeSide | null, SwipeReason>({
     value: open,
     defaultValue: defaultOpen,
     onChange: onOpenChange,

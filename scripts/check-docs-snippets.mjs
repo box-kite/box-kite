@@ -19,6 +19,7 @@ const NOT_TYPESCRIPT = new Set(['shell', 'css', 'json']);
 const PACKAGE_PATHS = {
   '@box-kite/react': ['src/box.ts'],
   '@box-kite/react/a11y': ['src/a11y.ts'],
+  '@box-kite/react/analytics': ['src/analytics.ts'],
   '@box-kite/react/anchor': ['src/anchor.ts'],
   '@box-kite/react/catalog': ['src/catalog.ts'],
   '@box-kite/react/date': ['src/date.ts'],

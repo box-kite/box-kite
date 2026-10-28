@@ -3,11 +3,12 @@ import { ElementLike, isEventInside } from '../../utils/dom/domUtils';
 import { supportsPopover } from '../../utils/environment/environmentUtils';
 import type { InteractionSource } from '../../utils/interactions/interactionChannel';
 import { useEventCallback } from '../a11y/callbacks';
-import useControllableState, { ChangeHandler, SetControllableState } from '../a11y/useControllableState';
+import { ChangeHandler, SetControllableState } from '../a11y/useControllableState';
 import useDismiss from '../a11y/useDismiss';
 import useFocusReturn from '../a11y/useFocusReturn';
 import { useIsomorphicLayoutEffect } from '../effects';
 import useIdentifier from '../identity/useIdentifier';
+import { useReportedState } from '../interactions/interactions';
 import useTopLayer from './useTopLayer';
 
 /** Why a layer opened or closed — every component built on this reports the same four. */
@@ -110,7 +111,7 @@ export default function usePopoverLayer<THasPopup extends PopoverHasPopup, TReas
   const generatedId = useIdentifier(idPrefix);
   // A consumer id wins, and `aria-controls`/`popovertarget` both have to name whichever won.
   const layerId = id ?? generatedId;
-  const [isOpen, setOpen] = useControllableState<boolean, PopoverReason | TReason>({
+  const [isOpen, setOpen] = useReportedState<boolean, PopoverReason | TReason>({
     value: open,
     defaultValue: defaultOpen,
     onChange: onOpenChange,

@@ -624,7 +624,7 @@ export const boxMembers: readonly BoxMember[] = [
     name: 'Box.onInteraction()',
     signature: 'const stop = Box.onInteraction(({ kind, component, type, reason, value, source }) => …)',
     summary:
-      'Hear every interaction in one typed stream — a dialog opened and why, a tab chosen, a DataGrid sorted, a press on anything a component styled — as plain JSON, fire and forget, for analytics or an audit log.',
+      'Hear every interaction in one typed stream — a dialog opened and why, a tab chosen, a DataGrid sorted, a press on anything a component styled — as plain JSON, fire and forget, for analytics or an audit log. What a person typed is left out unless the listener passes { content: true }, and @box-kite/react/analytics sends the stream to a collector with a session id on every record.',
   },
   {
     id: 'reportinteraction',

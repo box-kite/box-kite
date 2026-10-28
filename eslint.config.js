@@ -8,7 +8,8 @@ import tseslint from 'typescript-eslint';
 
 const INTERACTION_CHANNEL = {
   group: ['**/utils/interactions/interactionChannel'],
-  message: 'Report through useInteractionReporter, useInteractionCallback or useControllableState({ interaction }), which know when to be quiet.',
+  message:
+    'Report through useInteractionReporter, useInteractionCallback or useReportedState (src/react/interactions), which know when to be quiet.',
 };
 
 export default tseslint.config(
@@ -149,7 +150,10 @@ export default tseslint.config(
             { name: 'react-dom', message: 'DataGrid models must stay headless — keep React in the components/adapter layer.' },
           ],
           patterns: [
-            { group: ['react/*', 'react-dom/*'], message: 'DataGrid models must stay headless — keep React in the components/adapter layer.' },
+            {
+              group: ['react/*', 'react-dom/*'],
+              message: 'DataGrid models must stay headless — keep React in the components/adapter layer.',
+            },
             INTERACTION_CHANNEL,
           ],
         },
