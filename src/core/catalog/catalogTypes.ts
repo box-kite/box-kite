@@ -18,6 +18,9 @@ export interface CatalogSchema {
   examples?: (string | number | boolean)[];
   anyOf?: CatalogSchema[];
   items?: CatalogSchema;
+  /** A tuple's length, as `scrollbarColor`'s pair of colours has one. */
+  minItems?: number;
+  maxItems?: number;
   properties?: Record<string, CatalogSchema>;
   required?: string[];
   additionalProperties?: boolean;

@@ -90,6 +90,28 @@ describe('createStyleEngine', () => {
     expect(rulesOf(b)).not.toContain('opacity:3');
   });
 
+  it('takes an extended colour, and one with an opacity, at each position of a colour tuple', () => {
+    const engine = makeEngine('engine-extend-tuple');
+    engine.extend({ 'line-strong': '#999' }, {}, {});
+
+    // A palette token with an opacity needs no cast: the tuple's type takes the modifier.
+    renderStyles(engine, { scrollbarColor: ['sky-500/40', 'transparent'] });
+    renderStyles(engine, { scrollbarColor: ['line-strong', 'transparent'] } as never);
+    renderStyles(engine, { scrollbarColor: ['line-strong/50', 'sky-500/40'] } as never);
+    // Not a colour anyone declared: the tuple is still judged, so nothing is written for it.
+    renderStyles(engine, { scrollbarColor: ['line-weak', 'transparent'] } as never);
+
+    const rules = rulesOf(engine);
+    expect(rules).toContain('scrollbar-color:var(--line-strong) var(--transparent,transparent)');
+    expect(rules).toContain(
+      'scrollbar-color:color-mix(in oklab, var(--line-strong) 50%, transparent) color-mix(in oklab, var(--sky-500,oklch(68.5% .169 237.3)) 40%, transparent)',
+    );
+    expect(rules).toContain(
+      'scrollbar-color:color-mix(in oklab, var(--sky-500,oklch(68.5% .169 237.3)) 40%, transparent) var(--transparent,transparent)',
+    );
+    expect(rules).not.toContain('line-weak');
+  });
+
   it('sorts extended props after the built-ins instead of collapsing them to index 0', () => {
     const engine = makeEngine('engine-extend-sort');
 

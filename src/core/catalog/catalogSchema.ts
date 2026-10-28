@@ -100,6 +100,14 @@ export function isColor(definitions: BoxStyle[]): boolean {
   return definitions.some((definition) => definition.match === Palette.isAlpha);
 }
 
+/** How many colours a prop takes as a tuple — `scrollbarColor`'s two — or `0` when it is not one. */
+export function colorTupleLength(definitions: BoxStyle[]): number {
+  const tuple = definitions.find((definition) => definition.tuple && Array.isArray(definition.values));
+  const positions = (tuple?.values ?? []) as readonly unknown[];
+
+  return positions.length > 0 && positions.every((position) => position === Variables.colorValues) ? positions.length : 0;
+}
+
 /**
  * Every colour a colour prop accepts, as one schema: the palette and `Box.extend()`'s variables, each of
  * them optionally carrying the opacity modifier. Shared through a component's `$defs` rather than repeated

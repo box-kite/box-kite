@@ -181,8 +181,15 @@ export function acceptedValues(name: string): string[] {
   const definitions = styleEngine().getCatalogSource().styleProps[name];
   if (!definitions) return [];
 
+  // A tuple's positions are lists of their own: `scrollbarColor` takes the palette at each.
+  const listed = (definition: (typeof definitions)[number]) =>
+    definition.tuple ? (definition.values as readonly unknown[]).flat() : (definition.values as readonly unknown[]);
   const values = definitions.flatMap((definition) =>
-    Array.isArray(definition.values) ? definition.values.filter((value) => typeof value !== 'object').map(String) : [],
+    Array.isArray(definition.values)
+      ? listed(definition)
+          .filter((value) => typeof value !== 'object')
+          .map(String)
+      : [],
   );
 
   return [...new Set(values)];

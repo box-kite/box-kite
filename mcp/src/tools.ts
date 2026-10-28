@@ -46,7 +46,7 @@ function scale(name: string): string | undefined {
 }
 
 /** Whether this prop takes the `/40` opacity modifier — measured, since only a colour value does. */
-const takesAlpha = (name: string) => Boolean(declarations(name, 'sky-500/40'));
+const takesAlpha = (name: string) => Boolean(declarations(name, 'sky-500/40') || declarations(name, ['sky-500/40', 'sky-500/40']));
 
 function valueLine(name: string): string {
   const record = prop(name);

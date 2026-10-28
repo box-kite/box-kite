@@ -52,6 +52,29 @@ function TimeDemo() {
   );
 }
 
+function DeliveryDemo() {
+  const [value, setValue] = useState<string | null>(null);
+
+  return (
+    <Box py={4}>
+      <DatePicker
+        type="time"
+        label="Delivery today"
+        width="fit"
+        pickOnly
+        min="18:30"
+        max="19:30"
+        step={15}
+        value={value}
+        onValueChange={setValue}
+      />
+      <Readout>
+        value: <Mono>{String(value)}</Mono>
+      </Readout>
+    </Box>
+  );
+}
+
 function PublishDemo() {
   const [readings, setReadings] = useState<{ value: string | null; utc: string | null }>({ value: null, utc: null });
 
@@ -161,6 +184,28 @@ import TimeZoneSelect from '@box-kite/react/components/timeZoneSelect';`}
               </Code>
             </Box>
             <Box mt={4}>
+              The list offers only the times within <Mono>min</Mono> and <Mono>max</Mono>, both ends included, starting at the first slot on
+              or after <Mono>min</Mono> rather than snapping it down to the grid. On a date-time the bounds hold only on their own day, so
+              the evening before a deadline is cut short and the days around it are not. A range with no time in it says so —{' '}
+              <Mono>emptyTimesLabel</Mono>, <Mono>'No times available'</Mono> by default — instead of opening an empty list. A time's panel
+              is at least as wide as its field, which is what <Mono>matchWidth</Mono> says; a date's keeps the calendar's own width unless
+              it is set.
+            </Box>
+            <Box mt={4}>
+              Five times to choose from is a pick, not something to type. <Mono>pickOnly</Mono> makes the whole field one button that shows
+              the value and opens the panel, named by the label and the value together, while <Mono>name</Mono>, <Mono>required</Mono> and a
+              form reset behave as they do on the typed field. It works on <Mono>DateRangePicker</Mono> too.
+            </Box>
+            <Box mt={4}>
+              <Code
+                language="jsx"
+                code={`<DatePicker type="time" label="Delivery today" width="fit" pickOnly min="18:30" max="19:30" step={15}
+  value={value} onValueChange={setValue} />`}
+              >
+                <DeliveryDemo />
+              </Code>
+            </Box>
+            <Box mt={4}>
               <Code
                 language="jsx"
                 code={`<DatePicker type="datetime" zone="utc" label="Publish at (UTC)" step={15}
@@ -227,7 +272,8 @@ import TimeZoneSelect from '@box-kite/react/components/timeZoneSelect';`}
             <Box>
               The field is a <Mono>dateField</Mono> and the panel a <Mono>popover</Mono>; what the picker adds is{' '}
               <Mono>datePicker.trigger</Mono>, <Mono>datePicker.clear</Mono>, <Mono>datePicker.presets</Mono>/<Mono>preset</Mono> and{' '}
-              <Mono>datePicker.times</Mono>/<Mono>time</Mono>, whose <Mono>selected</Mono> variant is the chosen slot.
+              <Mono>datePicker.times</Mono>/<Mono>time</Mono>, whose <Mono>selected</Mono> variant is the chosen slot, and{' '}
+              <Mono>datePicker.empty</Mono>, the line that stands in for a list with no time in range.
             </Box>
           </Section>
 

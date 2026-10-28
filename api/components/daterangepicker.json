@@ -178,11 +178,32 @@
       "description": "Which of the field's edges it lines up with. Default `'start'`."
     },
     {
+      "name": "matchWidth",
+      "type": "boolean",
+      "required": false,
+      "default": "false",
+      "description": "Whether the panel is at least as wide as the field. Default `true` for a time, `false` otherwise."
+    },
+    {
+      "name": "emptyTimesLabel",
+      "type": "string",
+      "required": false,
+      "default": null,
+      "description": "What the time list says when no time is within `min`/`max`. Default `'No times available'`."
+    },
+    {
       "name": "clearable",
       "type": "boolean",
       "required": false,
       "default": "false",
       "description": "A button inside the field that empties it."
+    },
+    {
+      "name": "pickOnly",
+      "type": "boolean",
+      "required": false,
+      "default": "false",
+      "description": "The field is one button that shows the value and opens the panel, with nothing to type. Default `false`."
     },
     {
       "name": "triggerLabel",
@@ -223,10 +244,13 @@
     { "path": "datePicker", "depth": 0, "extends": null, "variants": [] },
     { "path": "datePicker.part", "depth": 1, "extends": null, "variants": [] },
     { "path": "datePicker.trigger", "depth": 1, "extends": null, "variants": [] },
+    { "path": "datePicker.value", "depth": 1, "extends": null, "variants": ["placeholder"] },
+    { "path": "datePicker.icon", "depth": 1, "extends": null, "variants": [] },
     { "path": "datePicker.clear", "depth": 1, "extends": null, "variants": [] },
     { "path": "datePicker.presets", "depth": 1, "extends": null, "variants": [] },
     { "path": "datePicker.preset", "depth": 1, "extends": null, "variants": ["selected"] },
     { "path": "datePicker.times", "depth": 1, "extends": null, "variants": [] },
-    { "path": "datePicker.time", "depth": 1, "extends": null, "variants": ["selected"] }
+    { "path": "datePicker.time", "depth": 1, "extends": null, "variants": ["selected"] },
+    { "path": "datePicker.empty", "depth": 1, "extends": null, "variants": [] }
   ]
 }

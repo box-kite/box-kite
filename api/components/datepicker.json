@@ -212,11 +212,32 @@
       "description": "Which of the field's edges it lines up with. Default `'start'`."
     },
     {
+      "name": "matchWidth",
+      "type": "boolean",
+      "required": false,
+      "default": "type === 'time'",
+      "description": "Whether the panel is at least as wide as the field. Default `true` for a time, `false` otherwise."
+    },
+    {
+      "name": "emptyTimesLabel",
+      "type": "string",
+      "required": false,
+      "default": "'No times available'",
+      "description": "What the time list says when no time is within `min`/`max`. Default `'No times available'`."
+    },
+    {
       "name": "clearable",
       "type": "boolean",
       "required": false,
       "default": "false",
       "description": "A button inside the field that empties it."
+    },
+    {
+      "name": "pickOnly",
+      "type": "boolean",
+      "required": false,
+      "default": "false",
+      "description": "The field is one button that shows the value and opens the panel, with nothing to type. Default `false`."
     },
     {
       "name": "triggerLabel",
@@ -247,6 +268,7 @@
     { "mode": null, "keys": "Up / Down", "action": "In the list of times, the time before or after." }
   ],
   "a11y": [
+    "With `pickOnly` the field is that one button, named by the label and the value: `Delivery 6:30 PM`.",
     "The button says what it does and what is chosen — `Choose date, Oct 19, 2026` — and carries `aria-expanded` and `aria-haspopup=\"dialog\"`; the panel is a `role=\"dialog\"` named by the picker's label.",
     "Opening puts focus on the chosen day (or today) in the calendar, or on the chosen time in the list."
   ],
@@ -255,10 +277,13 @@
     { "path": "datePicker", "depth": 0, "extends": null, "variants": [] },
     { "path": "datePicker.part", "depth": 1, "extends": null, "variants": [] },
     { "path": "datePicker.trigger", "depth": 1, "extends": null, "variants": [] },
+    { "path": "datePicker.value", "depth": 1, "extends": null, "variants": ["placeholder"] },
+    { "path": "datePicker.icon", "depth": 1, "extends": null, "variants": [] },
     { "path": "datePicker.clear", "depth": 1, "extends": null, "variants": [] },
     { "path": "datePicker.presets", "depth": 1, "extends": null, "variants": [] },
     { "path": "datePicker.preset", "depth": 1, "extends": null, "variants": ["selected"] },
     { "path": "datePicker.times", "depth": 1, "extends": null, "variants": [] },
-    { "path": "datePicker.time", "depth": 1, "extends": null, "variants": ["selected"] }
+    { "path": "datePicker.time", "depth": 1, "extends": null, "variants": ["selected"] },
+    { "path": "datePicker.empty", "depth": 1, "extends": null, "variants": [] }
   ]
 }

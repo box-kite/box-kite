@@ -730,6 +730,18 @@ export function createStyleEngine(options: StyleEngineOptions = {}): StyleEngine
     return styleName.map((s) => `${s}:${(itemValue.valueFormat as any)?.(value, variables.reference, s) ?? value}`).join(';');
   }
 
+  /** One position of a tuple: its own list, or — where that list resolves to `var(--token)` — what the string fallback below takes. */
+  function acceptsAt(allowed: readonly unknown[], element: unknown): boolean {
+    if (allowed.includes(element)) return true;
+    if (typeof element !== 'string' || !variableBackedValues.has(allowed)) return false;
+
+    const alpha = Palette.alphaOf(element);
+
+    return alpha
+      ? allowed === Variables.colorValues && (Palette.isAlpha(element) || variables.isUserVariable(alpha.color))
+      : variables.isUserVariable(element);
+  }
+
   /** The definition a prop's value matches, or null when nothing accepts it — no rule, and no class name. */
   function findDefinition(key: string, value: BoxStyleValue): BoxStyle | null {
     const item = cssStyles[key as keyof typeof cssStyles] as BoxStyle[] | undefined;
@@ -743,7 +755,7 @@ export function createStyleEngine(options: StyleEngineOptions = {}): StyleEngine
         if (Array.isArray(value)) {
           // Tuple definition: each position must accept the value at that position.
           if (x.values.length > 0 && Array.isArray(x.values[0])) {
-            return x.values.length === value.length && (x.values as unknown[][]).every((allowed, i) => allowed.includes(value[i]));
+            return x.values.length === value.length && (x.values as unknown[][]).every((allowed, i) => acceptsAt(allowed, value[i]));
           }
           return x.values.length === value.length && x.values.every((v, i) => typeof v === typeof value[i]);
         }
