@@ -11,3 +11,4 @@ dist-pages-ssr
 coverage
 examples/vanilla/dist
 .playwright-mcp
+supabase/.temp
