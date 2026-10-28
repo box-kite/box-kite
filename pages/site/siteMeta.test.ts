@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from 'fs';
 import { resolve } from 'path';
 import { describe, expect, it } from 'vitest';
 import { SECTIONS } from './sections';
-import { MOVED_ROUTES, SITE_URL, siteRoutes } from './site';
+import { ADMIN_PATH, MOVED_ROUTES, SITE_URL, siteRoutes } from './site';
 import {
   breadcrumbsFor,
   buildHeadHtml,
@@ -91,13 +91,11 @@ describe('buildSitemap', () => {
     expect(sitemap.startsWith('<?xml version="1.0" encoding="UTF-8"?>')).toBe(true);
   });
 
-  it('lists every route while none of them opts out', () => {
-    expect(indexableRoutes().length).toBe(siteRoutes.length);
+  it('lists every route but the admin dashboard, the one that opts out', () => {
+    expect(siteRoutes.filter((route) => !indexableRoutes().includes(route)).map((route) => route.path)).toEqual([ADMIN_PATH]);
   });
 
-  // The filter itself, which no route exercises now that the FIDO demo is gone. It is still reached
-  // by the not-found shell, and it is what an unlisted demo would rely on.
-  it('would leave a route out as soon as one declared itself unlisted', () => {
+  it('leaves a route out once it declares itself unlisted', () => {
     expect(pageMeta({ ...siteRoutes[0], indexable: false }).indexable).toBe(false);
     expect(pageMeta(siteRoutes[0]).indexable).toBe(true);
   });

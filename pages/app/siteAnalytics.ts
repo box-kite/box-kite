@@ -1,9 +1,33 @@
 import { AnalyticsTransport, beacon, consoleLog, createAnalytics } from '../../src/analytics';
+import { ADMIN_PATH } from '../site/site';
 
 /** `?interactions` in a URL turns the console log on in a production build, for the rest of the tab. */
 export const LOG_FLAG = 'interactions';
 
 let started = false;
+
+/** Where a visit came from: the other site's host, never its path or query, and nothing for a link inside this site. */
+export function referrerHost(referrer: string, host: string): string | undefined {
+  const bare = (name: string) => name.replace(/^www\./, '');
+  try {
+    const from = new URL(referrer).hostname;
+
+    return from && bare(from) !== bare(host) ? from : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/** The owner reading the numbers is not a visit to count. */
+export function isAdminUrl(url: string): boolean {
+  try {
+    const { pathname } = new URL(url);
+
+    return pathname === ADMIN_PATH || pathname.startsWith(`${ADMIN_PATH}/`);
+  } catch {
+    return false;
+  }
+}
 
 /** Whether this tab asked for the log, remembering a `?interactions` it arrived with. */
 export function logRequested(search: string): boolean {
@@ -30,5 +54,5 @@ export function startSiteAnalytics(endpoint: string | undefined, log: boolean): 
 
   started = true;
   // Read as it happens while logging; batched for the collector otherwise.
-  createAnalytics({ send, batch: log ? { wait: 0 } : undefined });
+  createAnalytics({ send, batch: log ? { wait: 0 } : undefined, filter: (event) => !isAdminUrl(event.url) });
 }

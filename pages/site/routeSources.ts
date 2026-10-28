@@ -81,6 +81,7 @@ const files: Record<SiteRoutePath, string> = {
   '/colors': 'colorPage',
   '/gradients-shadows': 'gradientsShadowsPage',
   '/ai-context': 'aiContextPage',
+  '/admin': 'adminPage',
 };
 
 const under = (path: string, prefix: string) => path.startsWith(`${prefix}/`);

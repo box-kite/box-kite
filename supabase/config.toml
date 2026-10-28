@@ -1,0 +1,6 @@
+# The Supabase project behind box-kite.dev's analytics: see supabase/README.md.
+project_id = "box-kite"
+
+[functions.collect]
+# The beacon carries no Supabase JWT: the collector checks the Origin instead.
+verify_jwt = false
