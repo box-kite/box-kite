@@ -81,6 +81,20 @@ function component(name: string, source: CatalogSource, styleProps: string[], sc
         continue;
       }
 
+      const tuple = CatalogSchemas.colorTupleLength(source.styleProps[prop]);
+
+      if (tuple) {
+        colors = true;
+        properties[prop] = {
+          type: 'array',
+          items: { $ref: COLOR_REF },
+          minItems: tuple,
+          maxItems: tuple,
+          ...(description ? { description } : {}),
+        };
+        continue;
+      }
+
       // Built once and shared by every component that takes it: a prop's schema does not depend on which
       // component carries it, and building all 221 of them for each of the 78 was most of the work here.
       if (!schemas.has(prop)) schemas.set(prop, CatalogSchemas.styleProp(source.styleProps[prop], description));

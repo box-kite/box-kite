@@ -4545,11 +4545,16 @@ const dateComponents = {
       // One end of a range: a field with no frame of its own, inside the range's.
       part: { styles: {} },
       trigger: { styles: { ...QUIET_CONTROL, color: 'currentColor/70' } },
+      // A `pickOnly` field's button: the frame draws the focus, so the button draws nothing of its own.
+      value: { styles: { cursor: 'pointer', disabled: { cursor: 'not-allowed' } }, variants: { placeholder: DATE_MUTED } },
+      icon: { styles: { color: 'currentColor/70' } },
       clear: { styles: { ...QUIET_CONTROL, color: 'currentColor/55' } },
       presets: { styles: { borderColor: 'currentColor/12' } },
       preset: { styles: QUIET_CONTROL, variants: { selected: CHOSEN } },
       times: { styles: { borderColor: 'currentColor/12' } },
       time: { styles: QUIET_CONTROL, variants: { selected: CHOSEN } },
+      // What stands in for the list when no time is within `min`/`max`.
+      empty: { styles: { ...DATE_MUTED, borderColor: 'currentColor/12' } },
     },
   },
 } satisfies Components;

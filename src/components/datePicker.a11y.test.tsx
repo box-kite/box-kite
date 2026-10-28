@@ -75,6 +75,47 @@ describe('DatePicker accessibility', () => {
     await keys.press('Enter');
     expect(screen.queryByRole('dialog')).toBeNull();
   });
+
+  it('Up / Down / Home / End — only the times within min and max, and Enter picks the one highlighted', async () => {
+    const keys = keyboard();
+    const onValueChange = vi.fn();
+    render(<DatePicker type="time" label="Delivery" min="18:30" max="19:30" step={15} onValueChange={onValueChange} />);
+
+    await keys.click(button(/^Choose time/));
+    // Nine o'clock is not on offer, so the list starts on its first time.
+    expect(document.activeElement).toHaveTextContent(/^6:30/);
+    await keys.press('End');
+    expect(document.activeElement).toHaveTextContent(/^7:30/);
+    await keys.pressArrow('Down');
+    expect(document.activeElement).toHaveTextContent(/^7:30/);
+    await keys.press('Home');
+    expect(document.activeElement).toHaveTextContent(/^6:30/);
+    await keys.pressArrow('Up');
+    expect(document.activeElement).toHaveTextContent(/^6:30/);
+    await keys.pressArrow('Down');
+    await keys.press('Enter');
+    expect(onValueChange).toHaveBeenLastCalledWith('18:45:00', expect.objectContaining({ reason: 'select' }));
+  });
+
+  it('Enter / Space — on a pickOnly field, opens the list from the one button; Escape hands focus back to it', async () => {
+    const keys = keyboard();
+    render(<DatePicker type="time" label="Delivery" pickOnly min="18:30" max="19:30" step={15} clearable defaultValue="18:30" />);
+
+    await keys.pressTab();
+    expectFocusOn(button(/^Delivery/));
+    await keys.press('Enter');
+    expectFocusOn(screen.getByRole('option', { selected: true }));
+    await keys.press('Escape');
+    expectFocusOn(button(/^Delivery/));
+    await expectNoAxeViolations(document.body);
+  });
+
+  it('has no axe violations when no time is within min and max', async () => {
+    render(<DatePicker type="time" label="Delivery" min="18:31" max="18:44" step={15} defaultOpen />);
+
+    expect(screen.queryByRole('listbox')).toBeNull();
+    await expectNoAxeViolations(document.body);
+  });
 });
 
 describe('DateRangePicker accessibility', () => {

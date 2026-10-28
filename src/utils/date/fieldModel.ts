@@ -249,15 +249,20 @@ export function reshape(draft: Draft, from: FieldConfig, to: FieldConfig): Draft
   return { ...draft, hour: draft.hour % 12 || 12, dayPeriod: draft.hour >= 12 ? 1 : 0 };
 }
 
-/** The times of a day every `step` minutes from midnight — what a time list offers. */
-export function timeSlots(step: number): string[] {
+/**
+ * The times of a day every `step` minutes from midnight — what a time list offers — kept to `min`/`max`, both
+ * inclusive `HH:mm:ss`. Compared as strings, so a bound off the grid is not snapped: 18:20 on a 15 starts at 18:30.
+ */
+export function timeSlots(step: number, bounds: { min?: string | null; max?: string | null } = {}): string[] {
   const minutes = Math.max(1, Math.round(step));
   const slots: string[] = [];
   for (let at = 0; at < 24 * 60; at += minutes) {
     slots.push(`${String(Math.floor(at / 60)).padStart(2, '0')}:${String(at % 60).padStart(2, '0')}:00`);
   }
 
-  return slots;
+  const { min, max } = bounds;
+
+  return min || max ? slots.filter((slot) => (!min || slot >= min) && (!max || slot <= max)) : slots;
 }
 
 /** The slot a time falls in, so a list highlights 14:30 for 14:37 on a half-hour step. */

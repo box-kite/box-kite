@@ -13,6 +13,9 @@ import Timelines from './timelines';
 import Variables from './variables';
 
 /** The opacity scale shared by `opacity`, `fillOpacity` and `strokeOpacity`. */
+/** A colour position of a tuple: a token, or one with the opacity modifier. */
+type ColorOrAlpha = Variables.ColorType | Palette.Alpha;
+
 const opacityValues = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1] as const;
 
 /**
@@ -3372,15 +3375,19 @@ export const cssStyles = {
     },
   ],
   /**
-   * The scrollbar-color CSS property sets the color of the scrollbar thumb and track. The value pair is [thumbColor, trackColor].
+   * The scrollbar-color CSS property sets the color of the scrollbar thumb and track. The value pair is [thumbColor, trackColor],
+   * each a palette token or a `Box.extend()` colour, and either may carry an opacity (`gray-400/50`).
    * @example scrollbarColor={['gray-400', 'gray-100']} → scrollbar-color: var(--gray-400,oklch(70.7% .022 261.3)) var(--gray-100,oklch(96.7% .003 264.5))
    */
   scrollbarColor: [
     {
       tuple: true,
-      values: [Variables.colorValues, Variables.colorValues] as const,
+      // The same list, typed to take the opacity modifier too: the engine judges each position by its identity.
+      values: [Variables.colorValues as readonly ColorOrAlpha[], Variables.colorValues as readonly ColorOrAlpha[]] as const,
       styleName: 'scrollbar-color',
-      valueFormat: (value, getVariableValue) => `${getVariableValue(value[0] as string)} ${getVariableValue(value[1] as string)}`,
+      // A position may carry an opacity modifier, which mixes the variable rather than naming `--token/50`.
+      valueFormat: (value, getVariableValue) =>
+        value.map((color) => (Palette.alphaOf(color) ? Palette.mix(color, getVariableValue) : getVariableValue(color as string))).join(' '),
     },
   ],
   /**

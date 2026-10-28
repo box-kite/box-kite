@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import catalogManifest from '../../utils/catalog/catalogManifest';
+import SpecValidate from '../../utils/spec/specValidate';
 import { cssStyles } from '../boxStyles';
 import { Components } from '../extends/boxComponents';
 import * as BoxCatalogs from './boxCatalog';
@@ -85,6 +86,16 @@ describe('BoxCatalogs.build', () => {
 
     it('takes a colour declared by Box.extend() beside the palette', () => {
       expect(colorPattern([...colors, 'brand']).test('brand/60')).toBe(true);
+    });
+
+    it('describes a colour tuple as that many colours, each held to the same grammar', () => {
+      const props = BoxCatalogs.build(source(), { include: ['Flex'] }).components.Flex.props;
+      const schema = props.properties!.scrollbarColor;
+
+      expect(schema).toMatchObject({ type: 'array', items: { $ref: '#/$defs/color' }, minItems: 2, maxItems: 2 });
+      expect(SpecValidate.matches(schema, ['sky-500/40', 'currentColor'], props)).toBe(true);
+      expect(SpecValidate.matches(schema, ['sky-500'], props)).toBe(false);
+      expect(SpecValidate.matches(schema, ['sky-500', 'rebeccapurple'], props)).toBe(false);
     });
 
     it('lists a closed value set as an enum and a scale as a number', () => {

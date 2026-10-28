@@ -89,7 +89,12 @@ namespace SpecValidate {
       case 'boolean':
         return typeof value === 'boolean';
       case 'array':
-        return Array.isArray(value) && (!resolved.items || value.every((item) => matches(resolved.items!, item, root)));
+        return (
+          Array.isArray(value) &&
+          value.length >= (resolved.minItems ?? 0) &&
+          value.length <= (resolved.maxItems ?? Infinity) &&
+          (!resolved.items || value.every((item) => matches(resolved.items!, item, root)))
+        );
       case 'object':
         return isObject(resolved, value, root);
       // No `type`: an `enum`, an `anyOf` or a schema that constrains nothing, all of them already answered.

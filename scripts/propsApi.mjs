@@ -122,8 +122,9 @@ async function loadRuntime() {
   try {
     const { cssStyles } = await server.ssrLoadModule('/src/core/boxStyles.ts');
     const { createStyleEngine } = await server.ssrLoadModule('/src/core/engine/styleEngine.ts');
+    const { default: Variables } = await server.ssrLoadModule('/src/core/variables.ts');
 
-    return { cssStyles, createStyleEngine, close: () => server.close() };
+    return { cssStyles, createStyleEngine, colorValues: Variables.colorValues, close: () => server.close() };
   } catch (error) {
     await server.close();
     throw error;
@@ -295,7 +296,7 @@ function exampleText(name, value, declarations) {
  * the 286 colour tokens are the palette's reference and not every colour prop's.
  */
 export async function buildPropsApi() {
-  const { cssStyles, createStyleEngine, close } = await loadRuntime();
+  const { cssStyles, createStyleEngine, colorValues, close } = await loadRuntime();
 
   try {
     const { comments, text } = readComments();
@@ -309,8 +310,12 @@ export async function buildPropsApi() {
 
       const value = sampleValue(name, definitions);
       const { className, declarations } = measure(createStyleEngine, name, value);
-      const values = [...new Set(definitions.flatMap((definition) => (Array.isArray(definition.values) ? definition.values : [])))];
-      const open = definitions.some((definition) => !Array.isArray(definition.values) && definition.values !== 0);
+      // A tuple's positions are lists of their own, so `scrollbarColor` is the palette rather than two arrays of it.
+      const listed = (definition) => (definition.tuple ? definition.values.flat() : definition.values);
+      const values = [...new Set(definitions.flatMap((definition) => (Array.isArray(definition.values) ? listed(definition) : [])))];
+      // A colour tuple also takes `Box.extend()`'s colours and the opacity modifier, the way a colour prop does.
+      const colorTuple = definitions.some((definition) => definition.tuple && definition.values.includes(colorValues));
+      const open = colorTuple || definitions.some((definition) => !Array.isArray(definition.values) && definition.values !== 0);
 
       props.push({
         name,

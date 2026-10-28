@@ -1,4 +1,4 @@
-import { Ref, RefAttributes, useCallback, useEffect, useMemo, useState } from 'react';
+import { Ref, RefAttributes, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Box, { BoxProps } from '../box';
 import { useEventCallback } from '../react/a11y/callbacks';
 import { ChangeHandler } from '../react/a11y/useControllableState';
@@ -13,7 +13,7 @@ import { ComponentsAndVariants } from '../types';
 import { AnchorAlign, AnchorSide } from '../utils/anchor/anchorUtils';
 import { combine, compare, readingsOf, toPlainDate, toPlainTime, today } from '../utils/date/dateTime';
 import { FieldGranularity, slotOf, timeSlots } from '../utils/date/fieldModel';
-import { format, formatRange } from '../utils/date/format';
+import { format, formatRange, zoneName } from '../utils/date/format';
 import { Disambiguation, ZoneInput } from '../utils/date/zones';
 import Calendar, { DateRange } from './calendar';
 import DateField from './dateField';
@@ -76,8 +76,14 @@ interface SharedProps<TKey extends keyof ComponentsAndVariants> extends PickerBo
   side?: AnchorSide;
   /** Which of the field's edges it lines up with. Default `'start'`. */
   align?: AnchorAlign;
+  /** Whether the panel is at least as wide as the field. Default `true` for a time, `false` otherwise. */
+  matchWidth?: boolean;
+  /** What the time list says when no time is within `min`/`max`. Default `'No times available'`. */
+  emptyTimesLabel?: string;
   /** A button inside the field that empties it. */
   clearable?: boolean;
+  /** The field is one button that shows the value and opens the panel, with nothing to type. Default `false`. */
+  pickOnly?: boolean;
   /** The calendar button's name. Default `'Choose date'`, or `'Choose time'`. */
   triggerLabel?: string;
   /** The clear button's name. Default `'Clear'`. */
@@ -183,6 +189,7 @@ interface LayerOptions {
   onOpenChange?: ChangeHandler<boolean, DatePickerOpenReason>;
   side: AnchorSide;
   align: AnchorAlign;
+  matchWidth: boolean;
   label: string;
   /** The caller's ref, on the same element the panel hangs off. */
   ref?: Ref<HTMLDivElement>;
@@ -229,7 +236,14 @@ function usePickerLayer(options: LayerOptions) {
       if (heldFocus) button?.focus();
     },
   });
-  const position = useAnchorPosition({ side: options.side, align: options.align, offset: 1, flip: true, anchor: field });
+  const position = useAnchorPosition({
+    side: options.side,
+    align: options.align,
+    offset: 1,
+    flip: true,
+    matchWidth: options.matchWidth,
+    anchor: field,
+  });
 
   useEffect(() => {
     if (isOpen) focusInto(panelElement);
@@ -246,6 +260,7 @@ function usePickerLayer(options: LayerOptions) {
             side={options.side}
             align={options.align}
             offset={1}
+            matchWidth={options.matchWidth}
             component="popover"
             p={3}
             id={id}
@@ -282,7 +297,7 @@ function usePickerLayer(options: LayerOptions) {
     setOpen(false, { reason: 'select', event });
   };
 
-  return { attachTrigger: trigger.ref, triggerAttributes: trigger.props, closeOnChoice, id, attachField, panel };
+  return { attachTrigger: trigger.ref, triggerAttributes: trigger.props, triggerElement, closeOnChoice, id, attachField, panel };
 }
 
 /** The list of times: a listbox, one option per step, the chosen one marked and the keyboard roving through them. */
@@ -293,9 +308,15 @@ function TimeList(props: {
   hourCycle?: 12 | 24;
   onSelect: (time: string, event: React.SyntheticEvent) => void;
   label: string;
+  /** The first and last times offered, `HH:mm:ss`. */
+  min: string | null;
+  max: string | null;
+  emptyLabel: string;
+  /** Ruled off from a calendar beside it. */
+  separated: boolean;
 }) {
-  const { value, step, locale, hourCycle, onSelect, label } = props;
-  const slots = useMemo(() => timeSlots(step), [step]);
+  const { value, step, locale, hourCycle, onSelect, label, min, max, emptyLabel, separated } = props;
+  const slots = useMemo(() => timeSlots(step, { min, max }), [step, min, max]);
   const selected = slotOf(value, step);
   const selectedIndex = Math.max(0, selected ? slots.indexOf(selected) : slots.indexOf('09:00:00'));
   const roving = useRovingFocus({
@@ -304,6 +325,16 @@ function TimeList(props: {
     loop: false,
     onSelect: (index, event) => onSelect(slots[index], event),
   });
+  const rule = separated ? { ps: 2, bs: 1 } : {};
+
+  // An empty listbox is an error to a screen reader, so a range with no time in it says so instead.
+  if (slots.length === 0) {
+    return (
+      <Box component="datePicker.empty" flexGrow={1} px={3} py={1.5} fontSize={14} {...rule} props={{ role: 'status' }}>
+        {emptyLabel}
+      </Box>
+    );
+  }
 
   return (
     <Box
@@ -311,11 +342,13 @@ function TimeList(props: {
       position="relative"
       display="flex"
       d="column"
+      flexGrow={1}
       gap={0.5}
       maxHeight={72}
       overflowY="auto"
-      ps={2}
-      bs={1}
+      // The list scrolls, so it clips: room for an option's focus ring, which sits 4px outside it.
+      p={1}
+      {...rule}
       props={{ role: 'listbox', 'aria-label': label, onKeyDown: roving.onKeyDown }}
     >
       {slots.map((slot, index) => (
@@ -377,20 +410,168 @@ function Presets<TValue>(props: {
   );
 }
 
+interface PickFieldProps {
+  /** The picker's own Box props, `props` included, so `width` and `variant` reach the frame. */
+  frame: object;
+  attachField: (element: HTMLDivElement | null) => void;
+  /** Absent on a read-only field, so a press opens nothing. */
+  attachTrigger?: (element: HTMLElement | null) => void;
+  triggerAttributes?: object;
+  triggerElement: HTMLElement | null;
+  id: string;
+  label?: React.ReactNode;
+  labelledBy?: string;
+  describedBy?: string;
+  /** The value as the reader reads it, or `''`. */
+  text: string;
+  placeholder: string;
+  icon: React.ReactNode;
+  clear: React.ReactNode;
+  disabled: boolean;
+  invalid: boolean;
+  required?: boolean;
+  tabIndex?: number;
+  /** One per value the form posts. */
+  inputs: { name?: string; value: string }[];
+  onReset: (event: Event) => void;
+}
+
+/** The field as one button: it shows the value, and its `::after` covers the frame, so a press anywhere opens the panel. */
+function PickField(props: PickFieldProps) {
+  // Destructured whole: a ref callback read off `props` makes every read of `props` a ref read to the React compiler.
+  const { frame, attachField, attachTrigger, triggerAttributes, triggerElement, id, label, labelledBy, describedBy } = props;
+  const { text, placeholder, icon, clear, disabled, invalid, required = false, tabIndex, inputs, onReset: handleReset } = props;
+  const inputRef = useRef<HTMLInputElement>(null);
+  const labelId = label !== undefined ? `${id}-label` : undefined;
+  const valueId = `${id}-value`;
+  const onReset = useEventCallback(handleReset);
+
+  // A form reset puts the default back, as `DateField` does: the hidden inputs alone would keep the old value on screen.
+  useEffect(() => {
+    const form = inputRef.current?.form;
+    if (!form) return;
+
+    form.addEventListener('reset', onReset);
+
+    return () => form.removeEventListener('reset', onReset);
+  }, [onReset]);
+
+  return (
+    <>
+      {label !== undefined && (
+        <Box
+          component="dateField.label"
+          display="block"
+          mb={1.5}
+          fontSize={14}
+          id={labelId}
+          props={{ onClick: () => triggerElement?.focus() }}
+        >
+          {label}
+        </Box>
+      )}
+      <Box
+        ref={attachField}
+        component="dateField"
+        display="inline-flex"
+        ai="center"
+        position="relative"
+        cursor="pointer"
+        css={{ fontVariantNumeric: 'tabular-nums' }}
+        {...(frame as BoxProps<'div', 'dateField'>)}
+        variant={[(frame as { variant?: unknown }).variant, { disabled, invalid }] as never}
+      >
+        <Box
+          tag="button"
+          ref={attachTrigger}
+          component="datePicker.value"
+          variant={{ placeholder: !text }}
+          flexGrow={1}
+          textAlign="start"
+          whiteSpace="nowrap"
+          css={{ font: 'inherit' }}
+          after={{ position: 'absolute', inset: 0 }}
+          disabled={disabled}
+          props={{
+            type: 'button',
+            tabIndex,
+            'aria-labelledby': [labelId, labelledBy, valueId].filter(Boolean).join(' '),
+            'aria-describedby': describedBy,
+            'aria-invalid': invalid || undefined,
+            ...triggerAttributes,
+          }}
+        >
+          <span id={valueId}>{text || placeholder}</span>
+        </Box>
+        <Box display="inline-flex" ai="center" gap={1} ms={2}>
+          {clear}
+          {/* The typed field's button box, so the two modes are the same height and line up in a form. */}
+          <Box
+            component="datePicker.icon"
+            display="inline-flex"
+            ai="center"
+            jc="center"
+            width={7}
+            height={7}
+            me={-1.5}
+            props={{ 'aria-hidden': true }}
+          >
+            {icon}
+          </Box>
+        </Box>
+        {inputs.map((input, index) =>
+          required ? (
+            // The browser validates this one: an empty required field stops the form, and its focus is passed on.
+            <Box
+              key={index}
+              tag="input"
+              ref={index === 0 ? inputRef : undefined}
+              component="dateField.validation"
+              required
+              disabled={disabled}
+              props={{
+                type: 'text',
+                name: input.name,
+                value: input.value,
+                tabIndex: -1,
+                'aria-hidden': true,
+                onChange: () => {},
+                onFocus: () => triggerElement?.focus(),
+              }}
+            />
+          ) : input.name === undefined ? null : (
+            <input
+              key={index}
+              ref={index === 0 ? inputRef : undefined}
+              type="hidden"
+              name={input.name}
+              value={input.value}
+              disabled={disabled}
+            />
+          ),
+        )}
+      </Box>
+    </>
+  );
+}
+
 /**
  * A field with a calendar, a list of times, or both, behind a button inside it — type the value or pick it.
  *
  * ```tsx
  * <DatePicker label="Check-in" name="checkIn" min={today()} />
  * <DatePicker type="time" label="Pickup" step={15} />
+ * <DatePicker type="time" label="Delivery" pickOnly min="18:30" max="19:30" step={15} />
  * <DatePicker type="datetime" zone="utc" label="Publish at" onValueChange={(value, { utc, local }) => schedule(utc)} />
  * ```
  *
  * **The field is a `DateField`**, so everything typed is in the reader's own order and the value is the same ISO
  * string, with the same readings beside it. The panel is the platform's popover: the top layer, light dismiss
- * and focus return are the browser's, and it hangs off the whole field rather than the button.
+ * and focus return are the browser's, and it hangs off the whole field rather than the button. **`pickOnly`**
+ * swaps the segments for one button showing the value, for a short list where typing adds nothing.
  *
  * @pattern https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/
+ * @a11y With `pickOnly` the field is that one button, named by the label and the value: `Delivery 6:30 PM`.
  * @a11y The button says what it does and what is chosen — `Choose date, Oct 19, 2026` — and carries
  * `aria-expanded` and `aria-haspopup="dialog"`; the panel is a `role="dialog"` named by the picker's label.
  * @a11y Opening puts focus on the chosen day (or today) in the calendar, or on the chosen time in the list.
@@ -428,7 +609,10 @@ function DatePickerImpl<TKey extends keyof ComponentsAndVariants = 'dateField'>(
     weekNumbers,
     side = 'bottom',
     align = 'start',
+    matchWidth = type === 'time',
+    emptyTimesLabel = 'No times available',
     clearable = false,
+    pickOnly = false,
     triggerLabel,
     clearLabel = 'Clear',
     tabIndex,
@@ -453,22 +637,28 @@ function DatePickerImpl<TKey extends keyof ComponentsAndVariants = 'dateField'>(
 
   const buttonName = triggerLabel ?? (type === 'time' ? 'Choose time' : 'Choose date');
   const panelName = typeof label === 'string' ? label : buttonName;
-  const { attachTrigger, triggerAttributes, closeOnChoice, attachField, panel } = usePickerLayer({
+  const { attachTrigger, triggerAttributes, triggerElement, closeOnChoice, id, attachField, panel } = usePickerLayer({
     ref,
     open,
     defaultOpen,
     onOpenChange,
     side,
     align,
+    matchWidth,
     label: panelName,
   });
 
   const day = current && type !== 'time' ? toPlainDate(current, { zone: readZone }) : null;
   const time = current && type !== 'date' ? toPlainTime(current, { zone: readZone }) : null;
+  // A time bounds every day; a date-time's bound only its own day — the one a time picked first lands on, too.
+  const listDay = type === 'datetime' ? (day ?? today(readZone)) : null;
+  const timeBound = (bound: string | null | undefined) =>
+    bound && (listDay === null || toPlainDate(bound, { zone: readZone }) === listDay) ? toPlainTime(bound, { zone: readZone }) : null;
   const shown = current
     ? format(current, {
         locale,
         zone: readZone,
+        hourCycle: hourCycle === undefined ? undefined : hourCycle === 12 ? 'h12' : 'h23',
         ...(type === 'date'
           ? { dateStyle: 'medium' }
           : type === 'time'
@@ -476,6 +666,11 @@ function DatePickerImpl<TKey extends keyof ComponentsAndVariants = 'dateField'>(
             : { dateStyle: 'medium', timeStyle: 'short' }),
       })
     : '';
+  // A pick-only field names its zone the way `DateField` does, after the time.
+  const zoneLabel =
+    pickOnly && current && zone && (showZone ?? zone !== environment.readerZone)
+      ? zoneName(zone, { locale, style: 'short', at: current })
+      : null;
 
   const close = closeOnChoice;
   const compose = (nextDay: string, nextTime: string) => combine(nextDay, nextTime, zone ? { zone, disambiguation } : {});
@@ -524,6 +719,9 @@ function DatePickerImpl<TKey extends keyof ComponentsAndVariants = 'dateField'>(
       height={6}
       ms={1}
       borderRadius={999}
+      // Above a pick-only field's button, whose `::after` covers the frame.
+      position="relative"
+      zIndex={1}
       props={{
         type: 'button',
         'aria-label': clearLabel,
@@ -535,39 +733,66 @@ function DatePickerImpl<TKey extends keyof ComponentsAndVariants = 'dateField'>(
     </Box>
   );
 
+  const outOfBounds = current !== null && ((min != null && compare(current, min) < 0) || (max != null && compare(current, max) > 0));
+  const field = pickOnly ? (
+    <PickField
+      frame={restProps}
+      attachField={attachField}
+      attachTrigger={readOnly ? undefined : attachTrigger}
+      triggerAttributes={readOnly ? undefined : triggerAttributes}
+      triggerElement={triggerElement}
+      id={id}
+      label={label}
+      labelledBy={labelledBy}
+      describedBy={describedBy}
+      text={zoneLabel ? `${shown} ${zoneLabel}` : shown}
+      placeholder={buttonName}
+      icon={type === 'time' ? <ClockIcon /> : <CalendarIcon />}
+      clear={clear}
+      disabled={disabled}
+      invalid={invalid ?? (outOfBounds || (day !== null && !!isDateUnavailable?.(day)))}
+      required={required}
+      tabIndex={tabIndex}
+      inputs={[{ name, value: current ?? '' }]}
+      onReset={(event) => setCurrent(defaultValue, { reason: 'reset', event })}
+    />
+  ) : (
+    <DateField
+      ref={attachField}
+      {...(restProps as object)}
+      type={type}
+      value={current}
+      onValueChange={(next, details) => setCurrent(next, { reason: details.reason, event: details.event })}
+      zone={zoneProp}
+      locale={localeProp}
+      hourCycle={hourCycle}
+      granularity={granularity}
+      disambiguation={disambiguation}
+      min={min}
+      max={max}
+      isDateUnavailable={isDateUnavailable}
+      disabled={disabled}
+      readOnly={readOnly}
+      required={required}
+      invalid={invalid}
+      name={name}
+      label={label}
+      labelledBy={labelledBy}
+      describedBy={describedBy}
+      showZone={showZone}
+      tabIndex={tabIndex}
+      end={
+        <>
+          {clear}
+          {trigger}
+        </>
+      }
+    />
+  );
+
   return (
     <QuietInteractions>
-      <DateField
-        ref={attachField}
-        {...(restProps as object)}
-        type={type}
-        value={current}
-        onValueChange={(next, details) => setCurrent(next, { reason: details.reason, event: details.event })}
-        zone={zoneProp}
-        locale={localeProp}
-        hourCycle={hourCycle}
-        granularity={granularity}
-        disambiguation={disambiguation}
-        min={min}
-        max={max}
-        isDateUnavailable={isDateUnavailable}
-        disabled={disabled}
-        readOnly={readOnly}
-        required={required}
-        invalid={invalid}
-        name={name}
-        label={label}
-        labelledBy={labelledBy}
-        describedBy={describedBy}
-        showZone={showZone}
-        tabIndex={tabIndex}
-        end={
-          <>
-            {clear}
-            {trigger}
-          </>
-        }
-      />
+      {field}
       {panel(
         <Box display="flex" gap={3} ai="stretch">
           {presets && presets.length > 0 && (
@@ -600,6 +825,10 @@ function DatePickerImpl<TKey extends keyof ComponentsAndVariants = 'dateField'>(
               locale={locale}
               hourCycle={hourCycle}
               label={type === 'time' ? panelName : 'Time'}
+              min={timeBound(min)}
+              max={timeBound(max)}
+              emptyLabel={emptyTimesLabel}
+              separated={type === 'datetime'}
               onSelect={pickTime}
             />
           )}
@@ -657,7 +886,10 @@ function DateRangePickerImpl<TKey extends keyof ComponentsAndVariants = 'dateFie
     months = 2,
     side = 'bottom',
     align = 'start',
+    matchWidth = false,
+    emptyTimesLabel: _emptyTimesLabel,
     clearable = false,
+    pickOnly = false,
     triggerLabel = 'Choose dates',
     clearLabel = 'Clear',
     tabIndex,
@@ -690,11 +922,12 @@ function DateRangePickerImpl<TKey extends keyof ComponentsAndVariants = 'dateFie
   const {
     attachTrigger,
     triggerAttributes,
+    triggerElement,
     closeOnChoice,
     id: layerId,
     attachField,
     panel,
-  } = usePickerLayer({ ref, open, defaultOpen, onOpenChange, side, align, label: panelName });
+  } = usePickerLayer({ ref, open, defaultOpen, onOpenChange, side, align, matchWidth, label: panelName });
   const shown = current ? formatRange(current.start, current.end, { locale }) : '';
   const backwards = start !== null && end !== null && compare(start, end) > 0;
 
@@ -719,8 +952,59 @@ function DateRangePickerImpl<TKey extends keyof ComponentsAndVariants = 'dateFie
     tabIndex,
   };
 
-  return (
-    <QuietInteractions>
+  const clear = clearable && current && !disabled && !readOnly && (
+    <Box
+      tag="button"
+      component="datePicker.clear"
+      display="inline-flex"
+      ai="center"
+      jc="center"
+      width={6}
+      height={6}
+      borderRadius={999}
+      // Above a pick-only field's button, whose `::after` covers the frame.
+      position="relative"
+      zIndex={1}
+      props={{
+        type: 'button',
+        'aria-label': clearLabel,
+        tabIndex,
+        onClick: (event: React.MouseEvent) => update(null, null, 'clear', event),
+      }}
+    >
+      <ClearIcon />
+    </Box>
+  );
+
+  const outOfBounds =
+    current !== null && ((min != null && compare(current.start, min) < 0) || (max != null && compare(current.end, max) > 0));
+  const field = pickOnly ? (
+    <PickField
+      frame={{ ...restProps, props: tagProps }}
+      attachField={attachField}
+      attachTrigger={readOnly ? undefined : attachTrigger}
+      triggerAttributes={readOnly ? undefined : triggerAttributes}
+      triggerElement={triggerElement}
+      id={layerId}
+      label={label}
+      labelledBy={labelledBy}
+      describedBy={describedBy}
+      text={shown}
+      placeholder={triggerLabel}
+      icon={<CalendarIcon />}
+      clear={clear}
+      disabled={disabled}
+      invalid={invalid ?? outOfBounds}
+      required={required}
+      tabIndex={tabIndex}
+      inputs={[
+        { name: startName, value: current?.start ?? '' },
+        { name: endName, value: current?.end ?? '' },
+      ]}
+      onReset={(event) => update(defaultValue?.start ?? null, defaultValue?.end ?? null, 'reset', event)}
+    />
+  ) : (
+    <>
       {label !== undefined && (
         <Box component="dateField.label" display="block" mb={1.5} fontSize={14} id={`${layerId}-label`}>
           {label}
@@ -764,26 +1048,7 @@ function DateRangePickerImpl<TKey extends keyof ComponentsAndVariants = 'dateFie
           invalid={invalid ?? backwards}
         />
         <Box display="inline-flex" ai="center" gap={2} ms="auto">
-          {clearable && current && !disabled && !readOnly && (
-            <Box
-              tag="button"
-              component="datePicker.clear"
-              display="inline-flex"
-              ai="center"
-              jc="center"
-              width={6}
-              height={6}
-              borderRadius={999}
-              props={{
-                type: 'button',
-                'aria-label': clearLabel,
-                tabIndex,
-                onClick: (event: React.MouseEvent) => update(null, null, 'clear', event),
-              }}
-            >
-              <ClearIcon />
-            </Box>
-          )}
+          {clear}
           <Box
             tag="button"
             ref={attachTrigger}
@@ -802,6 +1067,12 @@ function DateRangePickerImpl<TKey extends keyof ComponentsAndVariants = 'dateFie
           </Box>
         </Box>
       </Box>
+    </>
+  );
+
+  return (
+    <QuietInteractions>
+      {field}
       {panel(
         <Box display="flex" gap={3} ai="stretch">
           {presets && presets.length > 0 && (
