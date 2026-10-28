@@ -1,0 +1,12 @@
+// The site's analytics collector: `npm run deploy:analytics`. See README.md.
+{
+  "name": "box-kite-analytics",
+  "main": "src/worker.ts",
+  "compatibility_date": "2026-10-15",
+  // Same origin as the site, so a beacon needs no CORS and no third-party domain; no second public URL beside it.
+  "routes": [{ "pattern": "www.box-kite.dev/api/events", "zone_name": "box-kite.dev" }],
+  "workers_dev": false,
+  "preview_urls": false,
+  "analytics_engine_datasets": [{ "binding": "EVENTS", "dataset": "box_kite_events" }],
+  "vars": { "ORIGINS": "https://www.box-kite.dev" },
+}

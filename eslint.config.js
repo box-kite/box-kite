@@ -15,7 +15,7 @@ const INTERACTION_CHANNEL = {
 export default tseslint.config(
   // Build output, ours and Next's (`.next/types/**` and `next-env.d.ts` the Next.js example rewrites on every
   // build), and `.playwright-mcp`, the browser tool's gitignored scratch.
-  { ignores: ['dist', 'dist-core', 'dist-mcp', 'dist-create', '**/.next/**', '**/next-env.d.ts', '.playwright-mcp'] },
+  { ignores: ['dist', 'dist-core', 'dist-mcp', 'dist-create', '**/.next/**', '**/next-env.d.ts', '.playwright-mcp', '**/.wrangler/**'] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ['**/*.{ts,tsx}'],

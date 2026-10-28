@@ -5,6 +5,18 @@ export const LOG_FLAG = 'interactions';
 
 let started = false;
 
+/** Where a visit came from: the other site's host, never its path or query, and nothing for a link inside this site. */
+export function referrerHost(referrer: string, host: string): string | undefined {
+  const bare = (name: string) => name.replace(/^www\./, '');
+  try {
+    const from = new URL(referrer).hostname;
+
+    return from && bare(from) !== bare(host) ? from : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 /** Whether this tab asked for the log, remembering a `?interactions` it arrived with. */
 export function logRequested(search: string): boolean {
   try {

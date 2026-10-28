@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import Box from '../../src/box';
 import { hydrationFinished } from './hydration';
-import { logRequested, startSiteAnalytics } from './siteAnalytics';
+import { logRequested, referrerHost, startSiteAnalytics } from './siteAnalytics';
 
 // Module-wide, so StrictMode running the effect twice is not a second visit.
 let reportedPath: string | undefined;
@@ -24,12 +24,13 @@ export default function AfterHydration() {
     if (pathname === reportedPath) return;
 
     // A page view is the app's own moment, so it goes on the channel every component reports on.
+    const load = reportedPath === undefined;
     Box.reportInteraction({
       component: 'router',
       type: 'navigate',
-      reason: reportedPath === undefined ? 'load' : 'route',
+      reason: load ? 'load' : 'route',
       value: pathname,
-      details: { from: reportedPath },
+      details: { from: reportedPath, referrer: load ? referrerHost(document.referrer, window.location.hostname) : undefined },
     });
     reportedPath = pathname;
   }, [pathname]);

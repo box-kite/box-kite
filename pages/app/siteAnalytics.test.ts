@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import Box from '../../src/box';
-import { LOG_FLAG, logRequested } from './siteAnalytics';
+import { LOG_FLAG, logRequested, referrerHost } from './siteAnalytics';
 
 const CHANNEL = Symbol.for('box-kite.interactions@2');
 const listeners = () => (globalThis as Record<symbol, { listeners: Map<unknown, unknown> } | undefined>)[CHANNEL]?.listeners.size ?? 0;
@@ -25,6 +25,13 @@ describe('the site analytics', () => {
     expect(logRequested('')).toBe(false);
     expect(logRequested(`?${LOG_FLAG}`)).toBe(true);
     expect(logRequested('')).toBe(true);
+  });
+
+  it('names where a visit came from by host alone, and not when it came from this site', () => {
+    expect(referrerHost('https://news.ycombinator.com/item?id=1#top', 'www.box-kite.dev')).toBe('news.ycombinator.com');
+    expect(referrerHost('https://box-kite.dev/start', 'www.box-kite.dev')).toBeUndefined();
+    expect(referrerHost('https://www.box-kite.dev/', 'www.box-kite.dev')).toBeUndefined();
+    expect(referrerHost('', 'www.box-kite.dev')).toBeUndefined();
   });
 
   it('listens to nothing with no collector and no log, so the page loads nothing for it', async () => {
