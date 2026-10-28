@@ -10,58 +10,6 @@ _Unreleased. A PR that changes what a consumer sees adds its section here — se
 
 <!-- One `##` per change, above Breaking changes: a sentence for the heading, a paragraph on what and why, an example if it helps. -->
 
-## Every interaction on the page now reaches one handler
-
-`Box.onInteraction(listener)` hears everything a person does with the library in one stream: a dialog opening and why, a tab chosen, a menu command, a slider let go, a DataGrid sorted, filtered, paged, edited, pasted into, grouped or exported, a toast shown and dismissed, and a press on any element a component styled. Each event is `{ kind, component, type, reason, value, details, source, event, target, timeStamp, time, url }`:
-
-- **`kind`** says what reported it. `'change'` is a component's own change, and `type` is the callback it mirrors without its `on` (`'openChange'`, `'sortingChange'`, `'cellEdit'`). `'dom'` is a `click` or `change` on anything a component styled. `'custom'` is the app's own.
-- **`component`** names it: `'dialog'`, `'datagrid'`, `'menu.item'`, or for a press the nearest `data-bk`. `reason` is the word the callback is given.
-- **`source`** is `'app'` when code did it (a call through a ref, a timer, a `toast()`) and `'user'` otherwise, so a dashboard counts what people did.
-- **`value` and `details` are plain JSON copies**, safe to send as they stand: a `Date` is its ISO string, and a function, a React element or a DOM node is left out.
-- **What a person typed stays on the page unless a listener asks for it.** A search typed into a DataGrid, a cell's value before and after an edit, the cells a paste wrote, a date picked or typed, the rows a `Combobox` selected and a toast's text are all left out, and `url` has no query string and no hash, since a reset link or a token lives there. `Box.onInteraction(listener, { content: true })` hands all of it over, for a listener that keeps it on the page or has the consent to send it. A form reports the names of the fields it sent and a checkbox its `checked` state either way.
-- **`event` and `target`** are the DOM event behind it and the control that handled it, also for a change the component was never handed an event for, like a DataGrid header sorted by a press.
-- **The events are typed.** Narrow on `kind` and then `component` and `type`, and `value` is the type that change carries.
-
-```tsx
-const stop = Box.onInteraction((event) => {
-  if (event.kind === 'change' && event.component === 'datagrid' && event.type === 'sortingChange') {
-    console.log(event.value?.columnKey, event.value?.direction);
-  }
-});
-```
-
-**An app that never listens pays for one comparison.** With nobody subscribed, a component's report returns at once: nothing is queued, timed or kept. Everything else (the batching, the JSON copies, the press listeners) is a chunk of under 1.5 KB fetched with the first subscription. So subscribe early, in the module that boots the app: nothing that happens before the first listener is kept for it.
-
-Delivery is fire and forget: events are handed over in order, in a background task after the handler, so a slow listener never delays the interaction it reports, and a listener that throws is reported rather than breaking the control. `pagehide` delivers what is still queued, and `Box.flushInteractions()` delivers it now. Nothing reports per frame, per hover or per keystroke: a drag reports where it ends, so a slider is `valueCommit` and a dashboard `layoutCommit`. One choice is one event: a component built from others keeps its parts quiet, so a day picked in a `DatePicker` reports `datePicker.valueChange` and `datePicker.openChange`, not the `Calendar` inside it as well. A `Menu.Item` takes a `value`, which is what its `select` reports.
-
-Presses need one line of configuration. `Box.configure({ componentAttribute: true })` writes `data-bk="<component key>"` on every element a component styles, which is how a press is named. A press that changed something arrives as that change, which carries it as its `event`, so one click is one event; only a press nothing explained is a `dom` event. Set it in a module that runs on both the server and the browser, or hydration sees two different trees.
-
-An app reports its own moments on the same stream with `Box.reportInteraction({ component, type, reason, value, details, event, content })`: a page view, a hover, a wizard step, with `content` naming which of `'value'` and the `details` keys a listener has to ask for. Box does not wrap the handlers an app passes in `props`, because that would cost every render and report a hover per frame, so a moment worth counting is named where it happens:
-
-```tsx
-<Button props={{ onMouseEnter: (event) => Box.reportInteraction({ component: 'pricing-cta', type: 'mouseEnter', event }) }}>Pricing</Button>
-```
-
-## `@box-kite/react/analytics` sends that stream somewhere, with a session on every record
-
-`createAnalytics({ send })` turns every interaction into a flat JSON record, batches it, and sends it as the page is hidden, which is the last moment a phone is sure to give a page. It is 1.9 KB gzipped with no React and no engine in it: it reaches nothing but the channel.
-
-```ts
-import { beacon, createAnalytics } from '@box-kite/react/analytics';
-
-const analytics = createAnalytics({ send: beacon('https://collect.example.com/events') });
-```
-
-- **A record is `{ id, name, kind, component, type, reason, value, details, source, trigger, label, time, url, sessionId }`.** `name` is `component.type` (`tabs.valueChange`, `router.navigate`), `trigger` the DOM event's type, `label` the words on the control that was pressed (a button's, a link's, a tab's, never a cell's or a field's), `time` ISO 8601, and `id` unique per record, so a collector that is sent a batch twice can keep it once.
-- **`sessionId` groups one visit.** It is kept in `sessionStorage`, so it survives a reload and ends with the tab, and a new one starts after `sessionTimeout` (30 minutes) with nothing happening.
-- **`visitor: true` adds a `visitorId` that groups one browser across visits**, kept in `localStorage`. It is off by default, because a lasting identifier is the kind a reader in the EU has to agree to first.
-- **Consent is a state.** `consent: 'pending'` holds what happens in memory, stores no id and sends nothing until `analytics.consent('granted')`; `'denied'` drops what was held and forgets both ids. The default is `'granted'`.
-- **`content: true`** is the stream's own option: what people typed, toast text, and the query and hash.
-- **Transports are functions.** `beacon(url)` posts `{ "events": [...] }` with `sendBeacon` (a `keepalive` fetch where the beacon is refused), as `text/plain`, which keeps it a request with no preflight. `consoleLog()` prints a record a line. A vendor is one more function: `send: (events) => events.forEach((e) => posthog.capture(e.name, e))`.
-- `batch: { size, wait }` (20 records, 5 seconds), `filter(event)` to leave interactions out, `analytics.flush()` and `analytics.stop()`.
-
-The docs site runs on it: with `?interactions` in a URL (or in development) every record is printed to the console, and the site posts to the collector its build is given.
-
 ## Breaking changes
 
 None.
@@ -69,9 +17,3 @@ None.
 ## Fixes
 
 <!-- One bullet per fix: **What was wrong.** What it does now. -->
-
-- **The three buttons at the top of the home page were each a button inside a link.** That is two controls in one place, focused and announced twice, and invalid HTML; each is now one link that looks like a button.
-
-- **A day clicked in a `Calendar` reported its focus moving with the reason `'keyboard'`.** `onFocusedDateChange` now says `'select'` for a day chosen by any device, so `'keyboard'` means an arrow key.
-
-- **A `Dialog`, a `Popover` or the DataGrid's bottom sheet could flash scrollbars as it opened.** The entrance scales or slides the layer, and while a transform runs the layer is the containing block of every `position: fixed` element inside it, so a password manager's badge on a text field was placed relative to the dialog rather than the viewport and its `overflow: auto` scrolled to it until the transform settled. The layer now keeps `overflow: hidden` until its entrance has finished and goes back to it as its exit starts, so nothing inside it can scroll while it moves. Content too tall for the layer still scrolls once it is open.
