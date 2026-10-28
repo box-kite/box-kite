@@ -17,3 +17,5 @@ None.
 ## Fixes
 
 <!-- One bullet per fix: **What was wrong.** What it does now. -->
+
+- **A `DatePicker` or `DateRangePicker` stretched wider than its value kept its button next to the segments.** `<DatePicker width="fit">` now puts the clock or calendar button, and the clear button beside it, at the end of the field, where a text box puts its own.

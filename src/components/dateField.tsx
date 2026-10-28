@@ -498,7 +498,12 @@ function DateFieldImpl<TKey extends keyof ComponentsAndVariants = 'dateField'>(p
             {zoneLabel}
           </Box>
         )}
-        {end}
+        {end !== undefined && (
+          // Pushed to the far edge, so a field stretched wider than its segments keeps its button at the end.
+          <Box display="inline-flex" ai="center" ms="auto">
+            {end}
+          </Box>
+        )}
         {name !== undefined || required ? (
           <Fragment>
             {required ? (

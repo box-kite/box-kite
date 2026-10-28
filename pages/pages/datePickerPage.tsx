@@ -39,6 +39,19 @@ function UsageDemo() {
   );
 }
 
+function TimeDemo() {
+  const [value, setValue] = useState<string | null>('18:30:00');
+
+  return (
+    <Box py={4}>
+      <DatePicker type="time" label="Time" width={50} step={30} value={value} onValueChange={setValue} />
+      <Readout>
+        value: <Mono>{String(value)}</Mono>
+      </Readout>
+    </Box>
+  );
+}
+
 function PublishDemo() {
   const [readings, setReadings] = useState<{ value: string | null; utc: string | null }>({ value: null, utc: null });
 
@@ -138,6 +151,14 @@ import TimeZoneSelect from '@box-kite/react/components/timeZoneSelect';`}
               calendar and the list side by side: a day keeps the time already chosen, and the panel closes once a time is picked. The zone
               rules are <Mono>DateField</Mono>'s — <Mono>'local'</Mono> by default, <Mono>'utc'</Mono> or any IANA zone, or{' '}
               <Mono>'none'</Mono>.
+            </Box>
+            <Box mt={4}>
+              <Code
+                language="jsx"
+                code={`<DatePicker type="time" label="Time" width={50} step={30} value={value} onValueChange={setValue} />`}
+              >
+                <TimeDemo />
+              </Code>
             </Box>
             <Box mt={4}>
               <Code

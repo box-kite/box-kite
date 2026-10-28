@@ -763,41 +763,43 @@ function DateRangePickerImpl<TKey extends keyof ComponentsAndVariants = 'dateFie
           props={{ 'aria-label': endLabel }}
           invalid={invalid ?? backwards}
         />
-        {clearable && current && !disabled && !readOnly && (
+        <Box display="inline-flex" ai="center" gap={2} ms="auto">
+          {clearable && current && !disabled && !readOnly && (
+            <Box
+              tag="button"
+              component="datePicker.clear"
+              display="inline-flex"
+              ai="center"
+              jc="center"
+              width={6}
+              height={6}
+              borderRadius={999}
+              props={{
+                type: 'button',
+                'aria-label': clearLabel,
+                tabIndex,
+                onClick: (event: React.MouseEvent) => update(null, null, 'clear', event),
+              }}
+            >
+              <ClearIcon />
+            </Box>
+          )}
           <Box
             tag="button"
-            component="datePicker.clear"
+            ref={attachTrigger}
+            component="datePicker.trigger"
             display="inline-flex"
             ai="center"
             jc="center"
-            width={6}
-            height={6}
-            borderRadius={999}
-            props={{
-              type: 'button',
-              'aria-label': clearLabel,
-              tabIndex,
-              onClick: (event: React.MouseEvent) => update(null, null, 'clear', event),
-            }}
+            width={7}
+            height={7}
+            me={-1.5}
+            borderRadius={1.5}
+            disabled={disabled || readOnly}
+            props={{ type: 'button', 'aria-label': shown ? `${triggerLabel}, ${shown}` : triggerLabel, tabIndex, ...triggerAttributes }}
           >
-            <ClearIcon />
+            <CalendarIcon />
           </Box>
-        )}
-        <Box
-          tag="button"
-          ref={attachTrigger}
-          component="datePicker.trigger"
-          display="inline-flex"
-          ai="center"
-          jc="center"
-          width={7}
-          height={7}
-          me={-1.5}
-          borderRadius={1.5}
-          disabled={disabled || readOnly}
-          props={{ type: 'button', 'aria-label': shown ? `${triggerLabel}, ${shown}` : triggerLabel, tabIndex, ...triggerAttributes }}
-        >
-          <CalendarIcon />
         </Box>
       </Box>
       {panel(
