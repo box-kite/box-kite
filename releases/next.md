@@ -17,3 +17,5 @@ None.
 ## Fixes
 
 <!-- One bullet per fix: **What was wrong.** What it does now. -->
+
+- **In Safari, a date picker, a popover or a menu opened near the bottom of the screen first appeared below its trigger, partly off screen, and then jumped above it.** Safari computes the entrance before the flip, so the panel's position transitioned from the unflipped side. The flip now lands at once, and the panel opens where it fits (bug #300).
