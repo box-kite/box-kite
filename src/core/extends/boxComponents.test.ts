@@ -30,3 +30,19 @@ describe('datagrid.body.cell current-cell ring', () => {
     expect(ruleList(engine).filter((rule) => rule.includes('outline'))).toHaveLength(0);
   });
 });
+
+/** Safari resolves `@starting-style` before the flip, so an anchored panel that transitions it opens on the unflipped side (#300). */
+describe('anchored panels', () => {
+  it.each([
+    ['popover', 'all, overflow, position-area, margin', 'ease, step-end, step-start, step-start'],
+    ['menu', 'all, position-area, margin', 'ease, step-start, step-start'],
+  ])('%s lands a flip at once', (component, property, timing) => {
+    const engine = makeEngine(`${component}-anchored-flip`);
+
+    renderStyles(engine, { component, variant: { topLayer: true } } as never);
+    const rules = ruleList(engine).join('\n');
+
+    expect(rules).toContain(`transition-property:${property}`);
+    expect(rules).toContain(`transition-timing-function:${timing}`);
+  });
+});

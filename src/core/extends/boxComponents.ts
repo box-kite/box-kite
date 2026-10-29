@@ -35,6 +35,16 @@ const OVERFLOW_AFTER_ENTRANCE: BoxComponentStyles['css'] = {
 };
 const OVERFLOW_BEFORE_EXIT: BoxComponentStyles['css'] = { transitionTimingFunction: 'ease, step-start' };
 
+/**
+ * An anchored panel's flip lands at once. Safari resolves `@starting-style` before the flip, so under `allow-discrete`
+ * `position-area` (and the swapped margin) transitioned from the unflipped side: a panel opened off screen, then jumped (#300).
+ */
+const ANCHORED_ENTRANCE: BoxComponentStyles['css'] = {
+  transitionProperty: 'all, overflow, position-area, margin',
+  transitionTimingFunction: 'ease, step-end, step-start, step-start',
+};
+const ANCHORED_EXIT: BoxComponentStyles['css'] = { transitionTimingFunction: 'ease, step-start, step-start, step-start' };
+
 /** The keyboard's mark on a control in the DataGrid's list layout. */
 const FOCUS_RING: BoxComponentStyles = { outline: 2, outlineStyle: 'solid', outlineOffset: 2, outlineColor: 'accent-500' };
 
@@ -190,8 +200,8 @@ const baseComponents = {
       // it is the one thing the test environment cannot see, since it has no UA popover styles either.
       topLayer: {
         transitionBehavior: 'allow-discrete',
-        css: OVERFLOW_AFTER_ENTRANCE,
-        not: { open: { opacity: 0, translateY: -1, display: 'none', overflow: 'hidden', css: OVERFLOW_BEFORE_EXIT } },
+        css: ANCHORED_ENTRANCE,
+        not: { open: { opacity: 0, translateY: -1, display: 'none', overflow: 'hidden', css: ANCHORED_EXIT } },
       },
     },
   },
@@ -228,6 +238,8 @@ const baseComponents = {
       // measured reason.
       topLayer: {
         transitionBehavior: 'allow-discrete',
+        // The menu has no `overflow` step, but it flips like the popover panel does (#300).
+        css: { transitionProperty: 'all, position-area, margin', transitionTimingFunction: 'ease, step-start, step-start' },
         not: { open: { opacity: 0, translateY: -1, display: 'none' } },
       },
     },
