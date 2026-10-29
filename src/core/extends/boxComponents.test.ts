@@ -31,18 +31,20 @@ describe('datagrid.body.cell current-cell ring', () => {
   });
 });
 
-/** Safari resolves `@starting-style` before the flip, so an anchored panel that transitions it opens on the unflipped side (#300). */
+/** Safari's computed `position-area` carries the flip, which a starting style lacks (#300) and a hidden popover drops (#301). */
 describe('anchored panels', () => {
   it.each([
-    ['popover', 'all, overflow, position-area, margin', 'ease, step-end, step-start, step-start'],
-    ['menu', 'all, position-area, margin', 'ease, step-start, step-start'],
-  ])('%s lands a flip at once', (component, property, timing) => {
+    ['popover', 'all, overflow, position-area, margin', 'ease, step-end, step-start, step-start', 'ease, step-start, step-end, step-end'],
+    ['menu', 'all, position-area, margin', 'ease, step-start, step-start', 'ease, step-end, step-end'],
+  ])('%s lands a flip at once and holds it through the exit', (component, property, entrance, exit) => {
     const engine = makeEngine(`${component}-anchored-flip`);
 
     renderStyles(engine, { component, variant: { topLayer: true } } as never);
-    const rules = ruleList(engine).join('\n');
+    const rules = ruleList(engine);
+    const timing = (rule: string) => rule.match(/transition-timing-function:([^;}]*)/)?.[1];
 
-    expect(rules).toContain(`transition-property:${property}`);
-    expect(rules).toContain(`transition-timing-function:${timing}`);
+    expect(rules.join('\n')).toContain(`transition-property:${property}`);
+    expect(rules.filter((rule) => !rule.includes(':not(')).map(timing)).toContain(entrance);
+    expect(rules.filter((rule) => rule.includes(':not(')).map(timing)).toContain(exit);
   });
 });

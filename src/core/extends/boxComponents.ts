@@ -36,14 +36,14 @@ const OVERFLOW_AFTER_ENTRANCE: BoxComponentStyles['css'] = {
 const OVERFLOW_BEFORE_EXIT: BoxComponentStyles['css'] = { transitionTimingFunction: 'ease, step-start' };
 
 /**
- * An anchored panel's flip lands at once. Safari resolves `@starting-style` before the flip, so under `allow-discrete`
- * `position-area` (and the swapped margin) transitioned from the unflipped side: a panel opened off screen, then jumped (#300).
+ * Safari's computed `position-area` (and the swapped margin) carries the flip, and loses it on both edges of a panel's life:
+ * `@starting-style` resolves before the flip (#300) and a hidden popover drops it (#301). So the flip lands at once and leaves last.
  */
 const ANCHORED_ENTRANCE: BoxComponentStyles['css'] = {
   transitionProperty: 'all, overflow, position-area, margin',
   transitionTimingFunction: 'ease, step-end, step-start, step-start',
 };
-const ANCHORED_EXIT: BoxComponentStyles['css'] = { transitionTimingFunction: 'ease, step-start, step-start, step-start' };
+const ANCHORED_EXIT: BoxComponentStyles['css'] = { transitionTimingFunction: 'ease, step-start, step-end, step-end' };
 
 /** The keyboard's mark on a control in the DataGrid's list layout. */
 const FOCUS_RING: BoxComponentStyles = { outline: 2, outlineStyle: 'solid', outlineOffset: 2, outlineColor: 'accent-500' };
@@ -238,9 +238,9 @@ const baseComponents = {
       // measured reason.
       topLayer: {
         transitionBehavior: 'allow-discrete',
-        // The menu has no `overflow` step, but it flips like the popover panel does (#300).
+        // The menu has no `overflow` step, but it flips like the popover panel does (#300, #301).
         css: { transitionProperty: 'all, position-area, margin', transitionTimingFunction: 'ease, step-start, step-start' },
-        not: { open: { opacity: 0, translateY: -1, display: 'none' } },
+        not: { open: { opacity: 0, translateY: -1, display: 'none', css: { transitionTimingFunction: 'ease, step-end, step-end' } } },
       },
     },
     children: {
