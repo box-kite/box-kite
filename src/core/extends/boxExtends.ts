@@ -2,7 +2,7 @@ import { BoxStyle } from '../coreTypes';
 import getDefaultEngine from '../engine/defaultEngine';
 import { Keyframes } from '../engine/keyframes';
 import Palette from '../palette';
-import { Components } from './boxComponents';
+import { Components, ComponentsInput } from './boxComponents';
 import createComponentsRegistry from './componentsRegistry';
 
 // Thin delegation to the default style engine — every registry these functions used to own
@@ -24,7 +24,7 @@ namespace BoxExtends {
     return getDefaultEngine().getComponentsStyles();
   }
 
-  export function components<T extends Components>(components: T, options?: { design?: string }) {
+  export function components<T extends Components>(components: ComponentsInput<T>, options?: { design?: string }) {
     return getDefaultEngine().components(components, options);
   }
 

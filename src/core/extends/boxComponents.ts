@@ -12,6 +12,19 @@ export interface BoxComponent {
 export type Components = Record<string, BoxComponent>;
 
 /**
+ * `Box.components()`'s parameter: still infers `T`, but a hover reads a prop's JSDoc only off a declared property —
+ * a bare `T` (or a `Record`) leaves it the caller's literal, which has none — so every level is mapped over its keys.
+ */
+export type ComponentsInput<T> = { [K in keyof T]: ComponentInput<T[K]> };
+type ComponentInput<C> = BoxComponent &
+  C & {
+    variants?: { [V in keyof VariantsOf<C>]: BoxComponentStyles };
+    children?: ComponentsInput<ChildrenOf<C>>;
+  };
+type VariantsOf<C> = C extends { variants?: infer V } ? V : Record<never, never>;
+type ChildrenOf<C> = C extends { children?: infer Ch } ? Ch : Record<never, never>;
+
+/**
  * What a tool call's JSON and a markdown fence are shown in. There is no `fontFamily` prop — a typeface
  * is a decision about a whole page rather than about one element — so it goes through `css`, which is
  * still a shared class.
