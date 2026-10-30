@@ -30,7 +30,7 @@ import Containers from '../containers';
 import { BoxStyle, BoxStyleValue } from '../coreTypes';
 import Designs from '../designs';
 import type DiagnosticsModule from '../diagnostics';
-import defaultBoxComponents, { BoxComponent, Components } from '../extends/boxComponents';
+import defaultBoxComponents, { BoxComponent, Components, ComponentsInput } from '../extends/boxComponents';
 import { ComponentsRegistry } from '../extends/componentsRegistry';
 import { resolveComponentStyles } from '../extends/useComponents';
 import Filters from '../filters';
@@ -143,7 +143,7 @@ export interface StyleEngine {
    * Component defaults for the whole app. With `design`, they apply only under `data-design="<design>"`, merged
    * over the app's own, so the design can be switched in CSS — on `<html>` before the first paint.
    */
-  components<T extends Components>(components: T, options?: { design?: string }): T;
+  components<T extends Components>(components: ComponentsInput<T>, options?: { design?: string }): T;
   /**
    * Register `@keyframes` sequences, whose steps are Box props. Nothing is emitted until a rule names
    * one, so registering a library of them costs no CSS.

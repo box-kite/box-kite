@@ -1,5 +1,5 @@
 import { stableHash } from '../hash';
-import { Components } from './boxComponents';
+import { Components, ComponentsInput } from './boxComponents';
 
 /** What a registry's own components are merged over: the built-ins, the app's `Box.components()`, or another registry. */
 export type ComponentsBase = 'builtin' | 'global' | ComponentsRegistry;
@@ -20,8 +20,15 @@ export interface ComponentsRegistry<T extends Components = Components> {
  * takes, registered nowhere. `base` defaults to `'global'`, so the design starts from the app's own;
  * `'builtin'` ignores the app's registrations, and a registry chains onto that registry's design.
  */
-export default function createComponents<T extends Components>(components: T, options?: { base?: ComponentsBase }): ComponentsRegistry<T> {
+export default function createComponents<T extends Components>(
+  components: ComponentsInput<T>,
+  options?: { base?: ComponentsBase },
+): ComponentsRegistry<T> {
   const base = options?.base ?? 'global';
 
-  return { id: `${typeof base === 'string' ? base : base.id}.${stableHash(JSON.stringify(components))}`, components, base };
+  return {
+    id: `${typeof base === 'string' ? base : base.id}.${stableHash(JSON.stringify(components))}`,
+    components: components as T,
+    base,
+  };
 }
