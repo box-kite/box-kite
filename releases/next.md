@@ -17,5 +17,3 @@ None.
 ## Fixes
 
 <!-- One bullet per fix: **What was wrong.** What it does now. -->
-
-- **Hovering a prop inside `Box.components()` or `Box.createComponents()` showed its type and no documentation.** It now shows the same description and measured example a prop on `<Box>` does — in `styles`, in every variant and in a child at any depth.
