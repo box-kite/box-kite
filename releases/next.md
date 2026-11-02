@@ -17,6 +17,3 @@ None.
 ## Fixes
 
 <!-- One bullet per fix: **What was wrong.** What it does now. -->
-
-- **`@box-kite/mcp`'s `search_docs` missed a CSS property spelled out in words, and a word no description used.** "border bottom" never reached `bb`, "margin top" ranked `top` above `mt`, and "on/off toggle" did not find `Switch`. Words that spell a property, in either order, now answer with the prop that writes it, and a short list of synonyms covers the rest (`toggle`, `rounded`, Chakra's `w`/`minW`, Tailwind's `leading`/`tracking`) (bug #303).
-- **`check_styles` suggested the wrong prop for a CSS property it had no exact match for.** `borderBottom` suggested `borderColor`, `rounded` and `borderTop` suggested nothing, and `bg` suggested `b`. It now suggests the props that write that property or one of its longhands (`borderBottom` → `bb`, `background` → `bgColor`, `bgImage`…) and the same synonyms `search_docs` reads (`rounded` → `borderRadius`) (bug #304).
