@@ -4509,6 +4509,7 @@ const DATE_MUTED: BoxComponentStyles = { color: 'currentColor/55' };
 
 // The date family, in an object of its own for the reason `listComponents` is. Paint only, and mixed from
 // `currentColor` so a rule follows any theme with no dark twin: every engine entry carries this tree.
+// A spread ends in `as BoxComponentStyles` or its declaration is the whole prop list, which overflowed TS7056 (bug #306).
 const dateComponents = {
   // A date, a time or both, typed a segment at a time. The frame is the text box's.
   dateField: {
@@ -4537,8 +4538,8 @@ const dateComponents = {
     styles: {},
     children: {
       nav: { styles: QUIET_CONTROL },
-      title: { styles: { ...QUIET_CONTROL, fontWeight: 600 } },
-      weekday: { styles: { ...DATE_MUTED, fontWeight: 500 } },
+      title: { styles: { ...QUIET_CONTROL, fontWeight: 600 } satisfies BoxComponentStyles as BoxComponentStyles },
+      weekday: { styles: { ...DATE_MUTED, fontWeight: 500 } satisfies BoxComponentStyles as BoxComponentStyles },
       weekNumber: { styles: DATE_MUTED },
       // The cell carries a range's band and the day inside it the caps, so the band runs unbroken along a week.
       cell: {
@@ -4557,7 +4558,11 @@ const dateComponents = {
           selected: CHOSEN,
           outside: DATE_MUTED,
           blocked: { opacity: 0.4, cursor: 'not-allowed', hover: { bgColor: 'transparent' } },
-          unavailable: { ...DATE_MUTED, textDecoration: 'line-through', cursor: 'not-allowed' },
+          unavailable: {
+            ...DATE_MUTED,
+            textDecoration: 'line-through',
+            cursor: 'not-allowed',
+          } satisfies BoxComponentStyles as BoxComponentStyles,
         },
       },
       zoomItem: { styles: QUIET_CONTROL, variants: { today: { insetRing: 1, insetRingColor: 'accent-500' }, selected: CHOSEN } },
@@ -4569,17 +4574,17 @@ const dateComponents = {
     children: {
       // One end of a range: a field with no frame of its own, inside the range's.
       part: { styles: {} },
-      trigger: { styles: { ...QUIET_CONTROL, color: 'currentColor/70' } },
+      trigger: { styles: { ...QUIET_CONTROL, color: 'currentColor/70' } satisfies BoxComponentStyles as BoxComponentStyles },
       // A `pickOnly` field's button: the frame draws the focus, so the button draws nothing of its own.
       value: { styles: { cursor: 'pointer', disabled: { cursor: 'not-allowed' } }, variants: { placeholder: DATE_MUTED } },
       icon: { styles: { color: 'currentColor/70' } },
-      clear: { styles: { ...QUIET_CONTROL, color: 'currentColor/55' } },
+      clear: { styles: { ...QUIET_CONTROL, color: 'currentColor/55' } satisfies BoxComponentStyles as BoxComponentStyles },
       presets: { styles: { borderColor: 'currentColor/12' } },
       preset: { styles: QUIET_CONTROL, variants: { selected: CHOSEN } },
       times: { styles: { borderColor: 'currentColor/12' } },
       time: { styles: QUIET_CONTROL, variants: { selected: CHOSEN } },
       // What stands in for the list when no time is within `min`/`max`.
-      empty: { styles: { ...DATE_MUTED, borderColor: 'currentColor/12' } },
+      empty: { styles: { ...DATE_MUTED, borderColor: 'currentColor/12' } satisfies BoxComponentStyles as BoxComponentStyles },
     },
   },
 } satisfies Components;

@@ -1,6 +1,7 @@
 import path from 'path';
 import { defineConfig } from 'vite';
 import dts from 'vite-plugin-dts';
+import { coreGraph } from './scripts/moduleGraph.mjs';
 
 /**
  * The `@box-kite/core` build: the engine and the types, with no React anywhere in the graph.
@@ -18,7 +19,9 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     dts({
       entryRoot: './src',
-      include: ['./src/core.ts', './src/types.ts', './src/core/**', './src/utils/**'],
+      // What the entry reaches, rather than all of src/utils/: a leaf it never imports shipped a declaration that
+      // imports the DataGrid's, which this package does not carry.
+      include: [...coreGraph().modules.keys()],
       // Without this the package ships a `.test.d.ts` beside a third of its modules.
       exclude: ['./src/**/*.test.*'],
     }),

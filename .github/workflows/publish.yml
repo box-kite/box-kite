@@ -54,6 +54,8 @@ jobs:
 
       - run: npm ci
       - run: npm run build
+      # The tarballs about to be published, installed and type-checked the way a consumer does (bug #306).
+      - run: npm run check:types
 
       # Core first: @box-kite/react depends on an exact version of it.
       #
