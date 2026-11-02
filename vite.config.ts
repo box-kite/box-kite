@@ -94,20 +94,32 @@ const corePackageReference = {
   },
 };
 
+const SRC = path.resolve(import.meta.dirname, 'src');
+const DIST = path.resolve(import.meta.dirname, 'dist');
+const DECLARATION_SPECIFIER = /(\bfrom\s*|\bimport\s*\(\s*)(['"])(\.{1,2}\/[^'"]*)\2/g;
+
 /**
- * The same repointing for declarations. `src/` is shallow, so the only relative spellings that can name
- * the two entries are these six — and a deep import (`./core/classNames`) is a different string, so an
- * exact match on the quoted specifier cannot catch one by accident.
+ * The same repointing for declarations, resolved the same way: matching spellings missed `../../../types`
+ * and the `import("../../core")` an inferred type is written with (bug #307). A path under `src/core/`
+ * names a file the core package does not export, so it fails the build rather than ship broken.
  */
-function repointCoreImports(content: string): string {
-  let out = content;
+function repointCoreImports(filePath: string, content: string): string {
+  const sourceDir = path.join(SRC, path.relative(DIST, path.dirname(filePath)));
 
-  for (const prefix of ['./', '../', '../../']) {
-    out = out.split(`from '${prefix}core'`).join(`from '${CORE_PACKAGE}'`);
-    out = out.split(`from '${prefix}types'`).join(`from '${CORE_PACKAGE}/types'`);
-  }
+  return content.replace(DECLARATION_SPECIFIER, (match, keyword: string, quote: string, specifier: string) => {
+    const resolved = path.resolve(sourceDir, specifier);
 
-  return out;
+    if (`${resolved}.ts` === CORE_ENTRY) return `${keyword}${quote}${CORE_PACKAGE}${quote}`;
+    if (`${resolved}.ts` === TYPES_ENTRY) return `${keyword}${quote}${CORE_PACKAGE}/types${quote}`;
+    if (resolved.startsWith(path.join(SRC, 'core') + path.sep)) {
+      const name = path.relative(DIST, filePath);
+      throw new Error(
+        `${name} imports '${specifier}', inside @box-kite/core: import it from the core entry so the declaration names the package`,
+      );
+    }
+
+    return match;
+  });
 }
 
 /**
@@ -156,7 +168,9 @@ export default defineConfig(({ mode }) => {
     plugins: [
       dts({
         entryRoot: './src',
-        exclude: ['./pages/**', './src/**/*.test.*', './dev/**'],
+        // Without an include it is the tsconfig's, and the package shipped mcp/, create/, registry/ and supabase/.
+        include: ['./src/**'],
+        exclude: ['./src/**/*.test.*'],
         // The runtime side is handled by `corePackageReference`; declarations are text the dts plugin
         // writes itself, so the same two modules are repointed here — and their own declarations are
         // dropped, because they ship from the core package and two copies would be two `Augmented`
@@ -168,7 +182,7 @@ export default defineConfig(({ mode }) => {
 
           if (belongsToCore) return false;
 
-          return { filePath, content: repointCoreImports(content) };
+          return { filePath, content: repointCoreImports(filePath, content) };
         },
       }),
       corePackageReference,

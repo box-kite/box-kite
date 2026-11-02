@@ -35,6 +35,7 @@ Read `.claude/rules/box-kite-rules.md` — the shortest complete answer — befo
 | `npx vitest run src/path/to/file.test.tsx` | Run a single test file                                                                                            |
 | `npm run lint`                             | ESLint check                                                                                                      |
 | `npm run check:boundaries`                 | Fail if the core engine imports React or the RSC entry reaches a client hook (also prints the adapter ratio)      |
+| `npm run check:types`                      | Install both packed packages into a `skipLibCheck: false` app; fail on a dangling `.d.ts` import                  |
 | `npm run docs:props`                       | Write every prop's `@example` (measured from the engine) and `api/props.json`                                     |
 | `npm run check:props`                      | Fail if a prop has no JSDoc, an example no longer matches the CSS, or the reference is stale                      |
 | `npm run docs:catalog`                     | Write the catalog manifest — the prose half of `catalog()`, from the two references above                         |
@@ -207,7 +208,7 @@ After any code change, all of the following must pass before considering the wor
 8. `npm run check:catalog` — the catalog manifest, when a component prop, a prop description or a semantic element changed
 9. `npm run check:docs` — when anything under `pages/` changed. It **compiles** every code block the docs site shows, each one wrapped as `<Box ${code}>content</Box>`, so a demo caption has to be one valid set of props: prose or an ellipsis joining two elements is a syntax error, and a block that is deliberately not compilable says `check={false}`
 
-Those nine are the ones a change usually reaches. **The authority is the workflows, not this list** — `grep -h "run: npm run" .github/workflows/*.yml | sort -u` prints all sixteen, and the rest (`check:brand`, `check:components`, `check:package`, `size`, `build:pages`, `build:vanilla`, `build:next-app`, `smoke:next-app`) are the ones a green local suite has shipped a red CI on.
+Those nine are the ones a change usually reaches. **The authority is the workflows, not this list** — `grep -h "run: npm run" .github/workflows/*.yml | sort -u` prints every one, and the rest (`check:types`, `check:brand`, `check:components`, `check:package`, `size`, `build:pages`, `build:vanilla`, `build:next-app`, `smoke:next-app`) are the ones a green local suite has shipped a red CI on.
 
 CI runs the test suite against React 18 and React 19 — both are in the supported peer range and the engine leans on layout effects, hydration and server rendering, which is exactly what changed between them.
 

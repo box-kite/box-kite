@@ -191,7 +191,9 @@ export type BoxStyleProps<TKey extends keyof ComponentsAndVariants = never> = Si
     BoxContainerQueryStyles &
     ComponentProps<TKey>
 >;
-export type BoxComponentStyles = Simplify<
+// An interface, so the declarations name it: as a `Simplify<>` alias every use was written out in full, until
+// `boxComponents.d.ts` passed TS7056 and was dropped from the package (bug #306).
+export interface BoxComponentStyles extends Simplify<
   BoxStylesWithPseudoClasses &
     BoxBreakpointsStyles &
     BoxMediaFeatureStyles &
@@ -199,4 +201,4 @@ export type BoxComponentStyles = Simplify<
     BoxPseudoGroupClassesStyles &
     BoxGroupStyles &
     BoxThemeGroupClassStyles
->;
+> {}

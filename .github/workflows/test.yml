@@ -60,6 +60,10 @@ jobs:
         run: npm run compare
       - name: Check build 🔧
         run: npm run build
+      # Packs both packages into an app with skipLibCheck: false. A dropped declaration file builds green and
+      # reads as `any` in every app that skips lib checks, which is how 2.2.6–2.2.15 shipped one (bug #306).
+      - name: Check the published types resolve and refuse 🔧
+        run: npm run check:types
       # The existence proof for the core boundary: a page with no framework, built against the
       # same sources. If the engine ever needs React again, this is what stops compiling.
       - name: Check the framework-free example builds 🔧
