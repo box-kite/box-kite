@@ -3,18 +3,11 @@ import { ComponentType, Fragment, ReactNode, useMemo } from 'react';
 import Box, { BoxProps } from '../../src/box';
 import { Figcaption, Figure, H2, H3, H4, Img, Li, Link, Ol, P, Ul } from '../../src/components/semantics';
 import { SITE_URL } from '../site/site';
-import { slugify } from '../utils/markdownUtils';
+import { demoName, slugify } from '../utils/markdownUtils';
 import Code from './code';
 
 /** Live examples by component name: `filter-card.png` is `FilterCard`, and the screenshot is what other platforms show. */
 export type MarkdownDemos = Readonly<Record<string, ComponentType>>;
-
-const demoName = (href: string) =>
-  href
-    .split('/')
-    .pop()!
-    .replace(/\.\w+$/, '')
-    .replace(/(?:^|-)(\w)/g, (_, letter: string) => letter.toUpperCase());
 
 /**
  * Markdown rendered with Box components — the release notes and the blog posts, which are written once and

@@ -50,6 +50,7 @@ a copy whose canonical URL points back here, and nothing is ever published only 
    the screenshot from the dev server in the light theme at `deviceScaleFactor: 2`, with the interesting state open,
    clipped just inside the demo frame, into `pages/public/img/blog/<slug>/`. Word the prose so it reads true beside a
    picture ("with the dropdown open", not "press Filters"). The cross-post script adds the "live in the original" line.
+   `pages/site/posts.test.ts` fails a post with no live example, or a screenshot of its own with no component behind it.
 
 6. **Write the cross-post kit** at `../box-kite-plans/launches/blog-<slug>.md`: the dev.to / Hashnode / Medium steps with
    `canonical_url: https://www.box-kite.dev/blog/<slug>/`, a Reddit post (r/reactjs for a use case, r/webdev or

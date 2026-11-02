@@ -1,7 +1,7 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { headings } from '../utils/markdownUtils';
+import { demoName, headings } from '../utils/markdownUtils';
 import { FIRST_POST, parsePosts, postBody, postRoutes, POSTS_PATH } from './posts';
 import { parseReleases, releaseRoutes } from './releases';
 import { SITE_URL, siteRoutes } from './site';
@@ -106,6 +106,26 @@ describe('posts/', () => {
   it.each(Object.entries(files))('%s names only MCP tools the server has', (_, markdown) => {
     for (const [, tool] of markdown.matchAll(/`((?:get|check|search)_[a-z]+)`/g)) expect(mcpReadme, tool).toContain(`\`${tool}\``);
   });
+
+  // Owner rule: every article shows rather than tells, live on the site and as a screenshot everywhere else.
+  it.each(posts.map((entry) => [entry.slug, entry.markdown]))(
+    '%s shows a live example, and every screenshot of its own is one',
+    (slug, markdown) => {
+      const module = resolve(root, 'pages/postDemos', `${slug}.tsx`);
+      const exported = existsSync(module)
+        ? [...readFileSync(module, 'utf8').matchAll(/^export function (\w+)/gm)].map((match) => match[1])
+        : [];
+      const images = [...markdown.matchAll(/!\[[^\]]*\]\(([^)\s]+)\)/g)]
+        .map((match) => match[1])
+        .filter((href) => href.includes(`/img/blog/${slug}/`));
+
+      expect(
+        images.length,
+        `${slug} has no live example: add an image line and its component in pages/postDemos/${slug}.tsx`,
+      ).toBeGreaterThan(0);
+      for (const href of images) expect(exported, `${href} has no component in pages/postDemos/${slug}.tsx`).toContain(demoName(href));
+    },
+  );
 
   it('keeps every summary whole inside a search result, and every section anchor unique', () => {
     for (const entry of posts) {
