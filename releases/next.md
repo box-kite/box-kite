@@ -10,18 +10,6 @@ _Unreleased. A PR that changes what a consumer sees adds its section here — se
 
 <!-- One `##` per change, above Breaking changes: a sentence for the heading, a paragraph on what and why, an example if it helps. -->
 
-## A new app tells its coding agent how to write Box Kite, and one command does the same for an existing project
-
-Box Kite is newer than any model's training data, so an agent writing it from memory produces code that compiles and is laid out wrong: `fontSize={4}` is 4px text, an `href` at the top level is dropped. `npm create @box-kite` now writes an `AGENTS.md` into the new app with the four facts a model gets wrong and a pointer to `node_modules/@box-kite/react/AGENTS.md`, the whole rules, which an upgrade keeps current. It also writes a `CLAUDE.md` importing it (Claude Code's spelling of the same file) and the MCP server's config for Claude Code, Cursor and VS Code. `--no-agents` leaves them out.
-
-For a project that already has Box Kite, one command adds the same files, merging rather than overwriting. It puts the block into your own `AGENTS.md` (replacing it in place on a later run), puts the import into your `CLAUDE.md`, and adds the server beside the ones your MCP configs already list:
-
-```sh
-npm create @box-kite@latest -- --agents-only
-```
-
-It writes an editor's MCP config only when that editor's folder is there, and leaves alone a config it cannot rewrite without losing your comments, printing the entry to add by hand. It replaces copying `AGENTS.md` out of `node_modules`, which the README and the docs used to ask for, and which left a copy that went stale with the next upgrade.
-
 ## Breaking changes
 
 None.
