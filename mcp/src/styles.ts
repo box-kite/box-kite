@@ -1,6 +1,7 @@
 import Diagnostics from '../../src/core/diagnostics';
 import { acceptedValues, prop, props, styleEngine } from './data';
 import { measure, written } from './engine';
+import { spells, SYNONYMS } from './search';
 import { attributeNames, nestingKey, reservedProps } from './vocabulary';
 
 /**
@@ -34,15 +35,20 @@ export interface StyleCheck {
 
 /**
  * What the writer meant. The commonest miss is not a typo but the CSS property itself — `padding`,
- * `backgroundColor`, `marginTop` — and an edit distance never finds `p` from `padding`, so the first
- * question is which props *write* the property that name spells. A typo falls through to the second.
+ * `borderBottom` — or another library's name for a prop (`rounded`), and an edit distance finds
+ * neither: `borderBottom` is two edits from `borderColor` (#304). A typo falls through to it last.
  */
 function nearest(name: string): string[] {
   const property = name.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
-  const writers = props.filter((candidate) => candidate.properties.includes(property)).map((candidate) => candidate.name);
-  if (writers.length) return writers.slice(0, 4);
-
   const target = name.toLowerCase();
+  // The prop writing only that property is the precise answer, so it goes before one writing two.
+  const exact = props.filter((candidate) => spells(candidate, property) === 2).sort((a, b) => a.properties.length - b.properties.length);
+  const meant = [
+    ...exact,
+    ...props.filter((candidate) => SYNONYMS[candidate.name]?.split(' ').includes(target)),
+    ...props.filter((candidate) => spells(candidate, property) === 1),
+  ];
+  if (meant.length) return [...new Set(meant.map((candidate) => candidate.name))].slice(0, 4);
 
   return props
     .map((candidate) => ({ name: candidate.name, distance: distance(target, candidate.name.toLowerCase()) }))

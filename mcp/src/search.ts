@@ -1,4 +1,4 @@
-import { component, components, props, rules } from './data';
+import { component, components, PropRecord, props, rules } from './data';
 import { nestingKeys, nestingKindLabel } from './vocabulary';
 
 /**
@@ -104,15 +104,43 @@ function stems(term: string): string[] {
 }
 
 /**
- * Query terms, the camelCase a prop name is written in split into words beside them, stemmed. The
- * stopwords come back when they were the whole query: `not`, `has` and `group` are all real keys.
+ * The query's words, the camelCase a prop name is written in split apart. The stopwords come back
+ * when they were the whole query: `not`, `has` and `group` are all real keys.
  */
-function terms(query: string): string[] {
+function words(query: string): string[] {
   const spaced = query.replace(/([a-z0-9])([A-Z])/g, '$1 $2').toLowerCase();
-  const words = (spaced.match(WORD) ?? []).filter((word) => word.length > 1);
-  const carrying = words.filter((word) => !STOPWORDS.has(word));
+  const all = (spaced.match(WORD) ?? []).filter((word) => word.length > 1);
+  const carrying = all.filter((word) => !STOPWORDS.has(word));
 
-  return [...new Set((carrying.length ? carrying : words).flatMap(stems))];
+  return carrying.length ? carrying : all;
+}
+
+const terms = (query: string[]): string[] => [...new Set(query.flatMap(stems))];
+
+/**
+ * The CSS properties adjacent words could spell, each pair both ways round: "bottom border" is
+ * `border-bottom`. One word only when it is the whole query, or "border bottom" would answer `bottom`.
+ */
+function phrases(query: string[]): string[] {
+  const runs: string[] = [];
+
+  for (let start = 0; start < query.length; start += 1) {
+    for (let end = start + Math.min(2, query.length); end <= query.length; end += 1) runs.push(query.slice(start, end).join('-'));
+    if (start + 1 < query.length) runs.push(`${query[start + 1]}-${query[start]}`);
+  }
+
+  return runs;
+}
+
+/**
+ * 2 when a prop writes `property`, 1 when it writes one of its longhands — exactly one segment more,
+ * so `border-bottom` reaches `border-bottom-width` and not `border-bottom-left-radius` — else 0.
+ */
+export function spells(record: PropRecord, property: string): number {
+  if (record.properties.includes(property)) return 2;
+  const longhand = (written: string) => written.startsWith(`${property}-`) && !written.slice(property.length + 1).includes('-');
+
+  return record.properties.some(longhand) ? 1 : 0;
 }
 
 /** A whole-word hit is worth more than a substring: `p` inside `opacity` says nothing about padding. */
@@ -163,11 +191,26 @@ function score(query: string[], name: string, body: string): number {
 const truncate = (text: string, limit = 160) => (text.length <= limit ? text : `${text.slice(0, limit - 1).trimEnd()}…`);
 
 /**
- * What a reader calls a nesting key when they do not know its name. Search terms only — the facts
- * about each key stay in the engine's own records — but without them `startingStyle` is unreachable
- * from "fade in when it mounts", which is exactly how somebody asks for it.
+ * What a reader calls a key when they do not know its name: the words of a goal, or another library's
+ * spelling. Without them `startingStyle` is unreachable from "fade in when it mounts" and `rounded`
+ * from Tailwind's habit. `check_styles` reads the same words to suggest a prop for a misspelt one.
  */
-const SYNONYMS: Readonly<Record<string, string>> = {
+export const SYNONYMS: Readonly<Record<string, string>> = {
+  Switch: 'toggle',
+  b: 'border',
+  borderStyle: 'border',
+  borderColor: 'border',
+  borderRadius: 'rounded round corner corners',
+  bgColor: 'bg background',
+  width: 'w',
+  height: 'h',
+  minWidth: 'minw',
+  maxWidth: 'maxw',
+  minHeight: 'minh',
+  maxHeight: 'maxh',
+  lineHeight: 'leading',
+  letterSpacing: 'tracking',
+  d: 'flexdir',
   startingStyle: 'entrance enter appear mount mounted fade in animate on mount initial from',
   cq: 'container query responsive to the element rather than the viewport',
   dataAttr: 'data attribute state open closed selector',
@@ -196,8 +239,18 @@ const SYNONYMS: Readonly<Record<string, string>> = {
 
 /** The four corpora, ranked together. `kind` narrows it when the caller already knows which it wants. */
 export function search(query: string, options: { kind?: HitKind; limit?: number } = {}): Hit[] {
-  const query_ = terms(query);
+  const said = words(query);
+  const query_ = terms(said);
   if (!query_.length) return [];
+
+  const spelled = phrases(said);
+  // A synonym is a curated way of asking for this key, so it is worth more than a word that happens
+  // to be in a description — "dark mode" has to reach `theme` past `animationFillMode`.
+  const asked = (name: string) => {
+    const synonyms = SYNONYMS[name]?.split(' ') ?? [];
+
+    return query_.filter((term) => synonyms.includes(term)).length * 20;
+  };
 
   const hits: Hit[] = [];
 
@@ -207,7 +260,11 @@ export function search(query: string, options: { kind?: HitKind; limit?: number 
       // outrank the many descriptions that merely say the word: value hits are scored apart.
       const values = new Set((record.values ?? []).map((entry) => String(entry).toLowerCase()));
       const named = query_.filter((term) => values.has(term)).length * 20;
-      const value = score(query_, record.name, `${record.description} ${record.properties.join(' ')}`) + named;
+      // "margin top" spells the property `mt` writes, which no word of it names (#303). One word is
+      // worth an exact name and no more, or "flex" would answer `flexGrow` before `Flex`.
+      const property = (said.length > 1 ? [0, 200, 300] : [0, 0, 100])[Math.max(0, ...spelled.map((phrase) => spells(record, phrase)))];
+      const value =
+        score(query_, record.name, `${record.description} ${record.properties.join(' ')}`) + named + property + asked(record.name);
       if (value > 0)
         hits.push({
           kind: 'prop',
@@ -221,7 +278,7 @@ export function search(query: string, options: { kind?: HitKind; limit?: number 
   if (!options.kind || options.kind === 'component') {
     for (const record of components) {
       const propNames = record.props.map((entry) => entry.name).join(' ');
-      const value = score(query_, record.name, `${record.description} ${propNames} ${(record.a11y ?? []).join(' ')}`);
+      const value = score(query_, record.name, `${record.description} ${propNames} ${(record.a11y ?? []).join(' ')}`) + asked(record.name);
       if (value > 0) hits.push({ kind: 'component', name: record.name, summary: truncate(record.description), score: value });
     }
   }
@@ -229,11 +286,7 @@ export function search(query: string, options: { kind?: HitKind; limit?: number 
   if (!options.kind || options.kind === 'nesting') {
     for (const entry of nestingKeys) {
       if (entry.deprecated) continue;
-      // A synonym is a curated way of asking for this key, so it is worth more than a word that
-      // happens to be in a description — "dark mode" has to reach `theme` past `animationFillMode`.
-      const synonyms = SYNONYMS[entry.key]?.split(' ') ?? [];
-      const asked = query_.filter((term) => synonyms.includes(term)).length * 20;
-      const value = score(query_, entry.key, `${entry.compiles} ${nestingKindLabel(entry.kind)}`) + asked;
+      const value = score(query_, entry.key, `${entry.compiles} ${nestingKindLabel(entry.kind)}`) + asked(entry.key);
       if (value > 0)
         hits.push({ kind: 'nesting', name: entry.key, summary: `${nestingKindLabel(entry.kind)} → \`${entry.compiles}\``, score: value });
     }
