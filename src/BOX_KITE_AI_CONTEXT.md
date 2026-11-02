@@ -2575,6 +2575,22 @@ import { Area, AreaChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis } fro
 | -------- | ---------------------------------------------------------------------------------------------------------- |
 | `series` | `['revenue', 'cost']` takes the palette in order, or `{ revenue: 'emerald-600' }` names a paint per series |
 
+A paint is **anything `fill` takes**, and is resolved the way `fill` resolves it: a palette token, one with an
+opacity (`'emerald-600/40'`), a token of the app's own from `Box.extend({ variables })` with or without one,
+or a `var(--…)`/`url(#…)` reference. An app token is the usual case in a real dashboard:
+
+```tsx
+Box.extend({ 'ui-primary': 'oklch(55% .2 260)' }, {}, {});
+
+<ChartContainer series={{ completed: 'ui-primary', started: 'ui-primary/35' }}>
+  {/* --color-completed: var(--ui-primary), --color-started: color-mix(in oklab, var(--ui-primary) 35%, transparent) */}
+</ChartContainer>;
+```
+
+A value `fill` refuses (`'tael-500'`) declares nothing rather than an invalid colour, and says so in
+development with the nearest token. A colour written as CSS is not a series paint — declare it yourself,
+`vars={{ 'color-completed': 'hsl(var(--primary))' }}`, which the container merges over the series.
+
 Everything else is a Box prop, which is the point:
 
 - It always declares `--chart-1` … `--chart-6` (the six `MiniDonut` cycles through) and redeclares

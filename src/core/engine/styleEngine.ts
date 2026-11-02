@@ -152,6 +152,11 @@ export interface StyleEngine {
   getComponentsStyles(): Components;
   getVariableValue(name: string): string;
   /**
+   * Whether `key` takes `value`, by the judgement a prop gets — for a value a component writes where no prop's
+   * grammar sees it (a `ChartContainer` series lands in `vars`). `warning` is the head of a development warning.
+   */
+  accepts(key: string, value: BoxStyleValue, warning?: () => string): boolean;
+  /**
    * What this engine can render, for `catalog()` to describe: the prop registry with `extend()`'s additions
    * in it, every colour name a colour prop takes, and the `@keyframes` sequences registered. One method
    * rather than three getters, because nothing but a catalog has a use for any of them.
@@ -723,11 +728,13 @@ export function createStyleEngine(options: StyleEngineOptions = {}): StyleEngine
    * definition that declares its own `declarations` (`vars`) the property names come from the value.
    */
   function declarations(itemValue: BoxStyle, key: string, value: BoxStyleValue) {
-    if (itemValue.declarations) return itemValue.declarations(value, variables.reference);
+    if (itemValue.declarations) return itemValue.declarations(value, variables.reference, variables.isUserVariable);
 
     const styleName = Array.isArray(itemValue.styleName) ? itemValue.styleName : [itemValue.styleName ?? key];
 
-    return styleName.map((s) => `${s}:${(itemValue.valueFormat as any)?.(value, variables.reference, s) ?? value}`).join(';');
+    return styleName
+      .map((s) => `${s}:${(itemValue.valueFormat as any)?.(value, variables.reference, s, variables.isUserVariable) ?? value}`)
+      .join(';');
   }
 
   /** One position of a tuple: its own list, or — where that list resolves to `var(--token)` — what the string fallback below takes. */
@@ -1375,6 +1382,18 @@ export function createStyleEngine(options: StyleEngineOptions = {}): StyleEngine
       scheduleFlush();
 
       return value;
+    },
+
+    accepts(key, value, warning) {
+      if (findDefinition(key, value)) return true;
+
+      if (warning) {
+        const head = warning();
+        const definitions = (cssStyles as Record<string, BoxStyle[] | undefined>)[key];
+        warn(head, (diagnostics) => diagnostics.rejected(key, value, definitions, head));
+      }
+
+      return false;
     },
 
     getCatalogSource() {

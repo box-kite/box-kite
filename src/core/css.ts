@@ -52,11 +52,12 @@ namespace Css {
    * resolves to the variable behind it, so `outlineColor: 'sky-500'` stays themed; anything else is written
    * out as it stands, a number included — the value grammar is `vars`', so there is one rule to learn.
    */
-  export function declarations(value: Declarations, getVariableValue: (name: string) => string): string {
+  export function declarations(value: Declarations, getVariableValue: (name: string) => string, isVariable?: Variables.IsVariable): string {
     return Object.entries(value)
       .filter(isUsableEntry)
       .map(
-        ([name, entry]) => `${toPropertyName(name)}:${typeof entry === 'string' ? Variables.colorValue(entry, getVariableValue) : entry}`,
+        ([name, entry]) =>
+          `${toPropertyName(name)}:${typeof entry === 'string' ? Variables.colorValue(entry, getVariableValue, isVariable) : entry}`,
       )
       .join(';');
   }

@@ -10,7 +10,7 @@
       "type": "ChartSeries",
       "required": false,
       "default": null,
-      "description": "The series drawn inside, and what colour each of them is."
+      "description": "The series drawn inside, and what colour each of them is: a list takes the palette in order, a record names each series' paint — anything `fill` takes, a `Box.extend()` token included (`{ done: 'brand', open: 'brand/35' }`). A paint `fill` refuses declares nothing and warns in development; a colour written as CSS goes in `vars`."
     }
   ],
   "parts": [],

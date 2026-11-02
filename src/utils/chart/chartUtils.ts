@@ -200,12 +200,17 @@ namespace ChartUtils {
   /**
    * The variables a chart's series read, named as the ecosystem names them: `{ 'color-revenue':
    * 'var(--chart-1)' }`. A list takes the palette in order, which is the whole case for the container — a
-   * chart naming no colour has its dark mode decided by the page. A record names its own paint per series.
+   * chart naming no colour has its dark mode decided by the page. A record names its own paint per series,
+   * and one `isPaint` refuses is left out: declared as text, it would paint the series transparent (bug #308).
    */
-  export function seriesVariables(series: readonly string[] | Readonly<Record<string, string>>, slots: number = PALETTE.length) {
+  export function seriesVariables(
+    series: readonly string[] | Readonly<Record<string, string>>,
+    slots: number = PALETTE.length,
+    isPaint: (paint: string, name: string) => boolean = () => true,
+  ) {
     const entries: readonly (readonly [string, string])[] = Array.isArray(series)
       ? series.map((name, index) => [name, `var(--chart-${(index % slots) + 1})`] as const)
-      : Object.entries(series as Record<string, string>);
+      : Object.entries(series as Record<string, string>).filter(([name, paint]) => isPaint(paint, name));
 
     return entries.reduce<Record<string, string>>((acc, [name, paint]) => {
       acc[`color-${name}`] = paint;

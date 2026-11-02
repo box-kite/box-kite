@@ -115,20 +115,20 @@ namespace Gradients {
     return geometryOf(record) !== null;
   }
 
-  function stopOf(stop: Stop, getVariableValue: (name: string) => string): string {
+  function stopOf(stop: Stop, getVariableValue: (name: string) => string, isVariable?: Variables.IsVariable): string {
     const [color, position] = Array.isArray(stop) ? stop : [stop as StopColor, ''];
 
-    return `${Variables.colorValue(color, getVariableValue)}${position ? ` ${position}` : ''}`;
+    return `${Variables.colorValue(color, getVariableValue, isVariable)}${position ? ` ${position}` : ''}`;
   }
 
   /** The record as a `background-image` value, every stop resolved to the variable behind its token. */
-  export function css(value: BoxStyleValue, getVariableValue: (name: string) => string): string {
+  export function css(value: BoxStyleValue, getVariableValue: (name: string) => string, isVariable?: Variables.IsVariable): string {
     const record = value as Record<string, unknown>;
     const kind = kinds.find((name) => name in record) ?? 'linear';
     const at = typeof record.at === 'string' ? `at ${record.at}` : '';
     const interpolate = record.interpolate ? interpolations[record.interpolate as Interpolation] : '';
     const prelude = [geometryOf(record) ?? '', at, interpolate].filter(Boolean).join(' ');
-    const stops = (record.colors as readonly Stop[]).map((stop) => stopOf(stop, getVariableValue)).join(',');
+    const stops = (record.colors as readonly Stop[]).map((stop) => stopOf(stop, getVariableValue, isVariable)).join(',');
 
     return `${kind}-gradient(${prelude ? `${prelude},` : ''}${stops})`;
   }
