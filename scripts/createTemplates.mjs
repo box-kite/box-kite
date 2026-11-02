@@ -9,6 +9,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import prettier from 'prettier';
 import ts from 'typescript';
+import { priorFacts } from './agentSources.mjs';
 
 export const ROOT = join(import.meta.dirname, '..');
 const templates = join(ROOT, 'create', 'templates');
@@ -188,5 +189,6 @@ export function templateFiles() {
     ts: language('ts', 'tsx'),
     js: language('js', 'jsx'),
     fonts: Object.fromEntries(DESIGN_IDS.map((id) => [id, designFonts(id)])),
+    facts: priorFacts(),
   };
 }

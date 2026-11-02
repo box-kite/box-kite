@@ -51,4 +51,16 @@ describe('parseOptions', () => {
     expect(parseOptions(['my-app/']).options.directory).toBe('my-app');
     expect(parseOptions(['.']).options.directory).toBe('.');
   });
+
+  it('writes the agent files unless told not to', () => {
+    expect(parseOptions([]).options).toMatchObject({ agents: true, agentsOnly: false });
+    expect(parseOptions(['--no-agents']).options.agents).toBe(false);
+  });
+
+  it('adds only the agent files with --agents-only, and refuses the options that make an app', () => {
+    const { options, errors } = parseOptions(['--agents-only']);
+    expect(errors).toEqual([]);
+    expect(options).toMatchObject({ agentsOnly: true, directory: undefined });
+    expect(parseOptions(['--agents-only', '--design', 'mono']).errors).toEqual([expect.stringContaining('takes no --design')]);
+  });
 });

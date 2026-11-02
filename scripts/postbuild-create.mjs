@@ -11,6 +11,7 @@ import { spawnSync } from 'node:child_process';
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
+import { priorFacts } from './agentSources.mjs';
 import { DESIGN_IDS, designFonts } from './createTemplates.mjs';
 
 const root = join(import.meta.dirname, '..');
@@ -54,6 +55,23 @@ writeFileSync(join(out, 'package.json'), `${JSON.stringify(manifest, null, 2)}\n
 cpSync(join(root, 'create', 'README.md'), join(out, 'README.md'));
 cpSync(join(root, 'LICENSE'), join(out, 'LICENSE'));
 
+/** What a new app needs so an agent writes Box Kite right: the facts, the pointer, and the server in every tool. */
+function checkAgentFiles(name, app) {
+  const agents = readFileSync(join(app, 'AGENTS.md'), 'utf8');
+  if (!agents.includes(priorFacts()[0]) || !agents.includes('node_modules/@box-kite/react/AGENTS.md')) {
+    fail(`${name}/AGENTS.md is missing the facts or the pointer to the package's rules.`, agents);
+  }
+  if (readFileSync(join(app, 'CLAUDE.md'), 'utf8').trim() !== '@AGENTS.md') fail(`${name}/CLAUDE.md does not import AGENTS.md.`);
+  for (const [file, key] of [
+    ['.mcp.json', 'mcpServers'],
+    ['.cursor/mcp.json', 'mcpServers'],
+    ['.vscode/mcp.json', 'servers'],
+  ]) {
+    const server = JSON.parse(readFileSync(join(app, file), 'utf8'))[key]?.['box-kite'];
+    if (!server?.args?.includes('@box-kite/mcp')) fail(`${name}/${file} does not connect @box-kite/mcp.`);
+  }
+}
+
 /** A junction needs no elevation on Windows, and elsewhere the type is ignored. */
 function link(target, at) {
   mkdirSync(dirname(at), { recursive: true });
@@ -61,7 +79,16 @@ function link(target, at) {
 }
 
 /** The packages an app's own build reaches: the repo's copies, so nothing is downloaded and React is one copy. */
-const APP_PACKAGES = ['react', 'react-dom', '@types/react', '@types/react-dom', '@types/node', 'vite', '@vitejs/plugin-react', 'typescript'];
+const APP_PACKAGES = [
+  'react',
+  'react-dom',
+  '@types/react',
+  '@types/react-dom',
+  '@types/node',
+  'vite',
+  '@vitejs/plugin-react',
+  'typescript',
+];
 
 function fail(message, output = '') {
   console.error(`\n✖ @box-kite/create: ${message}\n${output.trim()}\n`);
@@ -96,7 +123,10 @@ try {
     for (const design of DESIGN_IDS) {
       const name = `${design}-${template}`;
       const app = join(work, 'apps', name);
-      const created = node([join(bin, 'create.mjs'), name, '--template', template, '--design', design, '--no-install', '--no-interactive'], join(work, 'apps'));
+      const created = node(
+        [join(bin, 'create.mjs'), name, '--template', template, '--design', design, '--no-install', '--no-interactive'],
+        join(work, 'apps'),
+      );
       if (created.status !== 0) fail(`${name} was not created.`, created.stdout + created.stderr);
 
       const pkg = JSON.parse(readFileSync(join(app, 'package.json'), 'utf8'));
@@ -104,6 +134,7 @@ try {
         if (!pkg.dependencies[dependency]) fail(`${name}/package.json has no ${dependency}.`);
       }
       if (existsSync(join(app, 'src', 'App.css'))) fail(`${name} still has the template's App.css.`);
+      checkAgentFiles(name, app);
 
       if (template === 'react-ts') {
         const checked = node([tsc, '-b'], app);
@@ -113,6 +144,35 @@ try {
       if (built.status !== 0) fail(`${name} does not build.`, built.stdout + built.stderr);
     }
   }
+
+  // The file AGENTS.md sends an agent to has to be in the package it points into.
+  if (!existsSync(join(modules, '@box-kite', 'react', 'AGENTS.md'))) fail("dist/ has no AGENTS.md, which every app's AGENTS.md points at.");
+
+  const bare = join(work, 'apps', 'no-agents');
+  const without = node(
+    [join(bin, 'create.mjs'), 'no-agents', '--design', 'classic', '--no-agents', '--no-install', '--no-interactive'],
+    join(work, 'apps'),
+  );
+  if (without.status !== 0 || existsSync(join(bare, 'AGENTS.md')))
+    fail('--no-agents still wrote AGENTS.md.', without.stdout + without.stderr);
+
+  // An existing project: its own AGENTS.md and MCP servers survive, and a second run changes nothing.
+  const existing = join(work, 'existing');
+  mkdirSync(join(existing, '.vscode'), { recursive: true });
+  writeFileSync(join(existing, 'package.json'), JSON.stringify({ name: 'existing', dependencies: { '@box-kite/react': '^2' } }));
+  writeFileSync(join(existing, 'AGENTS.md'), ['# Ours', '', 'Use tabs.', ''].join('\n'));
+  writeFileSync(join(existing, '.mcp.json'), JSON.stringify({ mcpServers: { github: { command: 'gh' } } }));
+  for (const run of [1, 2]) {
+    const added = node([join(bin, 'create.mjs'), '--agents-only'], existing);
+    if (added.status !== 0) fail(`--agents-only failed on run ${run}.`, added.stdout + added.stderr);
+  }
+  const agents = readFileSync(join(existing, 'AGENTS.md'), 'utf8');
+  if (!agents.startsWith('# Ours') || agents.split('BEGIN:box-kite-agent-rules').length !== 2)
+    fail("--agents-only did not keep AGENTS.md's own text, or added its block twice.", agents);
+  if (!JSON.parse(readFileSync(join(existing, '.mcp.json'), 'utf8')).mcpServers.github)
+    fail('--agents-only dropped a server .mcp.json already had.');
+  if (!existsSync(join(existing, '.vscode', 'mcp.json')) || existsSync(join(existing, '.cursor')))
+    fail("--agents-only wrote the wrong editors' configs.");
 
   const help = node([join(bin, 'create.mjs'), '--help'], work);
   if (help.status !== 0 || !help.stdout.includes('--design')) fail('--help says nothing about --design.', help.stdout + help.stderr);

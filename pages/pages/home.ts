@@ -144,7 +144,7 @@ export const agentTools: readonly AgentTool[] = [
 
 /** The one command each of the three install routes takes. */
 export const installs = [
-  { label: 'Any agent that reads a root AGENTS.md', command: 'cp node_modules/@box-kite/react/AGENTS.md ./AGENTS.md' },
+  { label: 'AGENTS.md, CLAUDE.md and the MCP server, in your project', command: 'npm create @box-kite@latest -- --agents-only' },
   { label: 'As a skill, in roughly forty-five agents', command: 'npx skills add box-kite/box-kite' },
   { label: 'As an MCP server, with the engine behind it', command: 'npx @box-kite/mcp' },
 ] as const;

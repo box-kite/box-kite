@@ -728,12 +728,18 @@ behaviour hooks (`docs/a11y.md`). All of it is generated during the build from t
 rules file and the built chunks' own exports, so none of it can drift from the library it describes.
 
 ```shell
-cp node_modules/@box-kite/react/AGENTS.md ./AGENTS.md
+npm create @box-kite@latest -- --agents-only
 ```
 
+That adds a root `AGENTS.md` (merged into yours, if you have one) with the four facts a model gets wrong
+and a pointer to the package's own, so an upgrade brings the rules with it; a `CLAUDE.md` importing it;
+and the MCP server below, in `.mcp.json` and in the config of each editor whose folder is there. Run again,
+it updates rather than repeats. `npm create @box-kite` writes all of it into a new app already
+(`--no-agents` leaves it out).
+
 Codex, Cursor, Copilot, VS Code, Windsurf, Cline and Zed read a root `AGENTS.md` natively; Claude
-Code reads `CLAUDE.md`, so a file holding the one line `@AGENTS.md` points it at the same place. The
-long-form [BOX_KITE_AI_CONTEXT.md](src/BOX_KITE_AI_CONTEXT.md) ships in the tarball too.
+Code reads `CLAUDE.md`, which is why the one line `@AGENTS.md` is there. The long-form
+[BOX_KITE_AI_CONTEXT.md](src/BOX_KITE_AI_CONTEXT.md) ships in the tarball too.
 
 The same rules are also a skill, which roughly forty-five coding agents install with one command:
 

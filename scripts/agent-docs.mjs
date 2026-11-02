@@ -196,9 +196,10 @@ function agentsFile(propCount) {
       ].map(([file, what]) => `${file.padEnd(26)}  ${what}`),
       '```',
     ].join('\n'),
-    `Inside a consumer's tree they are under \`node_modules/${PACKAGE_NAME}/\`. Copy this file to the repo root as` +
-      ` \`AGENTS.md\` — or point the one already there at it — so it is read on every run rather than when someone` +
-      ' thinks to look.',
+    `Inside a consumer's tree they are under \`node_modules/${PACKAGE_NAME}/\`. The repo root's \`AGENTS.md\` should point` +
+      ' here, so this is read on every run rather than when someone thinks to look: `npm create @box-kite@latest --' +
+      ' --agents-only` adds that pointer (into the `AGENTS.md` already there, if there is one), a `CLAUDE.md` and the' +
+      ' MCP server to the project.',
     '## What a component looks like',
     [
       '```tsx',

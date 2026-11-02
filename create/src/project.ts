@@ -12,6 +12,8 @@ export interface Templates {
   ts: TemplateSet;
   js: TemplateSet;
   fonts: Record<Design, string[]>;
+  /** The four facts `AGENTS.md`'s lead block states, for the project's own `AGENTS.md`. */
+  facts: string[];
 }
 
 export interface ApplyOptions {
