@@ -26,20 +26,15 @@ There is nothing else to set up: no configuration file, no plugin, no stylesheet
 
 If you write code with an AI assistant — Claude Code, Cursor, Copilot, Codex — this step matters more than any other. Box Kite's prop names look like props from other libraries, but the numbers mean different things, and an assistant writing from memory will guess wrong.
 
-The package carries its own instructions. Add a line to your project's `AGENTS.md` (or `CLAUDE.md`) pointing at them:
-
-```text
-Before writing UI code, read node_modules/@box-kite/react/AGENTS.md.
-```
-
-Two more things make an assistant noticeably better at it. The skill teaches the rules to most coding agents in one command, and the MCP server lets the assistant ask the library itself what CSS a prop produces before it writes one:
+One command sets your assistant up. Run it in the `my-site` folder:
 
 ```bash
-npx skills add box-kite/box-kite
-claude mcp add box-kite -- npx -y @box-kite/mcp
+npm create @box-kite@latest -- --agents-only
 ```
 
-The second line is for Claude Code; the [Built for AI page](https://www.box-kite.dev/ai-context) has the same setup for every other assistant. If you would rather let the assistant build the whole page, [Start with AI](https://www.box-kite.dev/start-with-ai) has prompts to paste — this guide is the version where you see every line.
+It writes an `AGENTS.md` with the facts an assistant gets wrong from memory and a pointer to the library's full rules inside `node_modules`, which stay current every time you update the package. Codex, Cursor, Copilot and most other agents read that file on every run. It also writes a `CLAUDE.md` that imports it, which is how Claude Code reads the same file, and adds Box Kite's MCP server to `.mcp.json`: a tool the assistant can ask what CSS a prop really produces before it writes one (it asks you once before starting it). Run it again later and it updates its own block instead of adding a second one.
+
+The [Built for AI page](https://www.box-kite.dev/ai-context) has the setup for assistants that read neither file. If you would rather let the assistant build the whole page, [Start with AI](https://www.box-kite.dev/start-with-ai) has prompts to paste — this guide is the version where you see every line.
 
 ## Step 3: put something in the middle of the screen
 
