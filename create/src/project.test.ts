@@ -10,6 +10,7 @@ const templates: Templates = {
   ts: { files: { 'src/main.tsx': 'main', 'src/App.tsx': 'app', 'src/index.css': 'css' }, designs },
   js: { files: { 'src/main.jsx': 'main', 'src/App.jsx': 'app', 'src/index.css': 'css' }, designs },
   fonts: { classic: [], ember: ['@fontsource-variable/fraunces'], azure: [], mono: ['@fontsource-variable/roboto'] },
+  facts: [],
 };
 
 let app: string;

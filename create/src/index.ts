@@ -1,9 +1,10 @@
 import { spawn } from 'node:child_process';
-import { existsSync, readdirSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import { relative, resolve } from 'node:path';
+import { join, relative, resolve } from 'node:path';
 import * as prompt from '@clack/prompts';
 import templateData from 'virtual:box-kite-templates';
+import { writeAgentFiles } from './agents';
 import { type CreateOptions, type Design, DESIGNS, parseOptions, type Template, TEMPLATES } from './options';
 import { detectPackageManager, runCommand } from './packageManager';
 import { applyBoxKite, type Templates } from './project';
@@ -38,12 +39,15 @@ Options:
   --no-install                      write the files and skip the install
   --overwrite                       empty the directory first when it has files in it
   --eslint                          use ESLint instead of Oxlint (passed to create-vite)
+  --no-agents                       leave out AGENTS.md, CLAUDE.md and the MCP server configs
+  --agents-only                     add only those to the project in [directory] (default: here)
   --interactive / --no-interactive  ask, or never ask (asks when run in a terminal)
   -h, --help                        show this
   -v, --version                     show the version
 
-Example:
-  npm create @box-kite@latest my-app -- --design mono`;
+Examples:
+  npm create @box-kite@latest my-app -- --design mono
+  npm create @box-kite@latest -- --agents-only`;
 
 class Cancelled extends Error {}
 
@@ -117,6 +121,8 @@ async function main() {
     return;
   }
 
+  if (options.agentsOnly) return addAgents(options.directory ?? '.');
+
   const interactive = options.interactive ?? Boolean(process.stdin.isTTY && process.stdout.isTTY);
   prompt.intro('Box Kite');
   const { directory, template, design } = await ask(options, interactive);
@@ -142,6 +148,7 @@ async function main() {
     throw new Error(created.output.trim() || 'create-vite wrote no package.json.');
   }
   applyBoxKite(target, templates, { template, design, boxKiteRange: `^${__BOX_KITE_VERSION__}`, fontRange: '^5.3.0' });
+  if (options.agents) writeAgentFiles(target, templates.facts, 'all');
   scaffold.stop(`Created a Vite app with Box Kite and the ${label(design)} design`);
 
   const manager = detectPackageManager(process.env.npm_config_user_agent);
@@ -161,6 +168,29 @@ async function main() {
   ];
   prompt.note(steps.join('\n'), 'Next');
   prompt.outro(`src/design.${extension} is the design and src/App.${extension} the sample page. Both are yours to change.`);
+}
+
+/** `--agents-only`: the agent files in a project that already exists, merged into whatever is there. */
+function addAgents(directory: string) {
+  const target = resolve(directory);
+  if (!existsSync(join(target, 'package.json'))) {
+    throw new Error(
+      `There is no package.json in ${target}. Run --agents-only in the project's root, or name it: npm create @box-kite@latest my-app -- --agents-only`,
+    );
+  }
+  prompt.intro('Box Kite');
+  const { written, skipped } = writeAgentFiles(target, templates.facts, 'present');
+  if (written.length) prompt.log.success(`Wrote ${written.join(', ')}`);
+  else prompt.log.info('The agent files were already up to date.');
+  for (const path of skipped) {
+    prompt.log.warn(
+      `${path} is not plain JSON, so it was left alone. Add the server by hand: "box-kite": { "command": "npx", "args": ["-y", "@box-kite/mcp"] }`,
+    );
+  }
+  const manifest = JSON.parse(readFileSync(join(target, 'package.json'), 'utf8')) as { dependencies?: Record<string, string> };
+  if (!manifest.dependencies?.['@box-kite/react'])
+    prompt.log.warn('@box-kite/react is not a dependency yet, and AGENTS.md points into it: install it next.');
+  prompt.outro('Your agent reads AGENTS.md on its next run. A tool asks once before it starts an MCP server from a project file.');
 }
 
 main().catch((error: unknown) => {

@@ -87,12 +87,12 @@ export default function AiContextPage() {
               <Route
                 icon={FileCode2}
                 title="A file in your repository root"
-                description="Codex, Cursor, Copilot, VS Code, Windsurf, Cline and Zed read a root AGENTS.md natively; Claude Code reads CLAUDE.md, so one line saying @AGENTS.md points it at the same file. A file in the root is read on every run — one referenced by hand is read when somebody remembers."
+                description="Codex, Cursor, Copilot, VS Code, Windsurf, Cline and Zed read a root AGENTS.md natively; Claude Code reads CLAUDE.md, so one line saying @AGENTS.md points it at the same file. A file in the root is read on every run — one referenced by hand is read when somebody remembers. The command writes both, points AGENTS.md at the rules in node_modules so an upgrade brings them along, and connects the MCP server; run again, it updates rather than repeats. npm create @box-kite writes them into a new app already."
               >
                 <Code
                   language="shell"
-                  code={`cp node_modules/@box-kite/react/AGENTS.md ./AGENTS.md
-echo '@AGENTS.md' > CLAUDE.md   # Claude Code reads this one`}
+                  code={`npm create @box-kite@latest -- --agents-only
+# AGENTS.md (merged into yours), CLAUDE.md, .mcp.json and your editor's mcp.json`}
                 />
               </Route>
 
@@ -450,8 +450,8 @@ npx skills add box-kite/box-kite`}
           <Code
             language="shell"
             code={`npx skills add box-kite/box-kite
-# or, with the package installed:
-cp node_modules/@box-kite/react/AGENTS.md ./AGENTS.md`}
+# or, in the project: AGENTS.md, CLAUDE.md and the MCP server
+npm create @box-kite@latest -- --agents-only`}
           />
         </Tabs.Panel>
       </Tabs>

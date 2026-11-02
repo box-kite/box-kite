@@ -18,6 +18,10 @@ export interface CreateOptions {
   overwrite: boolean;
   /** Passed through to create-vite, which swaps Oxlint for ESLint. */
   eslint?: boolean;
+  /** `false` leaves out AGENTS.md, CLAUDE.md and the MCP configs. */
+  agents: boolean;
+  /** Writes only the agent files, into a project that already exists. */
+  agentsOnly: boolean;
   help: boolean;
   version: boolean;
 }
@@ -40,13 +44,26 @@ export function parseOptions(argv: readonly string[]): { options: CreateOptions;
       interactive: { type: 'boolean' },
       overwrite: { type: 'boolean' },
       eslint: { type: 'boolean' },
+      agents: { type: 'boolean' },
+      'agents-only': { type: 'boolean' },
       help: { type: 'boolean', short: 'h' },
       version: { type: 'boolean', short: 'v' },
     },
   });
 
   const errors: string[] = [];
-  const known = new Set(['template', 'design', 'install', 'interactive', 'overwrite', 'eslint', 'help', 'version']);
+  const known = new Set([
+    'template',
+    'design',
+    'install',
+    'interactive',
+    'overwrite',
+    'eslint',
+    'agents',
+    'agents-only',
+    'help',
+    'version',
+  ]);
   for (const name of Object.keys(values)) if (!known.has(name)) errors.push(`Unknown option --${name}.`);
   if (positionals.length > 1) errors.push(`One directory, please: got ${positionals.map((p) => `"${p}"`).join(' and ')}.`);
 
@@ -62,6 +79,14 @@ export function parseOptions(argv: readonly string[]): { options: CreateOptions;
   if (design && !isDesign(design)) errors.push(`There is no "${design}" design. --design takes ${DESIGNS.join(', ')}.`);
 
   const flag = (value: unknown) => (typeof value === 'boolean' ? value : undefined);
+  const agentsOnly = flag(values['agents-only']) ?? false;
+  if (agentsOnly) {
+    const app = ['template', 'design', 'overwrite', 'eslint', 'agents'].filter((name) => values[name] !== undefined);
+    if (app.length)
+      errors.push(
+        `--agents-only adds the agent files to a project and creates no app, so it takes no ${app.map((n) => `--${n}`).join(', ')}.`,
+      );
+  }
 
   return {
     options: {
@@ -72,6 +97,8 @@ export function parseOptions(argv: readonly string[]): { options: CreateOptions;
       interactive: flag(values.interactive),
       overwrite: flag(values.overwrite) ?? false,
       eslint: flag(values.eslint),
+      agents: flag(values.agents) ?? true,
+      agentsOnly,
       help: flag(values.help) ?? false,
       version: flag(values.version) ?? false,
     },
