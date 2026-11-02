@@ -149,5 +149,20 @@ jobs:
           fi
           node scripts/mcp-server-json.mjs "$VERSION"
           curl -fsSL https://github.com/modelcontextprotocol/registry/releases/download/v1.8.1/mcp-publisher_linux_amd64.tar.gz | tar xz mcp-publisher
-          ./mcp-publisher login github-oidc
-          ./mcp-publisher publish
+
+          # npm serves a new version a minute or more after accepting it, and the registry refuses one it cannot see (bug #257).
+          for attempt in $(seq 1 20); do
+            npm view "@box-kite/mcp@$VERSION" version > /dev/null 2>&1 && break
+            echo "@box-kite/mcp@$VERSION is not on npm yet (attempt $attempt) — waiting"
+            sleep 15
+          done
+
+          # The registry reads npm through its own cache, so it can still lag: retry that one refusal, nothing else.
+          for attempt in $(seq 1 6); do
+            ./mcp-publisher login github-oidc
+            if ./mcp-publisher publish 2>&1 | tee publish.log; then exit 0; fi
+            grep -q "was not found" publish.log || exit 1
+            echo "The registry cannot see @box-kite/mcp@$VERSION on npm yet (attempt $attempt) — retrying"
+            sleep 30
+          done
+          exit 1
