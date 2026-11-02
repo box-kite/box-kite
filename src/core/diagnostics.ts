@@ -52,9 +52,9 @@ namespace Diagnostics {
     return null;
   }
 
-  /** Why a value wrote nothing, and what the prop takes instead. */
-  export function rejected(key: string, value: unknown, definitions: readonly BoxStyle[] | undefined): string {
-    const head = `${written(key, value)} wrote no CSS: ${key} does not take that value, so the prop was dropped along with its class.`;
+  /** Why a value wrote nothing, and what the prop takes instead. `head` is the first sentence, for a value no prop was given. */
+  export function rejected(key: string, value: unknown, definitions: readonly BoxStyle[] | undefined, head?: string): string {
+    head ??= `${written(key, value)} wrote no CSS: ${key} does not take that value, so the prop was dropped along with its class.`;
     if (!definitions) return head;
 
     const literals = definitions.flatMap((definition) =>

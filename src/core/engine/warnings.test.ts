@@ -29,6 +29,18 @@ describe('development warnings', () => {
     ]);
   });
 
+  it('judges a value no prop was given by a prop grammar, warning under the caller’s own head', async () => {
+    const engine = makeEngine('warnings-accepts');
+    engine.extend({ brand: '#123456' }, {}, {});
+
+    expect(engine.accepts('fill', 'brand/40')).toBe(true);
+    expect(engine.accepts('fill', 'tael-500', () => 'series "done" declared nothing.')).toBe(false);
+    expect(engine.accepts('fill', 'tael-500', () => 'series "done" declared nothing.')).toBe(false);
+    await settled();
+
+    expect(messages()).toEqual(['[box-kite] series "done" declared nothing. Did you mean "teal-500"?']);
+  });
+
   it('still writes the misread value, since it is a valid one', () => {
     const engine = makeEngine('warnings-written');
 

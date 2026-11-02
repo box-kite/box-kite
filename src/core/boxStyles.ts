@@ -26,7 +26,8 @@ const opacityValues = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1] as con
 const referenceValues = {
   values: Variables.reference,
   match: Variables.isReference,
-  valueFormat: (value: string, getVariableValue: (name: string) => string) => Variables.withFallbacks(value, getVariableValue),
+  valueFormat: (value: string, getVariableValue: (name: string) => string, _styleName?: string, isVariable?: Variables.IsVariable) =>
+    Variables.withFallbacks(value, getVariableValue, isVariable),
 } satisfies BoxStyle;
 
 /**
@@ -3060,7 +3061,7 @@ export const cssStyles = {
     {
       values: {} as Gradients.Gradient,
       match: Gradients.isGradient,
-      declarations: (value, getVariableValue) => `background-image:${Gradients.css(value, getVariableValue)}`,
+      declarations: (value, getVariableValue, isVariable) => `background-image:${Gradients.css(value, getVariableValue, isVariable)}`,
     },
     {
       styleName: 'background-image',
@@ -3271,7 +3272,7 @@ export const cssStyles = {
     {
       values: {} as Gradients.Gradient,
       match: Gradients.isGradient,
-      declarations: (value, getVariableValue) => `mask-image:${Gradients.css(value, getVariableValue)}`,
+      declarations: (value, getVariableValue, isVariable) => `mask-image:${Gradients.css(value, getVariableValue, isVariable)}`,
     },
   ],
   /**

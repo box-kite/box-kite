@@ -1,5 +1,6 @@
 import { forwardRef, Ref, RefAttributes } from 'react';
 import Box, { BoxProps } from '../box';
+import { getDefaultEngine } from '../core';
 import { ExtractElementFromTag } from '../react/reactTypes';
 import { BoxStyleProps, ComponentsAndVariants } from '../types';
 import ChartUtils from '../utils/chart/chartUtils';
@@ -220,16 +221,34 @@ MiniDonut.displayName = 'MiniDonut';
 
 /**
  * The series a `<ChartContainer>` draws: `series={['revenue', 'cost']}` takes the palette in order,
- * `series={{ revenue: 'emerald-600' }}` names its own paint. A name becomes part of a custom-property
- * name, so it has to be a CSS identifier — a dot-path `dataKey` is skipped rather than taking the rest.
+ * `series={{ revenue: 'emerald-600', cost: 'brand/40' }}` names its own paint — anything `fill` takes, an
+ * `extend()` token included. A name becomes part of a custom-property name, so it has to be a CSS
+ * identifier — a dot-path `dataKey` is skipped rather than taking the rest.
  */
 export type ChartSeries = readonly string[] | Readonly<Record<string, Paint>>;
+
+/** A series paint judged by `fill`'s grammar, so one it refuses is left out with a warning rather than written as text. */
+function isPaint(paint: string, name: string) {
+  const key = /^[A-Za-z_$][\w$]*$/.test(name) ? name : JSON.stringify(name);
+
+  return getDefaultEngine().accepts(
+    'fill',
+    paint,
+    () =>
+      `ChartContainer series={{ ${key}: ${JSON.stringify(paint)} }} declared nothing, so var(--color-${name}) paints nothing: ` +
+      `a series takes what fill takes, and a colour written as CSS goes in vars={{ 'color-${name}': ... }}.`,
+  );
+}
 
 export interface ChartContainerProps<
   TTag extends keyof React.JSX.IntrinsicElements = 'div',
   TKey extends keyof ComponentsAndVariants = never,
 > extends BoxProps<TTag, TKey> {
-  /** The series drawn inside, and what colour each of them is. */
+  /**
+   * The series drawn inside, and what colour each of them is: a list takes the palette in order, a record names
+   * each series' paint — anything `fill` takes, a `Box.extend()` token included (`{ done: 'brand', open: 'brand/35' }`).
+   * A paint `fill` refuses declares nothing and warns in development; a colour written as CSS goes in `vars`.
+   */
   series?: ChartSeries;
 }
 
@@ -250,7 +269,7 @@ function ChartContainerImpl<TTag extends keyof React.JSX.IntrinsicElements = 'di
   // Only the series are declared here: the six palette slots and their dark twins are the
   // `chartContainer` style node, which the engine merges underneath these. The caller's own `vars`
   // come last, so overriding one slot still needs no prop of its own.
-  const declared = { ...(series ? ChartUtils.seriesVariables(series) : {}), ...vars };
+  const declared = { ...(series ? ChartUtils.seriesVariables(series, undefined, isPaint) : {}), ...vars };
 
   return <Box ref={ref} component="chartContainer" vars={declared} {...(boxProps as BoxProps<TTag>)} />;
 }

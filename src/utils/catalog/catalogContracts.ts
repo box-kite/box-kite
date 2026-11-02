@@ -145,7 +145,8 @@ namespace CatalogContracts {
       props: {
         series: {
           anyOf: [{ type: 'array', items: { type: 'string' } }, { type: 'object' }],
-          description: 'The series drawn inside, and what colour each of them is.',
+          description:
+            'The series drawn inside, and what colour each of them is: a list of names takes the palette in order, a record maps each name to a colour token the fill prop takes (`{ "revenue": "emerald-600", "cost": "emerald-600/40" }`).',
         },
       } satisfies Properties<ChartContainerProps>,
     },

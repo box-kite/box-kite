@@ -26,7 +26,7 @@ Every prop by category, the six kinds of nesting, and the theme system. Read thi
 **Theming a chart library** — `<ChartContainer>` (same entry, server-safe): the bridge for Recharts and anything
 else that takes a colour. It declares `--chart-1` … `--chart-6` in both themes plus one `--color-<series>` per
 series, so the chart itself names no colour at all: `series={['revenue', 'cost']}` (the palette in order) or
-`series={{ revenue: 'emerald-600' }}` (your own paint), then `<Line stroke="var(--color-revenue)" />` inside. A
+`series={{ revenue: 'emerald-600', cost: 'ui-primary/35' }}` (your own paint — anything `fill` takes, a `Box.extend()` token included; a colour written as CSS goes in `vars` instead), then `<Line stroke="var(--color-revenue)" />` inside. A
 series name becomes part of a custom-property name, so it has to be a CSS identifier — a dot-path `dataKey` is
 skipped. Overriding a slot needs no prop of its own, because the container is a Box:
 `vars={{ 'chart-1': 'teal-600' }}`, `theme={{ dark: { vars: { 'chart-1': 'teal-400' } } }}`, and any other name

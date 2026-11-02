@@ -1,7 +1,8 @@
 import { cleanup, render } from '@testing-library/react';
 import { createRef } from 'react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectNoAxeViolations } from '../../dev/a11y/axe';
+import { warningsSettled } from '../../dev/tests';
 import BoxExtends from '../core/extends/boxExtends';
 import { StylesContext } from '../react/useStyles';
 import { ChartContainer, Gauge, MiniDonut, ProgressRing, Sparkline } from './chart';
@@ -179,6 +180,15 @@ describe('the chart primitives', () => {
       expect(styles()).toContain('stroke:var(--chart-2)');
     });
 
+    // Bug #309: the variable a hand-written `var(--…)` names was never declared, so the segment painted nothing.
+    it('paints a segment in an extend() token, written either way', () => {
+      BoxExtends.extend({ 'donut-test-a': '#123456', 'donut-test-b': '#654321' }, {}, {});
+      renderChart(<MiniDonut data={[1, 1]} colors={['donut-test-a/50', 'var(--donut-test-b)'] as never} />);
+
+      expect(styles()).toContain('stroke:color-mix(in oklab, var(--donut-test-a) 50%, transparent)');
+      expect(styles()).toContain('--donut-test-b: #654321;');
+    });
+
     it('draws nothing at all for values that sum to nothing', () => {
       expect(renderChart(<MiniDonut data={[0, 0]} />).querySelectorAll('circle')).toHaveLength(0);
     });
@@ -310,6 +320,58 @@ describe('ChartContainer', () => {
 
     expect(container.querySelector('svg')!.getAttribute('class')).toContain('stroke-var(--color-revenue)');
     expect(styles()).toContain('stroke:var(--color-revenue)');
+  });
+
+  // Bug #308: an `extend()` token was written into the variable as it stands, so the series painted transparent.
+  describe('resolves every paint a series takes the way fill resolves it', () => {
+    BoxExtends.extend({ 'chart-test-brand': 'oklch(55% .2 260)' }, {}, {});
+
+    it.each([
+      ['a palette token', 'teal-500', 'var(--teal-500,oklch(70.4% .14 182.5))'],
+      ['a palette token with an opacity', 'teal-500/35', 'color-mix(in oklab, var(--teal-500,oklch(70.4% .14 182.5)) 35%, transparent)'],
+      ['an extend() token', 'chart-test-brand', 'var(--chart-test-brand)'],
+      ['an extend() token with an opacity', 'chart-test-brand/35', 'color-mix(in oklab, var(--chart-test-brand) 35%, transparent)'],
+      ['a reference to an extend() variable', 'var(--chart-test-brand)', 'var(--chart-test-brand)'],
+    ] as const)('%s', (_, value, resolved) => {
+      // An app's tokens are typed by its own `declare module`, which this file has none of.
+      const paint = value as never;
+      render(<ChartContainer series={{ completed: paint }} />);
+
+      expect(styles()).toContain(`--color-completed:${resolved}`);
+      render(<Sparkline data={[1, 2]} fill={paint} />);
+      expect(styles()).toContain(`fill:${resolved}`);
+    });
+
+    it('declares the extend() variable a series reads, as fill would', () => {
+      render(<ChartContainer series={{ started: 'var(--chart-test-brand)' }} />);
+
+      expect(styles()).toContain('--chart-test-brand: oklch(55% .2 260);');
+    });
+
+    it('takes the palette in order for a list', () => {
+      render(<ChartContainer series={['done', 'open']} />);
+
+      expect(styles()).toContain('--color-done:var(--chart-1);--color-open:var(--chart-2)');
+    });
+  });
+
+  it('leaves out a paint fill does not take, and says so in development', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    render(<ChartContainer series={{ overdue: 'tael-500' as never, onTime: 'teal-500' }} />);
+    render(<ChartContainer series={{ late: 'hsl(var(--primary))' as never }} />);
+    await warningsSettled();
+
+    expect(styles()).not.toContain('--color-overdue:');
+    expect(styles()).not.toContain('--color-late:');
+    expect(styles()).toContain('--color-onTime:var(--teal-500');
+    expect(warn.mock.calls.map(([message]) => String(message))).toEqual([
+      expect.stringMatching(
+        /^\[box-kite\] ChartContainer series=\{\{ overdue: "tael-500" \}\} declared nothing.* Did you mean "teal-500"\?$/,
+      ),
+      expect.stringContaining(`a colour written as CSS goes in vars={{ 'color-late': ... }}`),
+    ]);
+    warn.mockRestore();
   });
 
   it('renders a plain wrapper with no role of its own, and forwards its ref', () => {

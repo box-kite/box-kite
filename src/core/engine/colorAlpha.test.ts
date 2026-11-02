@@ -71,6 +71,44 @@ describe('a colour with an opacity modifier', () => {
     expect(rulesOf(engine)).toContain('--brand: #123456;');
   });
 
+  // Bug #308: `vars` knew only the palette, so an `extend()` token reached the custom property as plain text.
+  it('resolves every colour in a custom property exactly as the fill prop resolves it', () => {
+    const resolved = (props: object, isSvg = false) => {
+      const engine = makeEngine(`alpha-vars-like-fill-${Object.keys(props)[0]}-${JSON.stringify(props).replace(/\W/g, '')}`);
+      engine.extend({ brand: '#123456' }, {}, {});
+      renderStyles(engine, props as never, isSvg);
+      const [rule] = ruleList(engine);
+
+      return rule.slice(rule.indexOf(':') + 1, -1);
+    };
+
+    for (const paint of ['teal-500', 'teal-500/35', 'brand', 'brand/35', 'var(--brand)', 'var(--chart-1)', 'url(#sky)', 'CanvasText']) {
+      expect(resolved({ vars: { x: paint } }).replace(/^--x:/, ''), paint).toBe(resolved({ fill: paint }, true).replace(/^fill:/, ''));
+    }
+  });
+
+  // Bug #309: a hand-written `var(--brand)` was written out but never declared, so it named nothing.
+  it('declares an extend() variable that a reference or another variable names', () => {
+    const fill = makeEngine('alpha-reference-declared');
+    fill.extend({ brand: '#123456' }, {}, {});
+    renderStyles(fill, { fill: 'var(--brand)' } as never, true);
+    expect(rulesOf(fill)).toContain('--brand: #123456;');
+
+    const nested = makeEngine('alpha-variable-in-variable');
+    nested.extend({ brand: '#123456', 'brand-soft': 'color-mix(in oklab, var(--brand) 50%, white)' }, {}, {});
+    renderStyles(nested, { bgColor: 'brand-soft' } as never);
+    expect(rulesOf(nested)).toContain('--brand: #123456;');
+  });
+
+  it('resolves an extend() token in css as a custom property does', () => {
+    const engine = makeEngine('alpha-css-extended');
+    engine.extend({ brand: '#123456' }, {}, {});
+
+    renderStyles(engine, { css: { outlineColor: 'brand/50' } });
+
+    expect(ruleList(engine)).toEqual(['.css-outlineColor-brand\\/50{outline-color:color-mix(in oklab, var(--brand) 50%, transparent)}']);
+  });
+
   it('applies to a custom property too, so markup this library never renders gets the same value', () => {
     const engine = makeEngine('alpha-vars');
 

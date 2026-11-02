@@ -198,26 +198,36 @@ namespace Variables {
     return Object.entries(value).some(isUsableEntry);
   }
 
+  /** Whether a name is a `Box.extend({ variables })` one — the engine's to know, and handed to every resolver. */
+  export type IsVariable = (name: string) => boolean;
+  const noVariables: IsVariable = () => false;
+
   /**
    * A value that names a colour, resolved: a token becomes the variable behind it and a token with an
    * opacity modifier the mix that applies it, so a chart's colour — or a gradient stop — follows the
-   * palette either way. Anything else is written out as it stands: a system colour and a `var()`
-   * reference are already CSS, and neither is ours to resolve.
+   * palette either way. An `extend()` token resolves the way `fill` resolves it (bug #308); anything else
+   * is written out as it stands — a system colour and a `var()` reference are already CSS.
    */
-  export function colorValue(entry: string, getVariableValue: (name: string) => string): string {
-    if (entry in colors) return getVariableValue(entry);
+  export function colorValue(entry: string, getVariableValue: (name: string) => string, isVariable: IsVariable = noVariables): string {
+    if (entry in colors || isVariable(entry)) return getVariableValue(entry);
 
-    return Palette.isAlpha(entry) ? Palette.mix(entry, getVariableValue) : withFallbacks(entry, getVariableValue);
+    const alpha = Palette.alphaOf(entry);
+    if (alpha && (alpha.color in colors || isVariable(alpha.color))) return Palette.mix(entry, getVariableValue);
+
+    return withFallbacks(entry, getVariableValue, isVariable);
   }
 
   /**
    * A value written as CSS, with every `var(--token)` naming one of this library's variables resolved the way
-   * a token is — so a hand-written `var(--violet-300)` carries its value too, and needs no `:root` declaration.
+   * a token is — so a hand-written `var(--violet-300)` carries its value, and a `var(--brand)` from `extend()`
+   * is declared in `:root` as `fill="brand"` would declare it, rather than naming nothing (bug #309).
    */
-  export function withFallbacks(value: string, getVariableValue: (name: string) => string): string {
+  export function withFallbacks(value: string, getVariableValue: (name: string) => string, isVariable: IsVariable = noVariables): string {
     if (!value.includes('var(--')) return value;
 
-    return value.replace(/var\(--([\w-]+)\)/g, (written, name: string) => (name in internalVariables ? getVariableValue(name) : written));
+    return value.replace(/var\(--([\w-]+)\)/g, (written, name: string) =>
+      name in internalVariables || isVariable(name) ? getVariableValue(name) : written,
+    );
   }
 
   /**
@@ -225,11 +235,11 @@ namespace Variables {
    * the variable behind it, so the value follows the palette; anything else is written out as it stands,
    * in the order it was written — order carries no meaning to CSS anyway.
    */
-  export function customProperties(value: CustomProperties, getVariableValue: (name: string) => string): string {
+  export function customProperties(value: CustomProperties, getVariableValue: (name: string) => string, isVariable?: IsVariable): string {
     return Object.entries(value)
       .filter(isUsableEntry)
       .map(([name, entry]) => {
-        const resolved = typeof entry === 'string' ? colorValue(entry, getVariableValue) : entry;
+        const resolved = typeof entry === 'string' ? colorValue(entry, getVariableValue, isVariable) : entry;
 
         return `--${name.replace(/^--/, '')}:${resolved}`;
       })
@@ -287,7 +297,11 @@ namespace Variables {
     function valueOf(name: string): string {
       if (name in _userVariables) {
         _resolving.add(name);
-        const value = withFallbacks(_userVariables[name], (inner) => (_resolving.has(inner) ? `var(--${inner})` : reference(inner)));
+        const value = withFallbacks(
+          _userVariables[name],
+          (inner) => (_resolving.has(inner) ? `var(--${inner})` : reference(inner)),
+          (inner) => inner in _userVariables,
+        );
         _resolving.delete(name);
 
         return value;

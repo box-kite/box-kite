@@ -344,6 +344,12 @@ function TrendCell({ cell }: { cell: { row: { data: Row } } }) {
               is different is where they live: there is no <Mono>&lt;style&gt;</Mono> tag per chart and no <Mono>id</Mono> to scope it with,
               because a Box prop is already scoped to its element — and two tiles with the same series share the rule.
             </Box>
+            <Box mt={4}>
+              A series can name its own paint instead of taking a slot, and that paint is anything <Mono>fill</Mono> takes — a token of your
+              own included: <Mono>{`series={{ completed: 'ui-primary', started: 'ui-primary/35' }}`}</Mono> after <Mono>Box.extend()</Mono>{' '}
+              declared <Mono>ui-primary</Mono>. A paint <Mono>fill</Mono> would refuse declares nothing and says so in development; a colour
+              written as CSS goes in <Mono>vars</Mono> under the series' variable name.
+            </Box>
           </Section>
 
           <Section id="a11y" title="Naming a picture of numbers">

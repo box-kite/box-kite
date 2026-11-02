@@ -8,7 +8,12 @@ export type BoxStylesType<T> = T extends ReadonlyArray<unknown> ? T[number] : T;
 
 interface BoxStyleArrayString {
   values: ReadonlyArray<string>;
-  valueFormat?: (value: string, getVariableValue: (name: string) => string, styleName?: string) => string;
+  valueFormat?: (
+    value: string,
+    getVariableValue: (name: string) => string,
+    styleName?: string,
+    isVariable?: (name: string) => boolean,
+  ) => string;
 }
 
 interface BoxStyleArrayBoolean {
@@ -30,7 +35,12 @@ interface BoxStyleString {
   values: string;
   // The same formatter its array sibling takes: a definition whose `values` is a template type still names
   // colours (`bgColor="blue-500/40"`), and resolving one means reaching the variable registry.
-  valueFormat?: (value: string, getVariableValue: (name: string) => string, styleName?: string) => string;
+  valueFormat?: (
+    value: string,
+    getVariableValue: (name: string) => string,
+    styleName?: string,
+    isVariable?: (name: string) => boolean,
+  ) => string;
 }
 
 interface BoxStyleTupleArrays {
@@ -77,7 +87,7 @@ export type BoxStyle = (BoxStyleScalar | BoxStyleTupleArrays | BoxStyleRecord) &
    * `vars={{ 'color-x': 'sky-500' }}` has to emit `--color-x:var(--sky-500)`, a name the registry never
    * sees. It replaces `styleName`/`valueFormat`; everything else about the prop is unchanged.
    */
-  declarations?: (value: BoxStyleValue, getVariableValue: (name: string) => string) => string;
+  declarations?: (value: BoxStyleValue, getVariableValue: (name: string) => string, isVariable?: (name: string) => boolean) => string;
 };
 
 export type ExtractKeys<T extends Record<string, unknown>, TT> = {
