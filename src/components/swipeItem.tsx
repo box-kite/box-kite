@@ -7,7 +7,7 @@ import { useIsomorphicLayoutEffect } from '../react/effects';
 import { useInteractionReporter, useReportedState } from '../react/interactions/interactions';
 import { ComponentsAndVariants } from '../types';
 import AnimationUtils from '../utils/animation/animationUtils';
-import { clearSelection, isEventInside, isRtl } from '../utils/dom/domUtils';
+import { assignRef, clearSelection, isEventInside, isRtl } from '../utils/dom/domUtils';
 import { documentOrNull } from '../utils/environment/environmentUtils';
 import SwipeUtils, { SwipeSide, SwipeTrays } from '../utils/swipe/swipeUtils';
 import List from './list';
@@ -148,8 +148,7 @@ function SwipeItemImpl<TKey extends keyof ComponentsAndVariants = 'list.item'>(p
   const setRefs = useCallback(
     (element: HTMLLIElement | null) => {
       itemRef.current = element;
-      if (typeof ref === 'function') ref(element);
-      else if (ref) (ref as React.RefObject<HTMLLIElement | null>).current = element;
+      assignRef(ref, element);
     },
     [ref],
   );

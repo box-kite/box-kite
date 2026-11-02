@@ -1,10 +1,12 @@
-import { createContext, Ref, RefAttributes, useContext, useMemo, useRef } from 'react';
+import { createContext, Ref, RefAttributes, useCallback, useContext, useMemo, useRef } from 'react';
 import { BoxProps, BoxTagProps } from '../box';
 import { useEventCallback } from '../react/a11y/callbacks';
 import { ChangeHandler } from '../react/a11y/useControllableState';
+import boxComponent from '../react/boxComponent';
 import useIdentifier from '../react/identity/useIdentifier';
 import { useReportedState } from '../react/interactions/interactions';
 import { ComponentsAndVariants } from '../types';
+import { assignRef } from '../utils/dom/domUtils';
 import Flex from './flex';
 import RadioButton from './radioButton';
 import { Span } from './semantics';
@@ -112,7 +114,7 @@ function directionOf(key: string): number {
  * @keyboard Up / Left — The previous option, the same way, wrapping to the last.
  * @keyboard Space — Chooses the focused option. The platform supplies this one.
  */
-function RadioGroupImpl<TKey extends keyof ComponentsAndVariants = 'radioGroup'>(props: Props<TKey>) {
+function RadioGroupImpl<TKey extends keyof ComponentsAndVariants = 'radioGroup'>(props: Props<TKey>, ref: Ref<HTMLDivElement>) {
   const {
     label,
     name,
@@ -127,7 +129,14 @@ function RadioGroupImpl<TKey extends keyof ComponentsAndVariants = 'radioGroup'>
   } = props;
 
   const identifier = useIdentifier('radiogroup');
-  const groupRef = useRef<HTMLDivElement>(null);
+  const groupRef = useRef<HTMLDivElement | null>(null);
+  const setGroup = useCallback(
+    (element: HTMLDivElement | null) => {
+      groupRef.current = element;
+      assignRef(ref, element);
+    },
+    [ref],
+  );
   // What the *next* change was caused by, read by an item's `onChange`. The group activates a
   // radio with a real click, so by the time the change arrives the keystroke behind it is gone.
   const source = useRef<RadioGroupReason>('click');
@@ -182,7 +191,7 @@ function RadioGroupImpl<TKey extends keyof ComponentsAndVariants = 'radioGroup'>
   return (
     <RadioGroupContext.Provider value={context}>
       <Flex<'div', 'radioGroup'>
-        ref={groupRef}
+        ref={setGroup}
         component="radioGroup"
         variant={{ horizontal: orientation === 'horizontal' }}
         {...(restProps as BoxProps<'div'>)}
@@ -215,7 +224,7 @@ function RadioGroupItem(props: ItemProps) {
 
 RadioGroupItem.displayName = 'RadioGroup.Item';
 
-const RadioGroup = RadioGroupImpl as RadioGroupType;
+const RadioGroup = boxComponent(RadioGroupImpl, 'RadioGroup') as unknown as RadioGroupType;
 RadioGroup.Item = RadioGroupItem;
 RadioGroup.displayName = 'RadioGroup';
 

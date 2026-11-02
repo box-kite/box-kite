@@ -1,28 +1,43 @@
-import { useCallback, useRef } from 'react';
-import Box, { BoxProps } from '../box';
+import { Ref, RefAttributes, useCallback, useRef } from 'react';
+import { BoxProps, useBoxElement } from '../box';
+import boxComponent from '../react/boxComponent';
 import { OmitTagProps } from '../react/boxProps';
 import { useInteractionReporter } from '../react/interactions/interactions';
+import { assignRef } from '../utils/dom/domUtils';
 import FormUtils from '../utils/form/formUtils';
 
 type BoxTagProps = Required<BoxProps<'form'>>['props'];
 
-type FormTagProps = OmitTagProps<BoxTagProps, 'onSubmit' | 'ref'>;
+type FormTagProps = OmitTagProps<BoxTagProps, 'onSubmit'>;
 
 interface Props<T> extends Omit<BoxProps<'form'>, 'props' | 'tag'> {
   props?: FormTagProps;
   onSubmit: (obj: T, e: React.ChangeEvent<HTMLFormElement>) => void;
 }
 
-export default function Form<T>(props: Props<T>) {
-  const { onSubmit, props: tagProps, ...boxProps } = props;
-  const formRef = useRef(null);
+function FormImpl<T>(props: Props<T>, ref: Ref<HTMLFormElement>) {
+  const { onSubmit, props: allTagProps, ...boxProps } = props;
+  const formRef = useRef<HTMLFormElement | null>(null);
   const report = useInteractionReporter('form');
+  // Typed out of `props` like every Box's, but a JavaScript caller can still put one there.
+  const { ref: tagRef, ...tagProps } = (allTagProps ?? {}) as FormTagProps & { ref?: Ref<HTMLFormElement> };
+
+  // One ref for the element: the form reads its own node, and a caller's `ref` (either spelling) gets it too, rather
+  // than one replacing the other and every submit reading `null`.
+  const setRefs = useCallback(
+    (element: HTMLFormElement | null) => {
+      formRef.current = element;
+      assignRef(ref, element);
+      assignRef(tagRef, element);
+    },
+    [ref, tagRef],
+  );
 
   const formSubmitHandler = useCallback(
     (e: React.ChangeEvent<HTMLFormElement>) => {
       e.preventDefault();
 
-      const obj = FormUtils.getFormEntries(formRef.current!);
+      const obj = FormUtils.getFormEntries(formRef.current ?? e.currentTarget);
 
       onSubmit(obj as T, e);
       // The names a form sent, never what was typed into them: a password must not reach an analytics call.
@@ -31,11 +46,9 @@ export default function Form<T>(props: Props<T>) {
     [onSubmit, report],
   );
 
-  // `ref` is not one of Box's tag props — Box owns that name — but the element takes one, and the form
-  // needs its own node to read entries from. A caller's own `ref` still reaches Box through `props`.
-  const newTagProps = { ...tagProps, onSubmit: formSubmitHandler, ref: formRef } as unknown as BoxTagProps;
-
-  return <Box tag="form" {...boxProps} props={newTagProps} />;
+  return useBoxElement({ tag: 'form', ...boxProps, props: { ...tagProps, onSubmit: formSubmitHandler } } as BoxProps<'form'>, setRefs);
 }
 
-(Form as React.FunctionComponent).displayName = 'Form';
+const Form = boxComponent(FormImpl, 'Form');
+
+export default Form as <T>(props: Props<T> & RefAttributes<HTMLFormElement>) => React.ReactNode;

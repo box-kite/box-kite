@@ -1,11 +1,12 @@
-import { createContext, CSSProperties, FunctionComponent, ReactNode, useContext, useId, useMemo, useRef, useState } from 'react';
+import { createContext, CSSProperties, ReactNode, Ref, useCallback, useContext, useId, useMemo, useRef, useState } from 'react';
 import Box, { BoxProps } from '../box';
 import { useEventCallback, useLatest } from '../react/a11y/callbacks';
 import useControllableState, { ChangeDetails, ChangeHandler } from '../react/a11y/useControllableState';
+import boxComponent from '../react/boxComponent';
 import { useInteractionCallback, useInteractionReporter } from '../react/interactions/interactions';
 import { ComponentsAndVariants } from '../types';
 import DashboardUtils, { DashboardItem, DashboardLayout, DashboardStep } from '../utils/dashboard/dashboardUtils';
-import { isRtl } from '../utils/dom/domUtils';
+import { assignRef, isRtl } from '../utils/dom/domUtils';
 import { Circle, Path, Svg } from './svg';
 import VisuallyHidden from './visuallyHidden';
 
@@ -228,7 +229,10 @@ function sizeOf(item: DashboardItem): string {
  * to the *right*. On the resize handle they add and remove a column or a row.
  * @keyboard Escape — Puts the widget back where it was picked up from, and the layout with it.
  */
-function DashboardGridImpl<TKey extends keyof ComponentsAndVariants = 'dashboard'>(props: DashboardGridProps<TKey>) {
+function DashboardGridImpl<TKey extends keyof ComponentsAndVariants = 'dashboard'>(
+  props: DashboardGridProps<TKey>,
+  ref: Ref<HTMLDivElement>,
+) {
   const {
     children,
     layout,
@@ -244,7 +248,14 @@ function DashboardGridImpl<TKey extends keyof ComponentsAndVariants = 'dashboard
     ...restProps
   } = props;
 
-  const gridRef = useRef<HTMLDivElement>(null);
+  const gridRef = useRef<HTMLDivElement | null>(null);
+  const setGrid = useCallback(
+    (element: HTMLDivElement | null) => {
+      gridRef.current = element;
+      assignRef(ref, element);
+    },
+    [ref],
+  );
   const [held, setHeld] = useState<Held | null>(null);
   const [offset, setOffset] = useState<CSSProperties | null>(null);
   const [announcement, setAnnouncement] = useState('');
@@ -500,7 +511,7 @@ function DashboardGridImpl<TKey extends keyof ComponentsAndVariants = 'dashboard
   return (
     <DashboardContext.Provider value={context}>
       <Box
-        ref={gridRef}
+        ref={setGrid}
         component={'dashboard' as TKey}
         {...(restProps as DashboardBoxProps<TKey>)}
         variant={[restProps.variant, { dragging: held !== null }] as never}
@@ -714,8 +725,9 @@ function WidgetImpl<TKey extends keyof ComponentsAndVariants = 'widget'>(props: 
   );
 }
 
-const DashboardGrid = DashboardGridImpl;
-(DashboardGrid as FunctionComponent).displayName = 'DashboardGrid';
+const DashboardGrid = boxComponent(DashboardGridImpl, 'DashboardGrid') as <TKey extends keyof ComponentsAndVariants = 'dashboard'>(
+  props: DashboardGridProps<TKey>,
+) => React.ReactNode;
 
 const Widget = WidgetImpl as WidgetType;
 Widget.displayName = 'Widget';

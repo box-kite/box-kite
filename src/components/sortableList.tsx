@@ -6,6 +6,7 @@ import boxComponent from '../react/boxComponent';
 import { useIsomorphicLayoutEffect } from '../react/effects';
 import { useInteractionCallback, useInteractionReporter } from '../react/interactions/interactions';
 import { ComponentsAndVariants } from '../types';
+import { assignRef } from '../utils/dom/domUtils';
 import { scrollParentOf } from '../utils/scroll/scrollUtils';
 import SortableUtils, { SortableSlot } from '../utils/sortable/sortableUtils';
 import List, { ListItemProps, ListProps } from './list';
@@ -177,8 +178,7 @@ function SortableListImpl<TKey extends keyof ComponentsAndVariants = 'list'>(pro
   const setRefs = useCallback(
     (element: HTMLUListElement | null) => {
       listRef.current = element;
-      if (typeof ref === 'function') ref(element);
-      else if (ref) (ref as React.RefObject<HTMLUListElement | null>).current = element;
+      assignRef(ref, element);
     },
     [ref],
   );

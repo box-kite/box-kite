@@ -8,7 +8,7 @@ import useTopLayer from '../react/popover/useTopLayer';
 import { ExtractElementFromTag } from '../react/reactTypes';
 import { ComponentsAndVariants } from '../types';
 import { AnchorAlign, AnchorSide } from '../utils/anchor/anchorUtils';
-import { ElementLike, htmlElementOf, isRtl } from '../utils/dom/domUtils';
+import { assignRef, ElementLike, htmlElementOf, isRtl } from '../utils/dom/domUtils';
 import { supportsPopover } from '../utils/environment/environmentUtils';
 
 interface OverlayProps {
@@ -174,9 +174,7 @@ function OverlayImpl(props: Props, ref: Ref<HTMLDivElement>) {
     (element: HTMLDivElement | null) => {
       hookRef?.(element);
       layerElement.current = element;
-
-      if (typeof ref === 'function') ref(element);
-      else if (ref) (ref as { current: HTMLDivElement | null }).current = element;
+      assignRef(ref, element);
     },
     [hookRef, ref],
   );

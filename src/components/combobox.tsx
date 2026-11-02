@@ -9,6 +9,7 @@ import useIdentifier from '../react/identity/useIdentifier';
 import { useReportedState } from '../react/interactions/interactions';
 import { BoxStyleProps, ComponentsAndVariants } from '../types';
 import ComboboxUtils, { ComboboxFilter, ComboboxRow, ComboboxRowDef } from '../utils/combobox/comboboxUtils';
+import { assignRef } from '../utils/dom/domUtils';
 import ComboboxChips from './combobox/comboboxChips';
 import ComboboxListbox, { ComboboxVirtualize } from './combobox/comboboxListbox';
 import Flex from './flex';
@@ -235,8 +236,7 @@ function ComboboxImpl<TRow>(props: Props<TRow>, ref: Ref<HTMLInputElement>): Rea
   const setFieldRef = useCallback(
     (element: HTMLInputElement | null) => {
       fieldRef.current = element;
-      if (typeof ref === 'function') ref(element);
-      else if (ref) (ref as React.RefObject<HTMLInputElement | null>).current = element;
+      assignRef(ref, element);
     },
     [ref],
   );

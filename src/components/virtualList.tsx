@@ -3,6 +3,7 @@ import { useEventCallback, useLatest } from '../react/a11y/callbacks';
 import boxComponent from '../react/boxComponent';
 import { useIsomorphicLayoutEffect } from '../react/effects';
 import { ComponentsAndVariants } from '../types';
+import { assignRef } from '../utils/dom/domUtils';
 import { scrollParentOf } from '../utils/scroll/scrollUtils';
 import MeasuredWindow from '../utils/virtual/measuredWindow';
 import List, { ListProps } from './list';
@@ -116,8 +117,7 @@ function VirtualListImpl<TItem, TKey extends keyof ComponentsAndVariants = 'list
   const setRefs = useCallback(
     (element: HTMLUListElement | null) => {
       listRef.current = element;
-      if (typeof ref === 'function') ref(element);
-      else if (ref) (ref as React.RefObject<HTMLUListElement | null>).current = element;
+      assignRef(ref, element);
     },
     [ref],
   );

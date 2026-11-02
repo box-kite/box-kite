@@ -30,7 +30,7 @@ import { zoneName } from '../utils/date/format';
 import { fieldName, hourCycleOf, monthNames } from '../utils/date/locale';
 import { parse } from '../utils/date/parse';
 import { Disambiguation, ZoneInput } from '../utils/date/zones';
-import { isRtl } from '../utils/dom/domUtils';
+import { assignRef, isRtl } from '../utils/dom/domUtils';
 
 export type { DateChangeDetails, DateChangeHandler, DateChangeReason } from '../react/date/dateChange';
 export type DateFieldType = FieldType;
@@ -391,8 +391,7 @@ function DateFieldImpl<TKey extends keyof ComponentsAndVariants = 'dateField'>(p
 
   const setRefs = (element: HTMLDivElement | null) => {
     groupRef.current = element;
-    if (typeof ref === 'function') ref(element);
-    else if (ref) (ref as React.MutableRefObject<HTMLDivElement | null>).current = element;
+    assignRef(ref, element);
   };
 
   return (

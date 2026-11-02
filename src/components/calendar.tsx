@@ -1,7 +1,8 @@
-import { FunctionComponent, useEffect, useMemo, useRef, useState } from 'react';
+import { Ref, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Box, { BoxProps } from '../box';
 import { useEventCallback } from '../react/a11y/callbacks';
 import useControllableState, { ChangeHandler } from '../react/a11y/useControllableState';
+import boxComponent from '../react/boxComponent';
 import { DateChangeDetails, DateChangeReason } from '../react/date/dateChange';
 import { useDateEnvironment } from '../react/date/dateEnvironment';
 import useIdentifier from '../react/identity/useIdentifier';
@@ -24,7 +25,7 @@ import { readingsOf, today } from '../utils/date/dateTime';
 import { format } from '../utils/date/format';
 import { monthNames, weekdayNames, weekInfo } from '../utils/date/locale';
 import { ZoneInput } from '../utils/date/zones';
-import { isRtl } from '../utils/dom/domUtils';
+import { assignRef, isRtl } from '../utils/dom/domUtils';
 import { Path, Svg } from './svg';
 import VisuallyHidden from './visuallyHidden';
 
@@ -153,7 +154,7 @@ function sameDay(a: DateFields | null, b: DateFields | null): boolean {
  * @keyboard PageUp / PageDown — The same day a month before or after; with Shift, a year.
  * @keyboard Enter / Space — Chooses the focused day; in a range, the first press anchors and the second ends it.
  */
-function CalendarImpl<TKey extends keyof ComponentsAndVariants = 'calendar'>(props: CalendarProps<TKey>) {
+function CalendarImpl<TKey extends keyof ComponentsAndVariants = 'calendar'>(props: CalendarProps<TKey>, ref: Ref<HTMLDivElement>) {
   const {
     mode = 'single',
     value,
@@ -227,7 +228,14 @@ function CalendarImpl<TKey extends keyof ComponentsAndVariants = 'calendar'>(pro
     setShown(first);
   }
 
-  const rootRef = useRef<HTMLDivElement>(null);
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const setRoot = useCallback(
+    (element: HTMLDivElement | null) => {
+      rootRef.current = element;
+      assignRef(ref, element);
+    },
+    [ref],
+  );
   const moveFocusRef = useRef(autoFocus);
   const id = useIdentifier('calendar');
 
@@ -532,7 +540,7 @@ function CalendarImpl<TKey extends keyof ComponentsAndVariants = 'calendar'>(pro
 
   return (
     <Box
-      ref={rootRef}
+      ref={setRoot}
       component={'calendar' as TKey}
       display="inline-block"
       {...(restProps as CalendarBoxProps<TKey>)}
@@ -663,7 +671,6 @@ function Chevron({ direction }: { direction: 1 | -1 }) {
   );
 }
 
-const Calendar = CalendarImpl;
-(Calendar as FunctionComponent).displayName = 'Calendar';
+const Calendar = boxComponent(CalendarImpl, 'Calendar');
 
 export default Calendar as <TKey extends keyof ComponentsAndVariants = 'calendar'>(props: CalendarProps<TKey>) => React.ReactNode;

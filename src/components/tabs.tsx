@@ -1,13 +1,14 @@
-import { createContext, FunctionComponent, useContext, useMemo, useRef, useState } from 'react';
+import { createContext, FunctionComponent, Ref, useCallback, useContext, useMemo, useRef, useState } from 'react';
 import Box, { BoxProps } from '../box';
 import { useEventCallback } from '../react/a11y/callbacks';
 import { ChangeDetails, ChangeHandler } from '../react/a11y/useControllableState';
+import boxComponent from '../react/boxComponent';
 import { useIsomorphicLayoutEffect } from '../react/effects';
 import useIdentifier from '../react/identity/useIdentifier';
 import { useReportedState } from '../react/interactions/interactions';
 import { ComponentsAndVariants } from '../types';
 import AnimationUtils from '../utils/animation/animationUtils';
-import { isRtl } from '../utils/dom/domUtils';
+import { assignRef, isRtl } from '../utils/dom/domUtils';
 import TabsUtils, { TabsBounds, TabsOrientation } from '../utils/tabs/tabsUtils';
 
 export type { TabsOrientation };
@@ -259,10 +260,17 @@ function TabsImpl<TKey extends keyof ComponentsAndVariants = 'tabs'>(props: Tabs
 }
 
 /** The tabs themselves, and the keyboard: it sits on the list because roving tabindex puts one tab in the tab sequence. */
-function TabsList<TKey extends keyof ComponentsAndVariants = 'tabs.list'>(props: TabsListProps<TKey>) {
+function TabsList<TKey extends keyof ComponentsAndVariants = 'tabs.list'>(props: TabsListProps<TKey>, ref: Ref<HTMLDivElement>) {
   const { children, label, labelledBy, props: tagProps, ...restProps } = props;
   const { value: selected, orientation, activation, loop, indicator, tabStop, setTabStop, setIndicatorLive, select } = useTabs('Tabs.List');
-  const listRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement | null>(null);
+  const setList = useCallback(
+    (element: HTMLDivElement | null) => {
+      listRef.current = element;
+      assignRef(ref, element);
+    },
+    [ref],
+  );
   const [bounds, setBounds] = useState<TabsBounds>();
   const sliding = indicator === 'sliding';
 
@@ -347,7 +355,7 @@ function TabsList<TKey extends keyof ComponentsAndVariants = 'tabs.list'>(props:
 
   return (
     <Box
-      ref={listRef}
+      ref={setList}
       component={'tabs.list' as TKey}
       {...(restProps as BoxProps<'div', TKey>)}
       variant={[restProps.variant, { vertical: orientation === 'vertical', sliding }] as never}
@@ -379,8 +387,6 @@ function TabsList<TKey extends keyof ComponentsAndVariants = 'tabs.list'>(props:
     </Box>
   );
 }
-
-TabsList.displayName = 'Tabs.List';
 
 /** One tab: a real `<button>`, so Enter and Space reach it the way the platform means them to. */
 function TabsTab<TKey extends keyof ComponentsAndVariants = 'tabs.tab'>(props: TabsTabProps<TKey>) {
@@ -429,10 +435,17 @@ TabsTab.displayName = 'Tabs.Tab';
  * switch between panels of different heights is a transition rather than a jump. Panels work as plain
  * siblings of the list without it.
  */
-function TabsPanels<TKey extends keyof ComponentsAndVariants = 'tabs.panels'>(props: TabsPanelsProps<TKey>) {
+function TabsPanels<TKey extends keyof ComponentsAndVariants = 'tabs.panels'>(props: TabsPanelsProps<TKey>, ref: Ref<HTMLDivElement>) {
   const { children, props: tagProps, ...restProps } = props;
   const { value } = useTabs('Tabs.Panels');
-  const containerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const setContainer = useCallback(
+    (element: HTMLDivElement | null) => {
+      containerRef.current = element;
+      assignRef(ref, element);
+    },
+    [ref],
+  );
   const [height, setHeight] = useState<number>();
   const [resizing, setResizing] = useState(false);
 
@@ -487,7 +500,7 @@ function TabsPanels<TKey extends keyof ComponentsAndVariants = 'tabs.panels'>(pr
 
   return (
     <Box
-      ref={containerRef}
+      ref={setContainer}
       component={'tabs.panels' as TKey}
       {...(restProps as BoxProps<'div', TKey>)}
       variant={[restProps.variant, { resizing }] as never}
@@ -500,8 +513,6 @@ function TabsPanels<TKey extends keyof ComponentsAndVariants = 'tabs.panels'>(pr
     </Box>
   );
 }
-
-TabsPanels.displayName = 'Tabs.Panels';
 
 /** One panel. Rendered only while its tab is selected, unless the widget was told to keep them all. */
 function TabsPanel<TKey extends keyof ComponentsAndVariants = 'tabs.panel'>(props: TabsPanelProps<TKey>) {
@@ -535,9 +546,9 @@ function TabsPanel<TKey extends keyof ComponentsAndVariants = 'tabs.panel'>(prop
 TabsPanel.displayName = 'Tabs.Panel';
 
 const Tabs = TabsImpl as TabsType;
-Tabs.List = TabsList;
+Tabs.List = boxComponent(TabsList, 'Tabs.List') as TabsType['List'];
 Tabs.Tab = TabsTab;
-Tabs.Panels = TabsPanels;
+Tabs.Panels = boxComponent(TabsPanels, 'Tabs.Panels') as TabsType['Panels'];
 Tabs.Panel = TabsPanel;
 (Tabs as FunctionComponent).displayName = 'Tabs';
 

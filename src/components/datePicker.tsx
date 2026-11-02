@@ -15,6 +15,7 @@ import { combine, compare, readingsOf, toPlainDate, toPlainTime, today } from '.
 import { FieldGranularity, slotOf, timeSlots } from '../utils/date/fieldModel';
 import { format, formatRange, zoneName } from '../utils/date/format';
 import { Disambiguation, ZoneInput } from '../utils/date/zones';
+import { assignRef } from '../utils/dom/domUtils';
 import Calendar, { DateRange } from './calendar';
 import DateField from './dateField';
 import Overlay from './overlay';
@@ -175,12 +176,6 @@ function ClearIcon() {
       <Path d="m4.5 4.5 7 7m0-7-7 7" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" />
     </Svg>
   );
-}
-
-/** A ref of any kind, given its element. */
-function assignRef<T>(ref: Ref<T> | undefined, element: T | null) {
-  if (typeof ref === 'function') ref(element);
-  else if (ref) (ref as React.RefObject<T | null>).current = element;
 }
 
 interface LayerOptions {

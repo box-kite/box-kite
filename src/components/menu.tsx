@@ -1,8 +1,9 @@
-import { createContext, FunctionComponent, useCallback, useContext, useMemo, useRef, useState } from 'react';
+import { createContext, FunctionComponent, Ref, useCallback, useContext, useMemo, useRef, useState } from 'react';
 import Box, { BoxProps } from '../box';
 import { useEventCallback } from '../react/a11y/callbacks';
 import useControllableState, { ChangeDetails, ChangeHandler } from '../react/a11y/useControllableState';
 import useAnchorPosition from '../react/anchor/useAnchorPosition';
+import boxComponent from '../react/boxComponent';
 import { useIsomorphicLayoutEffect } from '../react/effects';
 import useIdentifier from '../react/identity/useIdentifier';
 import { useInteractionReporter, useReportedState } from '../react/interactions/interactions';
@@ -14,7 +15,7 @@ import usePopoverLayer, {
 } from '../react/popover/usePopoverLayer';
 import { ComponentsAndVariants } from '../types';
 import { AnchorAlign, AnchorSide } from '../utils/anchor/anchorUtils';
-import { isEventInside, isRtl } from '../utils/dom/domUtils';
+import { assignRef, isEventInside, isRtl } from '../utils/dom/domUtils';
 import TypeaheadUtils from '../utils/keyboard/typeaheadUtils';
 import MenuUtils from '../utils/menu/menuUtils';
 import Overlay from './overlay';
@@ -311,7 +312,7 @@ const RadioContext = createContext<RadioContextValue | null>(null);
  * and the same letter again cycles through the items starting with it.
  * @pattern https://www.w3.org/WAI/ARIA/apg/patterns/menu-button/
  */
-function MenuImpl<TKey extends keyof ComponentsAndVariants = 'menu'>(props: MenuProps<TKey>) {
+function MenuImpl<TKey extends keyof ComponentsAndVariants = 'menu'>(props: MenuProps<TKey>, ref: Ref<HTMLDivElement>) {
   const {
     trigger,
     children,
@@ -395,6 +396,7 @@ function MenuImpl<TKey extends keyof ComponentsAndVariants = 'menu'>(props: Menu
           labelledBy={labelledBy ?? (label ? undefined : layer.triggerId)}
           contentProps={contentProps}
           {...(restProps as MenuBoxProps<'menu'>)}
+          elementRef={ref}
         >
           {children}
         </MenuPanel>
@@ -411,6 +413,8 @@ interface PanelProps extends MenuBoxProps<'menu'>, Required<PlacementProps> {
   contentProps?: Record<string, unknown>;
   /** A submenu: the arrow pointing back the way it came closes it. Absent on the menu itself. */
   closeSelf?(details: ChangeDetails<MenuReason>): void;
+  /** The caller's ref, under a name of its own: a `ref` in the rest would replace the panel's (bug #311). */
+  elementRef: Ref<HTMLDivElement>;
 }
 
 /**
@@ -419,8 +423,16 @@ interface PanelProps extends MenuBoxProps<'menu'>, Required<PlacementProps> {
  * both bubble through this one on their way out, and the panel they belong to is the one that answers.
  */
 function MenuPanel(props: PanelProps) {
-  const { layer, side, align, offset, flip, matchWidth, label, labelledBy, contentProps, closeSelf, children, ...boxProps } = props;
-  const { platform, isOpen, id, triggerElement, setPanel } = layer;
+  const { layer, side, align, offset, flip, matchWidth, label, labelledBy, contentProps, closeSelf, elementRef, children, ...boxProps } =
+    props;
+  const { platform, isOpen, id, triggerElement, setPanel: setLayerPanel } = layer;
+  const setPanel = useCallback(
+    (element: HTMLDivElement | null) => {
+      setLayerPanel(element);
+      assignRef(elementRef, element);
+    },
+    [setLayerPanel, elementRef],
+  );
 
   const context = useMenuContext('Menu');
   const buffer = useRef<TypeaheadUtils.Buffer>({ query: '', at: 0 });
@@ -542,7 +554,7 @@ function MenuPanel(props: PanelProps) {
  * which is the reading order rather than the key.
  * @keyboard Left / Escape — Closes it and puts focus back on the item that opened it.
  */
-function MenuSub<TKey extends keyof ComponentsAndVariants = 'menu'>(props: MenuSubProps<TKey>) {
+function MenuSub<TKey extends keyof ComponentsAndVariants = 'menu'>(props: MenuSubProps<TKey>, ref: Ref<HTMLDivElement>) {
   const {
     label,
     children,
@@ -675,6 +687,7 @@ function MenuSub<TKey extends keyof ComponentsAndVariants = 'menu'>(props: MenuS
             contentProps={contentProps}
             closeSelf={(details) => layer.setOpen(false, details)}
             {...(restProps as MenuBoxProps<'menu'>)}
+            elementRef={ref}
           >
             {children}
           </MenuPanel>
@@ -864,18 +877,20 @@ function MenuSeparator<TKey extends keyof ComponentsAndVariants = 'menu.separato
 (MenuRadioItem as FunctionComponent).displayName = 'Menu.RadioItem';
 (MenuGroup as FunctionComponent).displayName = 'Menu.Group';
 (MenuSeparator as FunctionComponent).displayName = 'Menu.Separator';
-(MenuSub as FunctionComponent).displayName = 'Menu.Sub';
 
-const Menu = Object.assign(MenuImpl, {
-  Item: MenuItem,
-  CheckboxItem: MenuCheckboxItem,
-  RadioGroup: MenuRadioGroup,
-  RadioItem: MenuRadioItem,
-  Group: MenuGroup,
-  Separator: MenuSeparator,
-  Sub: MenuSub,
-});
-
-(MenuImpl as FunctionComponent).displayName = 'Menu';
+const Menu = Object.assign(
+  boxComponent(MenuImpl, 'Menu') as <TKey extends keyof ComponentsAndVariants = 'menu'>(props: MenuProps<TKey>) => React.ReactNode,
+  {
+    Item: MenuItem,
+    CheckboxItem: MenuCheckboxItem,
+    RadioGroup: MenuRadioGroup,
+    RadioItem: MenuRadioItem,
+    Group: MenuGroup,
+    Separator: MenuSeparator,
+    Sub: boxComponent(MenuSub, 'Menu.Sub') as <TKey extends keyof ComponentsAndVariants = 'menu'>(
+      props: MenuSubProps<TKey>,
+    ) => React.ReactNode,
+  },
+);
 
 export default Menu;

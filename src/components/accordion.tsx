@@ -1,11 +1,13 @@
-import { createContext, FunctionComponent, useContext, useMemo, useRef } from 'react';
+import { createContext, FunctionComponent, Ref, useCallback, useContext, useMemo, useRef } from 'react';
 import Box, { BoxProps } from '../box';
 import { useEventCallback } from '../react/a11y/callbacks';
 import { ChangeDetails, ChangeHandler } from '../react/a11y/useControllableState';
+import boxComponent from '../react/boxComponent';
 import useIdentifier from '../react/identity/useIdentifier';
 import { useReportedState } from '../react/interactions/interactions';
 import { ComponentsAndVariants } from '../types';
 import AccordionUtils from '../utils/accordion/accordionUtils';
+import { assignRef } from '../utils/dom/domUtils';
 
 /**
  * Why a panel opened or closed. One reason today — a press on the header, which is also what Enter and
@@ -193,10 +195,17 @@ function useAccordionItem(part: string): AccordionItemContextValue {
  * ones. They do nothing inside a panel, so a textarea in one keeps its own arrows.
  * @keyboard Home / End — The first and last header.
  */
-function AccordionImpl<TKey extends keyof ComponentsAndVariants = 'accordion'>(props: AccordionProps<TKey>) {
+function AccordionImpl<TKey extends keyof ComponentsAndVariants = 'accordion'>(props: AccordionProps<TKey>, ref: Ref<HTMLDivElement>) {
   const { children, value, defaultValue, onValueChange, multiple = false, loop = true, level = 3, props: tagProps, ...restProps } = props;
 
-  const rootRef = useRef<HTMLDivElement>(null);
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const setRoot = useCallback(
+    (element: HTMLDivElement | null) => {
+      rootRef.current = element;
+      assignRef(ref, element);
+    },
+    [ref],
+  );
   const [open, setOpen] = useReportedState<string[], DisclosureReason>({
     value,
     defaultValue: defaultValue ?? [],
@@ -233,7 +242,7 @@ function AccordionImpl<TKey extends keyof ComponentsAndVariants = 'accordion'>(p
   return (
     <AccordionContext.Provider value={context}>
       <Box
-        ref={rootRef}
+        ref={setRoot}
         component={'accordion' as TKey}
         {...(restProps as AccordionBoxProps<TKey>)}
         props={{ [AccordionUtils.ROOT_ATTRIBUTE]: '', ...tagProps, onKeyDown: handleKeyDown }}
@@ -385,10 +394,10 @@ function Collapsible<TKey extends keyof ComponentsAndVariants = 'collapsible'>(p
 
 export { Collapsible };
 
-const Accordion = AccordionImpl as AccordionType;
+// A caller's `ref` merged with the root's own rather than replacing it, on React 18 as on 19.
+const Accordion = boxComponent(AccordionImpl, 'Accordion') as unknown as AccordionType;
 Accordion.Item = AccordionItem;
 Accordion.Trigger = AccordionTrigger;
 Accordion.Panel = AccordionPanel;
-(Accordion as FunctionComponent).displayName = 'Accordion';
 
 export default Accordion;
