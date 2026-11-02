@@ -1,6 +1,6 @@
 {
   "name": "@box-kite/react",
-  "version": "2.2.15",
+  "version": "2.2.16",
   "type": "module",
   "sideEffects": [
     "pages/**"
