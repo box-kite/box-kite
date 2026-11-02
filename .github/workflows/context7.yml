@@ -1,0 +1,44 @@
+# Context7 re-indexes a library of our size about every 45 days on its own, so it served CONTRIBUTING.md to
+# consumers for weeks after context7.json excluded it. This asks for a refresh whenever an indexed file changes.
+name: Context7
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - context7.json
+      - README.md
+      - src/BOX_KITE_AI_CONTEXT.md
+      - docs/**
+      - posts/**
+      - create/README.md
+      - .claude/rules/**
+      - .claude/skills/box-kite/**
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Ask Context7 to re-index the library
+        env:
+          CONTEXT7_API_KEY: ${{ secrets.CONTEXT7_API_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -z "$CONTEXT7_API_KEY" ]; then
+            echo "::notice::No CONTEXT7_API_KEY secret, so nothing was refreshed"
+            exit 0
+          fi
+          status=$(curl -s -o response.json -w '%{http_code}' -X POST https://context7.com/api/v1/refresh \
+            -H 'Content-Type: application/json' \
+            -H "Authorization: Bearer $CONTEXT7_API_KEY" \
+            -d '{"libraryName": "/${{ github.repository }}"}')
+          cat response.json; echo
+          if [ "$status" -ge 400 ]; then
+            echo "::error::Context7 answered $status"
+            exit 1
+          fi
