@@ -41,6 +41,17 @@ describe('search_docs', () => {
     ['text size', 'fontSize'],
     ['dropdown menu with checkboxes', 'Menu'],
     ['container query', 'container'],
+    // #303: a word no record holds, and a CSS property spelled out in words, either way round.
+    ['on/off toggle', 'Switch'],
+    ['border bottom', 'bb'],
+    ['bottom border', 'bb'],
+    ['margin top', 'mt'],
+    ['background color', 'bgColor'],
+    ['line height', 'lineHeight'],
+    ['padding', 'p'],
+    ['rounded', 'borderRadius'],
+    ['flex', 'Flex'],
+    ['grid', 'Grid'],
   ])('answers %j with %s', (query, expected) => {
     expect(search(query)[0]?.name).toBe(expected);
   });

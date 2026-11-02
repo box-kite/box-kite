@@ -32,6 +32,23 @@ describe('check_styles', () => {
     expect(verdict({ padding: 4 }, 'padding')).toMatchObject({ verdict: 'unknown-prop', suggestions: expect.arrayContaining(['p']) });
   });
 
+  // #304: an edit distance put `borderColor` two edits from `borderBottom` and nothing near `rounded`.
+  it.each([
+    ['borderBottom', ['bb']],
+    ['borderLeft', ['bl']],
+    ['rounded', ['borderRadius']],
+    ['bg', ['bgColor']],
+    ['w', ['width']],
+    ['minW', ['minWidth']],
+    ['leading', ['lineHeight']],
+    ['border', ['b', 'borderStyle', 'borderColor', 'borderRadius']],
+    ['background', ['bgColor', 'bgImage', 'bgGradient', 'bgClip']],
+    ['borderTopLeftRadius', ['borderRadiusTopLeft', 'borderRadiusTop', 'borderRadiusLeft']],
+    ['bgColr', ['bgColor']],
+  ])('suggests for %s what it spells, then what it is called elsewhere, then the longhands', (name, expected) => {
+    expect(verdict({ [name]: 1 }, name)?.suggestions).toEqual(expected);
+  });
+
   it('sends an HTML attribute to the `props` bag it is silently dropped from', () => {
     expect(verdict({ href: '/about' }, 'href')?.verdict).toBe('html-attribute');
     expect(verdict({ 'data-state': 'open' }, 'data-state')?.verdict).toBe('html-attribute');
