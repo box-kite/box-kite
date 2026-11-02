@@ -1,15 +1,16 @@
-import { createContext, FunctionComponent, useCallback, useContext, useMemo, useRef, useState } from 'react';
+import { createContext, FunctionComponent, Ref, useCallback, useContext, useMemo, useRef, useState } from 'react';
 import Box, { BoxProps } from '../box';
 import { useEventCallback } from '../react/a11y/callbacks';
 import { ChangeHandler, SetControllableState } from '../react/a11y/useControllableState';
 import useDismiss from '../react/a11y/useDismiss';
 import useFocusReturn from '../react/a11y/useFocusReturn';
+import boxComponent from '../react/boxComponent';
 import useScrollLock from '../react/dialog/useScrollLock';
 import { useIsomorphicLayoutEffect } from '../react/effects';
 import useIdentifier from '../react/identity/useIdentifier';
 import { useReportedState } from '../react/interactions/interactions';
 import { ComponentsAndVariants } from '../types';
-import { ElementLike, htmlElementOf, isEventInside } from '../utils/dom/domUtils';
+import { assignRef, ElementLike, htmlElementOf, isEventInside } from '../utils/dom/domUtils';
 import { supportsDialogClosedBy } from '../utils/environment/environmentUtils';
 import { H2, P } from './semantics';
 
@@ -90,6 +91,8 @@ export type AlertDialogProps<TKey extends keyof ComponentsAndVariants = 'dialog'
 
 interface BaseProps<TKey extends keyof ComponentsAndVariants> extends DialogProps<TKey> {
   role: 'dialog' | 'alertdialog';
+  /** The caller's ref, under a name of its own: a `ref` in the rest would replace the dialog's (bug #311). */
+  elementRef: Ref<HTMLDialogElement>;
 }
 
 /** Every Box prop, on an `<h2>` — `tag` takes any of the six headings instead. */
@@ -154,8 +157,8 @@ function useDialogContext(name: string): DialogContextValue {
  * @keyboard Tab — Cycles focus inside a modal dialog and never leaves it; in a non-modal one it moves on.
  * @keyboard Enter, Space — On the trigger, opens the dialog.
  */
-function DialogImpl<TKey extends keyof ComponentsAndVariants = 'dialog'>(props: DialogProps<TKey>) {
-  return <DialogBase role="dialog" {...props} />;
+function DialogImpl<TKey extends keyof ComponentsAndVariants = 'dialog'>(props: DialogProps<TKey>, ref: Ref<HTMLDialogElement>) {
+  return <DialogBase role="dialog" {...props} elementRef={ref} />;
 }
 
 /**
@@ -179,8 +182,8 @@ function DialogImpl<TKey extends keyof ComponentsAndVariants = 'dialog'>(props: 
  * @keyboard Escape — Closes it and returns focus to the trigger.
  * @keyboard Tab — Cycles focus inside it and never leaves.
  */
-function AlertDialogImpl<TKey extends keyof ComponentsAndVariants = 'dialog'>(props: AlertDialogProps<TKey>) {
-  return <DialogBase role="alertdialog" {...props} modal dismissible={false} />;
+function AlertDialogImpl<TKey extends keyof ComponentsAndVariants = 'dialog'>(props: AlertDialogProps<TKey>, ref: Ref<HTMLDialogElement>) {
+  return <DialogBase role="alertdialog" {...props} modal dismissible={false} elementRef={ref} />;
 }
 
 function DialogBase<TKey extends keyof ComponentsAndVariants>(props: BaseProps<TKey>) {
@@ -198,6 +201,7 @@ function DialogBase<TKey extends keyof ComponentsAndVariants>(props: BaseProps<T
     dismissible = true,
     lockScroll = modal,
     initialFocus,
+    elementRef,
     props: contentProps,
     ...restProps
   } = props;
@@ -212,7 +216,14 @@ function DialogBase<TKey extends keyof ComponentsAndVariants>(props: BaseProps<T
     interaction: { component: role === 'alertdialog' ? 'alertDialog' : 'dialog', type: 'openChange' },
   });
 
-  const [dialog, setDialog] = useState<HTMLDialogElement | null>(null);
+  const [dialog, setDialogState] = useState<HTMLDialogElement | null>(null);
+  const setDialog = useCallback(
+    (element: HTMLDialogElement | null) => {
+      setDialogState(element);
+      assignRef(elementRef, element);
+    },
+    [elementRef],
+  );
   const [triggerElement, setTriggerElement] = useState<HTMLElement | null>(null);
   // What the DOM says, mirrored as state so the two can be compared on a commit. Without it a controlled
   // dialog the browser closed would stay closed: `isOpen` never changed, so nothing would re-render.
@@ -451,11 +462,16 @@ function DialogDescription<TKey extends keyof ComponentsAndVariants = 'dialog.de
 // Both families get the same two, because both are named and described the same way.
 const subcomponents = { Title: DialogTitle, Description: DialogDescription };
 
-const Dialog = Object.assign(DialogImpl, subcomponents);
-const AlertDialog = Object.assign(AlertDialogImpl, subcomponents);
-
-(DialogImpl as FunctionComponent).displayName = 'Dialog';
-(AlertDialogImpl as FunctionComponent).displayName = 'AlertDialog';
+const Dialog = Object.assign(
+  boxComponent(DialogImpl, 'Dialog') as <TKey extends keyof ComponentsAndVariants = 'dialog'>(props: DialogProps<TKey>) => React.ReactNode,
+  subcomponents,
+);
+const AlertDialog = Object.assign(
+  boxComponent(AlertDialogImpl, 'AlertDialog') as <TKey extends keyof ComponentsAndVariants = 'dialog'>(
+    props: AlertDialogProps<TKey>,
+  ) => React.ReactNode,
+  subcomponents,
+);
 
 export { AlertDialog };
 

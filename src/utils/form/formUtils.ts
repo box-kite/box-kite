@@ -5,6 +5,9 @@ interface FormObject {
 
 namespace FormUtils {
   export function getFormEntries(form: HTMLFormElement) {
+    // Said in words rather than as a TypeError on `null.elements`, which names neither the form nor the ref behind it.
+    if (!form) throw new Error('[box-kite] <Form> read its entries with no <form> element: its ref never reached the element.');
+
     const elementsGroupByName = Array.from(form.elements).reduce(
       (state, element) => {
         const name = (element as HTMLInputElement).name;

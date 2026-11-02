@@ -1,8 +1,9 @@
-import { FunctionComponent } from 'react';
+import { Ref, useCallback } from 'react';
 import Box, { BoxProps } from '../box';
 import { useEventCallback } from '../react/a11y/callbacks';
 import { ChangeHandler } from '../react/a11y/useControllableState';
 import useAnchorPosition from '../react/anchor/useAnchorPosition';
+import boxComponent from '../react/boxComponent';
 import usePopoverLayer, {
   PopoverReason,
   PopoverTrigger as PopoverLayerTrigger,
@@ -10,6 +11,7 @@ import usePopoverLayer, {
 } from '../react/popover/usePopoverLayer';
 import { ComponentsAndVariants } from '../types';
 import { AnchorAlign, AnchorSide } from '../utils/anchor/anchorUtils';
+import { assignRef } from '../utils/dom/domUtils';
 import Overlay from './overlay';
 
 export type { PopoverReason };
@@ -111,7 +113,7 @@ interface Props<TKey extends keyof ComponentsAndVariants> extends PopoverBoxProp
  * @keyboard Escape — Closes it and returns focus to the trigger, from anywhere inside.
  * @keyboard Tab — Moves into the panel from the trigger, and out of the panel to whatever follows it.
  */
-function PopoverImpl<TKey extends keyof ComponentsAndVariants = 'popover'>(props: Props<TKey>) {
+function PopoverImpl<TKey extends keyof ComponentsAndVariants = 'popover'>(props: Props<TKey>, ref: Ref<HTMLDivElement>) {
   const {
     trigger,
     children,
@@ -143,7 +145,7 @@ function PopoverImpl<TKey extends keyof ComponentsAndVariants = 'popover'>(props
     id: popoverId,
     trigger: triggerBag,
     triggerElement,
-    setPanel,
+    setPanel: setLayerPanel,
   } = usePopoverLayer({
     haspopup: 'dialog',
     idPrefix: 'popover',
@@ -156,6 +158,14 @@ function PopoverImpl<TKey extends keyof ComponentsAndVariants = 'popover'>(props
   });
 
   const position = useAnchorPosition({ side, align, offset, flip, matchWidth, anchor: triggerElement });
+  // The panel on both paths, so a caller's `ref` names the same element with or without the Popover API.
+  const setPanel = useCallback(
+    (element: HTMLDivElement | null) => {
+      setLayerPanel(element);
+      assignRef(ref, element);
+    },
+    [setLayerPanel, ref],
+  );
 
   const naming = { 'aria-label': label, 'aria-labelledby': labelledBy };
   const boxProps = restProps as PopoverBoxProps<TKey>;
@@ -211,7 +221,8 @@ function PopoverImpl<TKey extends keyof ComponentsAndVariants = 'popover'>(props
   );
 }
 
-const Popover = PopoverImpl;
-(Popover as FunctionComponent).displayName = 'Popover';
+const Popover = boxComponent(PopoverImpl, 'Popover') as <TKey extends keyof ComponentsAndVariants = 'popover'>(
+  props: Props<TKey>,
+) => React.ReactNode;
 
 export default Popover;

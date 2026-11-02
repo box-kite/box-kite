@@ -1,13 +1,15 @@
-import { FunctionComponent, useCallback, useRef } from 'react';
+import { Ref, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useSyncExternalStore } from 'use-sync-external-store/shim';
 import Box, { BoxProps } from '../box';
 import usePresence from '../react/animation/usePresence';
+import boxComponent from '../react/boxComponent';
 import { useIsomorphicLayoutEffect } from '../react/effects';
 import usePortalContainer from '../react/hooks/usePortalContainer';
 import { useInteractionReporter } from '../react/interactions/interactions';
 import useTopLayer from '../react/popover/useTopLayer';
 import { ComponentsAndVariants } from '../types';
+import { assignRef } from '../utils/dom/domUtils';
 import { documentOrNull, supportsPopover } from '../utils/environment/environmentUtils';
 import createToastStore, { Toast, ToastAction, ToastDismissReason, ToastKind, ToastOptions, ToastStore } from '../utils/toast/toastStore';
 
@@ -225,7 +227,7 @@ export interface ToasterProps<TKey extends keyof ComponentsAndVariants = 'toaste
  * @keyboard Escape — Dismisses the toast focus is in, and hands focus back to where it came from once
  * the stack is empty.
  */
-function ToasterImpl<TKey extends keyof ComponentsAndVariants = 'toaster'>(props: ToasterProps<TKey>) {
+function ToasterImpl<TKey extends keyof ComponentsAndVariants = 'toaster'>(props: ToasterProps<TKey>, ref: Ref<HTMLDivElement>) {
   const {
     position = 'bottom-end',
     limit = 3,
@@ -242,7 +244,14 @@ function ToasterImpl<TKey extends keyof ComponentsAndVariants = 'toaster'>(props
   const state = useSyncExternalStore(store.subscribe, store.getSnapshot, store.getServerSnapshot);
   const topLayer = useTopLayer();
   const portalContainer = usePortalContainer(!topLayer);
-  const viewportRef = useRef<HTMLDivElement>(null);
+  const viewportRef = useRef<HTMLDivElement | null>(null);
+  const setViewport = useCallback(
+    (element: HTMLDivElement | null) => {
+      viewportRef.current = element;
+      assignRef(ref, element);
+    },
+    [ref],
+  );
   // Where focus was before it came into the stack, so Escape can hand it back.
   const returnTo = useRef<HTMLElement | null>(null);
   const paused = useRef({ hovered: false, focused: false, hidden: false });
@@ -368,7 +377,7 @@ function ToasterImpl<TKey extends keyof ComponentsAndVariants = 'toaster'>(props
       // A named `<section>` is a region landmark, which is the second way to the stack: the hotkey for
       // someone with a keyboard, the landmark list for someone with a screen reader.
       tag="section"
-      ref={viewportRef}
+      ref={setViewport}
       component={'toaster' as TKey}
       {...(restProps as BoxProps<'div', TKey>)}
       variant={[restProps.variant, { [POSITION_VARIANT[position]]: true }] as never}
@@ -403,7 +412,8 @@ function ToasterImpl<TKey extends keyof ComponentsAndVariants = 'toaster'>(props
   return portalContainer ? createPortal(viewport, portalContainer) : null;
 }
 
-const Toaster = ToasterImpl;
-(Toaster as FunctionComponent).displayName = 'Toaster';
+const Toaster = boxComponent(ToasterImpl, 'Toaster') as <TKey extends keyof ComponentsAndVariants = 'toaster'>(
+  props: ToasterProps<TKey>,
+) => React.ReactNode;
 
 export default Toaster;

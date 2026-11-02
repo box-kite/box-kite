@@ -1,10 +1,11 @@
-import { FunctionComponent, useRef, useState } from 'react';
+import { Ref, useCallback, useRef, useState } from 'react';
 import Box, { BoxProps } from '../box';
 import { useEventCallback, useLatest } from '../react/a11y/callbacks';
 import useControllableState, { ChangeDetails, ChangeHandler } from '../react/a11y/useControllableState';
+import boxComponent from '../react/boxComponent';
 import { useInteractionCallback } from '../react/interactions/interactions';
 import { ComponentsAndVariants } from '../types';
-import { isRtl } from '../utils/dom/domUtils';
+import { assignRef, isRtl } from '../utils/dom/domUtils';
 import SliderUtils, { SliderOrientation, SliderScale } from '../utils/slider/sliderUtils';
 
 export type { SliderOrientation };
@@ -133,6 +134,7 @@ function fillStyle(values: readonly number[], scale: SliderScale, vertical: bool
  */
 function SliderImpl<TKey extends keyof ComponentsAndVariants = 'slider', TValue extends SliderValue = number>(
   props: SliderProps<TKey, TValue>,
+  ref: Ref<HTMLDivElement>,
 ) {
   const {
     value,
@@ -154,7 +156,14 @@ function SliderImpl<TKey extends keyof ComponentsAndVariants = 'slider', TValue 
     ...restProps
   } = props;
 
-  const rootRef = useRef<HTMLDivElement>(null);
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const setRoot = useCallback(
+    (element: HTMLDivElement | null) => {
+      rootRef.current = element;
+      assignRef(ref, element);
+    },
+    [ref],
+  );
   const trackRef = useRef<HTMLDivElement>(null);
   // Which thumb the pointer took hold of, and whether a key is still down — neither is anything the
   // markup shows, so neither is state.
@@ -273,7 +282,7 @@ function SliderImpl<TKey extends keyof ComponentsAndVariants = 'slider', TValue 
 
   return (
     <Box
-      ref={rootRef}
+      ref={setRoot}
       component={'slider' as TKey}
       {...(restProps as SliderBoxProps<TKey>)}
       variant={[restProps.variant, { vertical, disabled }] as never}
@@ -321,7 +330,11 @@ function SliderImpl<TKey extends keyof ComponentsAndVariants = 'slider', TValue 
   );
 }
 
-const Slider = SliderImpl;
-(Slider as FunctionComponent).displayName = 'Slider';
+const Slider = boxComponent(SliderImpl, 'Slider') as <
+  TKey extends keyof ComponentsAndVariants = 'slider',
+  TValue extends SliderValue = number,
+>(
+  props: SliderProps<TKey, TValue>,
+) => React.ReactNode;
 
 export default Slider;

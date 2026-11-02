@@ -1,11 +1,13 @@
-import { FunctionComponent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Ref, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { BoxProps } from '../box';
 import { useEventCallback } from '../react/a11y/callbacks';
 import useControllableState, { ChangeHandler } from '../react/a11y/useControllableState';
 import useDismiss from '../react/a11y/useDismiss';
+import boxComponent from '../react/boxComponent';
 import useIdentifier from '../react/identity/useIdentifier';
 import { ComponentsAndVariants } from '../types';
 import { AnchorAlign, AnchorSide } from '../utils/anchor/anchorUtils';
+import { assignRef } from '../utils/dom/domUtils';
 import Overlay from './overlay';
 import Presence from './presence';
 
@@ -111,7 +113,7 @@ interface Props<TKey extends keyof ComponentsAndVariants> extends TooltipBoxProp
  * @keyboard (Pointer) Moving onto the tooltip — Keeps it open for as long as the pointer is there, so a
  * long description can be read or selected.
  */
-function Tooltip<TKey extends keyof ComponentsAndVariants = 'tooltip'>(props: Props<TKey>) {
+function TooltipImpl<TKey extends keyof ComponentsAndVariants = 'tooltip'>(props: Props<TKey>, ref: Ref<HTMLDivElement>) {
   const {
     content,
     children,
@@ -142,7 +144,14 @@ function Tooltip<TKey extends keyof ComponentsAndVariants = 'tooltip'>(props: Pr
   // layer is positioned against), and a ref read in render is both a lint error here and a real
   // staleness bug — the first render after it attaches has to be the one that positions.
   const [triggerElement, setTriggerElement] = useState<HTMLElement | null>(null);
-  const overlayRef = useRef<HTMLDivElement>(null);
+  const overlayRef = useRef<HTMLDivElement | null>(null);
+  const setOverlay = useCallback(
+    (element: HTMLDivElement | null) => {
+      overlayRef.current = element;
+      assignRef(ref, element);
+    },
+    [ref],
+  );
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
   // Why the tooltip should still be showing, read when a scheduled close finally runs: the pointer
   // may have left the trigger for the tooltip itself, or the trigger may still hold focus.
@@ -266,7 +275,7 @@ function Tooltip<TKey extends keyof ComponentsAndVariants = 'tooltip'>(props: Pr
       <Presence present={showTooltip}>
         {(presence) => (
           <Overlay
-            ref={overlayRef}
+            ref={setOverlay}
             contentRef={presence.ref}
             anchor={triggerElement}
             // Beside the trigger rather than over it, and sized to its own content: a description is
@@ -299,6 +308,8 @@ function Tooltip<TKey extends keyof ComponentsAndVariants = 'tooltip'>(props: Pr
   );
 }
 
-(Tooltip as FunctionComponent).displayName = 'Tooltip';
+const Tooltip = boxComponent(TooltipImpl, 'Tooltip') as <TKey extends keyof ComponentsAndVariants = 'tooltip'>(
+  props: Props<TKey>,
+) => React.ReactNode;
 
 export default Tooltip;

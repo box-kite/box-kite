@@ -13,6 +13,15 @@ export function elementOf(value: ElementLike): Element | null {
   return 'current' in value ? value.current : value;
 }
 
+/** React's `Ref<T>`, structurally: a callback or an object, either of which a caller may hand a component. */
+export type RefLike<T> = ((element: T | null) => unknown) | { current: T | null } | null | undefined;
+
+/** Hand an element to a ref of either kind — the half of a merged ref that is the caller's. */
+export function assignRef<T>(ref: RefLike<T>, element: T | null): void {
+  if (typeof ref === 'function') ref(element);
+  else if (ref) ref.current = element;
+}
+
 /** The same, narrowed to an `HTMLElement` — for callers that need `focus()` or `style`. */
 export function htmlElementOf(value: ElementLike): HTMLElement | null {
   const element = elementOf(value);
