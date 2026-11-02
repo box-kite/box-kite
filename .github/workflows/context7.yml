@@ -1,8 +1,11 @@
 # Context7 re-indexes a library of our size about every 45 days on its own, so it served CONTRIBUTING.md to
-# consumers for weeks after context7.json excluded it. This asks for a refresh whenever an indexed file changes.
+# consumers for weeks after context7.json excluded it. This asks for a refresh whenever an indexed file changes,
+# and weekly, since Context7 refuses one within 10 days of the last (`too-early`) and a push in that window is lost.
 name: Context7
 
 on:
+  schedule:
+    - cron: '17 6 * * 1'
   push:
     branches: [main]
     paths:
@@ -38,6 +41,10 @@ jobs:
             -H "Authorization: Bearer $CONTEXT7_API_KEY" \
             -d '{"libraryName": "/${{ github.repository }}"}')
           cat response.json; echo
+          if grep -q '"too-early"' response.json; then
+            echo "::notice::Context7 refreshed less than 10 days ago; the weekly run picks this change up"
+            exit 0
+          fi
           if [ "$status" -ge 400 ]; then
             echo "::error::Context7 answered $status"
             exit 1
