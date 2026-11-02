@@ -16,6 +16,15 @@ export function slugify(text: string): string {
     .replace(/\s+/g, '-');
 }
 
+/** The live example an image stands for on the site: `…/filter-card.png` is `FilterCard`. */
+export function demoName(href: string): string {
+  return href
+    .split('/')
+    .pop()!
+    .replace(/\.\w+$/, '')
+    .replace(/(?:^|-)(\w)/g, (_, letter: string) => letter.toUpperCase());
+}
+
 /** Emphasis and code markers taken off, for a label or an id. */
 export function plainText(text: string): string {
   return text.replace(/[`*]/g, '');

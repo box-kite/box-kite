@@ -63,6 +63,8 @@ export default function App() {
 }
 ```
 
+![The heading and the line under it, centred both ways.](https://www.box-kite.dev/img/blog/start-building-with-box-kite/hello-world.png)
+
 Save, and the heading sits in the middle of the window. Three things are worth noticing:
 
 - **`Flex` is a component, not a setting.** It renders a `<div>` laid out with flexbox. `d="column"` stacks the children, `ai="center"` centres them across, `jc="center"` centres them along. `H1` and `P` render a real `<h1>` and `<p>`, which matters for search engines and screen readers.
@@ -136,6 +138,8 @@ export default function App() {
 }
 ```
 
+![Three cards in a row with the middle one under the pointer: an indigo border and a shadow. The button sits below them.](https://www.box-kite.dev/img/blog/start-building-with-box-kite/landing-page.png)
+
 One column on a phone, three from 768px up. `b={1}` is a 1px border — border widths are in pixels, like `fontSize` — and `borderRadius={3}` is on the spacing scale, so 12px. `hover={{ borderColor: 'indigo-400', shadow: 'md' }}` is what a card looks like while the pointer is over it: a state is a prop holding the props for that state, the same shape as `md`.
 
 `Button` comes styled — indigo, a shade darker on hover, a focus ring for keyboard users, and adjusted for dark mode — so it needs only the props you want to change.
@@ -198,6 +202,8 @@ export default function App() {
   );
 }
 ```
+
+![The page with the button that switches its theme. On box-kite.dev the button switches the whole site.](https://www.box-kite.dev/img/blog/start-building-with-box-kite/dark-mode-page.png)
 
 On its first visit the page follows the operating system's setting. Once someone presses the button, `storageKey="theme"` remembers their choice for the next visit. Any element can carry a `theme` prop, so a card can say `theme={{ dark: { borderColor: 'slate-800' } }}` and nothing else.
 

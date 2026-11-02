@@ -70,6 +70,8 @@ export default function OrdersPage() {
 }
 ```
 
+![The orders page: a heading and three order cards, the middle one under the pointer.](https://www.box-kite.dev/img/blog/styling-server-components/orders-page.png)
+
 The page has a breakpoint, a hover state and a dark theme. Each is just one more rule, so all three render on the server like the rest. You don't configure anything for this. The package's `react-server` export condition gives a Server Component a build of Box that calls no hook and never touches the DOM. Importing it is the whole setup.
 
 Look at the HTML response and you'll find two `<style>` elements in `<head>`. React merges each `precedence` group into one element and lists what it merged in `data-href`. Every class in the markup has its rule in that response, so nothing waits for JavaScript to define it. The class names are hashes of their content, which is why the class the server wrote is exactly the class a client bundle would compute. Hydration has nothing to disagree about.

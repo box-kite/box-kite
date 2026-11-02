@@ -38,6 +38,8 @@ export function Card() {
 }
 ```
 
+![The same card twice: under a light ancestor and under a dark one.](https://www.box-kite.dev/img/blog/dark-mode-without-the-flash/card-themes.png)
+
 The library turns `theme={{ dark: … }}` into an ordinary CSS rule that applies when an ancestor carries the class `dark`. Nothing about it happens in React: there is no context to read and no prop to thread through. Which theme is showing is decided by one class on one element — usually `<html>` — and everything below follows it.
 
 That one decision is what makes the other three jobs cheap.
@@ -131,6 +133,8 @@ export function PrintPreview() {
 }
 ```
 
+![The theme switch, the card, and the print preview. With the page dark, the card follows it and the preview stays light.](https://www.box-kite.dev/img/blog/dark-mode-without-the-flash/stays-light.png)
+
 The nested theme is a real boundary, not a second class competing with the first. Each theme rule is written with CSS `@scope`, from the theme's class down to the next element that declares a theme of its own, so the dark page's rules stop at the light section's edge — including for a property the inner section never mentions. In the measurement above, the light section kept its light background while the page around it was dark, and kept it through every switch.
 
 ## The switch, animated
@@ -178,6 +182,8 @@ export function Revenue() {
   );
 }
 ```
+
+![The revenue line, in the colour the container declares for the page's theme.](https://www.box-kite.dev/img/blog/dark-mode-without-the-flash/revenue-chart.png)
 
 `ChartContainer` declares one `--color-<series>` per name, with a value for each theme, so the chart names no colour at all and its dark mode is the page's. The [charts page](https://www.box-kite.dev/charts) shows a full example with a grid and axis labels.
 
