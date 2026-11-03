@@ -269,7 +269,7 @@ function ToasterImpl<TKey extends keyof ComponentsAndVariants = 'toaster'>(props
   useIsomorphicLayoutEffect(() => store.setDefaultDuration(duration), [store, duration]);
 
   // A toast removed under the pointer, or holding focus, sends the stack no `pointerout` and no `blur`, so the two
-  // flags would stay set and stop every later clock (bug #322). Whenever the stack changes, they are read off the page.
+  // flags would stay set and stop every later clock (bug #322). Whenever the stack changes, or moves into or out of a modal, they are read off the page.
   useIsomorphicLayoutEffect(() => {
     const viewport = viewportRef.current;
     if (!viewport) return;
@@ -277,7 +277,7 @@ function ToasterImpl<TKey extends keyof ComponentsAndVariants = 'toaster'>(props
     paused.current.hovered = viewport.matches(':hover');
     paused.current.focused = viewport.contains(viewport.ownerDocument.activeElement);
     syncPause();
-  }, [state, syncPause]);
+  }, [state, modal, syncPause]);
 
   // Into the top layer on the commit that mounted it, with no dependencies — the same shape `Overlay`
   // uses, and idempotent, so running it every commit costs a `matches`. There is no hide to pair with
