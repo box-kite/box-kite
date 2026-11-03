@@ -252,6 +252,27 @@ describe('Toaster', () => {
       expect(screen.getByText('Saved')).toBeInTheDocument();
     });
 
+    // Bug #322: the toast holding focus (or under the pointer) left with no `blur`/`pointerout`, so nothing restarted.
+    it.each([
+      ['focus', (close: HTMLElement) => close.focus()],
+      ['the pointer', (close: HTMLElement) => fireEvent.pointerOver(close)],
+    ])('starts again for the next toast once the toast holding %s is closed', (_, hold) => {
+      renderToaster({ duration: 1000 });
+      add('First');
+      const close = screen.getByRole('button', { name: 'Close' });
+      hold(close);
+
+      fireEvent.click(close);
+      tick(1000);
+      tick(1000);
+      expect(screen.queryByText('First')).toBeNull();
+
+      add('Second');
+      tick(1000);
+      tick(1000);
+      expect(screen.queryByText('Second')).toBeNull();
+    });
+
     it('stops while the tab is in the background', () => {
       renderToaster({ duration: 1000 });
       add('Saved');
