@@ -82,14 +82,14 @@ const catalogManifest: CatalogManifest = {
       'How to choose among the fallbacks rather than taking the first that fits: `most-width`, `most-height`, `most-block-size` and `most-inline-size` each pick the position that leaves the layer most room on that axis.',
     positionVisibility:
       'When to hide the layer instead of positioning it: `anchors-visible` hides it once the anchor is scrolled out of sight, `no-overflow` once the layer itself would overflow, and the two combine.',
-    top: 'The top CSS property sets the vertical position of a positioned element.',
-    right: 'The right CSS property participates in specifying the horizontal position of a positioned element.',
-    bottom: 'The bottom CSS property participates in setting the vertical position of a positioned element.',
-    left: 'The left CSS property participates in specifying the horizontal position of a positioned element.',
     inset: 'The inset CSS property is a shorthand that corresponds to the top, right, bottom, and/or left properties.',
     insetX:
       'The inset-inline CSS shorthand sets both insets on the inline axis: `insetX` is `left` and `right` in a left-to-right writing mode, the way `mx` is `margin-inline`.',
     insetY: 'The inset-block CSS shorthand sets both insets on the block axis — `top` and `bottom` in a horizontal writing mode.',
+    top: 'The top CSS property sets the vertical position of a positioned element.',
+    right: 'The right CSS property participates in specifying the horizontal position of a positioned element.',
+    bottom: 'The bottom CSS property participates in setting the vertical position of a positioned element.',
+    left: 'The left CSS property participates in specifying the horizontal position of a positioned element.',
     insetStart:
       'The inset-inline-start CSS property sets the distance from the edge the text starts at: `left` in a left-to-right writing mode, `right` in a right-to-left one.',
     insetEnd:
