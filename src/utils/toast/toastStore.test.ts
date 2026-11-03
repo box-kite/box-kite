@@ -88,7 +88,13 @@ describe('createToastStore', () => {
 
       vi.advanceTimersByTime(1000);
 
-      // The first two timed out; the third only starts its own second on screen.
+      // The first two timed out, and their exits hold the slots until the viewport removes them.
+      expect(messages()).toEqual([]);
+      snapshot()
+        .toasts.filter((toast) => !toast.open)
+        .forEach((toast) => store.remove(toast.id));
+
+      // The third only starts its own second on screen.
       expect(messages()).toEqual(['Three']);
 
       vi.advanceTimersByTime(999);
@@ -98,16 +104,33 @@ describe('createToastStore', () => {
       expect(messages()).toEqual([]);
     });
 
-    it('lets the next one in the moment a slot frees, without waiting for the exit', () => {
+    // Bug #323: let in while the exit ran, the next toast made the stack one more than the limit, then jump.
+    it('keeps a closing toast’s slot until its exit has run, so no more than the limit is ever drawn', () => {
       const first = store.add('One');
       store.add('Two');
       store.add('Three');
 
       store.dismiss(first);
 
-      // The dismissed one is still in the list — its exit is running — but it holds no slot.
+      expect(messages()).toEqual(['Two']);
+      expect(snapshot().toasts.filter((toast) => toast.visible)).toHaveLength(2);
+      expect(snapshot().overflow).toBe(1);
+
+      store.remove(first);
+
       expect(messages()).toEqual(['Two', 'Three']);
-      expect(snapshot().toasts).toHaveLength(3);
+      expect(snapshot().overflow).toBe(0);
+    });
+
+    it('drops a queued toast dismissed before it was shown, rather than drawing it to leave', () => {
+      store.add('One');
+      store.add('Two');
+      const queued = store.add('Three');
+
+      store.dismiss(queued);
+
+      expect(snapshot().toasts.map((toast) => toast.message)).toEqual(['One', 'Two']);
+      expect(snapshot().overflow).toBe(0);
     });
 
     it('re-splits the queue when the limit changes', () => {

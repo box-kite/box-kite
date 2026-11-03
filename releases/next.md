@@ -18,6 +18,7 @@ None.
 
 <!-- One bullet per fix: **What was wrong.** What it does now. -->
 
+- **Closing a toast made the stack blink when more were waiting.** Past `limit`, the next toast came in the moment one was dismissed, while the closing one was still fading out, so the stack drew one toast too many and shifted up for the length of the exit, then jumped back. A closing toast now keeps its place until its exit has run, and the next one fades in where it was. A queued toast dismissed before it was ever shown is dropped without being drawn.
 - **A toast fired from inside an open modal was under its backdrop.** Everything outside an open modal `Dialog` is inert, so the toast was dimmed, a press on it landed on the dialog, its close button could not take focus and a screen reader never heard it. While a modal `Dialog` is open, `<Toaster>` now moves its stack inside it, shown after it, and back out when the dialog closes; Escape on a toast there dismisses the toast and leaves the dialog open.
 - **The toast's close button is softer.** The cross is two filled bars with rounded ends on a round button. The old one was meant to be two 1px lines, but its unset border sides fell back to `medium`, so each stroke rendered 16px by 4px with square ends.
 
