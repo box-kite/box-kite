@@ -1,7 +1,9 @@
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { ignoreLogs, installPopoverApi } from '../../dev/tests';
+import { ignoreLogs, installDialogPlatform, installPopoverApi } from '../../dev/tests';
 import createToastStore, { ToastStore } from '../utils/toast/toastStore';
+import Button from './button';
+import Dialog from './dialog';
 import Toaster, { defaultToastStore, toast } from './toaster';
 
 /**
@@ -381,6 +383,75 @@ describe('Toaster', () => {
       renderToaster();
 
       expect(region().matches(':popover-open')).toBe(true);
+    });
+
+    // Bug #282: shown before the modal, the stack sat under its backdrop — inert, and out of the accessibility tree.
+    describe('while a modal Dialog is open', () => {
+      function renderWithDialog(open: boolean) {
+        return (
+          <>
+            <Toaster store={store} />
+            <Dialog label="Rename" open={open}>
+              <Button>Save</Button>
+            </Dialog>
+          </>
+        );
+      }
+
+      // Uncontrolled where a close is what the test is about: a controlled dialog only re-shows itself after one.
+      function renderOpenDialog() {
+        return render(
+          <>
+            <Toaster store={store} />
+            <Dialog label="Rename" defaultOpen>
+              <Button>Save</Button>
+            </Dialog>
+          </>,
+        );
+      }
+
+      it('moves into the modal, shown after it, and back out when it closes', () => {
+        const { rerender } = render(renderWithDialog(false));
+        const dialog = document.querySelector('dialog')!;
+        expect(dialog).not.toContainElement(region());
+
+        rerender(renderWithDialog(true));
+        add('Saved');
+
+        expect(dialog).toContainElement(region());
+        expect(region().matches(':popover-open')).toBe(true);
+        expect(region()).toHaveTextContent('Saved');
+
+        rerender(renderWithDialog(false));
+
+        expect(dialog).not.toContainElement(region());
+        expect(region().matches(':popover-open')).toBe(true);
+      });
+
+      it('takes Escape for the toast, leaving the dialog open', () => {
+        const uninstallDialog = installDialogPlatform();
+        try {
+          renderOpenDialog();
+          add('Saved');
+          const close = screen.getByRole('button', { name: 'Close' });
+          close.focus();
+
+          fireEvent.keyDown(close, { key: 'Escape' });
+
+          expect(document.querySelector('dialog')).toHaveAttribute('open');
+        } finally {
+          uninstallDialog();
+        }
+      });
+
+      it('is not the backdrop: a press on a toast drawn outside the dialog box leaves it open', () => {
+        renderOpenDialog();
+        add('Saved');
+
+        fireEvent.pointerDown(screen.getByText('Saved'), { clientX: 900, clientY: 700 });
+
+        expect(document.querySelector('dialog')).toHaveAttribute('open');
+      });
     });
   });
 

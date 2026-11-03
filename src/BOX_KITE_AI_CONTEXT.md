@@ -2398,7 +2398,7 @@ that was never on screen.
    declared — it inherits the theme, the custom properties and the direction around it. `manual` rather
    than `auto` because a stack of messages owns no dismissal: a press outside has to reach the page. The
    viewport takes **no pointer events at all** and the toasts take them back, or a corner-sized fixed
-   strip would swallow every press in its gaps.
+   strip would swallow every press in its gaps. **While a modal `Dialog` is open the stack moves inside it**, shown after it — everything outside an open modal is inert, so a toast left on the page would sit under the backdrop, unpressable and silent — and moves back out when the dialog closes; Escape on a toast there dismisses the toast, not the dialog.
 3. **Four things stop the clock**: the pointer over the stack, focus inside it, a background tab, and a
    dismissal. A paused timer resumes where it left off rather than restarting. WCAG 2.2.1, and the only
    reason a toast is allowed to carry a control at all.

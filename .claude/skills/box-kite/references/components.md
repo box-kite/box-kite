@@ -224,7 +224,7 @@ a region inserted together with its content is not reliably announced — and an
 `role="alert"`, which is assertive; nothing else carries a region of its own, because the nearest one to a
 change is the one that speaks. It is in the **top layer with no portal**, so it inherits the theme and the
 direction around it, and it takes **no pointer events** while the toasts take them back, or a corner-sized
-fixed strip would swallow every press in its gaps. **Timers stop on hover, on focus and in a background
+fixed strip would swallow every press in its gaps. **While a modal `Dialog` is open the stack moves inside it**, shown after it — everything outside an open modal is inert, so a toast left on the page would sit under the backdrop, unpressable and silent — and moves back out when the dialog closes; Escape on a toast there dismisses the toast, not the dialog. **Timers stop on hover, on focus and in a background
 tab** and resume where they left off (WCAG 2.2.1 — the only reason a toast may carry a control). And a
 toast **never takes focus**: `F6` moves focus to the stack, Tab walks it, and Escape dismisses the toast
 focus is in, handing focus back once the stack is empty.

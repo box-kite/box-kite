@@ -68,3 +68,11 @@ export function clearSelection(element: ElementLike): void {
 
   if (selection && !selection.isCollapsed) selection.removeAllRanges();
 }
+
+/** What a `<Dialog>` dispatches on its document when it opens or closes as a modal, since everything outside one is inert. */
+export const MODAL_EVENT = 'box-kite:modal';
+export type ModalEventDetail = { dialog: HTMLElement; open: boolean };
+
+export function announceModal(dialog: HTMLElement, open: boolean): void {
+  dialog.ownerDocument.dispatchEvent(new CustomEvent<ModalEventDetail>(MODAL_EVENT, { detail: { dialog, open } }));
+}

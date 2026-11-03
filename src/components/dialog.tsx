@@ -11,7 +11,7 @@ import { useIsomorphicLayoutEffect } from '../react/effects';
 import useIdentifier from '../react/identity/useIdentifier';
 import { useReportedState } from '../react/interactions/interactions';
 import { ComponentsAndVariants } from '../types';
-import { assignRef, ElementLike, htmlElementOf, isEventInside } from '../utils/dom/domUtils';
+import { announceModal, assignRef, ElementLike, htmlElementOf, isEventInside } from '../utils/dom/domUtils';
 import { supportsDialogClosedBy } from '../utils/environment/environmentUtils';
 import { H2, P } from './semantics';
 
@@ -348,6 +348,15 @@ function useDialogSync(options: SyncOptions): void {
     else dialog.show();
   }, [dialog, isOpen, domOpen, modal, setDomOpen]);
 
+  // After the effect above has shown it: a layer that moves inside, the toaster, has to be shown after the modal (bug #282).
+  useIsomorphicLayoutEffect(() => {
+    if (!dialog || !isOpen || !modal) return;
+
+    announceModal(dialog, true);
+
+    return () => announceModal(dialog, false);
+  }, [dialog, isOpen, modal]);
+
   // `close` fires however it closed: Escape, a light dismiss, `close()`, or a `<form method="dialog">`
   // submit — which is the one the component would otherwise never hear about.
   useIsomorphicLayoutEffect(() => {
@@ -389,7 +398,7 @@ function useDialogSync(options: SyncOptions): void {
     listen('pointerdown', (event) => {
       if (isEventInside(event, [triggerElement])) reason.current = 'trigger';
       // Inside the element but outside its box is the backdrop, which the dialog itself paints.
-      else if (!isEventInside(event, [dialog]) || isOutsideBox(dialog, event as PointerEvent)) reason.current = 'outside-pointer';
+      else if (!isEventInside(event, [dialog]) || isBackdrop(dialog, event as PointerEvent)) reason.current = 'outside-pointer';
       else reason.current = 'imperative';
     });
 
@@ -419,7 +428,7 @@ function useDialogSync(options: SyncOptions): void {
       'pointerdown',
       (event) => {
         if (isEventInside(event, [triggerElement])) return;
-        if (isEventInside(event, [dialog]) && !isOutsideBox(dialog, event as PointerEvent)) return;
+        if (isEventInside(event, [dialog]) && !isBackdrop(dialog, event as PointerEvent)) return;
 
         setOpen(false, { reason: 'outside-pointer', event });
       },
@@ -430,8 +439,13 @@ function useDialogSync(options: SyncOptions): void {
   }, [dialog, isOpen, dismissible, platformDismiss, triggerElement, setOpen]);
 }
 
-/** Whether a pointer event landed outside an element's own box — the backdrop, for a modal dialog. */
-function isOutsideBox(element: Element, event: PointerEvent): boolean {
+/**
+ * Whether a press landed on a modal dialog's backdrop: on the element itself, outside its box. A descendant drawn outside
+ * the box (a toast in the top layer) is not the backdrop, and pressing it must not close the dialog.
+ */
+function isBackdrop(element: Element, event: PointerEvent): boolean {
+  if (event.target !== element) return false;
+
   const box = element.getBoundingClientRect();
 
   return event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom;
