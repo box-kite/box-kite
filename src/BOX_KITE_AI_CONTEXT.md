@@ -340,7 +340,7 @@ modifier, it is themed, and two elements asking for the same one share a class.
   `'circle'`/`'ellipse'`/`true`; `conic` takes a start angle or `true`. Exactly one of the three.
 - `at` centres a `radial` or `conic` gradient (not a `linear` one, which runs in a direction).
 - `interpolate`: `'srgb'`, `'hsl'`, `'oklab'`, `'oklch'`, `'hsl-longer'`, `'oklch-longer'`.
-- A stop is any colour value — a token, `blue-500/40`, a system colour, `var(--chart-1)` — or a
+- A stop is any colour value — a token, `blue-500/40`, a system colour, `var(--chart-1)`, a `Box.extend()` colour — or a
   `[colour, position]` pair. **Two stops minimum**, and the record is judged whole: one bad stop, one
   unknown key, two kinds at once, and the whole value emits no rule and no class name.
 - It writes `background-image`, so `bgGradient` and `bgImage` are the same property. `bgGradient` is declared

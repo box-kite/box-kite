@@ -116,7 +116,7 @@ themed, takes the opacity modifier and shares one class. The key names the kind 
 `{ linear: 'r', colors: ['blue-500', 'pink-500'] }` (a direction `t`/`tr`/`r`/`br`/`b`/`bl`/`l`/`tl`, or a number of
 degrees — `{ linear: 135, … }`), `{ radial: 'circle' | 'ellipse' | true, at: 'top left', … }`, `{ conic: 45 | true, … }`.
 Exactly one kind; `at` centres a radial or conic gradient, never a linear one. A stop is any colour value —
-`'blue-500/40'`, `'transparent'`, `'var(--chart-1)'` — or a `[colour, position]` pair (`['sky-500', '20%']`), **two
+`'blue-500/40'`, `'transparent'`, `'var(--chart-1)'`, a `Box.extend()` colour — or a `[colour, position]` pair (`['sky-500', '20%']`), **two
 minimum**. `interpolate` names the space: `'srgb'`, `'hsl'`, `'oklab'`, `'oklch'`, `'hsl-longer'`, `'oklch-longer'` —
 `'oklch'` is what keeps two stops out of the grey middle sRGB drags them through, and a `-longer` hue turns two stops
 into a spectrum. The record is judged **whole**: one unknown stop, one misspelt key (`interpolat`), two kinds at once,

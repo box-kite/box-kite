@@ -756,7 +756,7 @@ export function createStyleEngine(options: StyleEngineOptions = {}): StyleEngine
 
     let itemValue = item.find((x) => {
       // A definition that names its values judges them itself: `typeof` cannot tell `url(#sky)` from a typo.
-      if (x.match) return x.match(value);
+      if (x.match) return x.match(value, variables.isUserVariable);
 
       if (Array.isArray(x.values)) {
         if (Array.isArray(value)) {

@@ -74,8 +74,9 @@ export type BoxStyle = (BoxStyleScalar | BoxStyleTupleArrays | BoxStyleRecord) &
    * Which values this definition accepts, when its `values` cannot say. A scalar `values` is matched by
    * `typeof` alone, so it takes *every* string — fine for a scale, wrong for a shape. Declare this and an
    * unsupported value produces no rule and no class name (`Variables.isReference` was the first caller).
+   * `isVariable` is the engine's: whether a name is a `Box.extend({ variables })` token.
    */
-  match?: (value: BoxStyleValue) => boolean;
+  match?: (value: BoxStyleValue, isVariable?: (name: string) => boolean) => boolean;
   /**
    * The `@keyframes` names this value refers to, for a prop whose value names a sequence (`animation`,
    * `animationName`). The engine emits the ones it has registered and leaves the rest alone — keyframes

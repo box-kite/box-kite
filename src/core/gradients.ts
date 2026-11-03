@@ -42,26 +42,40 @@ namespace Gradients {
 
   /** A stop's colour: everything a colour prop takes, so `blue-500/40` and `var(--chart-1)` both work. */
   export type StopColor = Variables.ColorType | Variables.SystemColorType | Palette.Alpha | Variables.Reference;
+  /** A colour an app added with `Box.extend()`, or that colour with an opacity modifier. */
+  type AppColor<C extends string> = C | `${C}/${number}`;
   /** One stop: a colour, or that colour and how far along the gradient it sits. */
-  export type Stop = StopColor | readonly [StopColor, Variables.PercentString];
+  export type Stop<C extends string = never> = StopColor | AppColor<C> | readonly [StopColor | AppColor<C>, Variables.PercentString];
 
-  type Linear = { linear: Direction; colors: readonly Stop[]; interpolate?: Interpolation };
-  type Radial = { radial: 'circle' | 'ellipse' | true; at?: Position; colors: readonly Stop[]; interpolate?: Interpolation };
-  type Conic = { conic: number | true; at?: Position; colors: readonly Stop[]; interpolate?: Interpolation };
+  type Linear<C extends string> = { linear: Direction; colors: readonly Stop<C>[]; interpolate?: Interpolation };
+  type Radial<C extends string> = {
+    radial: 'circle' | 'ellipse' | true;
+    at?: Position;
+    colors: readonly Stop<C>[];
+    interpolate?: Interpolation;
+  };
+  type Conic<C extends string> = { conic: number | true; at?: Position; colors: readonly Stop<C>[]; interpolate?: Interpolation };
 
-  /** The `bgGradient` prop's value: one of the three kinds, its geometry and its stops. */
-  export type Gradient = Linear | Radial | Conic;
+  /** The `bgGradient` prop's value: one of the three kinds, its geometry and its stops. `C` is the app's colours. */
+  export type Gradient<C extends string = never> = Linear<C> | Radial<C> | Conic<C>;
 
   const kinds = ['linear', 'radial', 'conic'] as const;
   // The whole shape, so a misspelt key is not a gradient: unlike `vars` these names are the grammar's,
   // and `interpolat: 'oklch'` would otherwise paint an sRGB gradient with nothing to see.
   const shapeKeys = new Set<string>([...kinds, 'at', 'colors', 'interpolate']);
 
-  function isStopColor(value: unknown): value is StopColor {
+  const noVariables: Variables.IsVariable = () => false;
+
+  // An `extend()` token is the engine's to know, so it arrives as `isVariable` (bug #310).
+  function isStopColor(value: unknown, isVariable: Variables.IsVariable): value is StopColor {
     if (typeof value !== 'string') return false;
+
+    const alpha = Palette.alphaOf(value);
 
     return (
       value in Palette.colors ||
+      isVariable(value) ||
+      (alpha !== null && isVariable(alpha.color)) ||
       value === 'none' ||
       (Variables.systemColorValues as readonly string[]).includes(value) ||
       Palette.isAlpha(value) ||
@@ -69,10 +83,10 @@ namespace Gradients {
     );
   }
 
-  function isStop(value: unknown): value is Stop {
-    if (Array.isArray(value)) return value.length === 2 && isStopColor(value[0]) && Variables.isPercentString(value[1]);
+  function isStop(value: unknown, isVariable: Variables.IsVariable): value is Stop {
+    if (Array.isArray(value)) return value.length === 2 && isStopColor(value[0], isVariable) && Variables.isPercentString(value[1]);
 
-    return isStopColor(value);
+    return isStopColor(value, isVariable);
   }
 
   /** What this record's kind contributes to the prelude, or null when it names no single valid kind. */
@@ -103,12 +117,12 @@ namespace Gradients {
    * Whether a value is a gradient this grammar can write — the prop's `match`. Judged whole rather than
    * key by key, because a gradient is one value: a bad stop makes the rest of it meaningless.
    */
-  export function isGradient(value: BoxStyleValue): value is Gradient {
+  export function isGradient(value: BoxStyleValue, isVariable: Variables.IsVariable = noVariables): value is Gradient {
     if (typeof value !== 'object' || value === null || Array.isArray(value)) return false;
 
     const record = value as Record<string, unknown>;
     if (Object.keys(record).some((key) => !shapeKeys.has(key))) return false;
-    if (!Array.isArray(record.colors) || record.colors.length < 2 || !record.colors.every(isStop)) return false;
+    if (!Array.isArray(record.colors) || record.colors.length < 2 || !record.colors.every((stop) => isStop(stop, isVariable))) return false;
     if (record.interpolate !== undefined && !(typeof record.interpolate === 'string' && record.interpolate in interpolations)) return false;
     if (record.at !== undefined && !(positions as readonly unknown[]).includes(record.at)) return false;
 

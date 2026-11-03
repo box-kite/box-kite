@@ -17,3 +17,5 @@ None.
 ## Fixes
 
 <!-- One bullet per fix: **What was wrong.** What it does now. -->
+
+- **A gradient stop refused a colour added with `Box.extend()`.** `bgGradient={{ linear: 'r', colors: ['brand', 'brand/40'] }}` was judged whole and wrote no gradient at all, while every other place a colour is written took the token. A stop now takes an `extend()` colour and its opacity form on `bgGradient` and `maskImage`, and typechecks wherever `bgColor` has been augmented with it.
