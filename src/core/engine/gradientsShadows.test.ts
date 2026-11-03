@@ -30,6 +30,22 @@ describe('a gradient', () => {
     expect(rulesOf(engine)).not.toContain('--blue-500:');
   });
 
+  // Bug #310: the match knew only the palette, so a gradient with an `extend()` stop wrote nothing at all.
+  it('takes an extend() token and its opacity form as a stop, on both gradient props', () => {
+    const engine = makeEngine('gradient-extended');
+    engine.extend({ brand: '#123456' }, {}, {});
+    const colors = ['brand', 'brand/40'] as never;
+
+    expect(renderStyles(engine, { bgGradient: { linear: 'r', colors } })).toEqual(['_b', 'bgGradient-linear-r_colors-brand,brand/40']);
+    expect(renderStyles(engine, { maskImage: { linear: 'b', colors } })).toEqual(['_b', 'maskImage-linear-b_colors-brand,brand/40']);
+    expect(ruleList(engine)).toEqual([
+      '.bgGradient-linear-r_colors-brand\\,brand\\/40{background-image:linear-gradient(to right,var(--brand),color-mix(in oklab, var(--brand) 40%, transparent))}',
+      '.maskImage-linear-b_colors-brand\\,brand\\/40{mask-image:linear-gradient(to bottom,var(--brand),color-mix(in oklab, var(--brand) 40%, transparent))}',
+    ]);
+    expect(rulesOf(engine)).toContain('--brand: #123456;');
+    expect(renderStyles(engine, { bgGradient: { linear: 'r', colors: ['brnad', 'brand'] as never } })).toEqual(['_b']);
+  });
+
   it('emits neither a rule nor a class name for a gradient the grammar rejects', () => {
     const engine = makeEngine('gradient-rejected');
 

@@ -15,6 +15,7 @@ import { ClassNameType } from './core/classNames';
 import Containers from './core/containers';
 import { BoxStyle, BoxStylesType, ExtractKeys, ExtractTupleValues } from './core/coreTypes';
 import boxComponents from './core/extends/boxComponents';
+import Gradients from './core/gradients';
 import Groups from './core/groups';
 import Variants from './core/variants';
 
@@ -32,10 +33,15 @@ type ExtractBoxStyleValue<T> = T extends { tuple: true; values: infer V }
     ? BoxStylesType<V>
     : never;
 
+// The colours an app added to `bgColor`, which a gradient stop takes too (bug #310).
+type AppColor = Extract<Augmented.BoxPropTypes extends { bgColor?: infer C } ? C : never, string>;
+
 type ExtractBoxStylesInternal<T extends Record<string, BoxStyle[]>> = {
   [K in keyof T]?: K extends keyof Augmented.BoxPropTypes
     ? ExtractBoxStyleValue<ArrayType<T[K]>> | Augmented.BoxPropTypes[K]
-    : ExtractBoxStyleValue<ArrayType<T[K]>>;
+    : K extends 'bgGradient' | 'maskImage'
+      ? ExtractBoxStyleValue<ArrayType<T[K]>> | Gradients.Gradient<AppColor>
+      : ExtractBoxStyleValue<ArrayType<T[K]>>;
 };
 export type ExtractBoxStyles<T extends Record<string, BoxStyle[]>> = {
   [K in keyof T]?: ExtractBoxStyleValue<ArrayType<T[K]>>;
