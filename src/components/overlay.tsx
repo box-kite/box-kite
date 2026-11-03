@@ -184,6 +184,8 @@ function OverlayImpl(props: Props, ref: Ref<HTMLDivElement>) {
       {...position.layerProps}
       ref={layerRef}
       transition="none"
+      // The UA's `[popover]` rule makes it a scroller, so content sliding out on its exit showed a scrollbar (bug #315).
+      overflow="visible"
       // `popover` rather than the React 19 `popoverTarget` family of props, for the reason `Popover`
       // writes its attributes on: CI runs React 18 too, and it drops the ones it does not know.
       props={topLayer ? { popover: 'manual' } : { dir: rtl ? 'rtl' : 'ltr' }}

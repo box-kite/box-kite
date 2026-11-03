@@ -3,6 +3,7 @@ import Box, { BoxProps } from '../box';
 import { useEventCallback } from '../react/a11y/callbacks';
 import useControllableState, { ChangeDetails, ChangeHandler } from '../react/a11y/useControllableState';
 import useAnchorPosition from '../react/anchor/useAnchorPosition';
+import useHeldContent from '../react/animation/useHeldContent';
 import boxComponent from '../react/boxComponent';
 import { useIsomorphicLayoutEffect } from '../react/effects';
 import useIdentifier from '../react/identity/useIdentifier';
@@ -283,7 +284,7 @@ const RadioContext = createContext<RadioContextValue | null>(null);
  *
  * **The menu is always rendered**, and closed means `display: none`, which is what lets the browser own
  * show and hide; the exit is therefore a CSS transition rather than a `<Presence>`. A menu whose items are
- * expensive should be gated by the consumer: `{open && <Items />}`.
+ * expensive should be gated by the consumer: `{open && <Items />}`, kept on screen until the exit has run.
  *
  * **The menu keeps the side it chose when it opened**, since Chrome never re-evaluates
  * `position-try-fallbacks` for an element in the top layer (measured in 152) — so a menu left open while
@@ -437,6 +438,7 @@ function MenuPanel(props: PanelProps) {
   const context = useMenuContext('Menu');
   const buffer = useRef<TypeaheadUtils.Buffer>({ query: '', at: 0 });
   const position = useAnchorPosition({ side, align, offset, flip, matchWidth, anchor: triggerElement });
+  const content = useHeldContent(children, isOpen, layer.panelElement);
 
   const handleKeyDown = useEventCallback((event: React.KeyboardEvent) => {
     const panel = event.currentTarget as HTMLElement;
@@ -538,7 +540,7 @@ function MenuPanel(props: PanelProps) {
       id={id}
       props={{ popover: 'auto', ...panelProps }}
     >
-      {children}
+      {content}
     </Box>
   );
 }

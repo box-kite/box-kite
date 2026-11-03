@@ -267,8 +267,8 @@ export default defineConfig(({ mode }) => {
                   // to survive a hydration the way an `aria-controls` does. Left in `behavior` it would make `/anchor`
                   // import roving focus and dismissal to ask React for an id.
                   if (module.startsWith('src/react/identity/')) return 'identity';
-                  // `<Presence>` and the timing model behind it, shared by the three layers that animate out
-                  // and by nothing else. In `client` the whole library would carry an exit nobody asked for.
+                  // `<Presence>` and the timing model behind it, shared by the layers that animate out and by
+                  // nothing else. In `client` the whole library would carry an exit nobody asked for.
                   if (module.startsWith('src/react/animation/') || module.startsWith('src/utils/animation/')) return 'motion';
                   // APG's typeahead, which `useRovingFocus` and the menu's keyboard both walk a list with. Its own group for the
                   // reason `identity` has one: left in `client` the /a11y entry would import the styling binding, the theme

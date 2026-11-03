@@ -6,7 +6,7 @@ import { useIsomorphicLayoutEffect } from '../effects';
 export type PresenceState = 'open' | 'closed';
 
 /** Where the subtree is in its own lifetime. `leaving` is the whole of the exit; `closed` is gone. */
-type Phase = 'open' | 'leaving' | 'closed';
+export type ExitPhase = 'open' | 'leaving' | 'closed';
 
 export interface PresenceOptions {
   /** Whether the subtree should be there. The exit starts the moment this goes false. */
@@ -37,23 +37,35 @@ export interface Presence {
  * the real CSS: a zero duration (nothing declared, or `prefers-reduced-motion`) unmounts in the same commit.
  */
 export default function usePresence(options: PresenceOptions): Presence {
-  const { present } = options;
-  const [phase, setPhase] = useState<Phase>(present ? 'open' : 'closed');
   const nodeRef = useRef<HTMLElement | null>(null);
 
   const ref = useCallback<RefCallback<HTMLElement>>((node) => {
     nodeRef.current = node;
   }, []);
 
+  const readNode = useCallback(() => nodeRef.current, []);
+  const current = useExitPhase(options.present, readNode);
+
+  return useMemo(() => {
+    const state: PresenceState = current === 'open' ? 'open' : 'closed';
+
+    return { mounted: current !== 'closed', present: current === 'open', state, ref, props: { 'data-state': state } };
+  }, [current, ref]);
+}
+
+/** The phase machine behind `usePresence`, for any element whose exit is its own CSS. `readNode` is called as the exit starts. */
+export function useExitPhase(present: boolean, readNode: () => HTMLElement | null): ExitPhase {
+  const [phase, setPhase] = useState<ExitPhase>(present ? 'open' : 'closed');
+
   // Derived during render rather than in an effect: an effect would let the browser paint one frame of
   // the leaving element with its open styles still on, so every exit would start a frame late.
-  const current: Phase = present ? 'open' : phase === 'closed' ? 'closed' : 'leaving';
+  const current: ExitPhase = present ? 'open' : phase === 'closed' ? 'closed' : 'leaving';
   if (current !== phase) setPhase(current);
 
   useIsomorphicLayoutEffect(() => {
     if (current !== 'leaving') return;
 
-    const node = nodeRef.current;
+    const node = readNode();
     // No element, or an element whose CSS declares no exit: there is nothing to wait for.
     const duration = node ? AnimationUtils.activeDuration(getComputedStyle(node)) : 0;
 
@@ -64,11 +76,7 @@ export default function usePresence(options: PresenceOptions): Presence {
 
     const timer = setTimeout(() => setPhase('closed'), duration + AnimationUtils.SETTLE_FRAME);
     return () => clearTimeout(timer);
-  }, [current]);
+  }, [current, readNode]);
 
-  return useMemo(() => {
-    const state: PresenceState = current === 'open' ? 'open' : 'closed';
-
-    return { mounted: current !== 'closed', present: current === 'open', state, ref, props: { 'data-state': state } };
-  }, [current, ref]);
+  return current;
 }
