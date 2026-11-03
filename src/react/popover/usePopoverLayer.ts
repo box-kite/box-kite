@@ -131,6 +131,8 @@ export default function usePopoverLayer<THasPopup extends PopoverHasPopup, TReas
   const dismissReason = useRef<PopoverReason>('imperative');
   // Whether the panel had focus when it started closing, read at `beforetoggle` while it still does.
   const heldFocus = useRef(false);
+  // What had focus when it opened: the element the platform would give focus back to.
+  const returnTo = useRef<HTMLElement | null>(null);
 
   const opened = useEventCallback(onOpened);
   const closing = useEventCallback(onClosing);
@@ -150,14 +152,23 @@ export default function usePopoverLayer<THasPopup extends PopoverHasPopup, TReas
       return;
     }
 
-    if (!next) {
+    const reason = next ? 'trigger' : dismissReason.current;
+
+    if (next) {
+      const active = document.activeElement;
+      returnTo.current = active instanceof HTMLElement && active !== document.body ? active : null;
+    } else {
       heldFocus.current = target.contains(document.activeElement);
       closing(heldFocus.current, triggerElement);
+      // Now, while the panel is shown: with no exit to wait for (reduced motion), the flush below unmounts a gated child
+      // and the platform finds focus on `<body>`, restoring nothing (bug #253). A light dismiss restores nothing by spec.
+      if (reason !== 'outside-pointer' && target.contains(document.activeElement)) {
+        (returnTo.current?.isConnected ? returnTo.current : triggerElement)?.focus({ preventScroll: true });
+      }
     }
 
     setDomOpen(next);
 
-    const reason = next ? 'trigger' : dismissReason.current;
     dismissReason.current = 'imperative';
     setOpen(next, { reason, event });
   });

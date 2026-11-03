@@ -226,11 +226,6 @@ function usePickerLayer(options: LayerOptions) {
     onOpenChange: options.onOpenChange,
     interaction: { component: 'datePicker', type: 'openChange' },
     onOpened: handleOpened,
-    // Escape and a press outside close it while a day inside has focus, which is hidden and then unmounted — so
-    // the browser, returning focus only from inside the layer, would leave it on the page. Put it on the button now.
-    onClosing: (heldFocus, button) => {
-      if (heldFocus) button?.focus();
-    },
   });
   const position = useAnchorPosition({
     side: options.side,
