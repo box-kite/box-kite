@@ -116,15 +116,23 @@ export default function createToastStore<TContent>(options?: { limit?: number; d
 
   /** The snapshot is rebuilt only when something changed, since `useSyncExternalStore` compares identity. */
   const publish = () => {
-    let visibleCount = 0;
+    // A closing toast keeps its slot until its exit has run and `remove` is called: let the next one in sooner and the
+    // stack draws one more than the limit for the length of the exit, then jumps (bug #323). One never shown just goes.
+    toasts = toasts.filter((toast) => toast.open || toast.visible);
+    let onScreen = toasts.filter((toast) => !toast.open).length;
+    let waiting = 0;
 
     toasts = toasts.map((toast) => {
-      const visible = toast.open ? visibleCount++ < limit : true;
+      if (!toast.open) return toast;
+
+      const visible = onScreen < limit;
+      if (visible) onScreen++;
+      else waiting++;
 
       return toast.visible === visible ? toast : { ...toast, visible };
     });
 
-    state = { toasts, overflow: Math.max(0, visibleCount - limit) };
+    state = { toasts, overflow: waiting };
     syncTimers();
     listeners.forEach((listener) => listener());
   };
