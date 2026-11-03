@@ -293,6 +293,24 @@ describe('Dialog', () => {
       expect(locked()).toHaveLength(1);
     });
   });
+
+  // Bug #314: `{open && <Form />}` emptied the dialog in the closing commit, so the exit slid a blank panel.
+  it('keeps content the consumer gates on open until its exit has run', () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    const gated = (open: boolean) => (
+      <Dialog open={open} label="Edit step" transitionDuration={200}>
+        {open && <Button>Save step</Button>}
+      </Dialog>
+    );
+    const { rerender } = render(gated(true));
+
+    rerender(gated(false));
+    expect(screen.getByText('Save step')).toBeInTheDocument();
+
+    act(() => vi.advanceTimersByTime(250));
+    expect(screen.queryByText('Save step')).toBeNull();
+    vi.useRealTimers();
+  });
 });
 
 describe('AlertDialog', () => {

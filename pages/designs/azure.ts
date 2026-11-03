@@ -21,17 +21,18 @@ const RING: BoxComponentStyles = {
 /** A field's focus: the border turns azure and a wide, soft halo grows out of it. */
 const FIELD_FOCUS: BoxComponentStyles = { outline: 4, outlineOffset: 0, borderColor: 'accent-600', outlineColor: 'accent-500/18' };
 
-/** The surface every floating layer shares: frosted glass, a hairline, and a long shadow tinted by the sky. */
+/**
+ * The surface every floating layer shares: near-opaque glass, a hairline, and a long shadow tinted by the sky. No
+ * `backdropBlur`: it contains `position: fixed` children, so a password manager's badge made the layer scroll (#316).
+ */
 const LAYER: BoxComponentStyles = {
   p: 1.5,
   borderRadius: 4,
-  bgColor: 'white/82',
-  backdropBlur: 'lg',
-  backdropSaturate: 180,
+  bgColor: 'white/94',
   borderColor: 'base-950/8',
   shadow: 'xl',
   shadowColor: 'accent-950/16',
-  theme: { dark: { bgColor: 'base-900/80', borderColor: 'white/10', shadowColor: 'black/55' } },
+  theme: { dark: { bgColor: 'base-900/94', borderColor: 'white/10', shadowColor: 'black/55' } },
 };
 
 /** One row in a layer: a pill inside the panel, an azure wash for the pointer, a deeper one for the choice. */
@@ -285,15 +286,14 @@ export const azure = Box.components(
       styles: {
         p: 7,
         borderRadius: 6,
-        bgColor: 'white/90',
-        backdropBlur: 'xl',
-        backdropSaturate: 180,
+        // Opaque rather than frosted, for the reason `LAYER` is; the page behind is blurred by the `backdrop`.
+        bgColor: 'white/96',
         borderColor: 'base-950/6',
         shadow: 'xxl',
         shadowColor: 'accent-950/28',
         backdrop: { bgColor: 'accent-950/28', backdropBlur: 'sm' },
         theme: {
-          dark: { bgColor: 'base-900/88', borderColor: 'white/10', shadowColor: 'black/60', backdrop: { bgColor: 'black/55' } },
+          dark: { bgColor: 'base-900/96', borderColor: 'white/10', shadowColor: 'black/60', backdrop: { bgColor: 'black/55' } },
         },
       },
       children: {

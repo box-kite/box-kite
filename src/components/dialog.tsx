@@ -4,6 +4,7 @@ import { useEventCallback } from '../react/a11y/callbacks';
 import { ChangeHandler, SetControllableState } from '../react/a11y/useControllableState';
 import useDismiss from '../react/a11y/useDismiss';
 import useFocusReturn from '../react/a11y/useFocusReturn';
+import useHeldContent from '../react/animation/useHeldContent';
 import boxComponent from '../react/boxComponent';
 import useScrollLock from '../react/dialog/useScrollLock';
 import { useIsomorphicLayoutEffect } from '../react/effects';
@@ -133,7 +134,7 @@ function useDialogContext(name: string): DialogContextValue {
  * **The dialog is always rendered**, and closed means `display: none` — the same shape as `<Popover>`, and
  * what lets the browser own show and hide. The exit is therefore a plain CSS transition rather than a
  * `<Presence>`, since nothing unmounts; content that is expensive to render should be gated by the
- * consumer with `{open && <Heavy />}`.
+ * consumer with `{open && <Heavy />}`, which the dialog keeps on screen until its exit has run.
  *
  * **A close cannot be refused.** The `cancel` event is cancelable, but by the time `onOpenChange` runs the
  * browser has closed the dialog, so a controlled `<Dialog open>` hears about a dismissal afterwards and
@@ -233,6 +234,7 @@ function DialogBase<TKey extends keyof ComponentsAndVariants>(props: BaseProps<T
   // The lock is a class, so in element mode its rule has to be rendered like any other Box's.
   const lockStyles = useScrollLock(isOpen && lockScroll);
   useFocusReturn({ enabled: isOpen, returnTo: triggerElement });
+  const content = useHeldContent(children, isOpen, dialog);
 
   const register = useCallback((part: 'title' | 'description') => {
     setParts((current) => ({ ...current, [part]: current[part] + 1 }));
@@ -296,7 +298,7 @@ function DialogBase<TKey extends keyof ComponentsAndVariants>(props: BaseProps<T
             ...contentProps,
           }}
         >
-          {children}
+          {content}
         </Box>
       </DialogContext.Provider>
     </>

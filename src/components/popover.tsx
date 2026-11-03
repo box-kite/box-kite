@@ -3,6 +3,7 @@ import Box, { BoxProps } from '../box';
 import { useEventCallback } from '../react/a11y/callbacks';
 import { ChangeHandler } from '../react/a11y/useControllableState';
 import useAnchorPosition from '../react/anchor/useAnchorPosition';
+import useHeldContent from '../react/animation/useHeldContent';
 import boxComponent from '../react/boxComponent';
 import usePopoverLayer, {
   PopoverReason,
@@ -93,7 +94,7 @@ interface Props<TKey extends keyof ComponentsAndVariants> extends PopoverBoxProp
  * **The panel is always rendered**, and closed means `display: none` from the UA stylesheet. That is what
  * lets the browser own show and hide — and what makes the exit a plain CSS transition rather than a
  * `<Presence>`, since nothing unmounts. Content that is expensive to render should be gated by the
- * consumer: `{open && <Heavy />}`.
+ * consumer: `{open && <Heavy />}`, which the panel keeps on screen until its exit has run.
  *
  * **The panel keeps the side it chose when it opened.** Chrome re-evaluates `position-try-fallbacks` on
  * scroll for an ordinary positioned element and never for one in the top layer (measured in 152), so a
@@ -146,6 +147,7 @@ function PopoverImpl<TKey extends keyof ComponentsAndVariants = 'popover'>(props
     trigger: triggerBag,
     triggerElement,
     setPanel: setLayerPanel,
+    panelElement,
   } = usePopoverLayer({
     haspopup: 'dialog',
     idPrefix: 'popover',
@@ -158,6 +160,7 @@ function PopoverImpl<TKey extends keyof ComponentsAndVariants = 'popover'>(props
   });
 
   const position = useAnchorPosition({ side, align, offset, flip, matchWidth, anchor: triggerElement });
+  const content = useHeldContent(children, isOpen, panelElement);
   // The panel on both paths, so a caller's `ref` names the same element with or without the Popover API.
   const setPanel = useCallback(
     (element: HTMLDivElement | null) => {
@@ -215,7 +218,7 @@ function PopoverImpl<TKey extends keyof ComponentsAndVariants = 'popover'>(props
           ...contentProps,
         }}
       >
-        {children}
+        {content}
       </Box>
     </>
   );
