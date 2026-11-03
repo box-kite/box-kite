@@ -1,4 +1,5 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import React from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ignoreLogs, installPopoverApi } from '../../dev/tests';
 import Button from './button';
@@ -238,6 +239,69 @@ describe('Popover', () => {
       act(() => element().showPopover());
 
       expect(panel()).not.toHaveFocus();
+    });
+
+    // Bug #253: a child gated on `open` unmounted with focus before the browser looked, which left it on `<body>`.
+    describe('with its focused child gated on open', () => {
+      function Gated({ closeFromInside }: { closeFromInside?: boolean }) {
+        const [open, setOpen] = React.useState(false);
+
+        return (
+          <Popover label="Filters" open={open} onOpenChange={setOpen} trigger={(bag) => <Button {...bag}>Filters</Button>}>
+            {open ? <Button onClick={closeFromInside ? () => setOpen(false) : undefined}>Done</Button> : null}
+          </Popover>
+        );
+      }
+
+      async function openAndFocusInside(closeFromInside?: boolean) {
+        uninstall = installPopoverApi();
+        render(<Gated closeFromInside={closeFromInside} />);
+        trigger().focus();
+        // Controlled, so the platform's open is asked for and agreed to a task later (bug #251).
+        await act(async () => {
+          element().showPopover();
+          await new Promise((resolve) => setTimeout(resolve));
+        });
+        const done = screen.getByRole('button', { name: 'Done' });
+        done.focus();
+
+        return done;
+      }
+
+      it.each([
+        ['Escape', () => fireEvent.keyDown(document, { key: 'Escape' })],
+        ['a press on the trigger', () => fireEvent.pointerDown(trigger())],
+      ])('returns focus to the trigger on %s', async (_, press) => {
+        await openAndFocusInside();
+
+        act(() => {
+          press();
+          element().hidePopover();
+        });
+
+        expect(screen.queryByRole('button', { name: 'Done' })).toBeNull();
+        expect(trigger()).toHaveFocus();
+      });
+
+      it('returns focus to the trigger when a control inside closes it', async () => {
+        const done = await openAndFocusInside(true);
+
+        act(() => fireEvent.click(done));
+
+        expect(element().matches(':popover-open')).toBe(false);
+        expect(trigger()).toHaveFocus();
+      });
+
+      it('leaves focus alone on a press outside, which restores nothing by spec', async () => {
+        await openAndFocusInside();
+
+        act(() => {
+          fireEvent.pointerDown(document.body);
+          element().hidePopover();
+        });
+
+        expect(trigger()).not.toHaveFocus();
+      });
     });
   });
 });
