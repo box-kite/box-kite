@@ -4,6 +4,7 @@ import { useEventCallback } from '../react/a11y/callbacks';
 import { ChangeHandler } from '../react/a11y/useControllableState';
 import useRovingFocus from '../react/a11y/useRovingFocus';
 import useAnchorPosition from '../react/anchor/useAnchorPosition';
+import { useExitPhase } from '../react/animation/usePresence';
 import boxComponent from '../react/boxComponent';
 import { DateChangeDetails, DateChangeReason } from '../react/date/dateChange';
 import { useDateEnvironment } from '../react/date/dateEnvironment';
@@ -225,8 +226,8 @@ function usePickerLayer(options: LayerOptions) {
     onOpenChange: options.onOpenChange,
     interaction: { component: 'datePicker', type: 'openChange' },
     onOpened: handleOpened,
-    // Escape and a press outside close it while a day inside has focus, which unmounts as it closes — so the
-    // browser, returning focus only from inside the layer, would leave it on the page. Put it on the button now.
+    // Escape and a press outside close it while a day inside has focus, which is hidden and then unmounted — so
+    // the browser, returning focus only from inside the layer, would leave it on the page. Put it on the button now.
     onClosing: (heldFocus, button) => {
       if (heldFocus) button?.focus();
     },
@@ -243,6 +244,9 @@ function usePickerLayer(options: LayerOptions) {
   useEffect(() => {
     if (isOpen) focusInto(panelElement);
   }, [isOpen, panelElement]);
+
+  const readPanel = useCallback(() => panelElement, [panelElement]);
+  const phase = useExitPhase(isOpen, readPanel);
 
   const panel = (children: React.ReactNode) => {
     const naming = { role: 'dialog', 'aria-label': options.label, tabIndex: -1 };
@@ -277,8 +281,8 @@ function usePickerLayer(options: LayerOptions) {
         id={id}
         props={{ popover: 'auto', ...naming }}
       >
-        {/* Mounted while open only: a closed panel would keep a calendar and a day of times in the DOM for nothing. */}
-        {isOpen ? children : null}
+        {/* Mounted while open and through the exit (bug #314): a closed panel would keep a calendar and a day of times for nothing. */}
+        {phase === 'closed' ? null : children}
       </Box>
     );
   };

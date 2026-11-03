@@ -260,7 +260,7 @@
         "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "43.47 kB"
+      "limit": "43.96 kB"
     },
     {
       "name": "Popover",
@@ -273,7 +273,7 @@
         "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "45.00 kB"
+      "limit": "45.49 kB"
     },
     {
       "name": "Menu",
@@ -286,7 +286,7 @@
         "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "47.35 kB"
+      "limit": "47.82 kB"
     },
     {
       "name": "Accordion",
@@ -442,7 +442,7 @@
         "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "44.72 kB"
+      "limit": "44.74 kB"
     },
     {
       "name": "DateField",
@@ -481,7 +481,7 @@
         "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "63.06 kB"
+      "limit": "63.53 kB"
     },
     {
       "name": "DateTime",
@@ -507,7 +507,7 @@
         "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "52.48 kB"
+      "limit": "52.51 kB"
     },
     {
       "name": "Combobox",
@@ -520,7 +520,7 @@
         "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "50.46 kB"
+      "limit": "50.49 kB"
     },
     {
       "name": "Dashboard",
@@ -548,7 +548,7 @@
         "../dataGridDateParts.mjs"
       ],
       "gzip": true,
-      "limit": "97.66 kB"
+      "limit": "97.73 kB"
     },
     {
       "name": "Interaction delivery, the chunk the first Box.onInteraction fetches",
@@ -614,7 +614,7 @@
         "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "167.55 kB"
+      "limit": "167.64 kB"
     }
   ],
   "repository": {
