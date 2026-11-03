@@ -262,7 +262,8 @@ components it never loads.
 client code and were correct inside `client`, but that made `@box-kite/react/a11y` import the
 chunk holding the styling binding and the theme provider: 17.8 KB gzipped for a consumer who wanted
 `useDismiss` alone. Split out, the entry is 2.2 KB and reaches no engine at all. `npm run size` is
-what notices this; the budget is per entry for exactly that reason.
+what notices this; the budget is per entry for exactly that reason. Each budget is 2 KB over the size
+it was last set at, so an ordinary change leaves `package.json` alone; raise one only when it trips.
 
 `forms` is a group for a third reason: it is the one shared module that imports a _component_
 entry (`Flex`). Left in `react-shared` — which is where a module the server-safe components reach

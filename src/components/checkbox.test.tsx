@@ -85,4 +85,20 @@ describe('Checkbox', () => {
     expect(checkbox().indeterminate).toBe(false);
     expect(checkbox().getAttribute('aria-checked')).toBeNull();
   });
+
+  it('draws its mark in a colour the page chooses, and in system colours where the palette is gone', () => {
+    render(<Checkbox name="terms" />);
+
+    const css = (document.getElementById('box-kite-styles') as HTMLStyleElement | null)?.textContent ?? '';
+
+    // The tick is a shape painted by `bgColor`, not an image with white baked in: a theme or a design
+    // recolours it, and a forced-colors mode can turn it into `HighlightText` (#317).
+    expect(css).toMatch(/\.\S+:checked::before\{mask-image:url\("data:image\/svg\+xml,/);
+    expect(css).toMatch(/\.\S+:indeterminate::before\{mask-image:url\("data:image\/svg\+xml,/);
+    expect(css).toMatch(/\.\S+:checked::before\{background-color:var\(--white,#fff\)\}/);
+    expect(css).toMatch(/@media \(forced-colors: active\)\{\.\S+:checked\{background-color:Highlight\}\}/);
+    expect(css).toMatch(/@media \(forced-colors: active\)\{\.\S+:checked::before\{background-color:HighlightText\}\}/);
+    // A dark theme's fill is the more specific rule, so the pair is repeated inside it.
+    expect(css).toMatch(/@media \(forced-colors: active\)\{@scope \(\.dark\)[^{]*\{[^{}]*:checked\{background-color:Highlight\}/);
+  });
 });
