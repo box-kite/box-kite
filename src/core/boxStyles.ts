@@ -3260,13 +3260,19 @@ export const cssStyles = {
   /**
    * What the element is masked by: the alpha channel of an image decides which of its pixels are painted.
    * Takes the same gradient record `bgGradient` does — so a fade to `transparent` is the whole edge-fade
-   * recipe — or a `url(#id)`/`var(--name)` somebody else defined. One mask, not a stack.
+   * recipe — or a `url(#id)`/`var(--name)` somebody else defined. One mask, not a stack. `check`, `dash`
+   * and `dot` are the checkbox and radio marks, so the mark is painted by `bgColor` and follows the theme.
    * @example maskImage={{ linear: 'b', colors: ['black', 'transparent'] }} → mask-image: linear-gradient(to bottom,var(--black,#000),var(--transparent,transparent))
    */
   maskImage: [
     {
       values: ['none'] as const,
       styleName: 'mask-image',
+    },
+    {
+      values: Variables.maskValues,
+      styleName: 'mask-image',
+      valueFormat: (value: string) => Variables.masks[value as Variables.MaskType],
     },
     { ...referenceValues, styleName: 'mask-image' },
     {

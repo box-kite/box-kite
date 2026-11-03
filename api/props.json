@@ -2685,7 +2685,7 @@
     },
     {
       "name": "maskImage",
-      "description": "What the element is masked by: the alpha channel of an image decides which of its pixels are painted. Takes the same gradient record `bgGradient` does — so a fade to `transparent` is the whole edge-fade recipe — or a `url(#id)`/`var(--name)` somebody else defined. One mask, not a stack.",
+      "description": "What the element is masked by: the alpha channel of an image decides which of its pixels are painted. Takes the same gradient record `bgGradient` does — so a fade to `transparent` is the whole edge-fade recipe — or a `url(#id)`/`var(--name)` somebody else defined. One mask, not a stack. `check`, `dash` and `dot` are the checkbox and radio marks, so the mark is painted by `bgColor` and follows the theme.",
       "properties": ["mask-image"],
       "example": {
         "value": { "linear": "b", "colors": ["black", "transparent"] },
@@ -2693,7 +2693,7 @@
       },
       "numeric": false,
       "open": true,
-      "values": ["none"]
+      "values": ["none", "check", "dash", "dot"]
     },
     {
       "name": "bgClip",

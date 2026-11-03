@@ -139,17 +139,6 @@ const PRIMARY: BoxComponentStyles = {
   },
 };
 
-/** The library's marks are white; on the dark page Mono fills a control with paper, so its mark is drawn in ink. */
-const inkMark = (shape: string) =>
-  `url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='100%' viewBox='0 0 20 20'>${shape}</svg>`)}")`;
-const INK_TICK = inkMark(
-  "<path fill='none' stroke='#16191E' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 10l3 3l6-6'/>",
-);
-const INK_DASH = inkMark(
-  "<line stroke='#16191E' stroke-linecap='round' x1='6' y1='10' x2='14' y2='10' stroke-width='2' />",
-);
-const INK_DOT = inkMark("<circle fill='#16191E' cx='10' cy='10' r='5'/>");
-
 const heading: BoxComponentStyles = { fontWeight: 500, letterSpacing: 'tight', css: { fontFamily: FONT_BODY } };
 
 Box.components({
@@ -241,8 +230,8 @@ Box.components({
         dark: {
           borderColor: 'base-500',
           hover: { borderColor: PAPER },
-          checked: { bgColor: PAPER, borderColor: PAPER, css: { backgroundImage: INK_TICK } },
-          indeterminate: { bgColor: PAPER, borderColor: PAPER, css: { backgroundImage: INK_DASH } },
+          checked: { bgColor: PAPER, borderColor: PAPER, before: { bgColor: INK } },
+          indeterminate: { bgColor: PAPER, borderColor: PAPER, before: { bgColor: INK } },
         },
       },
     },
@@ -257,7 +246,7 @@ Box.components({
         dark: {
           borderColor: 'base-500',
           hover: { borderColor: PAPER },
-          checked: { bgColor: PAPER, borderColor: PAPER, css: { backgroundImage: INK_DOT } },
+          checked: { bgColor: PAPER, borderColor: PAPER, before: { bgColor: INK } },
         },
       },
     },

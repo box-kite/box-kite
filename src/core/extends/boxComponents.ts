@@ -37,6 +37,22 @@ const HAIRLINE = 'color-mix(in oklab, currentColor 12%, transparent)';
 /** What a list item's icon, avatar or thumbnail sits on. */
 const MEDIA_FILL: BoxComponentStyles = { bgColor: 'currentColor/6' };
 
+/** A checkbox or radio mark: a shape over the padding box, painted by its `bgColor` so a theme or a design can recolour it. */
+const mark = (maskImage: 'check' | 'dash' | 'dot'): BoxComponentStyles => ({ position: 'absolute', inset: 0, bgColor: 'white', maskImage });
+
+/**
+ * A forced-colors mode replaces the fill with `Canvas` and keeps the mark, so a checked control has to name
+ * the system pair itself (#317). Repeated for `theme.dark`, whose fill is the more specific rule.
+ */
+const MARKED: BoxComponentStyles = { bgColor: 'Highlight', borderColor: 'Highlight', before: { bgColor: 'HighlightText' } };
+const MARKED_DISABLED: BoxComponentStyles = { bgColor: 'GrayText', borderColor: 'GrayText', before: { bgColor: 'Canvas' } };
+const CHECKBOX_FORCED: BoxComponentStyles = {
+  checked: MARKED,
+  indeterminate: MARKED,
+  disabled: { checked: MARKED_DISABLED, indeterminate: MARKED_DISABLED },
+};
+const RADIO_FORCED: BoxComponentStyles = { checked: MARKED, disabled: { checked: MARKED_DISABLED } };
+
 /**
  * A layer moving in or out by a transform is the containing block of every `position: fixed` descendant
  * — a password manager's badge on a field included — so `overflow: auto` scrolled to it until the transform
@@ -1179,6 +1195,7 @@ const baseComponents = {
   checkbox: {
     styles: {
       display: 'inline-block',
+      position: 'relative',
       appearance: 'none',
       b: 2,
       borderColor: 'base-300',
@@ -1200,13 +1217,13 @@ const baseComponents = {
       checked: {
         bgColor: 'accent-500',
         borderColor: 'accent-500',
-        bgImage: 'bg-img-checked',
+        before: mark('check'),
       },
       // Filled like a tick, with a white dash: the dash used to be a fixed violet no design could reach.
       indeterminate: {
         bgColor: 'accent-500',
         borderColor: 'accent-500',
-        bgImage: 'bg-img-indeterminate',
+        before: mark('dash'),
       },
       disabled: {
         cursor: 'not-allowed',
@@ -1221,6 +1238,7 @@ const baseComponents = {
           borderColor: 'base-200',
         },
       },
+      forcedColors: { ...CHECKBOX_FORCED, theme: { dark: CHECKBOX_FORCED } },
       theme: {
         dark: {
           borderColor: 'base-600',
@@ -1257,6 +1275,9 @@ const baseComponents = {
   },
   radioButton: {
     styles: {
+      // Every Box is a block, and Firefox stretches a block radio across its container (#318).
+      display: 'inline-block',
+      position: 'relative',
       appearance: 'none',
       b: 1,
       borderColor: 'base-300',
@@ -1278,7 +1299,7 @@ const baseComponents = {
       checked: {
         bgColor: 'accent-500',
         borderColor: 'accent-500',
-        bgImage: 'bg-img-radio',
+        before: mark('dot'),
       },
       disabled: {
         checked: {
@@ -1291,6 +1312,7 @@ const baseComponents = {
           borderColor: 'base-200',
         },
       },
+      forcedColors: { ...RADIO_FORCED, theme: { dark: RADIO_FORCED } },
       theme: {
         dark: {
           borderColor: 'base-600',

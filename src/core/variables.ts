@@ -12,6 +12,14 @@ namespace Variables {
   export const colorValues = Object.keys(Variables.colors) as Variables.ColorType[];
   colorValues.push('none');
 
+  // The checkbox and radio marks, drawn once and coloured per use.
+  const svg = (shape: string) =>
+    `url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'>${shape}</svg>`)}")`;
+  const tick = (color: string) =>
+    svg(`<path fill='none' stroke='${color}' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 10l3 3l6-6'/>`);
+  const dash = (color: string) => svg(`<line stroke='${color}' stroke-linecap='round' x1='6' y1='10' x2='14' y2='10' stroke-width='2'/>`);
+  const dot = (color: string) => svg(`<circle fill='${color}' cx='10' cy='10' r='5'/>`);
+
   export const bgImages = {
     'gradient-primary': 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%)',
     'gradient-aurora-light':
@@ -19,11 +27,17 @@ namespace Variables {
     'gradient-aurora-dark':
       'radial-gradient(900px circle at 18% 18%, rgba(129, 140, 248, 0.16), transparent 46%), radial-gradient(820px circle at 82% 10%, rgba(45, 212, 191, 0.12), transparent 48%), radial-gradient(980px circle at 50% 80%, rgba(59, 130, 246, 0.12), transparent 55%), linear-gradient(180deg, rgba(15, 23, 42, 0.96) 0%, rgba(15, 23, 42, 0.9) 100%)',
     'gradient-accent': 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 50%, #6366f1 100%)',
-    // checkbox/radio images
-    'bg-img-checked': `url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='100%' viewBox='0 0 20 20'><path fill='none' stroke='#FFF' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 10l3 3l6-6'/></svg>`)}")`,
-    'bg-img-indeterminate': `url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='100%' viewBox='0 0 20 20'><line stroke='#FFF' stroke-linecap='round' x1='6' y1='10' x2='14' y2='10' stroke-width='2' /></svg>`)}")`,
-    'bg-img-radio': `url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='100%' viewBox='0 0 20 20'><circle fill='#FFF' cx='10' cy='10' r='5'/></svg>`)}")`,
+    // Kept for anyone who used them; the components draw `masks` now.
+    'bg-img-checked': tick('#FFF'),
+    'bg-img-indeterminate': dash('#FFF'),
+    'bg-img-radio': dot('#FFF'),
   };
+
+  // A mark painted by the `bgColor` it masks: a colour baked into an image cannot follow a theme or a
+  // forced-colors mode (bug #317).
+  export const masks = { check: tick('#000'), dash: dash('#000'), dot: dot('#000') };
+  export type MaskType = keyof typeof masks;
+  export const maskValues = Object.keys(masks) as MaskType[];
 
   export type BgImageType = keyof typeof bgImages | 'none';
   export const bgImageValues = Object.keys(Variables.bgImages) as Variables.BgImageType[];
