@@ -878,8 +878,8 @@ const baseComponents = {
           },
         },
       },
-      // The cross, two rotated rules rather than an icon — the library ships none, and `before` and
-      // `after` are one element each, which is exactly two.
+      // The cross, two rotated bars rather than an icon — the library ships none, and `before` and
+      // `after` are one element each, which is exactly two. Filled and fully rounded, so the ends are soft.
       close: {
         styles: {
           position: 'absolute',
@@ -890,7 +890,7 @@ const baseComponents = {
           display: 'flex',
           ai: 'center',
           jc: 'center',
-          borderRadius: 1,
+          borderRadius: 999,
           b: 0,
           bgColor: 'transparent',
           color: 'base-500',
@@ -898,11 +898,10 @@ const baseComponents = {
           transition: 'colors',
           hover: { color: 'base-900', bgColor: 'base-100' },
           focusVisible: { outline: 2, outlineColor: 'accent-500', outlineOffset: -2 },
-          // `borderStyle` on both, and it is the trap: a pseudo-element carries none of `._b`, whose
-          // `border: 0 solid` is what every other border in this file is leaning on — so a width with
-          // no style computes to `0px none` and the cross is invisible (measured in Chrome 153).
-          before: { position: 'absolute', width: 2.5, height: 0, bt: 1, borderStyle: 'solid', borderColor: 'currentColor', rotate: 45 },
-          after: { position: 'absolute', width: 2.5, height: 0, bt: 1, borderStyle: 'solid', borderColor: 'currentColor', rotate: -45 },
+          before: { position: 'absolute', width: 3, height: 0.5, borderRadius: 999, bgColor: 'currentColor', rotate: 45 },
+          after: { position: 'absolute', width: 3, height: 0.5, borderRadius: 999, bgColor: 'currentColor', rotate: -45 },
+          // A forced-colors mode replaces a fill with `Canvas` (#317), and the bars are fills.
+          forcedColors: { before: { bgColor: 'ButtonText' }, after: { bgColor: 'ButtonText' } },
           theme: {
             dark: { color: 'base-400', hover: { color: 'base-100', bgColor: 'base-700' } },
           },

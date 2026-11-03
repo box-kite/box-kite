@@ -1,4 +1,4 @@
-import { Ref, useCallback, useRef } from 'react';
+import { Ref, useCallback, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useSyncExternalStore } from 'use-sync-external-store/shim';
 import Box, { BoxProps } from '../box';
@@ -9,7 +9,7 @@ import usePortalContainer from '../react/hooks/usePortalContainer';
 import { useInteractionReporter } from '../react/interactions/interactions';
 import useTopLayer from '../react/popover/useTopLayer';
 import { ComponentsAndVariants } from '../types';
-import { assignRef } from '../utils/dom/domUtils';
+import { assignRef, MODAL_EVENT, ModalEventDetail } from '../utils/dom/domUtils';
 import { documentOrNull, supportsPopover } from '../utils/environment/environmentUtils';
 import createToastStore, { Toast, ToastAction, ToastDismissReason, ToastKind, ToastOptions, ToastStore } from '../utils/toast/toastStore';
 
@@ -254,6 +254,8 @@ function ToasterImpl<TKey extends keyof ComponentsAndVariants = 'toaster'>(props
   );
   // Where focus was before it came into the stack, so Escape can hand it back.
   const returnTo = useRef<HTMLElement | null>(null);
+  // The topmost open modal, which the stack moves into: outside one, the toasts would be inert (bug #282).
+  const [modal, setModal] = useState<HTMLElement | null>(null);
   const paused = useRef({ hovered: false, focused: false, hidden: false });
 
   const syncPause = useCallback(() => {
@@ -278,6 +280,28 @@ function ToasterImpl<TKey extends keyof ComponentsAndVariants = 'toaster'>(props
 
     element.showPopover();
   });
+
+  useIsomorphicLayoutEffect(() => {
+    const doc = documentOrNull();
+    if (!doc) return;
+
+    const stack: HTMLElement[] = [];
+    const controller = new AbortController();
+    doc.addEventListener(
+      MODAL_EVENT,
+      (event) => {
+        const { dialog, open } = (event as CustomEvent<ModalEventDetail>).detail;
+        const index = stack.indexOf(dialog);
+
+        if (index >= 0) stack.splice(index, 1);
+        if (open) stack.push(dialog);
+        setModal(stack[stack.length - 1] ?? null);
+      },
+      { signal: controller.signal },
+    );
+
+    return () => controller.abort();
+  }, []);
 
   // A tab in the background is not being read, so its timers stop too — the same rule as hover and
   // focus, applied to the one case the pointer and the keyboard cannot say anything about.
@@ -352,6 +376,9 @@ function ToasterImpl<TKey extends keyof ComponentsAndVariants = 'toaster'>(props
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (event.key !== 'Escape') return;
 
+    // Inside a modal, Escape here is the toast's and not the dialog's close request.
+    if (modal) event.preventDefault();
+
     const element = (event.target as Element).closest?.('[data-toast-id]');
     const id = element?.getAttribute('data-toast-id');
 
@@ -407,6 +434,9 @@ function ToasterImpl<TKey extends keyof ComponentsAndVariants = 'toaster'>(props
     </Box>
   );
 
+  // Inside the modal, and shown after it, so it paints above the backdrop and is not inert. The move remounts the
+  // region, which is fine: it is in place, empty and listening before a toast fired from the dialog arrives.
+  if (modal) return createPortal(viewport, modal);
   if (topLayer) return viewport;
 
   return portalContainer ? createPortal(viewport, portalContainer) : null;

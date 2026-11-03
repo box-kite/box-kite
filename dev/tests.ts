@@ -112,8 +112,9 @@ export function installDialogPlatform(): () => void {
     dialog.close();
   };
 
+  // A cancelled keydown makes no close request, which is how a toast inside the modal keeps Escape (measured).
   const onKeyDown = (event: Event) => {
-    if ((event as KeyboardEvent).key !== 'Escape') return;
+    if ((event as KeyboardEvent).key !== 'Escape' || event.defaultPrevented) return;
 
     const open = dialogs().filter((dialog) => dialog.getAttribute('closedby') !== 'none');
     const last = open[open.length - 1];
