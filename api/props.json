@@ -428,6 +428,33 @@
       "values": ["always", "anchors-visible", "no-overflow", "anchors-visible no-overflow"]
     },
     {
+      "name": "inset",
+      "description": "The inset CSS property is a shorthand that corresponds to the top, right, bottom, and/or left properties. It has the same multi-value syntax of the margin shorthand.",
+      "properties": ["inset"],
+      "example": { "value": 4, "css": "inset: 1rem" },
+      "numeric": true,
+      "open": true,
+      "valueCount": 55
+    },
+    {
+      "name": "insetX",
+      "description": "The inset-inline CSS shorthand sets both insets on the inline axis: `insetX` is `left` and `right` in a left-to-right writing mode, the way `mx` is `margin-inline`.",
+      "properties": ["inset-inline"],
+      "example": { "value": 4, "css": "inset-inline: 1rem" },
+      "numeric": true,
+      "open": true,
+      "valueCount": 55
+    },
+    {
+      "name": "insetY",
+      "description": "The inset-block CSS shorthand sets both insets on the block axis — `top` and `bottom` in a horizontal writing mode.",
+      "properties": ["inset-block"],
+      "example": { "value": 4, "css": "inset-block: 1rem" },
+      "numeric": true,
+      "open": true,
+      "valueCount": 55
+    },
+    {
       "name": "top",
       "description": "The top CSS property sets the vertical position of a positioned element. This inset property has no effect on non-positioned elements. It also takes `anchor()`, an inset measured to one of the anchor's own edges.",
       "properties": ["top"],
@@ -459,33 +486,6 @@
       "description": "The left CSS property participates in specifying the horizontal position of a positioned element. This inset property has no effect on non-positioned elements. It also takes `anchor()`, an inset measured to one of the anchor's own edges.",
       "properties": ["left"],
       "example": { "value": 4, "css": "left: 1rem" },
-      "numeric": true,
-      "open": true,
-      "valueCount": 55
-    },
-    {
-      "name": "inset",
-      "description": "The inset CSS property is a shorthand that corresponds to the top, right, bottom, and/or left properties. It has the same multi-value syntax of the margin shorthand.",
-      "properties": ["inset"],
-      "example": { "value": 4, "css": "inset: 1rem" },
-      "numeric": true,
-      "open": true,
-      "valueCount": 55
-    },
-    {
-      "name": "insetX",
-      "description": "The inset-inline CSS shorthand sets both insets on the inline axis: `insetX` is `left` and `right` in a left-to-right writing mode, the way `mx` is `margin-inline`.",
-      "properties": ["inset-inline"],
-      "example": { "value": 4, "css": "inset-inline: 1rem" },
-      "numeric": true,
-      "open": true,
-      "valueCount": 55
-    },
-    {
-      "name": "insetY",
-      "description": "The inset-block CSS shorthand sets both insets on the block axis — `top` and `bottom` in a horizontal writing mode.",
-      "properties": ["inset-block"],
-      "example": { "value": 4, "css": "inset-block: 1rem" },
       "numeric": true,
       "open": true,
       "valueCount": 55

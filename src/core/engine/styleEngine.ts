@@ -361,12 +361,56 @@ const nestingKeySet: ReadonlySet<string> = new Set(nestingKeys);
 // Props whose value is a record merged entry by entry, so a caller's entry replaces only that entry.
 const recordProps: ReadonlySet<string> = new Set(['css', 'vars']);
 
+const sideProps = (prefix: string): [string, string[]][] => [
+  [prefix, ['x', 'y', 't', 'r', 'b', 'l', 's', 'e'].map((side) => prefix + side)],
+  [`${prefix}x`, ['r', 'l', 's', 'e'].map((side) => prefix + side)],
+  [`${prefix}y`, ['t', 'b'].map((side) => prefix + side)],
+];
+const radius = (...corners: string[]) => corners.map((corner) => `borderRadius${corner}`);
+// Each shorthand and the props it sets every property of. The registry declares a shorthand first, so a component's
+// longhand outranks a caller's shorthand (bug #264): the caller's shorthand takes the longhand out instead.
+const longhandsOf: ReadonlyMap<string, readonly string[]> = new Map([
+  ...sideProps('p'),
+  ...sideProps('m'),
+  ...sideProps('b'),
+  [
+    'borderRadius',
+    radius(
+      'Top',
+      'Right',
+      'Bottom',
+      'Left',
+      'Start',
+      'End',
+      ...['TopLeft', 'TopRight', 'BottomRight', 'BottomLeft'],
+      ...['StartStart', 'StartEnd', 'EndEnd', 'EndStart'],
+    ),
+  ],
+  ['borderRadiusTop', radius('TopLeft', 'TopRight')],
+  ['borderRadiusRight', radius('TopRight', 'BottomRight')],
+  ['borderRadiusBottom', radius('BottomLeft', 'BottomRight')],
+  ['borderRadiusLeft', radius('TopLeft', 'BottomLeft')],
+  ['borderRadiusStart', radius('StartStart', 'EndStart')],
+  ['borderRadiusEnd', radius('StartEnd', 'EndEnd')],
+  ['inset', ['insetX', 'insetY', 'top', 'right', 'bottom', 'left', 'insetStart', 'insetEnd']],
+  ['insetX', ['left', 'right', 'insetStart', 'insetEnd']],
+  ['insetY', ['top', 'bottom']],
+  ['gap', ['rowGap', 'columnGap']],
+  ['overflow', ['overflowX', 'overflowY']],
+  ['gridColumn', ['gridColumnStart', 'gridColumnEnd']],
+  ['gridRow', ['gridRowStart', 'gridRowEnd']],
+]);
+const shorthandsOf = new Map<string, string[]>();
+for (const [shorthand, longhands] of longhandsOf) {
+  for (const longhand of longhands) shorthandsOf.set(longhand, [...(shorthandsOf.get(longhand) ?? []), shorthand]);
+}
+
 /**
- * A component's styles without the themed values the caller replaced, at the level the caller set them. A theme
- * rule is `@scope (.dark) … :scope .x`, which outranks a plain prop's class, so a top-level `bgColor` lost to the
- * component's `theme.dark.bgColor` in dark mode (bug #259). Returns `styles` itself when nothing goes.
+ * A component's styles without the values the caller replaced, at the level the caller set them: a longhand under a
+ * caller's shorthand (bug #264), and a themed value, since `@scope (.dark) … :scope .x` outranks a plain prop's class
+ * (bug #259). Returns `styles` itself when nothing goes.
  */
-function withoutReplacedThemeValues(styles: StyleRecord, props: StyleRecord, inTheme = false): StyleRecord {
+function withoutReplacedValues(styles: StyleRecord, props: StyleRecord, inTheme = false): StyleRecord {
   let result = styles;
 
   for (const key in styles) {
@@ -375,16 +419,18 @@ function withoutReplacedThemeValues(styles: StyleRecord, props: StyleRecord, inT
     let next = value;
 
     if (key === themeGroupClass.theme && !inTheme) {
-      for (const theme in value) next = swap(next, theme, withoutReplacedThemeValues(value[theme], props, true), value);
+      for (const theme in value) next = swap(next, theme, withoutReplacedValues(value[theme], props, true), value);
     } else if (nestingKeySet.has(key)) {
       // A nesting key carries an object, or a pseudo2 `[attribute, styles]` pair; a bare boolean is the attribute.
       const nested = Array.isArray(caller) ? caller[1] : caller;
-      if (ObjectUtils.isObject(nested) && ObjectUtils.isObject(value)) next = withoutReplacedThemeValues(value, nested, inTheme);
+      if (ObjectUtils.isObject(nested) && ObjectUtils.isObject(value)) next = withoutReplacedValues(value, nested, inTheme);
     } else if (inTheme && caller != null) {
       next =
         recordProps.has(key) && ObjectUtils.isObject(caller)
           ? Object.fromEntries(Object.entries(value).filter(([entry]) => !(entry in caller)))
           : undefined;
+    } else if (shorthandsOf.get(key)?.some((shorthand) => props[shorthand] != null)) {
+      next = undefined;
     }
 
     result = swap(result, key, next, styles);
@@ -1217,7 +1263,7 @@ export function createStyleEngine(options: StyleEngineOptions = {}): StyleEngine
   function addDesignClassNames(props: BoxStyleProps<any>, propsToUse: BoxStyleProps<any>, classNames: string[]) {
     for (const design of designs) {
       const designed = resolveComponentStyles(props, design.components) as BoxStyleProps | undefined;
-      const designProps = designed ? mergeDeep(withoutReplacedThemeValues(designed, props), props) : props;
+      const designProps = designed ? mergeDeep(withoutReplacedValues(designed, props), props) : props;
       // A design that leaves the component alone (its merge keeps the base's key order), or whose changes the caller overrode, costs nothing.
       if (JSON.stringify(stylesOf(designProps)) === JSON.stringify(stylesOf(propsToUse))) continue;
 
@@ -1233,7 +1279,7 @@ export function createStyleEngine(options: StyleEngineOptions = {}): StyleEngine
 
     if (!resolved) {
       const componentStyles = resolveComponentStyles(props, componentsOf(registry)) as BoxStyleProps;
-      const propsToUse = componentStyles ? mergeDeep(withoutReplacedThemeValues(componentStyles, props), props) : props;
+      const propsToUse = componentStyles ? mergeDeep(withoutReplacedValues(componentStyles, props), props) : props;
 
       const classNames = [isSvg ? svgClassName : boxClassName];
       resolved = {

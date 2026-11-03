@@ -740,6 +740,88 @@ export const cssStyles = {
     },
   ],
   /**
+   * The inset CSS property is a shorthand that corresponds to the top, right, bottom, and/or left properties. It has the same multi-value syntax of the margin shorthand.
+   * @example inset={4} → inset: 1rem
+   */
+  inset: [
+    {
+      values: 0,
+      valueFormat: BoxStylesFormatters.Value.rem,
+    },
+    {
+      values: ['auto'] as const,
+    },
+    {
+      values: Variables.percentages,
+      valueFormat: BoxStylesFormatters.Value.fraction,
+    },
+    {
+      values: Variables.negativePercentages,
+      valueFormat: BoxStylesFormatters.Value.fraction,
+    },
+    {
+      ...percentValue,
+    },
+  ],
+  /**
+   * The inset-inline CSS shorthand sets both insets on the inline axis: `insetX` is `left` and `right` in a left-to-right writing mode, the way `mx` is `margin-inline`.
+   * @example insetX={4} → inset-inline: 1rem
+   */
+  insetX: [
+    {
+      values: 0,
+      styleName: 'inset-inline',
+      valueFormat: BoxStylesFormatters.Value.rem,
+    },
+    {
+      values: ['auto'] as const,
+      styleName: 'inset-inline',
+    },
+    {
+      values: Variables.percentages,
+      styleName: 'inset-inline',
+      valueFormat: BoxStylesFormatters.Value.fraction,
+    },
+    {
+      values: Variables.negativePercentages,
+      styleName: 'inset-inline',
+      valueFormat: BoxStylesFormatters.Value.fraction,
+    },
+    {
+      ...percentValue,
+      styleName: 'inset-inline',
+    },
+  ],
+  /**
+   * The inset-block CSS shorthand sets both insets on the block axis — `top` and `bottom` in a horizontal writing mode.
+   * @example insetY={4} → inset-block: 1rem
+   */
+  insetY: [
+    {
+      values: 0,
+      styleName: 'inset-block',
+      valueFormat: BoxStylesFormatters.Value.rem,
+    },
+    {
+      values: ['auto'] as const,
+      styleName: 'inset-block',
+    },
+    {
+      values: Variables.percentages,
+      styleName: 'inset-block',
+      valueFormat: BoxStylesFormatters.Value.fraction,
+    },
+    {
+      values: Variables.negativePercentages,
+      styleName: 'inset-block',
+      valueFormat: BoxStylesFormatters.Value.fraction,
+    },
+    {
+      ...percentValue,
+      styleName: 'inset-block',
+    },
+  ],
+  /**
    * The top CSS property sets the vertical position of a positioned element. This inset property has no effect on non-positioned elements.
    * It also takes `anchor()`, an inset measured to one of the anchor's own edges.
    * @example top={4} → top: 1rem
@@ -849,88 +931,6 @@ export const cssStyles = {
     },
     {
       ...anchorInsetValue,
-    },
-  ],
-  /**
-   * The inset CSS property is a shorthand that corresponds to the top, right, bottom, and/or left properties. It has the same multi-value syntax of the margin shorthand.
-   * @example inset={4} → inset: 1rem
-   */
-  inset: [
-    {
-      values: 0,
-      valueFormat: BoxStylesFormatters.Value.rem,
-    },
-    {
-      values: ['auto'] as const,
-    },
-    {
-      values: Variables.percentages,
-      valueFormat: BoxStylesFormatters.Value.fraction,
-    },
-    {
-      values: Variables.negativePercentages,
-      valueFormat: BoxStylesFormatters.Value.fraction,
-    },
-    {
-      ...percentValue,
-    },
-  ],
-  /**
-   * The inset-inline CSS shorthand sets both insets on the inline axis: `insetX` is `left` and `right` in a left-to-right writing mode, the way `mx` is `margin-inline`.
-   * @example insetX={4} → inset-inline: 1rem
-   */
-  insetX: [
-    {
-      values: 0,
-      styleName: 'inset-inline',
-      valueFormat: BoxStylesFormatters.Value.rem,
-    },
-    {
-      values: ['auto'] as const,
-      styleName: 'inset-inline',
-    },
-    {
-      values: Variables.percentages,
-      styleName: 'inset-inline',
-      valueFormat: BoxStylesFormatters.Value.fraction,
-    },
-    {
-      values: Variables.negativePercentages,
-      styleName: 'inset-inline',
-      valueFormat: BoxStylesFormatters.Value.fraction,
-    },
-    {
-      ...percentValue,
-      styleName: 'inset-inline',
-    },
-  ],
-  /**
-   * The inset-block CSS shorthand sets both insets on the block axis — `top` and `bottom` in a horizontal writing mode.
-   * @example insetY={4} → inset-block: 1rem
-   */
-  insetY: [
-    {
-      values: 0,
-      styleName: 'inset-block',
-      valueFormat: BoxStylesFormatters.Value.rem,
-    },
-    {
-      values: ['auto'] as const,
-      styleName: 'inset-block',
-    },
-    {
-      values: Variables.percentages,
-      styleName: 'inset-block',
-      valueFormat: BoxStylesFormatters.Value.fraction,
-    },
-    {
-      values: Variables.negativePercentages,
-      styleName: 'inset-block',
-      valueFormat: BoxStylesFormatters.Value.fraction,
-    },
-    {
-      ...percentValue,
-      styleName: 'inset-block',
     },
   ],
   /**

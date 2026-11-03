@@ -268,3 +268,55 @@ describe('a caller’s prop holds in every theme', () => {
     expect(renderStyles(engine, { component: 'toggle', disabled: true } as never).join(' ')).toMatch(/disabled-theme-dark-opacity/);
   });
 });
+
+// Bug #264: the registry declares a shorthand before its longhands, so `<Button p={0}>` kept the button's `px`.
+describe('a caller’s shorthand beats the component’s longhands', () => {
+  function resolve(id: string, styles: Record<string, unknown>, props: Record<string, unknown>) {
+    const engine = makeEngine(id);
+    engine.components({ sided: { styles } } as never);
+
+    return renderStyles(engine, { component: 'sided', ...props } as never);
+  }
+
+  it.each([
+    ['p', { px: 5, py: 2, pt: 1, pr: 1, pb: 1, pl: 1, ps: 1, pe: 1 }],
+    ['m', { mx: 5, my: 2, mt: 1, mr: 1, mb: 1, ml: 1, ms: 1, me: 1 }],
+    ['b', { bx: 2, by: 2, bt: 1, br: 1, bb: 1, bl: 1, bs: 1, be: 1 }],
+    ['borderRadius', { borderRadiusTop: 2, borderRadiusTopLeft: 1, borderRadiusEndEnd: 1 }],
+    ['inset', { insetX: 2, insetY: 2, top: 1, right: 1, bottom: 1, left: 1, insetStart: 1, insetEnd: 1 }],
+    ['gap', { rowGap: 2, columnGap: 2 }],
+    ['overflow', { overflowX: 'auto', overflowY: 'scroll' }],
+    ['gridColumn', { gridColumnStart: 2, gridColumnEnd: 3 }],
+  ])('drops every longhand of %s', (shorthand, longhands) => {
+    const value = shorthand === 'overflow' ? 'hidden' : shorthand === 'gridColumn' ? 2 : 0;
+    const classNames = resolve(`merge-shorthand-${shorthand}`, { ...longhands, color: 'white' }, { [shorthand]: value });
+
+    expect(classNames.filter((name) => name !== '_b' && !name.startsWith('color-'))).toEqual([`${shorthand}-${value}`]);
+    expect(classNames).toContain('color-white');
+  });
+
+  it('drops only the sides under it, and only at the level the caller set it', () => {
+    const classNames = resolve('merge-shorthand-level', { px: 5, pt: 1, hover: { px: 6 }, theme: { dark: { py: 3, pl: 2 } } }, { py: 0 });
+
+    expect(classNames).toEqual(['_b', 'px-5', 'hover-px-6', 'theme-dark-pl-2', 'py-0']);
+  });
+
+  it('measures zero padding on every side of a built-in Button given p={0}', () => {
+    const engine = makeEngine('merge-shorthand-button');
+
+    const classNames = renderStyles(engine, { component: 'button', p: 0 } as never);
+
+    expect(classNames.filter((name) => /^p[xytrblse]?-/.test(name))).toEqual(['p-0']);
+  });
+});
+
+// Bug #320: `top`/`right`/`bottom`/`left` were declared before `inset`, so `inset={0} top={2}` had `top: 0`.
+it('a side beats the inset shorthand on the same element', () => {
+  const engine = makeEngine('merge-inset-order');
+
+  renderStyles(engine, { inset: 0, insetY: 1, top: 2 } as never);
+
+  const rules = rulesOf(engine);
+  expect(rules.indexOf('.inset-0{')).toBeLessThan(rules.indexOf('.insetY-1{'));
+  expect(rules.indexOf('.insetY-1{')).toBeLessThan(rules.indexOf('.top-2{'));
+});

@@ -80,7 +80,8 @@ describe('the inset props', () => {
     renderStyles(engine, { inset: '-1/2' });
     renderStyles(engine, { top: 'auto' });
 
-    expect(ruleList(engine)).toEqual(['.top-auto{top:auto}', '.inset-auto{inset:auto}', '.inset--1\\/2{inset:-50%}']);
+    // A side sorts after the shorthand, so it wins on the same element (bug #320).
+    expect(ruleList(engine)).toEqual(['.inset-auto{inset:auto}', '.inset--1\\/2{inset:-50%}', '.top-auto{top:auto}']);
   });
 });
 
