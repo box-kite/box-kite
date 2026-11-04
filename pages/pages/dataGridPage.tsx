@@ -2543,6 +2543,7 @@ function GroupedSourceDemo() {
     () => ({
       rowKey: 'id' as const,
       title: 'One million people, grouped by the server',
+      showRowNumber: true,
       topBar: true,
       visibleRowsCount: 12,
       rowHeight: 40,
@@ -3022,6 +3023,7 @@ function LazyTreeDemo() {
       visibleRowsCount: 12,
       dataSource,
       treeData: { hasChildren: 'folder' as const, column: 'name' as const },
+      showRowNumber: true,
       columns: [
         { key: 'name' as const, header: 'Name', sortable: false, width: 320 },
         { key: 'size' as const, header: 'Size (KB)', sortable: false, width: 130, align: 'end' as const },
