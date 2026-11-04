@@ -10,44 +10,6 @@ _Unreleased. A PR that changes what a consumer sees adds its section here — se
 
 <!-- One `##` per change, above Breaking changes: a sentence for the heading, a paragraph on what and why, an example if it helps. -->
 
-## Every component comes in three sizes: compact, normal and large
-
-Every built-in component is now drawn at one of three sizes, and they mean the same thing everywhere: 32, 40 or 48px tall, with 13, 14 or 16px text. `normal` is the default. Fields and buttons take the height exactly. Menu items, dropdown options, tabs, accordion headers, calendar days and a picker's times take it as a minimum, so a long label still wraps. Checkboxes, radios, switches and sliders scale as a whole. Until now each control's height came from its own padding: a text box was 46px, a button 36px and a combobox 34px, so a field with a button beside it never lined up.
-
-`variant="compact"` or `variant="large"` sizes a component and everything inside it, because a size is two CSS variables and they inherit. `<Menu variant="compact">` makes every item compact, and `<DatePicker variant="large">` its calendar too. A project says what the three sizes are, once, on its root:
-
-```jsx
-<Box vars={Box.sizes({ compact: 8, normal: 9, large: { height: 11, fontSize: 15 } })}>{app}</Box>
-```
-
-A number is the ÷4 spacing scale for a height and ÷16 for a text size. `Box.sizes({ size: 'compact' })` draws a whole subtree compact. A control of your own joins in with `height="control"` and `fontSize="control"`. `variant="square"` makes a `Button` an icon button as wide as it is tall:
-
-```jsx
-<Flex gap={2}>
-  <Textbox value={url} readOnly props={{ 'aria-label': 'Link' }} />
-  <Button variant={{ secondary: true, square: true }} props={{ 'aria-label': 'Copy link' }}>
-    <Icon size={4}>
-      <Copy />
-    </Icon>
-  </Button>
-</Flex>
-```
-
-**What looks different.** Buttons are 4px taller, and text boxes, dropdowns and date pickers 6px shorter. Menu items and tabs grow to 40px. Calendar days go from 36px to 40px. A `DataGrid` draws its toolbar, filters and editors at the compact 32px, so its in-cell fields grow 2px. Padding no longer sets a control's height: a `Button` given `py` to make it bigger stays 40px, so use `variant="large"` instead, or `height="auto"` to size it by its padding again. The old `compact` variant on `Textbox`, `Dropdown`, `Combobox` and `DateField` is now the shared compact size. [One size for every component](https://www.box-kite.dev/button/#control-height)
-
-## A popover focuses its first control when it opens
-
-`<Popover>` now puts focus on the first control inside the panel when it opens. This is what APG asks of a dialog, and what Base UI, Radix and `<Dialog>` already do. Before, focus went to the panel itself. So a read-only link field that selects itself on focus was never focused, and the reader had to click into it before Ctrl+C would copy anything. A panel with no control still takes focus itself. To land focus somewhere else, pass `initialFocus` a ref, the same prop `<Dialog>` takes:
-
-```jsx
-<Popover label="Share" initialFocus={copyRef} trigger={(t) => <Button {...t}>Share</Button>}>
-  <Textbox value={url} readOnly props={{ 'aria-label': 'Link', onFocus: (e) => e.currentTarget.select() }} />
-  <Button ref={copyRef}>Copy</Button>
-</Popover>
-```
-
-React's own `autoFocus` cannot do this job. It writes no `autofocus` attribute; it calls `focus()` when the field mounts, while the panel is still hidden. So the docs no longer suggest it, for `<Popover>` or `<Dialog>`.
-
 ## Breaking changes
 
 None.
