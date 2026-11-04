@@ -9,7 +9,7 @@ export default class RowModel<TRow> {
   constructor(
     public readonly grid: GridModel<TRow>,
     data: TRow,
-    public readonly rowIndex: number,
+    public rowIndex: number,
   ) {
     this._data = data;
   }

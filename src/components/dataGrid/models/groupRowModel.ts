@@ -12,7 +12,7 @@ export default class GroupRowModel<TRow> {
     public readonly grid: GridModel<TRow>,
     public readonly groupColumn: ColumnModel<TRow>,
     public readonly rows: RowModel<TRow>[] | GroupRowModel<TRow>[],
-    public readonly rowIndex: number,
+    public rowIndex: number,
     groupValue: Key,
   ) {
     this._groupValue = groupValue;
