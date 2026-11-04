@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
 import Box from '../../../box';
 import { useIsomorphicLayoutEffect } from '../../../react/effects';
 import GridNavigationContext from '../gridNavigationContext';
@@ -35,8 +36,10 @@ export default function DataGridContent<TRow>(props: Props<TRow>) {
       }
 
       rafRef.current = requestAnimationFrame(() => {
-        scrollTo((event.target as HTMLDivElement).scrollTop);
         rafRef.current = null;
+        // Committed inside this frame rather than in a task after its paint: a wheel step jumps further than
+        // the rows rendered ahead, and a render a frame late showed blank body on a fifth of the frames (bug #239).
+        flushSync(() => scrollTo((event.target as HTMLDivElement).scrollTop));
       });
     },
     [scrollTo],

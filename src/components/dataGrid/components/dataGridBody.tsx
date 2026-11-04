@@ -66,6 +66,7 @@ export default function DataGridBody<TRow>(props: Props<TRow>) {
         width="fit"
         position="sticky"
         insetStart={0}
+        transition="none"
         props={{ role: 'row' }}
         style={{ height: viewport.emptyHeight }}
       >
@@ -94,7 +95,7 @@ export default function DataGridBody<TRow>(props: Props<TRow>) {
         >
           {rows}
         </Grid>
-        <DataGridFooter grid={grid} />
+        <DataGridFooter grid={grid} version={grid.headerVersion} />
       </>
     );
   }
@@ -102,8 +103,10 @@ export default function DataGridBody<TRow>(props: Props<TRow>) {
   return (
     // The scroll spacers carry the virtualization, not the structure: `presentation` keeps them
     // from sitting between the grid and its rowgroup in the accessibility tree.
-    <Box props={{ role: 'presentation' }} style={{ height: viewHeight }}>
-      <Box props={{ role: 'presentation' }} style={{ height: `${totalHeight}px` }}>
+    // Neither height may slide the way every Box's `all` transition would: after a filter the scrollbar thumb
+    // crept to its new size over a quarter of a second, dragging a deep scroll back with it (bug #236).
+    <Box transition="none" props={{ role: 'presentation' }} style={{ height: viewHeight }}>
+      <Box transition="none" props={{ role: 'presentation' }} style={{ height: `${totalHeight}px` }}>
         <Grid
           component={`${grid.componentName}.body` as never}
           width="max-content"
@@ -124,7 +127,7 @@ export default function DataGridBody<TRow>(props: Props<TRow>) {
       </Box>
       {/* Inside the height-capped wrapper and after the scroll spacer: that static position is what lets
           `position: sticky` hold the footer at the bottom, and what keeps the last row out from under it. */}
-      <DataGridFooter grid={grid} />
+      <DataGridFooter grid={grid} version={grid.headerVersion} />
     </Box>
   );
 }

@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import Box from '../../../box';
 import Grid from '../../grid';
 import { useGridNavigationContext } from '../gridNavigationContext';
@@ -7,6 +8,8 @@ import DataGridCell from './dataGridCell';
 
 interface Props<TRow> {
   grid: GridModel<TRow>;
+  /** GridModel.headerVersion. Not read: a scroll moves the body around the footer and leaves it alone. */
+  version: string;
 }
 
 /**
@@ -14,7 +17,7 @@ interface Props<TRow> {
  * than a sibling of the header: `position: sticky` can only pull a box *up* from below, so a footer whose
  * static position is above the scrollport simply scrolls away (measured in Chrome 152).
  */
-export default function DataGridFooter<TRow>(props: Props<TRow>) {
+function DataGridFooterImpl<TRow>(props: Props<TRow>) {
   const { grid } = props;
   const { aggregation } = grid;
   const navigation = useGridNavigationContext();
@@ -47,4 +50,9 @@ export default function DataGridFooter<TRow>(props: Props<TRow>) {
   );
 }
 
-(DataGridFooter as React.FunctionComponent).displayName = 'DataGridFooter';
+(DataGridFooterImpl as React.FunctionComponent).displayName = 'DataGridFooter';
+
+/** Memoized on the grid-wide version, the header's rule: every scroll frame re-rendered the totals. */
+const DataGridFooter = memo(DataGridFooterImpl) as typeof DataGridFooterImpl;
+
+export default DataGridFooter;

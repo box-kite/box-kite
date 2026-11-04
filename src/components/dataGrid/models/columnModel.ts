@@ -319,6 +319,9 @@ export default class ColumnModel<TRow> {
 
   /** Whether column participates in flex distribution. Default true unless explicitly false. */
   public get isFlexible(): boolean {
+    // A checkbox, a row number or a chevron has one right width, so the space a resize frees never lands there.
+    if (this.isRowNumber || this.isRowSelection || this.isRowDetail) return false;
+
     return this.def.flexible !== false;
   }
 

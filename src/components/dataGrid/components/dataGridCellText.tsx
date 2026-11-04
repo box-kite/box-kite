@@ -18,7 +18,8 @@ export default function DataGridCellText<TRow>(props: Props<TRow>) {
       component={`${cell.grid.componentName}.body.cell.text` as never}
       height="fit"
       width="fit"
-      overflow="auto"
+      // `hidden`, not `auto`: a scroller per cell drew a stray scrollbar and swallowed the wheel (bug #238).
+      overflow="hidden"
       ai="center"
       jc={cell.column.align}
     >

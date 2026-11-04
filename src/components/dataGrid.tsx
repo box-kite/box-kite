@@ -1,4 +1,4 @@
-import { forwardRef, Ref, RefAttributes, useImperativeHandle, useLayoutEffect, useRef } from 'react';
+import { forwardRef, memo, Ref, RefAttributes, useImperativeHandle, useLayoutEffect, useRef } from 'react';
 import Box from '../box';
 import { useIsomorphicLayoutEffect } from '../react/effects';
 import DataGridBottomBar from './dataGrid/components/dataGridBottomBar';
@@ -173,7 +173,9 @@ function DataGridImpl<TRow extends object>(props: DataGridProps<TRow>, ref: Ref<
   );
 }
 
-const DataGrid = forwardRef(DataGridImpl) as <TRow extends object>(
+// Memoized, so a parent re-rendering with the same props redraws nothing: a page holding state above a grid
+// re-rendered all of it on every keystroke of its own.
+const DataGrid = memo(forwardRef(DataGridImpl)) as <TRow extends object>(
   props: DataGridProps<TRow> & RefAttributes<DataGridHandle>,
 ) => React.ReactElement | null;
 

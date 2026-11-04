@@ -82,6 +82,13 @@ describe('ViewportModel', () => {
       }
     });
 
+    it('a scroll left past the end by a filter still renders the last rows, not an empty window', () => {
+      const grid = getGrid({}, 20);
+      const w = grid.viewport.window(5000 * grid.rowHeight, 'down');
+      expect(w.startIndex).toBe(19 - ViewportModel.ROWS_BEHIND);
+      expect(w.startIndex + w.take).toBeGreaterThan(19);
+    });
+
     it('totalHeight = rowCount * rowHeight and viewHeight is fixed', () => {
       const grid = getGrid();
       expect(grid.viewport.totalHeight).toBe(grid.flatRows.value.length * grid.rowHeight);
