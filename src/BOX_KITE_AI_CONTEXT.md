@@ -1453,6 +1453,42 @@ Full reference: `docs/a11y-primitives.md`.
 
 ---
 
+## Sizes: compact, normal, large
+
+Every built-in component is drawn at one of three sizes, and a size is two CSS variables —
+`--control-height` and `--control-font-size` — so it inherits. Before 2.3.0 each control's height fell out of
+its own padding (a text box 46px, a button 36px, a combobox 34px), and nothing lined up.
+
+| Size    | Variant             | Height | Text | Declared by                                              |
+| ------- | ------------------- | ------ | ---- | -------------------------------------------------------- |
+| Compact | `variant="compact"` | 32px   | 13px | `--control-height-compact`/`--control-font-size-compact` |
+| Normal  | — (the default)     | 40px   | 14px | `--control-height-normal`/`--control-font-size-normal`   |
+| Large   | `variant="large"`   | 48px   | 16px | `--control-height-large`/`--control-font-size-large`     |
+
+- **What follows it.** Fields and buttons (`Button`, `Textbox`, `Dropdown`/`Select`, `Combobox`/`TimeZoneSelect`,
+  `DateField`/`DatePicker`) take the height; items and rows (menu items, dropdown and combobox options, tabs,
+  accordion headers, calendar days, a picker's times and presets) take it as a minimum; `Textarea` takes the text
+  size; `Checkbox`, `RadioButton`, `Switch` and `Slider` scale whole; `Progress` changes its thickness.
+  `Popover`, `Dialog`, `Menu`, `Tabs`, `Accordion`, `Collapsible`, `RadioGroup` and `Calendar` take the variant and
+  pass it to everything inside. A `DataGrid` is drawn compact.
+- **A variant sizes the subtree**: `<Menu variant="compact">` makes every item compact, and `<DatePicker variant="large">`
+  its calendar too (the picker hands its size to the panel, which is a sibling). `variant="normal"` restores the
+  default inside a sized subtree.
+- **The project's scale is declared once**, on the app's root:
+
+  ```tsx
+  <Box vars={Box.sizes({ compact: 8, normal: 9, large: { height: 11, fontSize: 15 } })}>{app}</Box>
+  ```
+
+  A number is the ÷4 scale for a height and ÷16 for a text size; a string is CSS. `Box.sizes({ size: 'compact' })`
+  draws a whole subtree at that size.
+
+- **Never size one control by hand.** `height={9}` on one button wins as any prop does, which is how a row ends up
+  with three heights. Padding no longer sizes a control: `py` changes nothing, `height="auto"` hands it back.
+- **Your own control joins** with `height="control"` (`minHeight` where it wraps) and `fontSize="control"`;
+  `'control-compact'`/`'control-normal'`/`'control-large'` name one size outright.
+- `variant="square"` on a `Button` is an icon button as wide as it is tall, at whichever size.
+
 ## Form controls: Checkbox, Switch, RadioGroup
 
 All three render **real native inputs**, so focus, the checked state, the disabled state and form
@@ -1572,7 +1608,8 @@ positioning only and light-dismisses nothing.
 | `offset`               | `2`                 | The gap, on the ÷4 scale — 8px.                                                     |
 | `flip`                 | `true`              | Whether a side with no room is swapped for its opposite.                            |
 | `matchWidth`           | `false`             | Whether the panel is at least as wide as its trigger.                               |
-| `autoFocus`            | `true`              | Whether opening moves focus into the panel. An `autofocus` inside wins.             |
+| `autoFocus`            | `true`              | Whether opening moves focus onto the panel's first control (the panel if none).     |
+| `initialFocus`         | —                   | A ref to land on instead. React's `autoFocus` writes no attribute, so use this.     |
 
 What the component supplies, because the `popover` attribute supplies none of it: `role="dialog"`, the
 name, and `aria-expanded`/`aria-haspopup="dialog"`/`aria-controls` on the trigger. What the **platform**

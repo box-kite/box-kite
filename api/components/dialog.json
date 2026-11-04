@@ -87,7 +87,7 @@
       "type": "ElementLike",
       "required": false,
       "default": null,
-      "description": "Where focus lands on open, instead of the first focusable thing inside. An **alert dialog owes this to its least destructive action** — APG's rule, so that a keyboard user cannot confirm a deletion by reflex. An `autofocus` attribute inside does the same job with no ref."
+      "description": "Where focus lands on open, instead of the first focusable thing inside. An **alert dialog owes this to its least destructive action** — APG's rule, so that a keyboard user cannot confirm a deletion by reflex. React's `autoFocus` is no substitute: it writes no attribute, and focuses while the dialog is closed."
     }
   ],
   "parts": [

@@ -554,6 +554,14 @@ export const boxMembers: readonly BoxMember[] = [
     more: { label: 'Colors', to: '/colors' },
   },
   {
+    id: 'sizes',
+    name: 'Box.sizes()',
+    signature: 'vars={Box.sizes({ compact: 8, normal: 9, large: 11 })}',
+    summary:
+      'Say what compact, normal and large are in this project, once on the root: every component is drawn at one of the three, and { size: "compact" } draws a whole subtree at one.',
+    more: { label: 'Button', to: '/button' },
+  },
+  {
     id: 'createcomponents',
     name: 'Box.createComponents()',
     signature: 'const aurora = Box.createComponents({ button: { styles } }, { base })',

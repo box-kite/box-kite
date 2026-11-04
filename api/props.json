@@ -936,12 +936,12 @@
     },
     {
       "name": "fontSize",
-      "description": "The font-size CSS property sets the size of the font. Its divider is **16**, not the spacing scale’s 4, so the number is the pixel size a reader was reaching for: `fontSize={14}` is `0.875rem`. Font-size-relative units (`em`, `ex`) resolve against it.",
+      "description": "The font-size CSS property sets the size of the font. Its divider is **16**, not the spacing scale’s 4, so the number is the pixel size a reader was reaching for: `fontSize={14}` is `0.875rem`. Font-size-relative units (`em`, `ex`) resolve against it. `'control'` is the text size of the size standard in force (`--control-font-size`).",
       "properties": ["font-size"],
       "example": { "value": 14, "css": "font-size: 0.875rem" },
       "numeric": true,
       "open": false,
-      "values": ["inherit"]
+      "values": ["inherit", "control", "control-compact", "control-normal", "control-large"]
     },
     {
       "name": "fontStyle",
@@ -999,7 +999,7 @@
     },
     {
       "name": "height",
-      "description": "The height CSS property specifies the height of an element. By default, the property defines the height of the content area. If box-sizing is set to border-box, however, it instead determines the height of the border area. It also takes `anchor-size()`, a length read off the anchor a floating layer is placed against.",
+      "description": "The height CSS property specifies the height of an element. By default, the property defines the height of the content area. If box-sizing is set to border-box, however, it instead determines the height of the border area. It also takes `anchor-size()`, a length read off the anchor a floating layer is placed against, and the size standard: `'control'` is the height of the size in force (`--control-height`), `'control-compact'`/`'control-normal'`/`'control-large'` one by name.",
       "properties": ["height"],
       "example": { "value": 4, "css": "height: 1rem" },
       "numeric": true,
@@ -1037,12 +1037,16 @@
         "auto",
         "fit-content",
         "max-content",
-        "min-content"
+        "min-content",
+        "control",
+        "control-compact",
+        "control-normal",
+        "control-large"
       ]
     },
     {
       "name": "minHeight",
-      "description": "The min-height CSS property sets the minimum height of an element. It prevents the used value of the height property from becoming smaller than the value specified for min-height. It also takes `anchor-size()`, a length read off the anchor a floating layer is placed against.",
+      "description": "The min-height CSS property sets the minimum height of an element. It prevents the used value of the height property from becoming smaller than the value specified for min-height. It also takes `anchor-size()`, a length read off the anchor a floating layer is placed against, and `'control'`/`'control-compact'`/`'control-normal'`/`'control-large'`, the size standard's heights.",
       "properties": ["min-height"],
       "example": { "value": 4, "css": "min-height: 1rem" },
       "numeric": true,
@@ -1080,7 +1084,11 @@
         "auto",
         "fit-content",
         "max-content",
-        "min-content"
+        "min-content",
+        "control",
+        "control-compact",
+        "control-normal",
+        "control-large"
       ]
     },
     {

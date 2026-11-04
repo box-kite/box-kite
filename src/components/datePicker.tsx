@@ -189,6 +189,8 @@ interface LayerOptions {
   label: string;
   /** The caller's ref, on the same element the panel hangs off. */
   ref?: Ref<HTMLDivElement>;
+  /** The field's variant: the panel is its sibling, so a size has to be handed across rather than inherited. */
+  variant?: unknown;
 }
 
 /** The panel's layer: the platform's popover where there is one, an `Overlay` where there is not, anchored to the field. */
@@ -256,6 +258,7 @@ function usePickerLayer(options: LayerOptions) {
             offset={1}
             matchWidth={options.matchWidth}
             component="popover"
+            variant={options.variant as never}
             p={3}
             id={id}
             props={naming}
@@ -270,7 +273,7 @@ function usePickerLayer(options: LayerOptions) {
       <Box
         ref={setPanel}
         component="popover"
-        variant={{ topLayer: true }}
+        variant={[options.variant, { topLayer: true }] as never}
         p={3}
         {...position.layerProps}
         id={id}
@@ -350,10 +353,11 @@ function TimeList(props: {
           key={slot}
           component="datePicker.time"
           variant={{ selected: slot === selected }}
+          minHeight="control"
           px={3}
           py={1.5}
           borderRadius={2}
-          fontSize={14}
+          fontSize="control"
           textAlign="start"
           whiteSpace="nowrap"
           css={{ fontVariantNumeric: 'tabular-nums' }}
@@ -389,10 +393,11 @@ function Presets<TValue>(props: {
           tag="button"
           component="datePicker.preset"
           variant={{ selected: props.isSelected(preset.value) }}
+          minHeight="control"
           px={3}
           py={1.5}
           borderRadius={2}
-          fontSize={14}
+          fontSize="control"
           textAlign="start"
           whiteSpace="nowrap"
           props={{ type: 'button', onClick: (event: React.MouseEvent) => props.onSelect(preset.value, event) }}
@@ -640,6 +645,7 @@ function DatePickerImpl<TKey extends keyof ComponentsAndVariants = 'dateField'>(
     align,
     matchWidth,
     label: panelName,
+    variant: (restProps as { variant?: unknown }).variant,
   });
 
   const day = current && type !== 'time' ? toPlainDate(current, { zone: readZone }) : null;
@@ -921,7 +927,17 @@ function DateRangePickerImpl<TKey extends keyof ComponentsAndVariants = 'dateFie
     id: layerId,
     attachField,
     panel,
-  } = usePickerLayer({ ref, open, defaultOpen, onOpenChange, side, align, matchWidth, label: panelName });
+  } = usePickerLayer({
+    ref,
+    open,
+    defaultOpen,
+    onOpenChange,
+    side,
+    align,
+    matchWidth,
+    label: panelName,
+    variant: (restProps as { variant?: unknown }).variant,
+  });
   const shown = current ? formatRange(current.start, current.end, { locale }) : '';
   const backwards = start !== null && end !== null && compare(start, end) > 0;
 

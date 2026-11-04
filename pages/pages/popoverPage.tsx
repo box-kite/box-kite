@@ -164,10 +164,11 @@ export default function PopoverPage() {
 
           <Section id="focus" title="Focus, and the two things the platform does not do">
             <Flex d="column" gap={3}>
-              <Note icon={Keyboard} title="Opening moves focus into the panel">
-                The Popover API moves focus nowhere unless something inside carries <Mono>autofocus</Mono>. APG's dialog wants focus in the
-                panel, so the component puts it there — on the panel itself, which is focusable by script and never by Tab. An{' '}
-                <Mono>autofocus</Mono> inside still wins, and <Mono>autoFocus=&#123;false&#125;</Mono> turns the whole thing off.
+              <Note icon={Keyboard} title="Opening moves focus onto the first control">
+                The Popover API moves focus nowhere unless something inside carries <Mono>autofocus</Mono>, and React never writes that
+                attribute. APG's dialog wants focus on the first control, so the component puts it there — a link field that selects itself
+                on focus is copyable the moment the panel opens — and on the panel itself when it holds no control.{' '}
+                <Mono>initialFocus</Mono> takes a ref to land somewhere else, and <Mono>autoFocus=&#123;false&#125;</Mono> turns it off.
               </Note>
               <Note icon={ShieldCheck} title="Closing returns focus — unless React got there first">
                 The platform returns focus to the trigger when a popover is <em>hidden</em>, and does nothing at all when the element is{' '}

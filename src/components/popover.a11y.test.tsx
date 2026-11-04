@@ -67,7 +67,7 @@ describe('Popover accessibility', () => {
     expect(panel()).toHaveAccessibleName('Filter the rows');
   });
 
-  it('Enter on the trigger opens it, and moves focus into the panel', async () => {
+  it('Enter on the trigger opens it, and moves focus onto its first control', async () => {
     const key = keyboard();
     render(<PopoverExample />);
 
@@ -77,6 +77,19 @@ describe('Popover accessibility', () => {
     await key.press('Enter');
 
     expect(panel()).not.toBeNull();
+    expectFocusOn(screen.getByRole('button', { name: 'Only mine' }));
+  });
+
+  it('lands on the panel itself when it holds no control', async () => {
+    const key = keyboard();
+    render(
+      <Popover label="Filters" trigger={(trigger) => <Button {...trigger}>Filters</Button>}>
+        Nothing to press.
+      </Popover>,
+    );
+
+    await key.click(trigger());
+
     expectFocusOn(panel());
   });
 
@@ -95,7 +108,7 @@ describe('Popover accessibility', () => {
     render(<PopoverExample />);
 
     await key.click(trigger());
-    expectFocusOn(panel());
+    expectFocusOn(screen.getByRole('button', { name: 'Only mine' }));
 
     await key.press('Escape');
 
@@ -108,13 +121,12 @@ describe('Popover accessibility', () => {
     render(<PopoverExample />);
 
     await key.click(trigger());
-    await key.pressTab();
     expectFocusOn(screen.getByRole('button', { name: 'Only mine' }));
 
     await key.pressTab();
 
     // A non-modal dialog does not hold focus. What follows it in the tab order is the page itself.
-    expect(document.activeElement).not.toBe(panel());
+    expect(panel()?.contains(document.activeElement)).toBe(false);
   });
 
   it('returns focus to the trigger when the panel is unmounted rather than hidden', async () => {

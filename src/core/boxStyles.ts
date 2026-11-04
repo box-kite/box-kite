@@ -9,6 +9,7 @@ import Filters from './filters';
 import Gradients from './gradients';
 import Palette from './palette';
 import Shadows from './shadows';
+import Sizes from './sizes';
 import Timelines from './timelines';
 import Variables from './variables';
 
@@ -60,6 +61,12 @@ const anchorSizeValue = {
   values: Anchors.sizeValue,
   match: Anchors.isSizeValue,
   valueFormat: Anchors.functionValue,
+} satisfies BoxStyle;
+
+/** The size standard (`Sizes`): `control` is the size in force, the other three are the sizes by name. */
+const controlHeightValue = {
+  values: Sizes.heightValues,
+  valueFormat: Sizes.heightValue,
 } satisfies BoxStyle;
 
 /**
@@ -1430,7 +1437,7 @@ export const cssStyles = {
   /**
    * The font-size CSS property sets the size of the font. Its divider is **16**, not the spacing scale’s 4, so the
    * number is the pixel size a reader was reaching for: `fontSize={14}` is `0.875rem`. Font-size-relative units
-   * (`em`, `ex`) resolve against it.
+   * (`em`, `ex`) resolve against it. `'control'` is the text size of the size standard in force (`--control-font-size`).
    * @example fontSize={14} → font-size: 0.875rem
    */
   fontSize: [
@@ -1443,6 +1450,7 @@ export const cssStyles = {
       styleName: 'font-size',
       values: ['inherit'] as const,
     },
+    { styleName: 'font-size', values: Sizes.fontSizeValues, valueFormat: Sizes.fontSizeValue },
   ],
   /**
    * The font-style CSS property sets whether a font should be styled with a normal, italic, or oblique face from its font-family.
@@ -1519,7 +1527,8 @@ export const cssStyles = {
   ],
   /**
    * The height CSS property specifies the height of an element. By default, the property defines the height of the content area. If box-sizing is set to border-box, however, it instead determines the height of the border area.
-   * It also takes `anchor-size()`, a length read off the anchor a floating layer is placed against.
+   * It also takes `anchor-size()`, a length read off the anchor a floating layer is placed against, and the size
+   * standard: `'control'` is the height of the size in force (`--control-height`), `'control-compact'`/`'control-normal'`/`'control-large'` one by name.
    * @example height={4} → height: 1rem
    */
   height: [
@@ -1545,10 +1554,12 @@ export const cssStyles = {
     {
       ...anchorSizeValue,
     },
+    controlHeightValue,
   ],
   /**
    * The min-height CSS property sets the minimum height of an element. It prevents the used value of the height property from becoming smaller than the value specified for min-height.
-   * It also takes `anchor-size()`, a length read off the anchor a floating layer is placed against.
+   * It also takes `anchor-size()`, a length read off the anchor a floating layer is placed against, and
+   * `'control'`/`'control-compact'`/`'control-normal'`/`'control-large'`, the size standard's heights.
    * @example minHeight={4} → min-height: 1rem
    */
   minHeight: [
@@ -1580,6 +1591,7 @@ export const cssStyles = {
       ...anchorSizeValue,
       styleName: 'min-height',
     },
+    { ...controlHeightValue, styleName: 'min-height' },
   ],
   /**
    * The max-height CSS property sets the maximum height of an element. It prevents the used value of the height property from becoming larger than the value specified for max-height.

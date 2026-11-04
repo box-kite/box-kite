@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { makeEngine, renderStyles, ruleList } from '../../../dev/engineHarness';
+import Sizes from '../sizes';
+import boxComponents from './boxComponents';
 
 /**
  * The grid cell's ring is the one component style whose *selector* is the point: it marks the cell the
@@ -46,5 +48,71 @@ describe('anchored panels', () => {
     expect(rules.join('\n')).toContain(`transition-property:${property}`);
     expect(rules.filter((rule) => !rule.includes(':not(')).map(timing)).toContain(entrance);
     expect(rules.filter((rule) => rule.includes(':not(')).map(timing)).toContain(exit);
+  });
+});
+
+// Bug #325: each control's height fell out of its own padding (46, 36 and 34px side by side), so a field
+// and the button beside it never lined up. jsdom has no layout, so the test is that they all read the standard.
+describe('the size standard', () => {
+  type Entry = {
+    extends?: string;
+    styles: Record<string, unknown>;
+    variants?: Record<string, Record<string, unknown>>;
+    children?: Record<string, Entry>;
+  };
+  const entry = (path: string) =>
+    path
+      .split('.')
+      .reduce<Entry>(
+        (found, name, index) => (index ? found.children![name] : (boxComponents as unknown as Record<string, Entry>)[name]),
+        {} as Entry,
+      );
+  const styleOf = (path: string, property: string) => {
+    const found = entry(path);
+    // A date field is a text box underneath, and takes its height from there.
+    return found.styles[property] ?? (found.extends ? entry(found.extends).styles[property] : undefined);
+  };
+
+  it.each([
+    ['button', 'height'],
+    ['textbox', 'height'],
+    ['dropdown', 'height'],
+    ['dateField', 'height'],
+    ['combobox', 'minHeight'],
+    ['menu.item', 'minHeight'],
+    ['tabs.tab', 'minHeight'],
+    ['accordion.trigger', 'minHeight'],
+    ['dropdown.item', 'minHeight'],
+    ['combobox.item', 'minHeight'],
+  ])('%s is the height and the text size of the size in force', (path, property) => {
+    expect(styleOf(path, property)).toBe('control');
+    expect(styleOf(path, 'fontSize')).toBe('control');
+  });
+
+  it.each([
+    'button',
+    'textbox',
+    'textarea',
+    'dropdown',
+    'dropdown.items',
+    'combobox',
+    'combobox.items',
+    'dateField',
+    'calendar',
+    'popover',
+    'dialog',
+    'menu',
+    'tabs',
+    'accordion',
+    'checkbox',
+    'radioButton',
+    'switch',
+    'slider',
+  ])('%s takes compact, normal and large, and each one sets the size for everything inside', (path) => {
+    const variants = entry(path).variants!;
+
+    expect(variants.compact.vars).toEqual(Sizes.choose('compact'));
+    expect(variants.normal.vars).toEqual(Sizes.choose('normal'));
+    expect(variants.large.vars).toEqual(Sizes.choose('large'));
   });
 });

@@ -51,7 +51,7 @@
   ],
   "axe": { "fixtures": ["Progress"], "knownViolations": [] },
   "styleTree": [
-    { "path": "progress", "depth": 0, "extends": null, "variants": [] },
+    { "path": "progress", "depth": 0, "extends": null, "variants": ["compact", "normal", "large"] },
     { "path": "progress.fill", "depth": 1, "extends": null, "variants": ["indeterminate"] }
   ]
 }

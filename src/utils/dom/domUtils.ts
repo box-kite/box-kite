@@ -76,3 +76,19 @@ export type ModalEventDetail = { dialog: HTMLElement; open: boolean };
 export function announceModal(dialog: HTMLElement, open: boolean): void {
   dialog.ownerDocument.dispatchEvent(new CustomEvent<ModalEventDetail>(MODAL_EVENT, { detail: { dialog, open } }));
 }
+
+const TABBABLE =
+  'a[href],area[href],button,input:not([type="hidden"]),select,textarea,iframe,summary,[contenteditable]:not([contenteditable="false"]),[tabindex]';
+
+/** The first element inside that Tab would reach — where APG puts focus when a dialog opens. */
+export function firstTabbable(container: Element): HTMLElement | null {
+  for (const element of container.querySelectorAll<HTMLElement>(TABBABLE)) {
+    if (element.tabIndex < 0 || element.matches(':disabled') || element.closest('[inert]')) continue;
+    // A closed nested layer is `display: none`, and focusing it does nothing.
+    if (typeof element.checkVisibility === 'function' && !element.checkVisibility({ visibilityProperty: true })) continue;
+
+    return element;
+  }
+
+  return null;
+}

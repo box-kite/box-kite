@@ -52,7 +52,9 @@ describe('Diagnostics.rejected', () => {
 
   it('lists what a prop takes when nothing is close', () => {
     expect(Diagnostics.rejected('opacity', 50, definitions('opacity'))).toContain('It takes one of 0, 0.1, 0.2');
-    expect(Diagnostics.rejected('fontSize', 'lg', definitions('fontSize'))).toContain('It takes a number, or one of "inherit".');
+    expect(Diagnostics.rejected('fontSize', 'lg', definitions('fontSize'))).toContain(
+      'It takes a number, or one of "inherit", "control", "control-compact"',
+    );
     expect(Diagnostics.rejected('aspectRatio', '4:3', definitions('aspectRatio'))).toContain('or a value its own grammar defines');
   });
 

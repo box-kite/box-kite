@@ -66,14 +66,14 @@ export default function TextboxPage() {
             id="sizes"
             label="Sizes"
             language="jsx"
-            code={`<Textbox py={2} px={3} fontSize={13} placeholder="Small" />
+            code={`<Textbox variant="compact" placeholder="Small" />
 <Textbox placeholder="Default" />
-<Textbox py={4} px={5} fontSize={16} placeholder="Large" />`}
+<Textbox variant="large" placeholder="Large" />`}
           >
             <Flex gap={4} ai="center" flexWrap="wrap">
-              <Textbox py={2} px={3} fontSize={13} placeholder="Small" />
+              <Textbox variant="compact" placeholder="Small" />
               <Textbox placeholder="Default" />
-              <Textbox py={4} px={5} fontSize={16} placeholder="Large" />
+              <Textbox variant="large" placeholder="Large" />
             </Flex>
           </Code>
 
