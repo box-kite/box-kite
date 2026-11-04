@@ -216,6 +216,16 @@ describe('DataSourceModel tree data', () => {
     expect([docs.position, docs.siblings]).toEqual([1, 3]);
   });
 
+  // Bug #327: the row-number column counts the rows on screen, which is what `position` does not.
+  it('gives every row its place on screen as its row number', async () => {
+    const grid = createGrid(baseDef({ dataSource: createSource(), showRowNumber: true }));
+
+    await fill(grid);
+    await open(grid, 'src');
+
+    expect(rows(grid).map((row) => row.rowIndex)).toEqual([0, 1, 2, 3, 4]);
+  });
+
   it('refuses a cascading selection, which it could not honour', async () => {
     const source = createSource();
     const grid = createGrid(baseDef({ dataSource: source, rowSelection: true, treeData: { hasChildren: 'folder', selection: 'cascade' } }));

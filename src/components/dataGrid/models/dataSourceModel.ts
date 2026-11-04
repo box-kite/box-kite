@@ -437,6 +437,9 @@ export default class DataSourceModel<TRow> {
       byIndex.set(index, model);
     }
 
+    // A kept model moves down the screen when a group above it opens, so its number is set on every read.
+    model.rowIndex = display;
+
     return model;
   }
 

@@ -316,3 +316,51 @@ describe('DataSourceModel grouping', () => {
 
 /** How many levels the cache is holding — one per open group, plus the top. */
 const levelCount = <T>(grid: GridModel<T>) => (grid.source as unknown as { levels: Map<string, unknown> }).levels.size;
+
+// Bug #327: a server row's `rowIndex` was its place in its level's block cache, so each group restarted at 1.
+describe('DataSourceModel grouping row numbers', () => {
+  ignoreLogs();
+
+  const numbers = (grid: GridModel<Order>) => Array.from({ length: grid.rows.value.length }, (_, i) => rowAt(grid, i).rowIndex);
+  const sequence = (length: number) => Array.from({ length }, (_, index) => index);
+
+  it('counts the rows on screen, group rows included, with a group open', async () => {
+    const grid = createGrid(baseDef({ dataSource: createSource(), showRowNumber: true }));
+
+    await group(grid, 'country');
+    await open(grid, 'Kenya');
+
+    expect(numbers(grid)).toEqual(sequence(13));
+  });
+
+  it('counts through two levels, and the row-number column copies the same figures', async () => {
+    const grid = createGrid(baseDef({ dataSource: createSource(), showRowNumber: true, rangeSelection: true }));
+
+    await group(grid, 'country', 'city');
+    await open(grid, 'Kenya');
+    await open(grid, 'Kenya', 'Nairobi');
+
+    // Japan, Kenya, Kisumu, Nairobi, its five orders, Norway.
+    expect(labels(grid)).toHaveLength(10);
+    expect(numbers(grid)).toEqual(sequence(10));
+
+    const rowNumber = grid.columns.value.visibleLeafs.findIndex((column) => column.isRowNumber);
+    grid.range.setCurrent(0, rowNumber);
+    grid.range.setCurrent(9, rowNumber, true);
+    expect(grid.range.values().map(([value]) => value)).toEqual(sequence(10).map((index) => index + 1));
+  });
+
+  it('renumbers the rows it kept when a group above them shuts', async () => {
+    const grid = createGrid(baseDef({ dataSource: createSource(), showRowNumber: true }));
+
+    await group(grid, 'country');
+    await open(grid, 'Japan');
+    await open(grid, 'Kenya');
+    const kenyan = rowAt(grid, 12);
+
+    await open(grid, 'Japan');
+
+    expect(rowAt(grid, 2)).toBe(kenyan);
+    expect(numbers(grid)).toEqual(sequence(13));
+  });
+});
