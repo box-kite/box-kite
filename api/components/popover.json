@@ -94,7 +94,14 @@
       "type": "boolean",
       "required": false,
       "default": "true",
-      "description": "Whether opening moves focus into the panel. Default `true`, which is what APG asks of a dialog. An `autofocus` attribute inside wins: the browser applies it first and this only acts on what is left."
+      "description": "Whether opening moves focus into the panel: onto its first control, or the panel itself when it has none. Default `true`, which is what APG asks of a dialog."
+    },
+    {
+      "name": "initialFocus",
+      "type": "ElementLike",
+      "required": false,
+      "default": null,
+      "description": "Where focus lands on open, instead of the first control — a field whose text should be selected, or a static element at the top of a long panel. React writes no `autofocus` attribute, so this is the way."
     }
   ],
   "parts": [],
@@ -106,7 +113,7 @@
   "a11y": [
     "`role=\"dialog\"` on the panel, named by `label` or `labelledBy`; the popover attribute supplies no role at all, and a panel with none is announced as a group of orphaned content.",
     "The trigger carries `aria-expanded`, `aria-haspopup=\"dialog\"` and `aria-controls`, so the control says what it operates and what state it is in.",
-    "Focus moves into the panel on open and back to the trigger on close. Nothing is trapped: this is a non-modal dialog, so Tab leaves it, and the panel follows the trigger in the DOM either way."
+    "Focus moves onto the panel's first control on open (`initialFocus` picks another) and back to the trigger on close. Nothing is trapped: this is a non-modal dialog, so Tab leaves it."
   ],
   "axe": { "fixtures": ["Popover (open)"], "knownViolations": [] },
   "styleTree": [{ "path": "popover", "depth": 0, "extends": null, "variants": ["topLayer"] }]

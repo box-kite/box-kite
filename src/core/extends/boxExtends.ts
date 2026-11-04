@@ -2,6 +2,7 @@ import { BoxStyle } from '../coreTypes';
 import getDefaultEngine from '../engine/defaultEngine';
 import { Keyframes } from '../engine/keyframes';
 import Palette from '../palette';
+import Sizes from '../sizes';
 import { Components, ComponentsInput } from './boxComponents';
 import createComponentsRegistry from './componentsRegistry';
 
@@ -30,6 +31,9 @@ namespace BoxExtends {
 
   /** `vars={Box.palette({ accent: 'orange', base: 'stone' })}`: the components' two colour families, pointed elsewhere. */
   export const palette = Palette.point;
+
+  /** `vars={Box.sizes({ compact: 8, normal: 9, large: 11 })}`: what compact, normal and large are in this project. */
+  export const sizes = Sizes.define;
 
   /** A design for one subtree: registered nowhere, applied by `<Box.Components value>` or `<Box.Theme components>`. */
   export const createComponents = createComponentsRegistry;

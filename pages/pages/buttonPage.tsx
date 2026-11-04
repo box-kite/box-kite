@@ -1,9 +1,11 @@
-import { MousePointer2 } from 'lucide-react';
+import { Copy, MousePointer2 } from 'lucide-react';
 import { useState } from 'react';
 import buttonApi from '../../api/components/button.json';
 import Box from '../../src/box';
 import Button from '../../src/components/button';
 import Flex from '../../src/components/flex';
+import Icon from '../../src/components/icon';
+import Textbox from '../../src/components/textbox';
 import ApiReference from '../components/apiReference';
 import Code from '../components/code';
 import PageHeader from '../components/pageHeader';
@@ -75,12 +77,19 @@ export default function ButtonPage() {
 
           <Code id="sizes" label="Sizes" language="jsx">
             <Flex gap={4} ai="center" flexWrap="wrap">
-              <Button py={2} px={3} fontSize={12}>
-                Small
-              </Button>
+              <Button variant="compact">Small</Button>
               <Button>Default</Button>
-              <Button py={4} px={8} fontSize={16}>
-                Large
+              <Button variant="large">Large</Button>
+            </Flex>
+          </Code>
+
+          <Code id="control-height" label="One size for every component: Box.sizes()" language="jsx">
+            <Flex gap={2} ai="center" vars={Box.sizes({ normal: 9 })}>
+              <Textbox defaultValue="https://www.box-kite.dev" readOnly props={{ 'aria-label': 'Link' }} />
+              <Button variant={{ secondary: true, square: true }} props={{ 'aria-label': 'Copy link' }}>
+                <Icon size={4}>
+                  <Copy />
+                </Icon>
               </Button>
             </Flex>
           </Code>

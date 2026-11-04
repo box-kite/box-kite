@@ -1,5 +1,6 @@
 import { BoxComponentStyles } from '../../types';
 import { DARK_PALETTE, PALETTE, paletteVariables } from '../../utils/chart/chartPalette';
+import Sizes from '../sizes';
 
 export interface BoxComponent {
   extends?: string;
@@ -87,7 +88,7 @@ const BAR_BUTTON: BoxComponentStyles = {
   gap: 1.5,
   ms: -2,
   px: 2,
-  py: 1,
+  height: 'control',
   lineHeight: 20,
   borderRadius: 1.5,
   fontSize: 13,
@@ -108,6 +109,20 @@ const BAR_BUTTON: BoxComponentStyles = {
     },
   },
 };
+
+/** The size standard as variants: each writes its size's two variables, so the element and all inside it follow. */
+const SIZES = {
+  compact: { vars: Sizes.choose('compact') },
+  normal: { vars: Sizes.choose('normal') },
+  large: { vars: Sizes.choose('large') },
+} satisfies Record<Sizes.Name, BoxComponentStyles>;
+
+// An indicator has no height to share, so it scales whole — the mark, the thumb and the travel with it.
+const INDICATOR_SIZES = {
+  compact: { ...SIZES.compact, css: { zoom: 0.875 } },
+  normal: SIZES.normal,
+  large: { ...SIZES.large, css: { zoom: 1.25 } },
+} satisfies Record<Sizes.Name, BoxComponentStyles>;
 
 const baseComponents = {
   h1: {
@@ -174,6 +189,7 @@ const baseComponents = {
         not: { open: { opacity: 0 } },
       },
     },
+    variants: { ...SIZES },
     children: {
       title: {
         styles: {
@@ -218,6 +234,7 @@ const baseComponents = {
       startingStyle: { opacity: 0, translateY: -1, overflow: 'hidden' },
     },
     variants: {
+      ...SIZES,
       // The exit, on the top-layer path only, where the panel is hidden rather than unmounted: losing
       // `:popover-open` *is* the exit, and `allow-discrete` holds `display` back until it has run. Every
       // Box already transitions `all`, and `all` carries `display` and `overlay` too (measured) — so this
@@ -259,6 +276,7 @@ const baseComponents = {
       startingStyle: { opacity: 0, translateY: -1 },
     },
     variants: {
+      ...SIZES,
       // The exit, on the top-layer path only, where the panel is hidden rather than unmounted: losing
       // `:popover-open` *is* the exit, and `allow-discrete` holds `display` back until it has run.
       // `display: none` is declared rather than left to the UA's `[popover]:not(:popover-open)` rule,
@@ -278,6 +296,8 @@ const baseComponents = {
       // cannot disagree — with `hover` beside it for the frame before focus lands.
       item: {
         styles: {
+          // The size standard's height, as a minimum so a long label can still wrap.
+          minHeight: 'control',
           display: 'flex',
           ai: 'center',
           gap: 2,
@@ -285,7 +305,7 @@ const baseComponents = {
           px: 2,
           py: 1.5,
           borderRadius: 1,
-          fontSize: 14,
+          fontSize: 'control',
           lineHeight: 20,
           textAlign: 'start',
           cursor: 'pointer',
@@ -378,6 +398,7 @@ const baseComponents = {
   tabs: {
     styles: { display: 'flex', d: 'column', gap: 4 },
     variants: {
+      ...SIZES,
       // A vertical list sits beside its panels instead of over them, so the axis of the whole widget turns.
       vertical: { d: 'row', gap: 6, ai: 'start' },
     },
@@ -408,12 +429,15 @@ const baseComponents = {
       },
       tab: {
         styles: {
+          // The size standard's height, as a minimum so a long label can still wrap.
+          minHeight: 'control',
           display: 'flex',
           ai: 'center',
           gap: 2,
           px: 3,
-          py: 2,
-          fontSize: 14,
+          // Under its 2px indicator a 6px padding would overflow the compact 32px.
+          py: 1,
+          fontSize: 'control',
           lineHeight: 20,
           fontWeight: 500,
           color: 'base-600',
@@ -522,6 +546,7 @@ const baseComponents = {
   // needs no `@starting-style`, and a server-rendered open panel does not animate itself open on load.
   accordion: {
     styles: { display: 'flex', d: 'column' },
+    variants: { ...SIZES },
     children: {
       item: {
         styles: {
@@ -537,14 +562,16 @@ const baseComponents = {
       },
       trigger: {
         styles: {
+          // The size standard's height, as a minimum so a long label can still wrap.
+          minHeight: 'control',
           display: 'flex',
           ai: 'center',
           jc: 'space-between',
           gap: 2,
           // The whole row, so the pointer target is the header rather than the words in it.
           width: 'fit',
-          py: 3,
-          fontSize: 14,
+          py: 1.5,
+          fontSize: 'control',
           lineHeight: 20,
           fontWeight: 500,
           textAlign: 'start',
@@ -623,6 +650,7 @@ const baseComponents = {
   // one class, so the second component's mechanism costs nothing.
   collapsible: {
     styles: { display: 'flex', d: 'column', gap: 2 },
+    variants: { ...SIZES },
     children: {
       track: {
         styles: { display: 'grid', css: { gridTemplateRows: '1fr' } },
@@ -657,6 +685,7 @@ const baseComponents = {
       userSelect: 'none',
     },
     variants: {
+      ...INDICATOR_SIZES,
       vertical: { d: 'column', jc: 'flex-end', width: 5, height: 40 },
       disabled: { cursor: 'default', opacity: 0.5 },
     },
@@ -735,6 +764,7 @@ const baseComponents = {
       overflow: 'hidden',
       theme: { dark: { bgColor: 'base-700' } },
     },
+    variants: { compact: { height: 1.5 }, normal: {}, large: { height: 3 } },
     children: {
       fill: {
         styles: {
@@ -967,8 +997,11 @@ const baseComponents = {
       bgColor: 'accent-600',
       color: 'white',
       fontWeight: 500,
-      py: 2.5,
+      // The size standard (bug #325): every field, button and item reads one height and one text size.
+      height: 'control',
+      fontSize: 'control',
       px: 5,
+      lineHeight: 20,
       borderRadius: 2,
       b: 0,
       cursor: 'pointer',
@@ -1088,6 +1121,11 @@ const baseComponents = {
           },
         },
       },
+      compact: { ...SIZES.compact, px: 3 },
+      normal: SIZES.normal,
+      large: { ...SIZES.large, px: 6 },
+      // An icon button: as wide as it is tall, at whichever size.
+      square: { aspectRatio: 'square', px: 0 },
     },
   },
   textbox: {
@@ -1098,7 +1136,8 @@ const baseComponents = {
       bgColor: 'white',
       color: 'base-900',
       borderRadius: 2,
-      p: 3,
+      height: 'control',
+      fontSize: 'control',
       px: 4,
       lineHeight: 20,
       hover: {
@@ -1137,11 +1176,9 @@ const baseComponents = {
       },
     },
     variants: {
-      compact: {
-        px: 2,
-        py: 1,
-        fontSize: 13,
-      },
+      compact: { ...SIZES.compact, px: 2.5 },
+      normal: SIZES.normal,
+      large: SIZES.large,
     },
   },
   textarea: {
@@ -1154,6 +1191,7 @@ const baseComponents = {
       borderRadius: 2,
       p: 3,
       px: 4,
+      fontSize: 'control',
       hover: {
         borderColor: 'base-400',
       },
@@ -1190,6 +1228,7 @@ const baseComponents = {
         },
       },
     },
+    variants: { ...SIZES },
   },
   checkbox: {
     styles: {
@@ -1269,6 +1308,7 @@ const baseComponents = {
       },
     },
     variants: {
+      ...INDICATOR_SIZES,
       datagrid: {},
     },
   },
@@ -1335,12 +1375,14 @@ const baseComponents = {
         },
       },
     },
+    variants: { ...INDICATOR_SIZES },
   },
   // The wrapper a set of radios shares, and the label over it. The direction is a variant rather than
   // a prop the component computes, so `Box.components()` can restyle both orientations at once.
   radioGroup: {
     styles: { d: 'column', gap: 2 },
     variants: {
+      ...SIZES,
       horizontal: { d: 'row' },
     },
     children: {
@@ -1476,6 +1518,7 @@ const baseComponents = {
         },
       },
     },
+    variants: { ...INDICATOR_SIZES },
   },
   combobox: {
     styles: {
@@ -1485,6 +1528,10 @@ const baseComponents = {
       gap: 1,
       px: 2,
       py: 1.5,
+      // A minimum rather than a height: chips wrap onto a second line.
+      minHeight: 'control',
+      fontSize: 'control',
+      ai: 'center',
       // The whole shell is the field's hit area, which is what the pointer handler makes true.
       cursor: 'text',
       bgColor: 'white',
@@ -1532,11 +1579,9 @@ const baseComponents = {
       },
     },
     variants: {
-      compact: {
-        px: 1.5,
-        py: 0.5,
-        fontSize: 13,
-      },
+      compact: { ...SIZES.compact, px: 1.5, py: 1 },
+      normal: SIZES.normal,
+      large: SIZES.large,
     },
     children: {
       label: {
@@ -1665,6 +1710,7 @@ const baseComponents = {
         // with the direction it opened in. The exit runs long after the flip is settled, which is why it
         // can be sure of the side and the entrance cannot.
         variants: {
+          ...SIZES,
           closed: { opacity: 0, translateY: -1, pointerEvents: 'none' },
           closedUp: { opacity: 0, translateY: 1, pointerEvents: 'none' },
         },
@@ -1688,6 +1734,9 @@ const baseComponents = {
       },
       item: {
         styles: {
+          // The size standard's height, as a minimum so a long label can still wrap.
+          minHeight: 'control',
+          fontSize: 'control',
           display: 'flex',
           px: 2,
           py: 1.5,
@@ -1754,6 +1803,9 @@ const baseComponents = {
       },
       message: {
         styles: {
+          // The size standard's height, as a minimum so a long label can still wrap.
+          minHeight: 'control',
+          fontSize: 'control',
           px: 2,
           py: 1.5,
           color: 'base-500',
@@ -1775,7 +1827,9 @@ const baseComponents = {
       textOverflow: 'ellipsis',
       textAlign: 'start',
       gap: 2,
-      p: 3,
+      height: 'control',
+      fontSize: 'control',
+      px: 3,
       cursor: 'pointer',
       bgColor: 'white',
       color: 'base-900',
@@ -1822,12 +1876,9 @@ const baseComponents = {
       },
     },
     variants: {
-      compact: {
-        px: 2,
-        py: 1,
-        fontSize: 13,
-        height: 7.5,
-      },
+      compact: { ...SIZES.compact, px: 2 },
+      normal: SIZES.normal,
+      large: SIZES.large,
     },
     children: {
       items: {
@@ -1862,6 +1913,7 @@ const baseComponents = {
         // sign with the direction it opened in — `closed` and `closedUp` are that pair. The exit runs
         // long after the flip is settled, which is why it can be sure of the side and the entrance cannot.
         variants: {
+          ...SIZES,
           // The exit `<Presence>` holds the popup open for. Not clickable while it runs: a second
           // selection landing on a closing listbox would change the value the user just settled.
           closed: { opacity: 0, translateY: -1, pointerEvents: 'none' },
@@ -1870,10 +1922,14 @@ const baseComponents = {
       },
       item: {
         styles: {
+          // The size standard's height, as a minimum so a long label can still wrap.
+          minHeight: 'control',
+          fontSize: 'control',
           textWrap: 'nowrap',
           display: 'flex',
           width: 'fit',
-          p: 3,
+          px: 3,
+          py: 1.5,
           cursor: 'pointer',
           borderRadius: 1,
           lineHeight: 20,
@@ -1942,9 +1998,13 @@ const baseComponents = {
       },
       unselect: {
         styles: {
+          // The size standard's height, as a minimum so a long label can still wrap.
+          minHeight: 'control',
+          fontSize: 'control',
           display: 'flex',
           width: 'fit',
-          p: 3,
+          px: 3,
+          py: 1.5,
           cursor: 'pointer',
           lineHeight: 20,
           borderRadius: 1,
@@ -2000,9 +2060,13 @@ const baseComponents = {
       },
       selectAll: {
         styles: {
+          // The size standard's height, as a minimum so a long label can still wrap.
+          minHeight: 'control',
+          fontSize: 'control',
           display: 'flex',
           width: 'fit',
-          p: 3,
+          px: 3,
+          py: 1.5,
           cursor: 'pointer',
           lineHeight: 20,
           borderRadius: 1,
@@ -2058,9 +2122,13 @@ const baseComponents = {
       },
       emptyItem: {
         styles: {
+          // The size standard's height, as a minimum so a long label can still wrap.
+          minHeight: 'control',
+          fontSize: 'control',
           display: 'flex',
           width: 'fit',
-          p: 3,
+          px: 3,
+          py: 1.5,
           cursor: 'default',
           lineHeight: 20,
           borderRadius: 1,
@@ -2103,6 +2171,8 @@ const baseComponents = {
       // The grid's own type scale, inherited by every cell — 14px is the density a table is read at, and
       // setting it once here is what stops each part naming a size of its own.
       fontSize: 14,
+      // A grid is dense: its toolbar, its filters and a control in a cell are drawn at the compact size.
+      vars: Sizes.choose('compact'),
       theme: {
         dark: {
           bgColor: 'base-900',
@@ -2368,7 +2438,7 @@ const baseComponents = {
               borderColor: 'base-300',
               bgColor: 'white',
               borderRadius: 2,
-              py: 1.5,
+              height: 'control',
               px: 2.5,
               color: 'base-700',
               fontSize: 12,
@@ -4535,9 +4605,11 @@ const dateComponents = {
   // A date, a time or both, typed a segment at a time. The frame is the text box's.
   dateField: {
     extends: 'textbox',
-    styles: { px: 3, py: 2 },
+    styles: { px: 3 },
     variants: {
-      compact: { px: 2, py: 1, fontSize: 13 },
+      compact: { ...SIZES.compact, px: 2 },
+      normal: SIZES.normal,
+      large: SIZES.large,
       invalid: { borderColor: 'red-500', hover: { borderColor: 'red-500' }, focus: { borderColor: 'red-500', outlineColor: 'red-500/30' } },
       disabled: { cursor: 'not-allowed', opacity: 0.6 },
     },
@@ -4557,6 +4629,7 @@ const dateComponents = {
   // A month of days on APG's grid keys.
   calendar: {
     styles: {},
+    variants: { ...SIZES },
     children: {
       nav: { styles: QUIET_CONTROL },
       title: { styles: { ...QUIET_CONTROL, fontWeight: 600 } satisfies BoxComponentStyles as BoxComponentStyles },

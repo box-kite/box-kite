@@ -216,14 +216,50 @@ describe('Popover', () => {
       expect(dialog.matches(':popover-open')).toBe(true);
     });
 
-    it('moves focus into the panel on open, and leaves an autofocus inside alone', () => {
-      renderWithApi();
+    // Bug #324: the panel took focus itself, so a link field meant to be copied at once was never focused.
+    it('moves focus onto the first control on open, as APG asks of a dialog', () => {
+      uninstall = installPopoverApi();
+      render(
+        <Popover label="Share" trigger={(bag) => <Button {...bag}>Share</Button>}>
+          <input aria-label="Hidden" type="hidden" />
+          <Button disabled>Disabled</Button>
+          <Button props={{ tabIndex: -1 }}>Not tabbable</Button>
+          <input aria-label="Link" readOnly defaultValue="https://example.com" />
+        </Popover>,
+      );
+
+      act(() => element().showPopover());
+
+      expect(document.activeElement).toHaveAttribute('aria-label', 'Link');
+    });
+
+    it('lands on initialFocus instead of the first control', () => {
+      const copy = React.createRef<HTMLButtonElement>();
+      uninstall = installPopoverApi();
+      render(
+        <Popover label="Share" initialFocus={copy} trigger={(bag) => <Button {...bag}>Share</Button>}>
+          <input aria-label="Link" readOnly defaultValue="https://example.com" />
+          <Button ref={copy}>Copy</Button>
+        </Popover>,
+      );
+
+      act(() => element().showPopover());
+
+      expect(copy.current).toHaveFocus();
+    });
+
+    it('leaves an autofocus inside alone', () => {
+      uninstall = installPopoverApi();
+      render(
+        <Popover label="Filters" trigger={(bag) => <Button {...bag}>Filters</Button>}>
+          <Button>First</Button>
+          <Button>Only mine</Button>
+        </Popover>,
+      );
 
       const dialog = element();
-      act(() => dialog.showPopover());
-      expect(dialog).toHaveFocus();
-
       // Held onto while the panel is open: closed it is `display: none`, so no role query can reach it.
+      act(() => dialog.showPopover());
       const inside = screen.getByRole('button', { name: 'Only mine' });
       act(() => dialog.hidePopover());
       inside.focus();

@@ -19,6 +19,7 @@ export type { ClassNameType } from './core/classNames';
 export { mergeDeep } from './core/mergeDeep';
 export { default as Springs } from './core/springs';
 export { default as Palette } from './core/palette';
+export { default as Sizes } from './core/sizes';
 export { default as Designs } from './core/designs';
 export { createStyleEngine, DEFAULT_STYLE_ELEMENT_ID } from './core/engine/styleEngine';
 export { default as getDefaultEngine } from './core/engine/defaultEngine';

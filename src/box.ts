@@ -65,6 +65,7 @@ interface BoxType {
   components: typeof BoxExtends.components;
   /** The `vars` record that points the components' `accent` and `base` families at others, for an element and its subtree. */
   palette: typeof BoxExtends.palette;
+  sizes: typeof BoxExtends.sizes;
   /** A design for one subtree, registered nowhere: hand it to `<Box.Components value>` or `<Box.Theme components>`. */
   createComponents: typeof BoxExtends.createComponents;
   /** Every Box below resolves its `component` against this registry instead of the app's `Box.components()`. */
@@ -94,6 +95,7 @@ const Box = boxComponent(useBoxElement, 'Box') as unknown as BoxType;
 Box.extend = BoxExtends.extend;
 Box.components = BoxExtends.components;
 Box.palette = BoxExtends.palette;
+Box.sizes = BoxExtends.sizes;
 Box.createComponents = BoxExtends.createComponents;
 Box.Components = Components;
 Box.keyframes = BoxExtends.keyframes;

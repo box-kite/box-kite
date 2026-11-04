@@ -143,6 +143,19 @@ describe('numeric dividers', () => {
       expect(generatedRulesFor({ height: 'fit-screen' }, 'kw-height-screen')).toContain('{height:100vh}');
     });
 
+    // Bug #325: every built-in field and button reads this one variable, so a row of them shares a height.
+    it('maps the control heights to one variable each, with the default as its fallback', () => {
+      expect(generatedRulesFor({ height: 'control' }, 'kw-control')).toContain(
+        '{height:var(--control-height,var(--control-height-normal,2.5rem))}',
+      );
+      expect(generatedRulesFor({ height: 'control-compact' }, 'kw-control-compact')).toContain(
+        '{height:var(--control-height-compact,2rem)}',
+      );
+      expect(generatedRulesFor({ minHeight: 'control-large' }, 'kw-control-large')).toContain(
+        '{min-height:var(--control-height-large,3rem)}',
+      );
+    });
+
     it('accepts a raw percentage string', () => {
       expect(generatedRulesFor({ width: '33%' }, 'pct-width')).toContain('{width:33%}');
     });

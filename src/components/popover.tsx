@@ -12,7 +12,7 @@ import usePopoverLayer, {
 } from '../react/popover/usePopoverLayer';
 import { ComponentsAndVariants } from '../types';
 import { AnchorAlign, AnchorSide } from '../utils/anchor/anchorUtils';
-import { assignRef } from '../utils/dom/domUtils';
+import { assignRef, ElementLike, firstTabbable, htmlElementOf } from '../utils/dom/domUtils';
 import Overlay from './overlay';
 
 export type { PopoverReason };
@@ -69,10 +69,15 @@ interface Props<TKey extends keyof ComponentsAndVariants> extends PopoverBoxProp
   /** Whether the panel is at least as wide as its trigger. Default `false` — a panel sizes to its content. */
   matchWidth?: boolean;
   /**
-   * Whether opening moves focus into the panel. Default `true`, which is what APG asks of a dialog. An
-   * `autofocus` attribute inside wins: the browser applies it first and this only acts on what is left.
+   * Whether opening moves focus into the panel: onto its first control, or the panel itself when it has
+   * none. Default `true`, which is what APG asks of a dialog.
    */
   autoFocus?: boolean;
+  /**
+   * Where focus lands on open, instead of the first control — a field whose text should be selected, or a
+   * static element at the top of a long panel. React writes no `autofocus` attribute, so this is the way.
+   */
+  initialFocus?: ElementLike;
 }
 
 /**
@@ -108,8 +113,8 @@ interface Props<TKey extends keyof ComponentsAndVariants> extends PopoverBoxProp
  * role at all, and a panel with none is announced as a group of orphaned content.
  * @a11y The trigger carries `aria-expanded`, `aria-haspopup="dialog"` and `aria-controls`, so the control
  * says what it operates and what state it is in.
- * @a11y Focus moves into the panel on open and back to the trigger on close. Nothing is trapped: this is a
- * non-modal dialog, so Tab leaves it, and the panel follows the trigger in the DOM either way.
+ * @a11y Focus moves onto the panel's first control on open (`initialFocus` picks another) and back to the
+ * trigger on close. Nothing is trapped: this is a non-modal dialog, so Tab leaves it.
  * @keyboard Enter, Space — On the trigger, toggles the panel.
  * @keyboard Escape — Closes it and returns focus to the trigger, from anywhere inside.
  * @keyboard Tab — Moves into the panel from the trigger, and out of the panel to whatever follows it.
@@ -129,15 +134,20 @@ function PopoverImpl<TKey extends keyof ComponentsAndVariants = 'popover'>(props
     flip = true,
     matchWidth = false,
     autoFocus = true,
+    initialFocus,
     props: contentProps,
     ...restProps
   } = props;
 
   const handleOpened = useEventCallback((panel: HTMLElement) => {
-    // After the browser has had its go: an `autofocus` inside is applied by `showPopover` itself.
-    if (!autoFocus || panel.contains(document.activeElement)) return;
+    if (!autoFocus) return;
 
-    panel.focus();
+    const target = htmlElementOf(initialFocus);
+    if (target) return target.focus();
+    // After the browser has had its go: an `autofocus` attribute inside is applied by `showPopover` itself.
+    if (panel.contains(document.activeElement)) return;
+
+    (firstTabbable(panel) ?? panel).focus();
   });
 
   const {

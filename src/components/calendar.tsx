@@ -372,11 +372,11 @@ function CalendarImpl<TKey extends keyof ComponentsAndVariants = 'calendar'>(pro
           display="flex"
           ai="center"
           jc="center"
-          width={9}
-          height={9}
+          height="control"
+          aspectRatio="square"
           mx="auto"
           borderRadius={999}
-          fontSize={14}
+          fontSize="control"
           css={{ fontVariantNumeric: 'tabular-nums' }}
           variant={{
             today: isToday,
@@ -461,7 +461,8 @@ function CalendarImpl<TKey extends keyof ComponentsAndVariants = 'calendar'>(pro
             tag="button"
             component="calendar.zoomItem"
             variant={{ selected: item.active, today: item.current }}
-            py={2}
+            minHeight="control"
+            fontSize="control"
             borderRadius={2}
             disabled={disabled}
             props={{
@@ -548,7 +549,7 @@ function CalendarImpl<TKey extends keyof ComponentsAndVariants = 'calendar'>(pro
       props={{ role: label ? 'group' : undefined, 'aria-label': label, ...tagProps, onPointerLeave: () => anchor && setHovered(anchor) }}
     >
       {/* The arrows sit on the edges, so several months each get a caption centred over their own grid. */}
-      <Box position="relative" minHeight={8} mb={2}>
+      <Box position="relative" minHeight="control" mb={2}>
         {/* First in the DOM as it is first on screen, so Tab reaches it before the title. */}
         <Box
           tag="button"
@@ -559,8 +560,8 @@ function CalendarImpl<TKey extends keyof ComponentsAndVariants = 'calendar'>(pro
           display="inline-flex"
           ai="center"
           jc="center"
-          width={8}
-          height={8}
+          height="control"
+          aspectRatio="square"
           borderRadius={2}
           disabled={disabled}
           props={{ type: 'button', 'aria-label': previousLabel, onClick: () => page(-1) }}
@@ -582,14 +583,14 @@ function CalendarImpl<TKey extends keyof ComponentsAndVariants = 'calendar'>(pro
             </VisuallyHidden>
           </>
         ) : (
-          <Box display="flex" jc="center" px={9}>
+          <Box display="flex" jc="center" px={13}>
             <Box
               tag="button"
               component="calendar.title"
-              py={1.5}
+              minHeight="control"
               px={3}
               borderRadius={2}
-              fontSize={14}
+              fontSize="control"
               id={titleId}
               disabled={disabled || view === 'year'}
               props={{
@@ -614,8 +615,8 @@ function CalendarImpl<TKey extends keyof ComponentsAndVariants = 'calendar'>(pro
           display="inline-flex"
           ai="center"
           jc="center"
-          width={8}
-          height={8}
+          height="control"
+          aspectRatio="square"
           borderRadius={2}
           disabled={disabled}
           props={{ type: 'button', 'aria-label': nextLabel, onClick: () => page(1) }}

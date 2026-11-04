@@ -806,7 +806,10 @@ const catalogManifest: CatalogManifest = {
         offset: { type: 'number', description: 'The gap between trigger and panel, on the ÷4 spacing scale.' },
         flip: { type: 'boolean', description: 'Whether a side with no room may be swapped for its opposite.' },
         matchWidth: { type: 'boolean', description: 'Whether the panel is at least as wide as its trigger.' },
-        autoFocus: { type: 'boolean', description: 'Whether opening moves focus into the panel.' },
+        autoFocus: {
+          type: 'boolean',
+          description: 'Whether opening moves focus into the panel: onto its first control, or the panel itself when it has none.',
+        },
       },
       required: [],
       styled: true,

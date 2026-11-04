@@ -194,7 +194,7 @@
   ],
   "axe": { "fixtures": ["DateField"], "knownViolations": [] },
   "styleTree": [
-    { "path": "dateField", "depth": 0, "extends": "textbox", "variants": ["compact", "invalid", "disabled"] },
+    { "path": "dateField", "depth": 0, "extends": "textbox", "variants": ["compact", "normal", "large", "invalid", "disabled"] },
     { "path": "dateField.label", "depth": 1, "extends": null, "variants": [] },
     { "path": "dateField.segment", "depth": 1, "extends": null, "variants": ["placeholder", "disabled"] },
     { "path": "dateField.literal", "depth": 1, "extends": null, "variants": [] },

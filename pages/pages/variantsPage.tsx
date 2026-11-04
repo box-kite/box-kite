@@ -348,7 +348,7 @@ export default function VariantsPage() {
             label="pointerCoarse"
             language="jsx"
             codeOnly
-            code={`<Button py={2} pointerCoarse={{ py: 3, fontSize: 16 }}>
+            code={`<Button pointerCoarse={{ height: 'control-large', fontSize: 16 }}>
   Add to cart
 </Button>`}
           />

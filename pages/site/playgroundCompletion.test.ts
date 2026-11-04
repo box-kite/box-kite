@@ -148,7 +148,7 @@ describe('values', () => {
   it('describes what a list cannot show', () => {
     const shape = at('<Box fontSize={|} />').completion!.shape!;
 
-    expect(shape.choices).toEqual(['inherit']);
+    expect(shape.choices).toEqual(['inherit', 'control', 'control-compact', 'control-normal', 'control-large']);
     expect(shape.types.map((hint) => hint.type)).toEqual(['number']);
     expect(valueShape(catalog().components.Box.props.properties!.width).types.map((hint) => hint.label)).toEqual([
       'a percentage',

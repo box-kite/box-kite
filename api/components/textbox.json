@@ -103,5 +103,5 @@
     "`required`, `pattern` and `type` are the platform's own validation, which is announced and translated for free where a check of ours would be neither."
   ],
   "axe": { "fixtures": ["Textbox"], "knownViolations": [] },
-  "styleTree": [{ "path": "textbox", "depth": 0, "extends": null, "variants": ["compact"] }]
+  "styleTree": [{ "path": "textbox", "depth": 0, "extends": null, "variants": ["compact", "normal", "large"] }]
 }

@@ -41,5 +41,7 @@
     "`disabled` in `props` removes it from the tab order, which also silences it — for a control that has to stay reachable and explain itself, `aria-disabled` with a handler that does nothing."
   ],
   "axe": { "fixtures": ["Button"], "knownViolations": [] },
-  "styleTree": [{ "path": "button", "depth": 0, "extends": null, "variants": ["secondary", "ghost"] }]
+  "styleTree": [
+    { "path": "button", "depth": 0, "extends": null, "variants": ["secondary", "ghost", "compact", "normal", "large", "square"] }
+  ]
 }

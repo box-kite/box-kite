@@ -76,7 +76,7 @@
   ],
   "axe": { "fixtures": ["TimeZoneSelect"], "knownViolations": [] },
   "styleTree": [
-    { "path": "combobox", "depth": 0, "extends": null, "variants": ["compact"] },
+    { "path": "combobox", "depth": 0, "extends": null, "variants": ["compact", "normal", "large"] },
     { "path": "combobox.label", "depth": 1, "extends": null, "variants": [] },
     { "path": "combobox.field", "depth": 1, "extends": null, "variants": [] },
     { "path": "combobox.chip", "depth": 1, "extends": null, "variants": [] },
