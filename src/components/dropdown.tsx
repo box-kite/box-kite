@@ -643,6 +643,9 @@ function DropdownImpl<TVal>(props: Props<TVal>, ref: Ref<HTMLInputElement>): Rea
       component="dropdown"
       props={{ onClick: toggleOpen }}
       position="relative"
+      // A div centres nothing the way a button does, and the size standard sets a height rather than padding.
+      display="inline-flex"
+      ai="center"
       pe={!hideIcon ? 6 : undefined}
       minWidth={isOpen ? 36 : undefined}
       width="fit-content"
@@ -663,11 +666,9 @@ function DropdownImpl<TVal>(props: Props<TVal>, ref: Ref<HTMLInputElement>): Rea
           size from something that does. `visibility` keeps the space and keeps the copy out of the
           accessibility tree, where the field's value already says it — and the space is a no-break one,
           because a plain one collapses under `white-space: nowrap` and leaves no line box at all. */}
-      {display ?? (
-        <Box tag="span" visibility="hidden">
-          {selectionText || '\u00A0'}
-        </Box>
-      )}
+      <Box tag="span" overflow="hidden" textOverflow="ellipsis" minWidth={0} visibility={display == null ? 'hidden' : undefined}>
+        {display ?? (selectionText || '\u00A0')}
+      </Box>
       {icon}
     </Box>
   ) : (
