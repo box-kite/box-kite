@@ -18,13 +18,15 @@ export default class SourceGroupRowModel<TRow> extends GroupRowModel<TRow> {
     grid: GridModel<TRow>,
     private readonly level: SourceLevel<TRow>,
     groupColumn: ColumnModel<TRow>,
-    rowIndex: number,
+    /** Where it sits in that level's block cache; `rowIndex` is where it sits on screen (bug #327). */
+    private readonly levelIndex: number,
+    display = levelIndex,
   ) {
-    super(grid, groupColumn, [], rowIndex, '');
+    super(grid, groupColumn, [], display, '');
   }
 
   private get row(): TRow | undefined {
-    return this.level.rowAt(this.rowIndex);
+    return this.level.rowAt(this.levelIndex);
   }
 
   /** The row the server sent for this group: its value, and whatever totals came with it. */
@@ -52,7 +54,7 @@ export default class SourceGroupRowModel<TRow> extends GroupRowModel<TRow> {
    * and fetched again. A group nobody has yet is keyed by where it sits — `getRowKey` has nothing to read.
    */
   public override get key(): Key {
-    return this.placeholder ? `${this.level.placeholderKey}-group-${this.rowIndex}` : groupPathKey(this.groupKeys);
+    return this.placeholder ? `${this.level.placeholderKey}-group-${this.levelIndex}` : groupPathKey(this.groupKeys);
   }
 
   public override get depth(): number {
@@ -61,12 +63,12 @@ export default class SourceGroupRowModel<TRow> extends GroupRowModel<TRow> {
 
   /** The server's count, or nothing at all — a level it could not count cheaply shows the value alone. */
   public override get count(): number {
-    return this.level.groupCountAt(this.rowIndex) ?? 0;
+    return this.level.groupCountAt(this.levelIndex) ?? 0;
   }
 
   public override get label(): string {
     if (this.placeholder) return '';
-    const count = this.level.groupCountAt(this.rowIndex);
+    const count = this.level.groupCountAt(this.levelIndex);
 
     return count === undefined ? `${this.groupValue}` : `${this.groupValue} (${count})`;
   }

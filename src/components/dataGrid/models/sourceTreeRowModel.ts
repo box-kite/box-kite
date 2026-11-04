@@ -19,7 +19,7 @@ export default class SourceTreeRowModel<TRow> extends SourceRowModel<TRow> imple
   }
 
   public get position(): number {
-    return this.rowIndex;
+    return this.levelIndex;
   }
 
   /** The server's count, or `-1` — ARIA's "nobody knows", which is the honest answer to an uncounted level. */

@@ -21,13 +21,15 @@ export default class SourceRowModel<TRow> extends RowModel<TRow> {
     grid: GridModel<TRow>,
     /** The level it belongs to: the top one, or the group or tree row somebody opened. */
     protected readonly sourceLevel: SourceLevel<TRow>,
-    rowIndex: number,
+    /** Where it sits in that level's block cache; `rowIndex` is where it sits on screen (bug #327). */
+    protected readonly levelIndex: number,
+    display = levelIndex,
   ) {
-    super(grid, NOTHING as TRow, rowIndex);
+    super(grid, NOTHING as TRow, display);
   }
 
   private get row(): TRow | undefined {
-    return this.sourceLevel.rowAt(this.rowIndex);
+    return this.sourceLevel.rowAt(this.levelIndex);
   }
 
   public override get data(): TRow {
@@ -41,7 +43,7 @@ export default class SourceRowModel<TRow> extends RowModel<TRow> {
   public override get key(): Key {
     const row = this.row;
 
-    return row === undefined ? `${this.sourceLevel.placeholderKey}-${this.rowIndex}` : this.grid.getRowKey(row);
+    return row === undefined ? `${this.sourceLevel.placeholderKey}-${this.levelIndex}` : this.grid.getRowKey(row);
   }
 
   /** Nothing to open and nothing to select: a row nobody has yet is not a row anybody can act on. */
