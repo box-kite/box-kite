@@ -285,7 +285,11 @@ export default class RangeModel<TRow> {
         // Grouping takes the column it groups by off the screen and puts one spanning cell in its place,
         // so that cell is where the value is — the bare value, not the `Oslo (2)` the row is labelled with.
         table.push(
-          columns.map((column) => (column.key === GROUPING_CELL_KEY || column.key === row.groupColumn.key ? row.groupValue : null)),
+          columns.map((column) => {
+            if (column.isRowNumber) return row.rowIndex + 1;
+
+            return column.key === GROUPING_CELL_KEY || column.key === row.groupColumn.key ? row.groupValue : null;
+          }),
         );
       } else if (row?.kind === 'row' && !row.placeholder) {
         table.push(columns.map((column) => this.valueOf(column, row)));

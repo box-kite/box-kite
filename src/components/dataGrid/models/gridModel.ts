@@ -772,7 +772,8 @@ export default class GridModel<TRow> {
       }
 
       if (this.groupColumns.size > 0) {
-        const getRowsGroup = (dataToGroup: TRow[], groupColumns: Set<Key>, rowIndex: number): GroupRowModel<TRow>[] => {
+        // `flatRows` numbers these: whether a group is open reads its key, which needs a parent built after it (bug #165).
+        const getRowsGroup = (dataToGroup: TRow[], groupColumns: Set<Key>): GroupRowModel<TRow>[] => {
           const groupKey = groupColumns.values().next().value!;
           groupColumns.delete(groupKey);
           const column = ArrayUtils.findOrThrow(this.columns.value.leafs, (c) => c.key === groupKey);
@@ -781,27 +782,17 @@ export default class GridModel<TRow> {
             dataToGroup = ArrayUtils.sortBy(dataToGroup, (x) => x[groupKey as keyof TRow], this._sortDirection);
           }
 
-          return ArrayUtils.groupBy(dataToGroup, (item) => item[groupKey as keyof TRow] as Key).map((group) => {
-            let rows: RowModel<TRow>[] | GroupRowModel<TRow>[];
+          return ArrayUtils.groupBy(dataToGroup, (item) => item[groupKey as keyof TRow] as Key).map((group, index) => {
+            const rows =
+              groupColumns.size > 0
+                ? getRowsGroup(group.values, new Set(groupColumns))
+                : group.values.map((dataRow, at) => new RowModel(this, dataRow, at));
 
-            if (groupColumns.size > 0) {
-              rows = getRowsGroup(group.values, new Set(groupColumns), rowIndex + 1);
-            } else {
-              rows = group.values.map((dataRow, index) => new RowModel(this, dataRow, rowIndex + 1 + index));
-            }
-
-            const groupRow = new GroupRowModel(this, column, rows, rowIndex, group.key);
-            rowIndex += 1;
-
-            if (groupRow.expanded) {
-              rowIndex += rows.length;
-            }
-
-            return groupRow;
+            return new GroupRowModel(this, column, rows, index, group.key);
           });
         };
 
-        return getRowsGroup(data, new Set(this.groupColumns), 0);
+        return getRowsGroup(data, new Set(this.groupColumns));
       }
 
       return data.map((dataRow, rowIndex) => new RowModel(this, dataRow, rowIndex));
@@ -839,9 +830,17 @@ export default class GridModel<TRow> {
       // the source splices them in as it walks its levels, so nothing here expands anything.
       if (this.source.enabled) return this.source.flatRowList(this.rows.value);
 
-      return this.rows.value.flatMap((row) => {
+      const flat = this.rows.value.flatMap((row) => {
         return row.flatRows as (RowModel<TRow> | GroupRowModel<TRow> | DetailRowModel<TRow>)[];
       });
+
+      // A grouped row's number is its place on screen, group rows counted and detail panels not.
+      if (this.groupColumns.size > 0 && !this.tree.isEager) {
+        let rowIndex = 0;
+        for (const row of flat) if (row.kind !== 'detail') row.rowIndex = rowIndex++;
+      }
+
+      return flat;
     },
     () => [this.rows],
   );
@@ -1485,7 +1484,7 @@ export default class GridModel<TRow> {
     this.reportInteraction('groupExpandedChange', !expanded, expanded ? 'collapse' : 'expand', { groupRowKey });
 
     this.source.expansionChanged();
-    this.rows.clear(); // required to update rowIndex; cascades to flatRows/rowOffsets
+    this.rows.clear(); // cascades to flatRows, which numbers grouped rows, and rowOffsets
     this.notify();
   };
 
@@ -1496,7 +1495,7 @@ export default class GridModel<TRow> {
   public treeExpansionChanged(): void {
     this._expansion++;
     this.source.expansionChanged();
-    this.rows.clear(); // required to update rowIndex; cascades to flatRows/rowOffsets
+    this.rows.clear(); // cascades to flatRows, which numbers grouped rows, and rowOffsets
   }
 
   public toggleRowSelection = (rowKey: Key) => {
