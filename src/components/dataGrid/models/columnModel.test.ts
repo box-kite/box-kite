@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { ignoreLogs } from '../../../../dev/tests';
 import ArrayUtils from '../../../utils/array/arrayUtils';
 import { GridDefinition } from '../contracts/dataGridContract';
+import { ROW_DETAIL_CELL_KEY, ROW_NUMBER_CELL_KEY, ROW_SELECTION_CELL_KEY } from './cellKeys';
 import GridModel from './gridModel';
 
 interface Person {
@@ -320,6 +321,38 @@ describe('ColumnModel', () => {
       const flexWidths = grid.flexWidths.value;
       expect(flexWidths['firstName']).toBeUndefined();
       expect(flexWidths['lastName']).toBe(300);
+    });
+
+    it('keeps the row number, selection and detail columns at their own width (a resize never widens them)', () => {
+      const grid = new GridModel<Person>(
+        {
+          data,
+          def: {
+            showRowNumber: true,
+            rowSelection: true,
+            rowDetail: { content: () => null },
+            columns: [
+              { key: 'firstName', width: 100 },
+              { key: 'lastName', width: 100 },
+            ],
+          },
+        },
+        () => {},
+      );
+
+      grid.setContainerWidth(600);
+      const firstName = ArrayUtils.findOrThrow(grid.columns.value.leafs, (c) => c.key === 'firstName');
+      firstName.beginResize(0);
+      firstName.applyResize(-40);
+
+      const widths = grid.flexWidths.value;
+      expect(widths[ROW_NUMBER_CELL_KEY]).toBeUndefined();
+      expect(widths[ROW_SELECTION_CELL_KEY]).toBeUndefined();
+      expect(widths[ROW_DETAIL_CELL_KEY]).toBeUndefined();
+      // 430 shared 215/215, then firstName is dragged to 175 and its 40px go to lastName alone.
+      expect(widths['lastName']).toBe(255);
+      const leaf = (key: string | number) => ArrayUtils.findOrThrow(grid.columns.value.leafs, (c) => c.key === key).inlineWidth;
+      expect([leaf(ROW_NUMBER_CELL_KEY), leaf(ROW_SELECTION_CELL_KEY), leaf(ROW_DETAIL_CELL_KEY)]).toEqual([70, 50, 50]);
     });
 
     it('uses base widths when container is smaller than total base widths', () => {

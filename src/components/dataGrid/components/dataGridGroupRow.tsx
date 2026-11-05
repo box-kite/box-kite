@@ -65,7 +65,8 @@ function DataGridGroupRowImpl<TRow>(props: Props<TRow>) {
                 be={cell.hasGroupingBorder ? 1 : undefined}
                 gridColumn={cell.gridColumnSpan}
                 ps={cell.depthPadding}
-                overflow="auto"
+                // Not a scroller, for the reason a body cell's text is not one (bug #238).
+                overflow="hidden"
               >
                 {placeholder ? (
                   <DataGridCellPlaceholder cell={cell} columnIndex={navColumn} />

@@ -121,7 +121,9 @@ export default class ViewportModel<TRow> {
     const behind = direction === 'down' ? ROWS_BEHIND : ROWS_AHEAD;
     const { offsets } = this.grid.rowOffsets.value;
 
-    const first = this.hasDetailRows ? rowAt(offsets, scrollTop) : Math.floor(scrollTop / rowHeight);
+    // A filter shrinks the list before the browser clamps the scroll and says so, so a deep position can
+    // point past the last row for a frame; the window holds the end of the list rather than nothing.
+    const first = Math.min(this.hasDetailRows ? rowAt(offsets, scrollTop) : Math.floor(scrollTop / rowHeight), Math.max(0, length - 1));
     const startIndex = Math.max(0, first - behind);
 
     const translateY = this.hasDetailRows ? (offsets[startIndex] ?? 0) : startIndex * rowHeight;

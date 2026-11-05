@@ -116,6 +116,49 @@ describe('DataGrid interactions (component → model → re-render)', () => {
     expect(noTransition(content.closest('[role="row"]')!)).toBe(true);
   });
 
+  it('resizes the scroll spacers at once, so a filter never slides the scrollbar thumb (bug #236)', () => {
+    renderGrid({});
+
+    const css = document.getElementById('box-kite-styles')?.textContent ?? '';
+    const noTransition = (element: Element) =>
+      Array.from(element.classList).some((name) => css.includes(`.${name}{transition-property:none}`));
+    const rowgroup = screen.getAllByRole('rowgroup').at(-1)!;
+    const spacers = [rowgroup.parentElement!, rowgroup.parentElement!.parentElement!];
+
+    spacers.forEach((spacer) => expect(spacer.getAttribute('role')).toBe('presentation'));
+    spacers.forEach((spacer) => expect(noTransition(spacer)).toBe(true));
+  });
+
+  it('commits the rows a scroll reveals inside the animation frame, not in a task after its paint (bug #239)', () => {
+    const many = Array.from({ length: 500 }, (_, i) => ({ id: i + 1, firstName: `Name ${i + 1}`, age: 20 }));
+    render(<DataGrid data={many} def={baseDef} />);
+    const frames: FrameRequestCallback[] = [];
+    const raf = vi.spyOn(window, 'requestAnimationFrame').mockImplementation((callback) => frames.push(callback));
+
+    const scroller = screen.getByRole('grid');
+    scroller.scrollTop = 300 * 48;
+    fireEvent.scroll(scroller);
+    raf.mockRestore();
+
+    expect(screen.queryByText('Name 301')).toBeNull();
+    // Outside `act` on purpose: a plain state update would wait for React's scheduler, and only a
+    // synchronous commit leaves the rows in the DOM by the time the frame's callback returns.
+    frames.forEach((frame) => frame(performance.now()));
+    expect(screen.queryByText('Name 301')).not.toBeNull();
+  });
+
+  it('never makes a cell a scroll container (bug #238)', () => {
+    renderGrid({});
+
+    const cell = screen.getAllByRole('gridcell')[0];
+    const scrollers = [cell, ...cell.querySelectorAll('*')].filter((el) => {
+      const { overflow, overflowX, overflowY } = window.getComputedStyle(el);
+      return [overflow, overflowX, overflowY].some((value) => value === 'auto' || value === 'scroll');
+    });
+
+    expect(scrollers).toEqual([]);
+  });
+
   it('leaves the scroll alone when rowDetail opts out', () => {
     const scrollIntoView = vi.spyOn(Element.prototype, 'scrollIntoView').mockImplementation(() => {});
     renderGrid({
@@ -290,6 +333,25 @@ describe('DataGrid redraws only the rows a change touched (bug #237)', () => {
 
     expect(counts()[0]).toBe(before[0]);
     expect(counts()[1]).toBe(before[1]);
+  });
+
+  it('a parent re-rendering with the same props redraws nothing', () => {
+    // The grid reads `def.topBar` on every render of its own, so the reads count its renders.
+    let renders = 0;
+    const def = Object.defineProperty({ ...baseDef }, 'topBar', { get: () => (renders++, false) });
+    const Page = ({ tick }: { tick: number }) => (
+      <>
+        <span>{tick}</span>
+        <DataGrid data={data} def={def} />
+      </>
+    );
+    const { rerender } = render(<Page tick={0} />);
+    const before = renders;
+
+    rerender(<Page tick={1} />);
+
+    expect(before).toBeGreaterThan(0);
+    expect(renders).toBe(before);
   });
 
   it('a sort redraws every row', () => {
