@@ -163,3 +163,35 @@ describe('GroupRowModel numbering, two levels deep', () => {
     expect(grid.range.values().map(([value]) => value)).toEqual(sequence(9).map((index) => index + 1));
   });
 });
+
+describe('opening a row re-flattens rather than rebuilding (E11)', () => {
+  ignoreLogs();
+
+  it('a group toggle keeps the grouped models and still numbers the rows in display order', () => {
+    const grid = getGrid();
+    grid.toggleGrouping('day');
+    const rows = grid.rows.value;
+    const [first, second] = rows as GroupRowModel<Person>[];
+
+    grid.toggleGroupRow(first.key);
+
+    expect(grid.rows.value).toBe(rows);
+    expect(grid.flatRows.value.map((row) => (row.kind === 'detail' ? -1 : row.rowIndex))).toEqual([0, 1, 2, 3]);
+
+    grid.toggleGroupRow(first.key);
+    grid.toggleGroupRow(second.key);
+
+    expect(grid.rows.value).toBe(rows);
+    expect(grid.flatRows.value).toHaveLength(3);
+  });
+
+  it('a detail toggle keeps the row models and adds the panel', () => {
+    const grid = new GridModel<Person>({ data, def: { ...def, rowKey: 'firstName', rowDetail: { content: () => null } } }, () => {});
+    const rows = grid.rows.value;
+
+    grid.toggleDetailRow('B');
+
+    expect(grid.rows.value).toBe(rows);
+    expect(grid.flatRows.value.map((row) => row.kind)).toEqual(['row', 'row', 'detail', 'row']);
+  });
+});

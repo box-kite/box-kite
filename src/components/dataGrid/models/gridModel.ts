@@ -1038,7 +1038,7 @@ export default class GridModel<TRow> {
     this._expandedDetailRows = expandedKeys;
     this.fire('expandedRowKeysChange', Array.from(expandedKeys), expanded ? 'expand' : 'collapse', { details: { rowKey } });
 
-    this.rows.clear(); // cascades to flatRows/rowOffsets
+    this.expansionChanged();
     this.notify();
   };
 
@@ -1484,9 +1484,18 @@ export default class GridModel<TRow> {
     this.reportInteraction('groupExpandedChange', !expanded, expanded ? 'collapse' : 'expand', { groupRowKey });
 
     this.source.expansionChanged();
-    this.rows.clear(); // cascades to flatRows, which numbers grouped rows, and rowOffsets
+    this.expansionChanged();
     this.notify();
   };
+
+  /**
+   * Opening a row changes which rows are shown, not which rows there are: the filtered, sorted and grouped
+   * models stand, and only their flattening is redone. A datasource and a tree build the list from it.
+   */
+  private expansionChanged(): void {
+    if (this.source.enabled || this.tree.isEager) this.rows.clear();
+    else this.flatRows.clear(); // cascades to rowOffsets; flatRows renumbers grouped rows
+  }
 
   /**
    * A tree row opened or shut. The walk over the rows is a different walk — and where the tree is lazy the
