@@ -140,14 +140,24 @@ export default class GridModel<TRow> {
   }
 
   private _selectionVersion = 0;
+  private _layoutVersion = 0;
 
   /**
-   * What the memoized header compares: a grid-wide change, or the selection its checkbox shows. A focus move
-   * re-renders the component holding the tab stop, and the header — filter row included — no longer with it.
+   * What the memoized header compares: a grid-wide change, the selection its checkbox shows, or a column width.
+   * A focus move re-renders the component holding the tab stop, and the header — filter row included — no longer with it.
    */
   public get headerVersion(): string {
-    return `${this._epoch}:${this._selectionVersion}`;
+    return `${this._epoch}:${this._selectionVersion}:${this._layoutVersion}`;
   }
+
+  /**
+   * A width changed. A row reads its widths through the CSS variables `paintSizes` writes, so only the header
+   * (its resizers' values) redraws: a notify here re-rendered every row on each frame of a window drag.
+   */
+  public notifyLayout = (): void => {
+    this._layoutVersion++;
+    this.notifyRows();
+  };
 
   /**
    * Sync incoming props. Called during render by the framework adapter — clears
@@ -968,7 +978,7 @@ export default class GridModel<TRow> {
     if (this._containerWidth !== width) {
       this._containerWidth = width;
       this.flexWidths.clear(); // cascades to sizes
-      this.notify();
+      this.notifyLayout();
     }
   };
 
