@@ -68,6 +68,7 @@ import Box from '../../src/box';
 import Button from '../../src/components/button';
 import Flex from '../../src/components/flex';
 import Icon from '../../src/components/icon';
+import BrandMark from '../components/brandMark';
 import SearchTrigger from '../components/searchTrigger';
 import SiteLink from '../components/siteLink';
 import { RELEASES_PATH } from '../site/releases';
@@ -96,11 +97,7 @@ export default function Sidebar({ onClose, onSearch }: SidebarProps) {
       <Flex ai="center" jc="space-between" p={4} bb={1} theme={{ dark: { borderColor: 'base-800' }, light: { borderColor: 'base-100' } }}>
         <Flex ai="center" gap={3}>
           <NavLink to="/">
-            <Box width={10} height={10} borderRadius={2} bgImage="gradient-primary" display="flex" ai="center" jc="center" shadow="medium">
-              <Icon size={5} color="white" strokeWidth={2.5}>
-                <BoxIcon />
-              </Icon>
-            </Box>
+            <BrandMark size={10} shadow />
           </NavLink>
           <Box>
             <NavLink to="/">

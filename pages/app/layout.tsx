@@ -1,4 +1,4 @@
-import { Box as BoxIcon, Menu, Moon, Sun, X } from 'lucide-react';
+import { Menu, Moon, Sun, X } from 'lucide-react';
 import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import Box from '../../src/box';
@@ -7,6 +7,7 @@ import Flex from '../../src/components/flex';
 import Icon from '../../src/components/icon';
 import Presence from '../../src/components/presence';
 import { Main } from '../../src/components/semantics';
+import BrandMark from '../components/brandMark';
 import Breadcrumbs from '../components/breadcrumbs';
 import DesignPicker from '../components/designPicker';
 import IconSwap from '../components/iconSwap';
@@ -125,11 +126,7 @@ function DocsLayout({ children }: LayoutProps) {
               <Flex ai="center" gap={2}>
                 {/* The same mark the sidebar carries — this header is the whole logo on a phone,
                     where the sidebar is closed, so a bare letter was the brand on every small screen. */}
-                <Box width={8} height={8} borderRadius={2} bgImage="gradient-primary" display="flex" ai="center" jc="center">
-                  <Icon size={4} color="white" strokeWidth={2.5}>
-                    <BoxIcon />
-                  </Icon>
-                </Box>
+                <BrandMark size={8} />
                 <Box fontWeight={600} fontSize={18}>
                   Box Kite
                 </Box>
