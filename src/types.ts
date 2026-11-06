@@ -36,9 +36,12 @@ type ExtractBoxStyleValue<T> = T extends { tuple: true; values: infer V }
 // The colours an app added to `bgColor`, which a gradient stop takes too (bug #310).
 type AppColor = Extract<Augmented.BoxPropTypes extends { bgColor?: infer C } ? C : never, string>;
 
+// An app's colour takes the opacity modifier wherever a palette colour does (bug #335).
+type AppValue<TBuiltin, TApp> = 'black/50' extends TBuiltin ? TApp | `${Extract<TApp, string>}/${number}` : TApp;
+
 type ExtractBoxStylesInternal<T extends Record<string, BoxStyle[]>> = {
   [K in keyof T]?: K extends keyof Augmented.BoxPropTypes
-    ? ExtractBoxStyleValue<ArrayType<T[K]>> | Augmented.BoxPropTypes[K]
+    ? ExtractBoxStyleValue<ArrayType<T[K]>> | AppValue<ExtractBoxStyleValue<ArrayType<T[K]>>, Augmented.BoxPropTypes[K]>
     : K extends 'bgGradient' | 'maskImage'
       ? ExtractBoxStyleValue<ArrayType<T[K]>> | Gradients.Gradient<AppColor>
       : ExtractBoxStyleValue<ArrayType<T[K]>>;

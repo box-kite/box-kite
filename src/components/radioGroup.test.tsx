@@ -171,4 +171,17 @@ describe('RadioGroup styles', () => {
 
     expect(screen.getByText('Plan').getAttribute('class')).toContain('color-emerald-500');
   });
+
+  // Bug #338: the row the radios sit in took the label as its first item.
+  it("puts a horizontal group's label on a line of its own", () => {
+    render(
+      <RadioGroup label="Plan" orientation="horizontal">
+        <RadioGroup.Item value="free" label="Free" />
+      </RadioGroup>,
+    );
+
+    const label = screen.getByText('Plan');
+    expect(getComputedStyle(label.parentElement!).flexWrap).toBe('wrap');
+    expect(getComputedStyle(label).width).toBe('100%');
+  });
 });

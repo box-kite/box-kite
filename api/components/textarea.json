@@ -17,7 +17,7 @@
       "type": "TextareaTagProps",
       "required": false,
       "default": null,
-      "description": "Attributes for the `<textarea>` itself — an `id`, an `aria-label`, `autoComplete`, `wrap`."
+      "description": "Attributes for the `<textarea>` itself — an `aria-label`, `autoComplete`, `wrap`. Its `id` is the top-level prop."
     },
     {
       "name": "onInput",

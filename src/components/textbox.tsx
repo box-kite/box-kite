@@ -30,7 +30,7 @@ type TextboxType =
 interface Props<TKey extends keyof ComponentsAndVariants> extends TextareaProps<TKey> {
   /** What the field submits under, and what a `<label htmlFor>` of your own would point at. */
   name?: string;
-  /** Attributes for the `<input>` itself — an `id`, an `aria-label`, `inputMode`, `autoComplete`. */
+  /** Attributes for the `<input>` itself — an `aria-label`, `inputMode`, `autoComplete`. Its `id` is the top-level prop. */
   props?: TextboxTagProps;
   /** Fires on every keystroke. `onChange` is React's alias for the same event. */
   onInput?: (e: React.ChangeEvent<HTMLInputElement>) => void;

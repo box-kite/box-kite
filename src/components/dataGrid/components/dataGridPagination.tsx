@@ -106,6 +106,8 @@ function PageJumpInput<TRow>({ grid, page, totalPages }: { grid: GridModel<TRow>
     <Textbox
       type="number"
       variant="compact"
+      // Its own width, so an app restyling every `textbox` cannot stretch it and wrap the bar (bug #336).
+      width="auto"
       value={value}
       onChange={(e) => setValue(e.target.value)}
       textAlign="center"

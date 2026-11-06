@@ -198,7 +198,7 @@ function RadioGroupImpl<TKey extends keyof ComponentsAndVariants = 'radioGroup'>
         props={{ role: 'radiogroup', 'aria-labelledby': hasLabel ? labelId : undefined, ...tagProps, onKeyDown: handleKeyDown }}
       >
         {hasLabel && (
-          <Span component="radioGroup.label" id={labelId}>
+          <Span component="radioGroup.label" variant={{ horizontal: orientation === 'horizontal' }} id={labelId}>
             {label}
           </Span>
         )}

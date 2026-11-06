@@ -32,7 +32,7 @@ export interface TimeZoneSelectProps extends TimeZoneSelectBoxProps {
   name?: string;
   /** Not editable and not openable, but still read out. */
   disabled?: boolean;
-  /** Attributes for the `<input>` itself — an `aria-label`, an `id`. */
+  /** Attributes for the `<input>` itself — an `aria-label`, or the `id` a `<label htmlFor>` of your own points at. */
   props?: Record<string, unknown>;
   /** What the list says when nothing matches. Default `'No time zone matches'`. */
   emptyText?: React.ReactNode;

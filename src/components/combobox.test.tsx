@@ -60,6 +60,33 @@ describe('Combobox', () => {
       expect(field().getAttribute('aria-controls')).toBe(screen.getByRole('listbox').id);
     });
 
+    // Bug #334: labelled by the field, the listbox was named by what was typed (Chrome: "ad").
+    it.each([
+      ['an aria-label', <Combobox key="a" data={people} def={def} props={{ 'aria-label': 'Assignee' }} />],
+      [
+        'an aria-labelledby',
+        <>
+          <span id="who">Assignee</span>
+          <Combobox data={people} def={def} props={{ 'aria-labelledby': 'who' }} />
+        </>,
+      ],
+      [
+        'a <label htmlFor> of its own, pointing at props.id',
+        <>
+          <label htmlFor="who">Assignee</label>
+          <Combobox data={people} def={def} placeholder="Search people" props={{ id: 'who' }} />
+        </>,
+      ],
+    ])('names the field and the listbox after %s, never after the text typed', (_, ui) => {
+      render(ui);
+      fireEvent.change(field(), { target: { value: 'ad' } });
+
+      const listbox = screen.getByRole('listbox');
+      expect(screen.getByRole('combobox', { name: 'Assignee' })).toBe(field());
+      expect(listbox.getAttribute('aria-labelledby')).not.toBe(field().id);
+      expect(screen.getByRole('listbox', { name: 'Assignee' })).toBe(listbox);
+    });
+
     it('marks a disabled row aria-disabled rather than removing it', () => {
       render(<Combobox data={people} def={def} label="Assignee" />);
       open();

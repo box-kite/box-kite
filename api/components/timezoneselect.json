@@ -54,7 +54,7 @@
       "type": "Record<string, unknown>",
       "required": false,
       "default": null,
-      "description": "Attributes for the `<input>` itself — an `aria-label`, an `id`."
+      "description": "Attributes for the `<input>` itself — an `aria-label`, or the `id` a `<label htmlFor>` of your own points at."
     },
     {
       "name": "emptyText",

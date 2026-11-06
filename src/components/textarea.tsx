@@ -27,7 +27,7 @@ type TextareaTagProps = OmitTagProps<BoxTagProps<'textarea'>, TagPropsType | 'ty
 interface Props<TKey extends keyof ComponentsAndVariants> extends TextareaProps<TKey> {
   /** What the field submits under, and what a `<label htmlFor>` of your own would point at. */
   name?: string;
-  /** Attributes for the `<textarea>` itself — an `id`, an `aria-label`, `autoComplete`, `wrap`. */
+  /** Attributes for the `<textarea>` itself — an `aria-label`, `autoComplete`, `wrap`. Its `id` is the top-level prop. */
   props?: TextareaTagProps;
   /** Fires on every keystroke. `onChange` is React's alias for the same event. */
   onInput?: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;

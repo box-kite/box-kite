@@ -204,6 +204,26 @@ describe('Theme', () => {
       // Should still be dark (explicit theme)
       expect(content.parentElement?.classList.contains('dark')).toBe(true);
     });
+
+    // Bug #333: the detection's no-op set at mount was replayed over the render-phase prop sync.
+    it.each(['global', 'local'] as const)('follows a theme prop given after starting from the system (%s)', (use) => {
+      window.matchMedia = mockMatchMedia(false);
+      const { rerender } = render(
+        <Theme use={use}>
+          <Box id={testId}>Content</Box>
+        </Theme>,
+      );
+      const themed = () => (use === 'global' ? document.documentElement : document.getElementById(testId)!.parentElement!);
+
+      expect(themed().getAttribute('data-theme')).toBe('light');
+      rerender(
+        <Theme use={use} theme="dark">
+          <Box id={testId}>Content</Box>
+        </Theme>,
+      );
+      expect(themed().getAttribute('data-theme')).toBe('dark');
+      expect(themed().classList.contains('dark')).toBe(true);
+    });
   });
 
   describe('useTheme hook', () => {
@@ -1130,6 +1150,22 @@ describe('Theme', () => {
     afterEach(() => {
       localStorage.clear();
       document.documentElement.removeAttribute('data-design');
+    });
+
+    it('follows a design prop change when the stored design was the same as the prop (bug #333)', () => {
+      localStorage.setItem('design', 'ember');
+      const { rerender } = render(
+        <Theme design="ember" designStorageKey="design">
+          <Box id={testId}>Content</Box>
+        </Theme>,
+      );
+
+      rerender(
+        <Theme design="azure" designStorageKey="design">
+          <Box id={testId}>Content</Box>
+        </Theme>,
+      );
+      expect(document.getElementById(testId)!.parentElement!.getAttribute('data-design')).toBe('azure');
     });
 
     it('writes data-design on the document root in global mode, and on the wrapper in local mode', () => {
