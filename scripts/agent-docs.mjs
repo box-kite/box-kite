@@ -169,7 +169,7 @@ function indexFile() {
       ' standard exists for a package that carries its own docs — these files are here to be found.',
     rows.map(([file, what]) => `- [\`${file}\`](${file}) — ${what}`).join('\n'),
     `The rest sits at the package root: \`BOX_KITE_AI_CONTEXT.md\`, the long-form reference (prop tables, the DataGrid` +
-      ` API, debugging); \`.claude/skills/box-kite/\`, the same rules as an installable skill with four references` +
+      ` API, debugging); \`.claude/skills/box-kite/\`, the same rules as an installable skill with five references` +
       ` beside it; and \`.cursor/rules/box-kite.mdc\`, which is that skill as a Cursor rule — copy either into the` +
       ` project rather than reading it from here, so it is loaded without anyone asking.`,
   ].join('\n\n');
@@ -191,7 +191,7 @@ function agentsFile(propCount) {
         ['docs/index.md', 'what else is here'],
         ...DOCS.map(([file, what]) => [`docs/${file}`, what]),
         ['BOX_KITE_AI_CONTEXT.md', 'the long-form reference'],
-        ['.claude/skills/box-kite/', 'the rules as an installable skill, with four references'],
+        ['.claude/skills/box-kite/', 'the rules as an installable skill, with five references'],
         ['.cursor/rules/box-kite.mdc', 'the rules as a Cursor rule'],
       ].map(([file, what]) => `${file.padEnd(26)}  ${what}`),
       '```',
@@ -224,7 +224,10 @@ function agentsFile(propCount) {
       ' writing `p={6}` share it. There is no CSS file to write, no class name to invent and no `style` attribute:' +
       ' a breakpoint (`md`), a state (`hover`), a theme and a pseudo-element are all props that nest.',
     '## The rules',
-    rulesBody('Full reference: `docs/props.md` and `BOX_KITE_AI_CONTEXT.md`, in this package.'),
+    rulesBody(
+      'Full reference: `.claude/skills/box-kite/references/rules.md` for any rule in depth, and `docs/props.md` and' +
+        ' `BOX_KITE_AI_CONTEXT.md`, in this package.',
+    ),
   ].join('\n\n');
 }
 

@@ -1,4 +1,5 @@
-import rulesMarkdown from '../../.claude/rules/box-kite-rules.md?raw';
+// The rules in full rather than the short file: a rule is asked for by number when its short form was not enough.
+import rulesMarkdown from '../../.claude/skills/box-kite/references/rules.md?raw';
 import agentsMarkdown from '../../AGENTS.md?raw';
 import propsApi from '../../api/props.json';
 import { name as libraryName, version as libraryVersion } from '../../package.json';
