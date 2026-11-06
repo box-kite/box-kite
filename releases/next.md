@@ -19,6 +19,18 @@ npm view @box-kite/react dependencies
 # { '@box-kite/core': '<this version>' }
 ```
 
+## The rules your agent loads are a fifth of the size
+
+The rules file, the skill and the Cursor rule that ship in the package were a 90 KB wall loaded on every request that touched a component, and the rules that prevent most mistakes were buried in it. Each rule is now what to write and the one trap, about 19 KB in all, with the same numbers. Nothing was dropped: the reasons, measurements and edge cases behind each rule moved to `references/rules.md` in the skill, under the same number, and `get_rules` in `@box-kite/mcp` reads that long form.
+
+| File                               | Before | After |
+| ---------------------------------- | -----: | ----: |
+| `.claude/rules/box-kite-rules.md`  |  89 KB | 19 KB |
+| `.cursor/rules/box-kite.mdc`       |  91 KB | 20 KB |
+| `.claude/skills/box-kite/SKILL.md` |  97 KB | 27 KB |
+
+If you copied the Cursor rule or installed the skill, copy or install it again to pick up the short version.
+
 ## Breaking changes
 
 - **React 18 or newer is required.** The peer range was React 16.14 and newer, but the DataGrid, the date controls, `Popover`, `Dialog`, `Menu` and `Toaster` already needed React 18, and CI only ever tested 18 and 19. The peer range is now `>=18.0.0`, which is what was really supported. On React 16 or 17, stay on 2.3.x or upgrade React.

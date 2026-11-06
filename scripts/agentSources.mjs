@@ -44,8 +44,32 @@ export function priorFacts() {
 
 const RULES_FILE = '.claude/rules/box-kite-rules.md';
 
+/** The same rules with their reasons and measurements, which the short file numbers one for one. */
+const RULES_IN_FULL = '.claude/skills/box-kite/references/rules.md';
+
+/** A short rule is loaded on every request that touches a component; past this, the detail belongs in full. */
+const RULE_BUDGET = 600;
+
 /** The rules file's own closing line, which every file quoting the rules replaces with its own. */
 const RULES_REFERENCE = /^Full reference:.*$/m;
+
+const numberedRules = (markdown) => markdown.split(/\n(?=\d+\. \*\*)/).filter((chunk) => /^\d+\. \*\*/.test(chunk));
+
+/** Both files number rules 1…N alike, and no short rule outgrows its budget — or the build fails naming it. */
+function checkRules(body) {
+  const short = numberedRules(body).map((chunk) => chunk.split(/\n\s*\n/)[0]);
+  const full = numberedRules(read(RULES_IN_FULL));
+  const numbers = (chunks) => chunks.map((chunk) => Number(chunk.slice(0, chunk.indexOf('.')))).join(',');
+
+  if (numbers(short) !== numbers(full)) {
+    throw new Error(`${RULES_FILE} and ${RULES_IN_FULL} number different rules: every short rule has its long form there.`);
+  }
+
+  const long = short.filter((rule) => rule.length > RULE_BUDGET).map((rule) => rule.slice(0, rule.indexOf('.')));
+  if (long.length) {
+    throw new Error(`Rule ${long.join(', ')} in ${RULES_FILE} is over ${RULE_BUDGET} characters: move the detail to ${RULES_IN_FULL}.`);
+  }
+}
 
 /**
  * The rules, ready to inline somewhere else: the frontmatter and the H1 go, because they belong to
@@ -62,6 +86,8 @@ export function rulesBody(reference) {
   if (!RULES_REFERENCE.test(body)) {
     throw new Error(`${RULES_FILE} no longer ends with a "Full reference:" line: every file quoting the rules rewrites it.`);
   }
+
+  checkRules(body);
 
   return body.replace(RULES_REFERENCE, reference).trim();
 }

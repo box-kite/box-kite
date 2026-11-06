@@ -44,6 +44,7 @@ const REFERENCES = [
   ['components.md', 'choosing a component, or wiring a Dropdown, a Select or a DataGrid'],
   ['extending.md', 'a value used twice, or a prop that does not exist yet'],
   ['patterns.md', 'server rendering, the behaviour hooks, portals, form controls, the tooltip'],
+  ['rules.md', 'one of the rules below in depth: the reasons, the measurements and the traps behind it'],
 ];
 
 /**
@@ -158,7 +159,10 @@ export function skillMarkdown() {
       .map(({ name, instead }) => `- \`${name}\` — ${instead}`)
       .join('\n'),
     '## The rules',
-    rulesBody('Full reference: `references/` beside this file, and `docs/props.md` inside the package.'),
+    rulesBody(
+      'Full reference: `references/rules.md` beside this file for any rule in depth, the rest of `references/`, and' +
+        ' `docs/props.md` inside the package.',
+    ),
   ].join('\n\n');
 }
 
@@ -186,8 +190,9 @@ export function cursorRules() {
       .map((fact) => `- ${fact}`)
       .join('\n'),
     rulesBody(
-      `Full reference: \`node_modules/${PACKAGE_NAME}/docs/props.md\` in the project, or ${homepage}/props.md —` +
-        ` every prop, the CSS it writes and one measured example.`,
+      `Full reference: \`node_modules/${PACKAGE_NAME}/.claude/skills/box-kite/references/rules.md\` for any rule in` +
+        ` depth, and \`node_modules/${PACKAGE_NAME}/docs/props.md\` (or ${homepage}/props.md) for every prop, the CSS it` +
+        ` writes and one measured example.`,
     ),
   ].join('\n\n');
 }
