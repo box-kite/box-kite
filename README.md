@@ -33,7 +33,7 @@ version behind what it is writing against: [Built for AI](https://www.box-kite.d
 npm install @box-kite/react
 ```
 
-React 16.14 or newer, including 18 and 19 (both are covered by CI). TypeScript is optional but the
+React 18 or newer (CI covers 18 and 19). TypeScript is optional but the
 props are typed for it.
 
 Two packages ship, and a React project installs one of them:

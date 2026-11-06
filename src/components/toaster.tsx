@@ -1,6 +1,5 @@
-import { Ref, useCallback, useRef, useState } from 'react';
+import { Ref, useCallback, useRef, useState, useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';
-import { useSyncExternalStore } from 'use-sync-external-store/shim';
 import Box, { BoxProps } from '../box';
 import usePresence from '../react/animation/usePresence';
 import boxComponent from '../react/boxComponent';

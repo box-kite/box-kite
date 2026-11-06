@@ -36,6 +36,10 @@ jobs:
       # formatter or a value list changes and the reference beside it did not.
       - name: Check the prop reference is current 🔧
         run: npm run check:props
+      # The `css` prop's types are a generated copy of csstype, so the package installs no dependency for
+      # them; this fails when csstype was upgraded and the copy was not regenerated.
+      - name: Check the vendored csstype is current 🔧
+        run: npm run check:csstype
       # Each component's reference is generated from its own types, JSDoc and doc tags, so this fails on
       # a prop with no prose, a documented key no test presses, and a component whose page shows none of it.
       - name: Check the component reference is current 🔧
@@ -114,7 +118,7 @@ jobs:
         run: npm run smoke:next-app
 
   test:
-    # The peer range spans React 16.14 to 19, and the engine touches the parts React changed most
+    # The peer range is React 18 and newer, and the engine touches the parts React changed most
     # (layout effects, hydration, server rendering). Testing one version proves nothing about the
     # other, so every supported major runs the whole suite.
     name: Tests (React ${{ matrix.react }})

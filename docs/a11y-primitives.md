@@ -158,8 +158,7 @@ const id = useIdentifier('select');
 
 React's `useId` with the punctuation removed: `:r1:` (React 18) and `«r1»` (React 19) are both
 rejected by `querySelector('#…')`, and the part that varies is the word characters. Derive related
-ids from one call rather than calling the hook once per element. On React 16/17, which have no
-`useId`, the fallback is a module counter — pass ids in explicitly there if the tree is hydrated.
+ids from one call rather than calling the hook once per element.
 
 ## `VisuallyHidden`
 

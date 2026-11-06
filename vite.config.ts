@@ -200,16 +200,7 @@ export default defineConfig(({ mode }) => {
         formats: ['es', 'cjs'],
       },
       rollupOptions: {
-        external: [
-          PACKAGE_NAME,
-          CORE_PACKAGE,
-          `${CORE_PACKAGE}/types`,
-          'react',
-          'react-dom',
-          'react/jsx-runtime',
-          'react-dom/server',
-          'use-sync-external-store/shim',
-        ],
+        external: [PACKAGE_NAME, CORE_PACKAGE, `${CORE_PACKAGE}/types`, 'react', 'react-dom', 'react/jsx-runtime', 'react-dom/server'],
         // Required by `codeSplitting.includeDependenciesRecursively: false` below. Entry exports are
         // unaffected — an entry chunk is merely allowed to carry more than the entry declares.
         preserveEntrySignatures: 'allow-extension',

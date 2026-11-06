@@ -21,7 +21,8 @@ export default defineConfig(({ mode }) => ({
       entryRoot: './src',
       // What the entry reaches, rather than all of src/utils/: a leaf it never imports shipped a declaration that
       // imports the DataGrid's, which this package does not carry.
-      include: [...coreGraph().modules.keys()],
+      // The graph follows runtime imports, and the vendored csstype is reached by a type import only.
+      include: [...coreGraph().modules.keys(), 'src/core/vendor/csstype.ts'],
       // Without this the package ships a `.test.d.ts` beside a third of its modules.
       exclude: ['./src/**/*.test.*'],
     }),
@@ -41,9 +42,6 @@ export default defineConfig(({ mode }) => ({
       formats: ['es', 'cjs'],
     },
     rollupOptions: {
-      // csstype is types-only, so nothing of it reaches the bundle; naming it here keeps a stray
-      // value import from being inlined silently.
-      external: ['csstype'],
       output: { exports: 'named', chunkFileNames: () => `[name]-[hash].${currentFormat === 'es' ? 'mjs' : 'cjs'}` },
     },
   },

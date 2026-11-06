@@ -37,8 +37,8 @@ export default function InstallationPage() {
           <Code language="shell" label="Or with pnpm" code="pnpm add @box-kite/react" />
 
           <Box fontSize={14} lineHeight={22} theme={{ dark: { color: 'base-400' }, light: { color: 'base-600' } }}>
-            React 16.14 or newer is the peer range; 18 and 19 are the versions CI runs the whole test suite against. Nothing else is needed
-            — no bundler plugin, no PostCSS step, no stylesheet to import.
+            React 18 or newer is the peer range, and CI runs the whole test suite against 18 and 19. Nothing else is needed — no bundler
+            plugin, no PostCSS step, no stylesheet to import.
           </Box>
 
           <Box fontSize={14} lineHeight={22} theme={{ dark: { color: 'base-400' }, light: { color: 'base-600' } }}>
