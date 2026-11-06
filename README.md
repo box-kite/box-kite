@@ -1,791 +1,270 @@
-# Box Kite
+<div align="center">
 
-[![npm](https://img.shields.io/npm/v/@box-kite/react)](https://www.npmjs.com/package/@box-kite/react)
-[![bundle size](https://img.shields.io/bundlephobia/minzip/@box-kite/react)](https://bundlephobia.com/package/@box-kite/react)
-[![Tests](https://github.com/box-kite/box-kite/actions/workflows/test.yml/badge.svg)](https://github.com/box-kite/box-kite/actions/workflows/test.yml)
-[![license](https://img.shields.io/npm/l/@box-kite/react)](LICENSE)
+<a href="https://www.box-kite.dev">
+  <img src="https://raw.githubusercontent.com/box-kite/box-kite/main/.github/assets/banner.png" alt="Box Kite — every CSS property is a typed prop. The React styling library your AI already knows." width="100%" />
+</a>
 
-`Box` is a single React component that takes CSS properties as typed props. It generates the CSS for the values you
-pass at runtime and caches every rule by its content, so the same value anywhere in the app reuses
-one class — a project styles itself in TypeScript, with no CSS files to write and no class-name
-convention to remember.
+<h3>The AI-first, fully typed styling library for React</h3>
 
-**It renders in React Server Components** with no `'use client'`, no provider and no compiler: each
-rule travels with the markup as a `<style href precedence>` element, which React 19 hoists and
-dedupes — [how](#react-server-components-react-19) ·
-[what it costs, measured against CSS modules](https://www.box-kite.dev/blog/styling-server-components/).
+<p>
+  <a href="https://www.npmjs.com/package/@box-kite/react"><img src="https://img.shields.io/npm/v/@box-kite/react?color=7c3aed&label=npm" alt="npm version" /></a>
+  <a href="https://github.com/box-kite/box-kite/actions/workflows/test.yml"><img src="https://github.com/box-kite/box-kite/actions/workflows/test.yml/badge.svg" alt="Tests" /></a>
+  <img src="https://img.shields.io/badge/TypeScript-every%20value-3178c6?logo=typescript&logoColor=white" alt="TypeScript: every value is typed" />
+  <a href="#-packages"><img src="https://img.shields.io/badge/dependencies-no%20third--party-10b981" alt="No third-party dependencies" /></a>
+  <a href="#-built-for-ai-agents"><img src="https://img.shields.io/badge/AGENTS.md-in%20the%20package-8b5cf6" alt="AGENTS.md ships in the package" /></a>
+  <a href="https://www.npmjs.com/package/@box-kite/mcp"><img src="https://img.shields.io/badge/MCP-server-a855f7" alt="MCP server" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/npm/l/@box-kite/react?color=64748b" alt="MIT license" /></a>
+</p>
 
-[Docs and live demos](https://www.box-kite.dev) · [Blog](https://www.box-kite.dev/blog/) · [Contributing](CONTRIBUTING.md) ·
-[Support](SUPPORT.md) · [Security](SECURITY.md) ·
-[Releases](https://github.com/box-kite/box-kite/releases)
+<p>
+  <a href="https://www.box-kite.dev"><b>Docs</b></a> ·
+  <a href="https://www.box-kite.dev/start-with-ai/"><b>Start with AI</b></a> ·
+  <a href="https://www.box-kite.dev/playground/">Playground</a> ·
+  <a href="https://www.box-kite.dev/showcase/">Showcase</a> ·
+  <a href="https://www.box-kite.dev/blog/">Blog</a> ·
+  <a href="https://github.com/box-kite/box-kite/releases">Releases</a>
+</p>
 
-**Built to be written by an AI.** The rules, every prop with the CSS it emits and a docs folder are
-inside the package, generated from the prop registry itself — so what your agent reads is never a
-version behind what it is writing against: [Built for AI](https://www.box-kite.dev/ai-context/) ·
-[`npx @box-kite/mcp`](https://www.npmjs.com/package/@box-kite/mcp) ·
-[generative UI](https://www.box-kite.dev/generative-ui/)
+</div>
 
-## Getting Started
+---
 
-1. Installation
+**Box Kite** styles React in TypeScript. Every CSS property is a prop on `Box`, every value it takes is a type, and the CSS is
+written for you at runtime — one shared class per value, no stylesheet to import, no class names to invent, no build plugin.
 
-```bash
-npm install @box-kite/react
-```
+It is built to be **written by an AI**: the rules and a reference measured from the engine ship inside the package, an MCP
+server checks a prop bag against the real engine, and the compiler refuses a value the library would not render.
 
-React 18 or newer (CI covers 18 and 19). TypeScript is optional but the
-props are typed for it.
-
-Two packages ship, and a React project installs one of them:
-
-| Package                                           | What it is                                                        |
-| ------------------------------------------------- | ----------------------------------------------------------------- |
-| **`@box-kite/react`**                             | `Box`, every component, the hooks. Depends on the one below.      |
-| [`@box-kite/core`](#using-the-core-without-react) | The engine and the types, no framework. For an app with no React. |
-
-`@box-kite/core/types` is where a project declares its own props and components — the augmentation
-target lives with the prop registry it extends, not with a binding.
-
-2. Use it
-
-Spacing counts in quarters of a rem: `p={3}` is `0.75rem`, `m={2}` is `0.5rem`. The example below is
-a box with `margin: 0.5rem` and `padding: 1.75rem`.
-
+<!-- prettier-ignore -->
 ```tsx
-import Box from '@box-kite/react';
-
-export default function Component() {
-  return (
-    <Box className="custom-class" m={2} p={7}>
-      basic example
-    </Box>
-  );
-}
-```
-
-**NOTE**: the root `font-size` is `16px`, so a quarter of a rem is 4px. Not every prop divides by
-four — `fontSize` divides by 16 (`fontSize={14}` is `0.875rem`), and border widths and `lineHeight`
-are plain pixels (`b={1}` is 1px).
-
-There is nothing to memorise, though: every prop's hover documentation carries a worked example of
-the CSS it writes — `p={4} → padding: 1rem`, `fontSize={14} → font-size: 0.875rem` — and those lines
-are generated by running the engine, so the editor cannot tell you a scale the library stopped using.
-
-## Colours
-
-The palette is Tailwind's, in OKLCH: twenty-six families of eleven steps — `slate-50` through
-`rose-950`, the four Tailwind 4.3 added (`mauve`, `mist`, `olive`, `taupe`) included — each one a CSS
-variable written with its own value as the fallback, so a page declares none of them in `:root` and
-any stylesheet can override one. Any colour value takes an opacity modifier:
-
-```JS
-<Box bgColor="blue-500/40" borderColor="black/10" hover={{ bgColor: 'blue-500/60' }} />
-```
-
-That compiles to `color-mix(in oklab, var(--blue-500) 40%, transparent)`: the mix wraps the
-**variable**, so a themed token is still themed and everything asking for the same value still shares
-one class. It is not `opacity`, which fades the element, its text and its children — this fades one
-declaration. Every colour prop takes it (`color`, `bgColor`, `borderColor`, `outlineColor`, `fill`,
-`stroke`), as does a `vars` entry and a variable of your own from `Box.extend()`.
-
-## Gradients, shadows and filters
-
-A gradient is a value, not a string you assemble: the key names the kind and carries its geometry, and
-the stops are palette colours, so the whole thing is themed, takes the opacity modifier and shares one
-class with every other element asking for it.
-
-```JS
-<Box bgGradient={{ linear: 'r', colors: ['blue-500', 'pink-500'] }} />
-<Box bgGradient={{ radial: 'circle', at: 'top left', colors: [['sky-500', '20%'], 'indigo-900'] }} />
-<Box bgGradient={{ conic: 45, colors: ['red-500', 'yellow-500', 'red-500'], interpolate: 'oklch' }} />
-```
-
-`interpolate` is worth knowing: sRGB drags a two-stop gradient through a grey middle, and `oklch` does
-not. `oklch-longer` takes the long way round the hue circle, which is what turns two stops into a
-spectrum. A gradient is judged whole — one unknown stop or one misspelt key and it emits no rule at
-all, rather than quietly painting something else.
-
-`box-shadow` is one CSS property, which normally means one shadow wins. Here it is **four layers** that
-compose, so an elevation, a ring and an inner hairline coexist:
-
-```JS
-<Box shadow="md" ring={2} ringColor="indigo-500" borderRadius={2} />
-<Box insetShadow="sm" insetRing={1} shadow="lg" shadowColor="blue-500/40" />
-```
-
-`shadow` is Tailwind's elevation scale (`xxs` through `xxl`, and the older `small`/`medium`/`large`
-presets still work), `insetShadow` draws inside the border box, and `ring`/`insetRing` are a width in
-px. A ring follows `borderRadius` and costs no layout, which is what makes it different from
-`outline`. Each layer has its own colour prop — `shadowColor`, `ringColor`, and so on — which shows
-nothing until the layer it belongs to is painted, exactly as `borderColor` needs a border width.
-`textShadow` and `textShadowColor` are the text-side pair.
-
-Filters stack the same way, and for the same reason: `filter` is one property whose value is a list, so
-each of the nine functions sets a layer of its own and all nine write one composed declaration.
-
-```JS
-<Box blur="sm" grayscale={100} />
-<Box brightness={110} saturate={150} hueRotate={90} />
-<Box dropShadow="lg" dropShadowColor="indigo-500/40" />
-<Box backdropBlur="sm" backdropSaturate={180} bgColor="white/20" />
-```
-
-A number is the function's own unit — a percentage for `brightness`, `contrast`, `grayscale`,
-`invert`, `saturate` and `sepia`, degrees for `hueRotate`, pixels for `blur`, which takes Tailwind's
-`xs`–`xxxl` scale too. `dropShadow` is cast by the _shape_ rather than the box, which is what a
-transparent PNG or an SVG path wants. The nine `backdrop*` props are the same functions applied to
-what is behind the element — the glassmorphism half.
-
-`maskImage` takes the gradient record over again and reads its alpha channel, so a fade to
-`transparent` is an edge fade; and `bgClip="text"` with `color="transparent"` is how a gradient
-becomes lettering.
-
-```JS
-<Box maskImage={{ linear: 'b', colors: ['black', ['black', '55%'], 'transparent'] }} />
-<H1 color="transparent" bgClip="text" bgGradient={{ linear: 'r', colors: ['violet-500', 'cyan-400'] }}>
-  Painted by the background
-</H1>
-```
-
-## Components
-
-Every component here is a `Box` underneath — the same style props, the same theming, the same
-`component`/`variant` defaults — with the right HTML tag, the ARIA its pattern owes and, where the
-pattern has one, its keyboard. Each is a separate entry point, so a `Textbox` does not pull the
-`DataGrid` into your bundle. Module paths below are relative to the package name, i.e.
-`@box-kite/react/components/flex`.
-
-```JS
-import Box from "@box-kite/react";
-```
-
-### Layout and content
-
-| Component                                                                    | Module                      | What it is                                                                                     |
-| ---------------------------------------------------------------------------- | --------------------------- | ---------------------------------------------------------------------------------------------- |
-| `Flex`                                                                       | `components/flex`           | `Box` with `display: flex`                                                                     |
-| `Grid`                                                                       | `components/grid`           | `Box` with `display: grid`                                                                     |
-| `H1`–`H6`, `P`, `Span`, `Link`, `Img`, `Nav`, `Header`, `Main`, `Section`, … | `components/semantics`      | one `Box` per semantic tag — 25 of them                                                        |
-| `Svg`, `Path`, `Circle`, `Rect`, `SvgText`, …                                | `components/svg`            | one component per SVG element — 20 of them, so a drawing never writes `tag`                    |
-| `Icon`                                                                       | `components/icon`           | Box props on an icon somebody else drew — lucide, Tabler, react-icons, a raw `<svg>`           |
-| `Sparkline`, `ProgressRing`, `Gauge`, `MiniDonut`                            | `components/chart`          | chart micro-primitives over those elements — a chart that takes Box props and no chart library |
-| `ChartContainer`                                                             | `components/chart`          | the theming bridge: the variables a Recharts (or any) chart reads, declared in both themes     |
-| `BaseSvg`                                                                    | `components/baseSvg`        | deprecated: `Svg` with the 24×24 icon preset                                                   |
-| `VisuallyHidden`                                                             | `components/visuallyHidden` | text for a screen reader only — clipped away rather than hidden, so it stays in the a11y tree  |
-
-### Form controls
-
-| Component                       | Module                   | What it is                                                                                                                           |
-| ------------------------------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `Button`                        | `components/button`      | `<button>`, with `type` and `onClick` lifted out of `props`                                                                          |
-| `Textbox`                       | `components/textbox`     | `<input>`                                                                                                                            |
-| `Textarea`                      | `components/textarea`    | `<textarea>`                                                                                                                         |
-| `Checkbox`                      | `components/checkbox`    | a real `<input type="checkbox">`; `label` renders the wrapping `<label>` for you, and `indeterminate` reports `aria-checked="mixed"` |
-| `Switch`                        | `components/switch`      | the same input as `role="switch"` — Enter toggles it as well as Space                                                                |
-| `RadioGroup`, `RadioGroup.Item` | `components/radioGroup`  | the APG radio group: one shared `name`, one tab stop, arrow keys between the options                                                 |
-| `RadioButton`                   | `components/radioButton` | a single labelled `<input type="radio">`, for a group you assemble yourself                                                          |
-| `Select`                        | `components/select`      | a `Dropdown` over a list of rows: `data={rows} def={{ valueKey, displayKey }}`                                                       |
-| `Form`                          | `components/form`        | a `<form>` that reads its own fields on submit and hands them to you as one object                                                   |
-
-### Overlays and data
-
-| Component                                       | Module                | What it is                                                                                                                                         |
-| ----------------------------------------------- | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Overlay`                                       | `components/overlay`  | the positioning primitive: a portal rendered where it is declared, so its children escape `overflow: hidden`. No ARIA, no open state, no dismissal |
-| `Tooltip`                                       | `components/tooltip`  | the APG tooltip on top of `Overlay` — hover _and_ focus, `aria-describedby`, Escape, hoverable (WCAG 1.4.13)                                       |
-| `Dropdown`, `Dropdown.Item`, `Dropdown.Display` | `components/dropdown` | the APG combobox: select-only, or the editable one with `isSearchable`                                                                             |
-| `DataGrid`                                      | `components/dataGrid` | the APG grid — sorting, filtering, grouping, row selection, row details, virtualized rows and columns, and a keyboard that covers all of it        |
-
-Two whose shape is not obvious from a table:
-
-```tsx
-// The tooltip's trigger is a render prop, so `aria-describedby` lands on the control itself
-// rather than on a wrapper around it.
-import Tooltip from '@box-kite/react/components/tooltip';
-
-<Tooltip content="Deletes the row for good">{(trigger) => <Button {...trigger}>Delete</Button>}</Tooltip>;
-```
-
-```tsx
-// `Form` reads the named fields under it when it submits, and hands them over as one object.
 import Button from '@box-kite/react/components/button';
-import Form from '@box-kite/react/components/form';
-import Textbox from '@box-kite/react/components/textbox';
-
-interface Credentials {
-  email: string;
-  password: string;
-}
-
-<Form<Credentials> p={4} onSubmit={(values) => signIn(values)}>
-  <Textbox name="email" type="email" />
-  <Textbox name="password" type="password" />
-  <Button type="submit">Sign in</Button>
-</Form>;
-```
-
-`onSubmit(values, event)` runs after the event's `preventDefault()`. A field is in `values` if it
-has a `name`: a lone checkbox or radio contributes its `checked` boolean, a name used more than
-once collects the checked or entered values into an array, and a dotted name (`address.city`,
-`lines[0].qty`) nests. Everything else arrives as the string the DOM holds — the type argument
-describes the object you expect, it is not checked against the fields.
-
-## SVG
-
-Twenty-three SVG properties are Box props, so a shape is themed, hovered and made responsive the
-same way a `<div>` is — and there is a component for every SVG element, so a drawing never writes
-`tag` either.
-
-```JSX
-import { Path, Svg } from '@box-kite/react/components/svg';
-
-<Svg
-  viewBox="0 0 200 48"
-  width="200px"
-  fill="none"
-  strokeWidth={3}
-  strokeLinecap="round"
-  strokeDasharray={320}
-  strokeDashoffset={320}
-  hover={{ strokeDashoffset: 0 }}
-  theme={{ dark: { stroke: 'violet-400' }, light: { stroke: 'violet-600' } }}
->
-  <Path d="M8 40 L56 12 L104 34 L152 8 L192 24" />
-</Svg>;
-```
-
-That draws the line on hover, and nothing in it declares a transition: every `<svg>` and the shapes
-inside it already transition on `--svgTransitionTime`, which `prefers-reduced-motion: reduce` sets
-to `0s`.
-
-| Prop                                                                     | Notes                                                                                             |
-| ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------- |
-| `fill`, `stroke`                                                         | any colour variable, or `'none'`                                                                  |
-| `fillOpacity`, `strokeOpacity`                                           | `0`–`1` in tenths, the same scale as `opacity`                                                    |
-| `fillRule`                                                               | `'nonzero'`, `'evenodd'`                                                                          |
-| `strokeWidth`, `strokeDasharray`, `strokeDashoffset`, `strokeMiterlimit` | numbers in **SVG user units — no divider**. A dash pattern with its own gap is a string, `'12 4'` |
-| `strokeLinecap`, `strokeLinejoin`                                        | `'butt'`/`'round'`/`'square'`, `'miter'`/`'round'`/`'bevel'`                                      |
-| `paintOrder`                                                             | `'normal'`, `'fill'`, `'stroke'`, `'markers'` — `'stroke'` is how outlined text stays legible     |
-| `vectorEffect`                                                           | `'none'`, `'non-scaling-stroke'`                                                                  |
-| `shapeRendering`                                                         | `'auto'`, `'optimizeSpeed'`, `'crispEdges'`, `'geometricPrecision'`                               |
-| `textAnchor`                                                             | `'start'`, `'middle'`, `'end'` — which part of a label sits on its `x`                            |
-| `dominantBaseline`                                                       | `'alphabetic'`, `'central'`, `'hanging'`, … — which part sits on its `y`                          |
-| `cx`, `cy`, `r`, `rx`, `ry`, `x`, `y`                                    | the SVG 2 geometry, in **user units**, or a percentage. `rx`/`ry` also take `'auto'`              |
-
-Every paint and stroke property here is an inherited one, so setting it on the `<svg>` reaches the
-shapes inside — with two exceptions. `vector-effect` and `dominant-baseline` are not inherited, so
-those two props write a rule that names the element _and_ its descendants: `vectorEffect="non-scaling-stroke"`
-on the `<svg>` keeps a hairline one pixel wide however far the `viewBox` is scaled, and
-`dominantBaseline="central"` on the `<svg>` reaches every label in it.
-
-The geometry props are different again. They belong to one shape, so they go on the shape — but they
-are real CSS, which means they transition, and an animated gauge or a growing bar needs no JavaScript:
-
-```JSX
-<Circle cx={48} cy={48} r={38} strokeDasharray={239} strokeDashoffset={239} hover={{ strokeDashoffset: 60, r: 40 }} />;
-```
-
-Where a prop name and an SVG attribute collide, the element decides which one wins. On `Rect`,
-`width={40}` is forty user units rather than the layout scale's `10rem`; on `Path`, `d` is path data
-rather than `flex-direction`; on `SvgText`, `x` and `y` are the attributes, because the CSS geometry
-properties do not apply to `<text>`. On `Circle` those same names stay the CSS props that transition.
-
-### Icons
-
-An icon set is somebody else's component, so there is no `tag` that renders one and Box cannot wrap
-it. `Icon` styles it through the one channel it does offer — the `className` it spreads onto its own
-`<svg>`:
-
-```JSX
-import Icon from '@box-kite/react/components/icon';
-import { Sun } from 'lucide-react';
-
-<Icon size={5} color="amber-500" hover={{ color: 'amber-300' }} label="Sunny">
-  <Sun />
-</Icon>;
-```
-
-It works with lucide, Tabler, react-icons or an `<svg>` you paste in, and it knows none of their
-APIs: `size` is a number on the ÷4 scale (`size={6}` is 24px, the default) that lands in the class,
-where a CSS declaration outranks the `width`/`height` attributes the icon writes for itself. Without
-a `label` an icon is `aria-hidden`; with one it is `role="img"` and that name. For SVG you draw
-yourself, reach for `Svg` instead — it takes these props directly.
-
-Behind it is `useClassNames`, which is public for the same reason: a `motion.div`, a router's
-`NavLink` or a third-party chart takes a `className` and nothing else.
-
-```JSX
-import { useClassNames } from '@box-kite/react';
-
-const { className, styles } = useClassNames({ color: 'sky-500', hover: { color: 'sky-300' } });
-
-<>
-  {styles}
-  <NavLink to="/" className={className} />
-</>;
-```
-
-`styles` is defined in element mode only, where the CSS travels as hoistable `<style>` elements
-rather than going to a stylesheet; elsewhere it is undefined and rendering it costs nothing.
-
-### Charts
-
-Four micro-primitives, built from the SVG components — the small drawings a dashboard needs rather
-than a chart library:
-
-```JSX
-import { Gauge, MiniDonut, ProgressRing, Sparkline } from '@box-kite/react/components/chart';
-
-<Sparkline data={[4, 9, 6, 12, 10, 15]} variant="area" color="sky-500" width="7rem" />;
-<ProgressRing value={0.62} color="emerald-500" label="62% complete" />;
-<Gauge value={0.4} sweep={180} color="rose-500" />;
-<MiniDonut data={[5, 3, 2]} />;
-```
-
-There are no axes, no legends and no data transformations: what they give you instead is that a
-chart is a Box, so its colour, its size, its dark mode and its hover state are the props you already
-know. A sparkline stretches to whatever box it is in (and keeps its line one width thick, through
-`vectorEffect="non-scaling-stroke"`), a ring's arc eases between values with no animation code, and
-naming follows `Svg`: no `label` means `aria-hidden`, a `label` means `role="img"`.
-
-They are cheap enough for one in every row of a virtualized grid, because the part that differs per
-row — the shape — is the `d` attribute, which the styling engine never sees. What _is_ a style prop
-is the paint, which the rows share. `fill` and `stroke` also take `url(#gradient)` and
-`var(--chart-1)` now, so a gradient fill is a value with a theme and a `hover`, not an attribute.
-
-### Theming a chart library
-
-The other half of charts is the chart library you already use. A `<ChartContainer>` declares the
-variables a chart reads, so the chart itself names no colour at all:
-
-```JSX
-import { ChartContainer } from '@box-kite/react/components/chart';
-import { Area, AreaChart, ResponsiveContainer, XAxis } from 'recharts';
-
-<ChartContainer series={['revenue', 'cost']} height={60}>
-  <ResponsiveContainer width="100%" height="100%">
-    <AreaChart data={months}>
-      <XAxis dataKey="month" />
-      <Area dataKey="revenue" stroke="var(--color-revenue)" fill="var(--color-revenue)" fillOpacity={0.15} />
-      <Area dataKey="cost" stroke="var(--color-cost)" fill="var(--color-cost)" fillOpacity={0.15} />
-    </AreaChart>
-  </ResponsiveContainer>
-</ChartContainer>;
-```
-
-It declares `--chart-1` … `--chart-6` in both themes and one `--color-<series>` per series you name,
-so the chart flips light to dark with nothing in its own code changing — and the names are the ones
-the ecosystem already uses, so a chart lifted out of shadcn's charts works unchanged.
-
-What makes that cheap is the prop behind it. `vars` is the one prop whose declaration _names_ come
-from its value:
-
-```JSX
-<Flex vars={{ 'color-revenue': 'sky-500', 'chart-gap': '4px' }} theme={{ dark: { vars: { 'color-revenue': 'sky-400' } } }}>
-```
-
-declares `--color-revenue: var(--sky-500)` and `--chart-gap: 4px` on the element, inherited by
-everything inside it — including markup this library never rendered. A colour token resolves to the
-variable behind it, anything else is written out as it stands. Being an ordinary prop, it nests in a
-theme, a breakpoint and a pseudo-class, and it lands in a **class**: two subtrees declaring the same
-palette share one rule, and nothing needs a `<style>` tag or an `id` to scope it to one chart.
-
-## Extend props
-
-It is possible to add your own props to define your custom styles.
-You need to do a few steps.
-
-1. In a project root file you need to define your extends
-
-```JS
-import Box from "@box-kite/react";
-
-export const { extendedProps, extendedPropTypes } = Box.extend(
-  // css variables
-  {
-    dark: '#123123',
-    light: '#ededed',
-    cssVarName: 'cssVarValue',
-    myShadow: '10px 5px 5px red',
-    myGradient1: 'linear-gradient(#e66465, #9198e5)',
-    myGradient2: 'linear-gradient(black, white)',
-  },
-  // new custom props
-  {
-    background: [
-      {
-        values: ['myGradient1', 'myGradient2'] as const,
-        valueFormat: (value: string) => `var(--background${value})`,
-      },
-    ],
-  },
-  // extend values for existing props
-  {
-    color: [
-      {
-        values: ['dark', 'light'],
-        valueFormat: (value, getVariableValue) => getVariableValue(value),
-      },
-    ],
-  }
-);
-```
-
-2. Now you have to add typings to the Box in order to have intellisense for you new props and value.
-   You need to create a `box.d.ts`
-
-```JS
-import '@box-kite/react';
-import { ExtractBoxStyles, ExtractComponentsAndVariants } from '@box-kite/core/types';
-import { extendedProps, extendedPropTypes, components } from './path-to-your-b0x-extends-declaration';
-
-declare module '@box-kite/core/types' {
-  namespace Augmented {
-    interface BoxProps extends ExtractBoxStyles<typeof extendedProps> {}
-    interface BoxPropTypes extends ExtractBoxStyles<typeof extendedPropTypes> {}
-    interface ComponentsTypes extends ExtractComponentsAndVariants<typeof components> {}
-  }
-}
-```
-
-### The escape hatch
-
-For a one-off property nobody will type twice, `css` takes a style object and compiles it the way
-every other prop is compiled — into a shared class, never a `style` attribute — so it nests wherever
-a prop does and renders on a server:
-
-```JSX
-<Box css={{ mixBlendMode: 'multiply', WebkitLineClamp: 2 }} hover={{ css: { isolation: 'isolate' } }} />
-```
-
-Names are camelCase and typed, values are CSS written as they stand (a colour token resolves to its
-variable, a length wants its unit), and it sorts last so it wins over a typed prop naming the same
-property. Prefer a prop, then `Box.extend()` for anything used twice.
-
-## Theme for components
-
-In the project root file (main.tsx) use `Theme.setup`
-
-```JS
-import Box from '@box-kite/react';
-
-Box.components({
-  button: {
-    styles: {
-      px: 4
-    },
-    variants: {
-      mytheme: {
-        px: 8
-      }
-    }
-  },
-  ...
-})
-```
-
-All styles will be applied to Button component
-
-```JS
-import Button from '@box-kite/react/components/button';
-
-function MyComponent() {
-  return <Button>Click me</Button>
-}
-```
-
-or is possible to use Button with specific variant
-
-```JS
-import Button from '@box-kite/react/components/button';
-
-function MyComponent() {
-  return <Button variant="mytheme">Click me</Button>
-}
-```
-
-## Theme variables
-
-In CSS file is possible to override default values for:
-
-```CSS
-  --borderColor: black;
-  --outlineColor: black;
-  --lineHeight: 1.2;
-  --fontSize: 14px;
-  --transitionTime: 0.25s;
-```
-
-## React Server Components (React 19)
-
-Box renders inside a Server Component with no `'use client'` — the styles travel with the markup
-instead of being injected by an effect. A server component just imports the package as usual:
-
-```tsx
-// app/page.tsx — a Server Component. No 'use client', no provider, no CSS import.
 import Flex from '@box-kite/react/components/flex';
-import { H1, P } from '@box-kite/react/components/semantics';
+import { H2, P } from '@box-kite/react/components/semantics';
 
-export default function Page() {
+export function PlanCard() {
   return (
-    <Flex d="column" gap={2} p={6} bgColor="slate-50" borderRadius={2}>
-      <H1 fontSize={24}>Rendered on the server</H1>
-      <P color="slate-600" sm={{ fontSize: 16 }}>
-        Its CSS was hoisted into &lt;head&gt; by React, not inserted by a client runtime.
-      </P>
+    <Flex d="column" gap={3} p={6} md={{ p: 8 }} borderRadius={3} shadow="md"
+          bgColor="white" theme={{ dark: { bgColor: 'slate-900' } }}>
+      <H2 fontSize={20} fontWeight={600}>Pro plan</H2>
+      <P color="slate-600">Every value on this card is checked by the compiler.</P>
+      <Button hover={{ bgColor: 'indigo-600' }}>Upgrade</Button>
     </Flex>
   );
 }
 ```
 
-The `react-server` export condition resolves to a build of Box that calls no hook, schedules no
-effect and never touches the DOM: each generated rule comes back as a `<style href precedence>`
-element rendered next to the markup, which React 19 hoists into `<head>` and dedupes by `href`.
-That is also what makes it stream-safe — nothing has to wait for a commit that Suspense may split.
+Each prop becomes one shared class: `p={6}` is `padding: 1.5rem`, `md` wraps it in a media query, `theme` scopes it to the dark
+subtree, and the same value anywhere else in the app reuses the same rule.
 
-**Client components** (anything with `'use client'`) can use the same emission path, and should in an
-RSC app, so their CSS is in the HTML too. One line, in a module the root layout imports:
+## ⚡ Quick start
 
-```tsx
-'use client';
-import Box from '@box-kite/react';
+Start a new Vite + React app with a design, a sample page and the agent setup already in it:
 
-Box.configure({ sink: 'element' }); // React 19 only — see below
+```bash
+npm create @box-kite@latest
 ```
 
-Notes and limits:
+Or add it to the app you have:
 
-- **The cascade comes from `@layer`, not from element order.** React hoists elements in render
-  order, so a responsive rule could otherwise land ahead of the base rule it has to override. In
-  this mode every rule is wrapped in a cascade layer (one per breakpoint × prop) and the base
-  element declares the layer order once, up front — the order the elements end up in cannot change
-  the result. The consequence worth knowing: **unlayered CSS of your own always wins** over Box
-  props here, which matches where the library puts its `<style>` element in the other modes.
-- **Declare `Box.extend()` props before the first render.** CSS appends a layer it meets for the
-  first time after every layer already named, so a prop registered mid-render sorts after the
-  built-ins.
-- **Class names are content-hashed** in this mode instead of counted, so a class resolved on the
-  server matches the one the client bundle resolves for the same props.
-- **Still client-only:** hover-callback children (`{({ isHover }) => …}`) and `Box.Theme`, which
-  needs state, storage and a media-query listener. Theme _styles_ are unaffected: a `theme` prop
-  generates rules scoped to the theme's own subtree, so setting the theme class and `data-theme` on
-  `<html>` in a server component is enough.
-- **Most pre-built components render on the server too.** `Flex`, `Grid`, `Button`, `Textbox`,
-  `Textarea`, `RadioButton`, `Icon`, the SVG elements, `VisuallyHidden` and the semantic tags (`H1`, `P`, `Link`, `Nav` …) are
-  hook-free wrappers around Box, and their published chunks import the package by name — so the
-  `react-server` condition reaches them and they resolve the same hook-free Box. Import them
-  straight into a Server Component.
-- **The stateful ones become client boundaries.** `Dropdown`, `Tooltip`, `Overlay`, `DataGrid`,
-  `Checkbox`, `Switch`, `RadioGroup`, `Select` and `Form` hold state or measure the DOM, so their chunks ship a
-  `'use client'` banner.
-  A Server Component may still import one — the bundler opens the boundary for you — but it is
-  hydrated like any client component, and its CSS is in the server-rendered HTML only if a client
-  module of yours has already called `Box.configure({ sink: 'element' })`.
-- **React 19 only.** On React 18 the elements cannot be hoisted and render inline; keep the default
-  sink there (a documented App Router fallback for React 18 is still to come).
-- **Cost:** one base element per page (the reset, `:root`, and the layer order — ~1.8 KB gzipped)
-  plus one `<style>` element per distinct rule, deduped across every Box that uses it.
+```bash
+npm install @box-kite/react
+```
 
-A whole Next.js App Router app built this way — streamed Suspense boundary, client island, theme
-toggle, and a page of pre-built components rendered on the server — is in
-[`examples/next-app`](examples/next-app): `npm run build:next-app` and `npm run smoke:next-app`,
-which starts the production server and asserts on the HTML it serves.
+React 18 or newer, and **no third-party dependencies**: the install is Box Kite and its own engine, nothing else. TypeScript is
+optional, but it is where the library shines.
 
-## Behaviour primitives for your own components
+## ✨ Why Box Kite
 
-Every accessible widget needs the same mechanics, and none of them are visible in the markup:
-return focus to whatever opened a layer, move through a list with the arrow keys, close on Escape
-or a press outside, hold a value the consumer may or may not own, generate ids that wire one
-element to another. They are what this library's components are built from, and they ship on their
-own for the patterns it does not cover:
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <h4>🤖 AI-first</h4>
+      <p>The package carries its own <code>AGENTS.md</code>, a <code>docs/</code> folder and a skill, all generated from the prop
+      registry so they can never be a version behind. An MCP server answers mid-task.</p>
+    </td>
+    <td width="50%" valign="top">
+      <h4>🔒 Typed down to the value</h4>
+      <p>Every prop accepts a closed set: palette tokens, scale steps, keywords. A typo is a compile error with a
+      <i>“Did you mean”</i>, not a silently missing style.</p>
+    </td>
+  </tr>
+  <tr>
+    <td valign="top">
+      <h4>🧩 Zero config, zero dependencies</h4>
+      <p>No CSS files, no PostCSS, no bundler plugin, no provider — and no third-party packages in your lockfile. Styles are
+      generated on demand and deduplicated by content.</p>
+    </td>
+    <td valign="top">
+      <h4>🖥️ Server Components</h4>
+      <p>Renders in a React Server Component with no <code>'use client'</code>: each rule travels with the markup as a
+      <code>&lt;style&gt;</code> React 19 hoists and dedupes.</p>
+    </td>
+  </tr>
+  <tr>
+    <td valign="top">
+      <h4>♿ Accessible components</h4>
+      <p>Dialog, Menu, Tabs, Combobox, DatePicker, DataGrid and more — each with the ARIA and keyboard of its APG pattern, swept
+      by axe in CI.</p>
+    </td>
+    <td valign="top">
+      <h4>🎨 Modern CSS, as props</h4>
+      <p>OKLCH palette, themes, container queries, <code>@starting-style</code>, anchor positioning, view transitions, scroll
+      timelines — and the top layer instead of <code>z-index</code>.</p>
+    </td>
+  </tr>
+</table>
+
+## 🤖 Built for AI agents
+
+A model's memory of a CSS-in-JS API is usually a memory of a _different_ API — the prop names here collide with Tailwind's
+and Chakra's while the numbers mean something else. So Box Kite does not rely on what a model remembers:
+
+| What                                               | How you get it                                                                                        |
+| -------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| **`AGENTS.md` + `docs/`** inside the npm package   | Automatic — `node_modules/@box-kite/react/AGENTS.md`, with every prop and the CSS it writes           |
+| **Project wiring** (`AGENTS.md`, `CLAUDE.md`, MCP) | `npm create @box-kite@latest -- --agents-only` — merges into an existing repo, and updates on a rerun |
+| **Skill** for Claude Code, Cursor, Codex, Copilot… | `npx skills add box-kite/box-kite`                                                                    |
+| **MCP server** — no key, no network                | `claude mcp add box-kite -- npx -y @box-kite/mcp` (or the stdio config your editor takes)             |
+| **llms.txt** and markdown docs                     | [box-kite.dev/llms.txt](https://www.box-kite.dev/llms.txt) — append `.md` to any docs URL             |
+
+**`check_styles` runs your props through the real engine.** A value the library does not accept writes no rule and no class
+name — by design, so a typo never emits a broken declaration. The MCP tool makes that visible before anything renders:
+
+```text
+✅ p         → .p-4{padding:1rem}
+❌ bgColor   does not accept "blue-550" — no rule and no class name were written.
+✅ fontSize  → .fontSize-14{font-size:0.875rem}
+⚠️ href      an HTML attribute, not a style prop. Written at the top level it typechecks
+             and is then dropped — it goes in props={{ "href": … }}.
+```
+
+**The dev console is written as a prompt.** Each warning says what rendered and the line to write instead, so an agent reading
+a test run fixes itself:
+
+```text
+[box-kite] bgColor="bleu-500" wrote no CSS: bgColor does not take that value, so the prop
+           was dropped along with its class. Did you mean "blue-500"?
+[box-kite] fontSize={4} is 4px text: fontSize's divider is 16, not the spacing scale's 4,
+           so the number is the pixel size. For 16px write fontSize={16}.
+```
+
+**And a UI a model writes at runtime is a first-class citizen.** `catalog()` turns every component and every value its props
+take into JSON Schema — the shape structured output, json-render and A2UI want — and `<SpecRenderer>` renders what comes back,
+checking each node against an allow-list you control. `toolPart()` and `a2uiToSpec()` read AI SDK, assistant-ui, CopilotKit,
+AG-UI and A2UI, and `<ToolCallCard>`, `<ApprovalCard>`, `<Reasoning>` and `<StreamingText>` draw an agent's turn.
+→ [Generative UI](https://www.box-kite.dev/generative-ui/) · [Agent components](https://www.box-kite.dev/agent/) ·
+[Interop](https://www.box-kite.dev/interop/)
+
+## 🔒 Typed down to the value
+
+Props are not `string`. Colours are palette tokens (with an optional `/opacity`), spacing is a scale, keywords are unions — so
+the editor autocompletes them and the compiler catches the rest:
+
+<!-- prettier-ignore -->
+```tsx
+<Box bgColor="bleu-500" />
+//   ~~~~~~~ ts(2820): Type '"bleu-500"' is not assignable… Did you mean '"blue-500"'?
+
+<Box display="flexx" />
+//   ~~~~~~~ ts(2820): … Did you mean '"flex"'?
+
+<Box opacity={50} />
+//   ~~~~~~~ ts(2322): Type '50' is not assignable to type '0 | 1 | 0.1 | 0.2 | …'
+
+<Button variant="primaryy">Save</Button>
+//      ~~~~~~~ ts(2322): a component's variants are typed too
+
+<Box css={{ mixBlendMod: 'multiply' }} />
+//          ~~~~~~~~~~~ ts(2561): … Did you mean to write 'mixBlendMode'?
+```
+
+- **Hover a prop, see its CSS.** Every prop's JSDoc carries an example such as `p={4} → padding: 1rem` — generated by running
+  the engine, so the editor can never teach a scale the library stopped using.
+- **Your own tokens join the types.** `Box.extend()` adds variables, props and values; one `declare module` makes them
+  autocomplete like the built-ins. `Box.components()` variants are typed the same way.
+- **The escape hatch is typed too.** `css={{ … }}` is checked against `csstype` and still compiles to a shared class — never a
+  `style` attribute.
+
+## 📐 The scales
+
+The one thing worth learning by heart — the divider is per prop:
+
+| Prop                                     | Scale               | Example                                  |
+| ---------------------------------------- | ------------------- | ---------------------------------------- |
+| `p`, `m`, `gap`, `width`, `borderRadius` | ÷4 (quarter rem)    | `p={4}` → `1rem` (16px)                  |
+| `fontSize`                               | ÷16                 | `fontSize={14}` → `0.875rem` (14px)      |
+| `b` (border width), `lineHeight`         | px                  | `b={1}` → `1px`                          |
+| `animationDuration`, `transitionDelay`…  | ms                  | `transitionDuration={150}` → `150ms`     |
+| colours                                  | tokens + `/opacity` | `bgColor="blue-500/40"` → `color-mix(…)` |
+
+Three conventions follow from "every visual value is a prop": the element comes from the component (`<Flex>`, `<Button>`,
+`<H1>`, `<Path>`), HTML attributes go in `props` (`<Link props={{ href: '/about' }}>`), and there is no `style={{ }}`.
+
+## 🧱 Components
+
+Every component is a `Box` underneath — same props, same theming, same `variant`s — and each is its own entry point, so a
+`Textbox` never pulls the `DataGrid` into your bundle.
+
+| Area                  | Components                                                                                                                                                                                                                                                                                                                                                  |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Layout & content**  | [`Flex`](https://www.box-kite.dev/flex/), [`Grid`](https://www.box-kite.dev/grid/), `H1`–`H6`, `P`, `Link`, `Nav`…, [`List`](https://www.box-kite.dev/list/), [`Svg` + every SVG element](https://www.box-kite.dev/svg/), [`Icon`](https://www.box-kite.dev/icon/), `Skeleton`                                                                              |
+| **Forms**             | [`Button`](https://www.box-kite.dev/button/), [`Textbox`](https://www.box-kite.dev/textbox/), [`Checkbox`](https://www.box-kite.dev/checkbox/), [`Switch`](https://www.box-kite.dev/switch/), [`RadioGroup`](https://www.box-kite.dev/radiobutton/), [`Combobox`](https://www.box-kite.dev/combobox/), [`Slider`](https://www.box-kite.dev/slider/), `Form` |
+| **Dates**             | [`DateField`](https://www.box-kite.dev/date-field/), [`Calendar`](https://www.box-kite.dev/calendar/), [`DatePicker`](https://www.box-kite.dev/date-picker/), `TimeZoneSelect` — over a zone-safe [date module](https://www.box-kite.dev/dates/)                                                                                                            |
+| **Overlays**          | [`Dialog`](https://www.box-kite.dev/dialog/), [`Popover`](https://www.box-kite.dev/popover/), [`Menu`](https://www.box-kite.dev/menu/), [`Tooltip`](https://www.box-kite.dev/tooltip/), [`Toaster`](https://www.box-kite.dev/toaster/) — in the top layer, no portal, no `z-index`                                                                          |
+| **Disclosure**        | [`Tabs`](https://www.box-kite.dev/tabs/), [`Accordion`](https://www.box-kite.dev/accordion/), [`Progress`](https://www.box-kite.dev/progress/)                                                                                                                                                                                                              |
+| **Data & dashboards** | [`DataGrid`](https://www.box-kite.dev/datagrid/) (sort, filter, group, edit, paste, virtualized), [`DashboardGrid`](https://www.box-kite.dev/dashboard/), [`Sparkline`, `Gauge`, `ChartContainer`](https://www.box-kite.dev/charts/)                                                                                                                        |
+| **AI**                | [`ToolCallCard`, `ApprovalCard`, `Reasoning`, `StreamingText`](https://www.box-kite.dev/agent/), `markdownComponents`, [`SpecRenderer`](https://www.box-kite.dev/generative-ui/)                                                                                                                                                                            |
+
+The behaviour behind them ships on its own as `@box-kite/react/a11y` — focus return, roving focus, dismissal and controllable
+state — for the widgets you build yourself.
+
+## 🖥️ Server Components
 
 ```tsx
-import { useControllableState, useDismiss, useFocusReturn, useIdentifier, useRovingFocus } from '@box-kite/react/a11y';
-import VisuallyHidden from '@box-kite/react/components/visuallyHidden';
+// app/page.tsx — a Server Component. No 'use client', no provider, no CSS import.
+import Flex from '@box-kite/react/components/flex';
+import { H1 } from '@box-kite/react/components/semantics';
 
-function Menu({ open, onOpenChange, items }) {
-  const trigger = useRef(null);
-  const popup = useRef(null);
-
-  const roving = useRovingFocus({ count: items.length, textOf: (index) => items[index].label });
-
-  useDismiss({ enabled: open, inside: [trigger, popup], onDismiss: (reason, event) => onOpenChange(false, { reason, event }) });
-  useFocusReturn({ enabled: open, returnTo: trigger });
+export default function Page() {
+  return (
+    <Flex d="column" gap={2} p={6}>
+      <H1 fontSize={24}>Rendered on the server</H1>
+    </Flex>
+  );
 }
 ```
 
-2.2 KB gzipped for all five hooks, and they pull in no styling engine — you can use them next to
-any CSS you like. Changes are **event-sourced**: `onChange(value, { reason, event })` tells you
-_why_ something closed (`'escape'`, `'outside-pointer'`, a reason of your own), which is what makes
-a controlled component controllable in practice. Roles and ARIA are deliberately left to you: a
-listbox and a menu navigate identically and are named completely differently.
+The `react-server` export condition resolves to a hook-free build of Box; each rule comes back as a `<style href precedence>`
+element that React 19 hoists into `<head>` and dedupes, so it is stream-safe and the cascade is held by `@layer`, not by element
+order. → [How it works](https://www.box-kite.dev/server-components/) ·
+[measured against CSS modules](https://www.box-kite.dev/blog/styling-server-components/) ·
+[a whole Next.js app](examples/next-app)
 
-Full reference: [docs/a11y-primitives.md](docs/a11y-primitives.md).
+## 📦 Packages
 
-## Using the core without React
+| Package                                                              | What it is                                                                                                                       |
+| -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| [`@box-kite/react`](https://www.npmjs.com/package/@box-kite/react)   | `Box`, every component and hook; depends on `@box-kite/core` and nothing else                                                    |
+| [`@box-kite/core`](https://www.npmjs.com/package/@box-kite/core)     | the styling engine with no framework and no dependencies — `createStyleEngine().classNames(props)` ([example](examples/vanilla)) |
+| [`@box-kite/mcp`](https://www.npmjs.com/package/@box-kite/mcp)       | the MCP server: docs search, props, components, rules and `check_styles`                                                         |
+| [`@box-kite/create`](https://www.npmjs.com/package/@box-kite/create) | `npm create @box-kite` — a Vite + React app with a design and the agent setup                                                    |
 
-The engine that turns props into CSS has no framework in it, and it is published on its own:
+## 📚 Learn more
 
-```js
-import { createStyleEngine } from '@box-kite/core';
+- **[Documentation](https://www.box-kite.dev)** — every prop and component, with live demos
+- **[Start with AI](https://www.box-kite.dev/start-with-ai/)** — build an app in three prompts with Claude Code, Cursor, Codex or Copilot
+- **[Built for AI](https://www.box-kite.dev/ai-context/)** — what ships for agents, and why
+- **[Theming](https://www.box-kite.dev/theme-setup/)**, **[Extending](https://www.box-kite.dev/box-functions/)**,
+  **[Escape hatch](https://www.box-kite.dev/escape-hatch/)**
+- **[`BOX_KITE_AI_CONTEXT.md`](src/BOX_KITE_AI_CONTEXT.md)** — the whole surface on one page
 
-const engine = createStyleEngine();
+## 🤝 Contributing
 
-document.querySelector('#card').className = engine.classNames({
-  p: 4,
-  bgColor: 'blue-500',
-  borderRadius: 2,
-  hover: { bgColor: 'blue-600' },
-  md: { p: 8 },
-});
-```
+Issues and pull requests are welcome — start with [CONTRIBUTING.md](CONTRIBUTING.md), which covers the architecture and the
+framework-free core boundary. Questions go to [SUPPORT.md](SUPPORT.md), vulnerabilities to [SECURITY.md](SECURITY.md).
 
-That is the whole runtime. The props are the ones `<Box>` takes — pseudo-classes, breakpoints,
-themes, `component`/`variant` — and the CSS behind them is written to a `<style>` element the
-engine creates, on its own microtask. Nothing has to be flushed, mounted or provided.
+If Box Kite saves you time, a ⭐ on [GitHub](https://github.com/box-kite/box-kite) helps other people find it.
 
-```js
-const engine = createStyleEngine();
+## License
 
-// Custom variables and props, the vanilla form of Box.extend()
-engine.extend(
-  { brand: '#6d28d9' },
-  {},
-  { bgColor: [{ styleName: 'background-color', values: ['brand'], valueFormat: (v, get) => get(v) }] },
-);
-
-// Component defaults with variants, the vanilla form of Box.components()
-engine.components({ panel: { styles: { p: 6, borderRadius: 3 }, variants: { accent: { b: 2, borderColor: 'brand' } } } });
-
-engine.classNames({ component: 'panel', variant: 'accent' });
-engine.flushSync(); // only when computed styles are read in the same tick
-engine.getStyles(); // the stylesheet as text, for static output
-```
-
-Theming is the same state machine `<Box.Theme>` runs, as a plain object:
-
-```js
-import { createThemeController } from '@box-kite/core';
-
-// Reads prefers-color-scheme, restores a stored choice, writes the theme class and data-theme onto
-// <html>, and follows the system preference until something overrides it. A theme rule is scoped to
-// the subtree that theme owns (`@scope (.dark) to ([data-theme])`), so one class restyles everything
-// inside it and a nested theme takes over from there.
-const theme = createThemeController({ storageKey: 'theme' });
-
-theme.subscribe((name) => console.log('theme is now', name));
-theme.set('dark'); // theme.set(null) hands control back to the system
-```
-
-Notes:
-
-- **The engine is explicit here.** The React entries share one lazily-created default instance so
-  `Box` and `Box.extend()` agree with no configuration; a vanilla app has no such ambient thing to
-  agree with, and separate instances are what keeps a widget independent of its host page.
-- **No React reaches this entry**, in the sources or in the bundle — both are checked in CI. It is
-  14 KB gzipped, all engine.
-- `sink: 'string'` collects CSS in memory with no DOM (`getStyles()` reads it back), which is how
-  server rendering works; `sink: 'element'` is the React 19 mode above and has no meaning here, so
-  `classNames()` refuses to run in it.
-
-A complete page — props, pseudo-classes, breakpoints, themes, `extend`, `components`, no framework
-— is in [`examples/vanilla`](examples/vanilla): `npm run dev:vanilla`.
-
-## Architecture
-
-The styling engine is framework-free. Everything that generates CSS — the prop definitions,
-the value formatters, class-name generation, rule ordering, the style sinks (CSSOM, `textContent`,
-string for SSR, style elements for React 19), the flush scheduler, CSS variables and the theme
-runtime — lives in `src/core/` and imports no React at all. CI fails the build if it ever does
-(`npm run check:boundaries`), and it ships on its own as
-[`@box-kite/core`](#using-the-core-without-react).
-
-React is a thin adapter on top of it:
-
-|                                                            | Files | Lines | Share    |
-| ---------------------------------------------------------- | ----- | ----- | -------- |
-| Core engine (`src/core/`, `core.ts`)                       | 23    | 5,702 | 90.9%    |
-| React binding (`src/react/`, `box.ts`, `rsc.ts`, `ssg.ts`) | 14    | 573   | **9.1%** |
-
-The binding is the whole React-specific surface: resolve class names during render, flush the
-pending rules from `useInsertionEffect`, render the style elements of the Server-Component path,
-and hold the theme state. React feature code the components share sits alongside it and is counted
-separately — three helper hooks (`useVisibility`, `usePortalContainer`, `useVirtualization`), the
-modules behind [`@box-kite/react/a11y`](#behaviour-primitives-for-your-own-components), the
-markup the form controls share, and the ARIA the SVG and chart components share, 911 lines together. A Vue adapter would need its own arrow-key navigation for the same reason it
-would need its own components, which says nothing about how much of the styling engine is
-React-specific.
-
-That ratio is not theoretical: the same engine is driven straight from the DOM in
-[`examples/vanilla`](examples/vanilla) with no framework loaded, and from a server with no
-`document` in `ssg.ts`. Numbers are printed by `npm run check:boundaries` and refreshed with the
-code.
-
-See [CONTRIBUTING.md](CONTRIBUTING.md#the-core-boundary) for the boundary rules and where new code
-belongs.
-
-## AI editors and agents
-
-The package ships its own instructions, because an agent has priors about a library this new and they
-are wrong. `AGENTS.md` at the package root is the file agents look for — the rules, the dividers, one
-worked example — and `docs/` sits beside it: every prop with the CSS it writes (`docs/props.md`),
-every component with its import and whether it renders on a server (`docs/components.md`), and the
-behaviour hooks (`docs/a11y.md`). All of it is generated during the build from the prop registry, the
-rules file and the built chunks' own exports, so none of it can drift from the library it describes.
-
-```shell
-npm create @box-kite@latest -- --agents-only
-```
-
-That adds a root `AGENTS.md` (merged into yours, if you have one) with the four facts a model gets wrong
-and a pointer to the package's own, so an upgrade brings the rules with it; a `CLAUDE.md` importing it;
-and the MCP server below, in `.mcp.json` and in the config of each editor whose folder is there. Run again,
-it updates rather than repeats. `npm create @box-kite` writes all of it into a new app already
-(`--no-agents` leaves it out).
-
-Codex, Cursor, Copilot, VS Code, Windsurf, Cline and Zed read a root `AGENTS.md` natively; Claude
-Code reads `CLAUDE.md`, which is why the one line `@AGENTS.md` is there. The long-form
-[BOX_KITE_AI_CONTEXT.md](src/BOX_KITE_AI_CONTEXT.md) ships in the tarball too.
-
-The same rules are also a skill, which roughly forty-five coding agents install with one command:
-
-```shell
-npx skills add box-kite/box-kite            # Claude Code, Cursor, Codex, Copilot, Gemini CLI, Zed…
-```
-
-In Claude Code this repository is also a plugin marketplace — `/plugin marketplace add box-kite/box-kite`
-then `/plugin install box-kite@box-kite` — and Cursor takes the rules as a rule file of its own:
-
-```shell
-mkdir -p .cursor/rules && cp node_modules/@box-kite/react/.cursor/rules/box-kite.mdc .cursor/rules/
-```
-
-Both are generated from the same rules file as `AGENTS.md`, and both are served by the docs site
-([skill.md](https://www.box-kite.dev/skill.md), [box-kite.mdc](https://www.box-kite.dev/box-kite.mdc))
-for an agent that can fetch a URL but not run a command.
-
-### The MCP server
-
-A file is read once, at the start; an MCP server is asked mid-task, which is when the question comes
-up. `@box-kite/mcp` is six tools at capability level — `search_docs`, `get_props`, `get_component`,
-`check_styles`, `get_rules`, `get_blocks` — with no key, no network and no state, because the
-references and the engine are built into it.
-
-```shell
-claude mcp add box-kite -- npx -y @box-kite/mcp     # or the stdio config your editor takes
-```
-
-`check_styles` is the one a file cannot replace. Every prop here accepts a closed set of values, and
-a value it does not accept writes **no rule and no class name** — silently, by design, so that a typo
-never emits a broken declaration. It is the right behaviour and it is invisible, so the tool hands
-your props to the real engine and reports what each one wrote:
-
-```shell
-✅ p         → .p-4{padding:1rem}
-❌ bgColor     does not accept "blue-550" — no rule and no class name were written.
-✅ fontSize  → .fontSize-14{font-size:0.875rem}
-⚠️ href        an HTML attribute, not a style prop. It goes in props={{ "href": … }}.
-```
-
-For the same reason `get_props` measures a numeric prop's scale rather than describing its divider:
-it runs 1, 2, 4 and 8 through the engine and shows what came out. See [mcp/README.md](mcp/README.md).
+[MIT](LICENSE) © Maxim Procopenco

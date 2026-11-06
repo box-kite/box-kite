@@ -99,7 +99,7 @@ if (violations.length) {
   process.exit(1);
 }
 
-// Informational: the numbers the README architecture section publishes. The binding is what a non-React
+// Informational: how much of core + binding is React. The binding is what a non-React
 // adapter would have to reimplement; React *feature* code beside it (the shared hooks, `src/react/a11y`,
 // `src/react/forms`, `src/react/svg`) is counted separately, since a Vue adapter would need its own
 // arrow-key navigation for the same reason it needs its own components.
