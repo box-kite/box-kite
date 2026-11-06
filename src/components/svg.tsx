@@ -125,8 +125,8 @@ export type SvgProps = Props & RefAttributes<SVGSVGElement>;
 
 /**
  * The rest of the elements, each with the attributes it owns — everything CSS styles on it stays a Box
- * prop. `transform` is an attribute everywhere, because SVG's version carries its own centre of rotation
- * (`rotate(-90 48 48)`) and the CSS `rotate` prop cannot say that without a `transformOrigin` we lack.
+ * prop. A rotation about the shape's own centre is `rotate={45} transformBox="fill-box" transformOrigin="center"`;
+ * `transform` stays an attribute for a matrix, or an angle that is data rather than a class.
  */
 export const G = /* @__PURE__ */ svgElement('g', ['transform']);
 export const Defs = /* @__PURE__ */ svgElement('defs');

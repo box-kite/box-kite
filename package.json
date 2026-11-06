@@ -548,7 +548,7 @@
         "../dataGridDateParts.mjs"
       ],
       "gzip": true,
-      "limit": "99.89 kB"
+      "limit": "100.21 kB"
     },
     {
       "name": "Interaction delivery, the chunk the first Box.onInteraction fetches",
@@ -614,7 +614,7 @@
         "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "169.87 kB"
+      "limit": "170.45 kB"
     }
   ],
   "repository": {
@@ -648,7 +648,7 @@
     "url": "https://github.com/box-kite/box-kite/issues"
   },
   "homepage": "https://www.box-kite.dev",
-  "description": "One React component with 235 typed CSS props that generates atomic CSS at runtime — no CSS files, no build step, renders in a Server Component.",
+  "description": "One React component with 238 typed CSS props that generates atomic CSS at runtime — no CSS files, no build step, renders in a Server Component.",
   "peerDependencies": {
     "react": "^16.14.0 || ^17.0.0 || ^18.0.0 || ^19.0.0",
     "react-dom": "^16.14.0 || ^17.0.0 || ^18.0.0 || ^19.0.0"

@@ -264,7 +264,7 @@ describe('every declared prop value produces a rule', () => {
   // This number used to be one more hand-written copy of the figure, which is how C5 raised it here and
   // left the npm description claiming 165 (bug #114) — the first drift being bug #71's '~144' against a
   // registry of 117. The copies are read out of the files now, so adding a prop fails until they agree.
-  const PROP_COUNT = 235;
+  const PROP_COUNT = 238;
 
   // A file that stops quoting the figure fails too, so a rewording is noticed rather than silently exempt.
   const quotingFiles = [
@@ -339,14 +339,37 @@ describe('SVG paint and stroke props', () => {
     ['strokeLinecap', 'round', 'stroke-linecap:round'],
     ['strokeLinejoin', 'bevel', 'stroke-linejoin:bevel'],
     ['paintOrder', 'stroke', 'paint-order:stroke'],
+    ['paintOrder', 'stroke fill markers', 'paint-order:stroke fill markers'],
+    ['pointerEvents', 'visibleStroke', 'pointer-events:visibleStroke'],
+    ['pointerEvents', 'bounding-box', 'pointer-events:bounding-box'],
+    ['transformBox', 'fill-box', 'transform-box:fill-box'],
+    ['touchAction', 'pan-x pinch-zoom', 'touch-action:pan-x pinch-zoom'],
     ['shapeRendering', 'crispEdges', 'shape-rendering:crispEdges'],
   ] as const)('%s emits %s', (prop, value, declaration) => {
     expect(generatedRulesFor({ [prop]: value }, `svg-${prop}`)).toContain(`{${declaration}}`);
   });
 
+  describe('transformOrigin is a keyword, a position pair or a number on the ÷4 scale', () => {
+    it.each([
+      ['center', 'transform-origin:center'],
+      ['top left', 'transform-origin:top left'],
+      ['48px 48px', 'transform-origin:48px 48px'],
+      ['1/2 1/4', 'transform-origin:50% 25%'],
+      [4, 'transform-origin:1rem'],
+    ] as const)('%o emits %s', (value, declaration) => {
+      expect(generatedRulesFor({ transformOrigin: value }, `origin-${value}`)).toContain(`{${declaration}}`);
+    });
+
+    it.each(['right 10px bottom 5px', 'top 10px', 'middle'])('emits nothing for %o', (value) => {
+      const engine = makeEngine(`origin-reject-${value}`);
+
+      expect(renderStyles(engine, { transformOrigin: value } as BoxStyleProps, true)).toEqual(['_s']);
+      expect(generatedRulesOf(engine)).toBe('');
+    });
+  });
+
   describe('lengths are SVG user units — no divider, no unit', () => {
     it.each([
-      ['strokeWidth', 'stroke-width'],
       ['strokeMiterlimit', 'stroke-miterlimit'],
       ['strokeDasharray', 'stroke-dasharray'],
       ['strokeDashoffset', 'stroke-dashoffset'],
@@ -355,12 +378,27 @@ describe('SVG paint and stroke props', () => {
       expect(generatedRulesFor({ [prop]: 1.5 }, `svg-unit-half-${prop}`)).toContain(`{${styleName}:1.5}`);
     });
 
+    // The variable carries a unit: Firefox drops `calc(var(--w) * 4)` when `--w` is a bare number (measured).
+    it('passes strokeWidth through and declares it, in px, for the named dash patterns', () => {
+      expect(generatedRulesFor({ strokeWidth: 2 }, 'svg-unit-strokeWidth')).toContain('{--boxStrokeWidth:2px;stroke-width:2}');
+      expect(generatedRulesFor({ strokeWidth: 1.5 }, 'svg-unit-half-strokeWidth')).toContain('{--boxStrokeWidth:1.5px;stroke-width:1.5}');
+    });
+
     it('takes a percentage of the path length for the dash offset', () => {
       expect(generatedRulesFor({ strokeDashoffset: '40%' }, 'svg-dashoffset-pct')).toContain('{stroke-dashoffset:40%}');
     });
   });
 
-  describe('a dash pattern is a number or a string', () => {
+  describe('a dash pattern is a number, a string or a name', () => {
+    it('scales a named pattern with the stroke width, and falls back to a 1px one', () => {
+      const width = 'var(--boxStrokeWidth, 1px)';
+
+      expect(generatedRulesFor({ strokeDasharray: 'dashed' }, 'svg-dash-dashed')).toContain(
+        `{stroke-dasharray:calc(${width} * 4) calc(${width} * 2)}`,
+      );
+      expect(generatedRulesFor({ strokeDasharray: 'dotted' }, 'svg-dash-dotted')).toContain(`{stroke-dasharray:${width} ${width}}`);
+    });
+
     it('reads a single number as the dash and the gap alike', () => {
       expect(generatedRulesFor({ strokeDasharray: 8 }, 'svg-dash-number')).toContain('{stroke-dasharray:8}');
     });
@@ -459,7 +497,9 @@ describe('SVG paint and stroke props', () => {
     expect(generatedRulesFor({ hover: { stroke: 'red-500' } }, 'svg-hover')).toContain(
       '.hover-stroke-red-500:hover{stroke:var(--red-500,oklch(63.7% .237 25.3))}',
     );
-    expect(generatedRulesFor({ md: { strokeWidth: 3 } }, 'svg-breakpoint')).toContain('.md-strokeWidth-3{stroke-width:3}');
+    expect(generatedRulesFor({ md: { strokeWidth: 3 } }, 'svg-breakpoint')).toContain(
+      '.md-strokeWidth-3{--boxStrokeWidth:3px;stroke-width:3}',
+    );
   });
 });
 
@@ -469,10 +509,11 @@ describe('SVG paint and stroke props', () => {
  * `viewBox` sets up, which three of the four numeric families here would break.
  */
 describe('SVG text and geometry props', () => {
-  describe('geometry lengths are user units — no divider, no unit', () => {
-    it.each([['cx'], ['cy'], ['r'], ['rx'], ['ry'], ['x'], ['y']] as const)('%s passes the number through', (prop) => {
-      expect(generatedRulesFor({ [prop]: 12 }, `svg-geom-${prop}`)).toContain(`{${prop}:12}`);
-      expect(generatedRulesFor({ [prop]: 0.5 }, `svg-geom-half-${prop}`)).toContain(`{${prop}:0.5}`);
+  // In px, which is a user unit: Firefox and WebKit drop a bare number in these seven, so a circle had no radius (bug #330).
+  describe('geometry lengths are user units — no divider, written in px', () => {
+    it.each([['cx'], ['cy'], ['r'], ['rx'], ['ry'], ['x'], ['y']] as const)('%s writes the number in px', (prop) => {
+      expect(generatedRulesFor({ [prop]: 12 }, `svg-geom-${prop}`)).toContain(`{${prop}:12px}`);
+      expect(generatedRulesFor({ [prop]: 0.5 }, `svg-geom-half-${prop}`)).toContain(`{${prop}:0.5px}`);
     });
 
     it.each([['cx'], ['cy'], ['r'], ['rx'], ['ry'], ['x'], ['y']] as const)('%s takes a percentage of the viewport', (prop) => {
@@ -486,7 +527,7 @@ describe('SVG text and geometry props', () => {
       const classNames = renderStyles(engine, { [prop]: -8 });
 
       expect(classNames).toContain(`${prop}--8`);
-      expect(generatedRulesOf(engine)).toContain(`.${prop}--8{${prop}:-8}`);
+      expect(generatedRulesOf(engine)).toContain(`.${prop}--8{${prop}:-8px}`);
     });
 
     it('lets a rect corner radius follow the other axis', () => {
@@ -497,7 +538,7 @@ describe('SVG text and geometry props', () => {
     // borderRadius is on the spacing scale (÷4) and rx is not. They read alike and mean different
     // numbers, which is exactly the confusion the user-units rule exists to prevent.
     it('does not share the spacing scale with borderRadius', () => {
-      expect(generatedRulesFor({ borderRadius: 8, rx: 8 }, 'svg-rx-vs-radius')).toContain('{rx:8}');
+      expect(generatedRulesFor({ borderRadius: 8, rx: 8 }, 'svg-rx-vs-radius')).toContain('{rx:8px}');
       expect(generatedRulesFor({ borderRadius: 8, rx: 8 }, 'svg-rx-vs-radius2')).toContain('{border-radius:2rem}');
     });
   });
@@ -529,8 +570,8 @@ describe('SVG text and geometry props', () => {
   });
 
   it('moves geometry under a pseudo-class, which is the whole zero-JS animation', () => {
-    expect(generatedRulesFor({ r: 20, hover: { r: 28 } }, 'svg-grow')).toContain('.hover-r-28:hover{r:28}');
-    expect(generatedRulesFor({ md: { cx: 40 } }, 'svg-geom-breakpoint')).toContain('.md-cx-40{cx:40}');
+    expect(generatedRulesFor({ r: 20, hover: { r: 28 } }, 'svg-grow')).toContain('.hover-r-28:hover{r:28px}');
+    expect(generatedRulesFor({ md: { cx: 40 } }, 'svg-geom-breakpoint')).toContain('.md-cx-40{cx:40px}');
   });
 });
 

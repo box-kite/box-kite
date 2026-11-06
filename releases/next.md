@@ -10,6 +10,26 @@ _Unreleased. A PR that changes what a consumer sees adds its section here — se
 
 <!-- One `##` per change, above Breaking changes: a sentence for the heading, a paragraph on what and why, an example if it helps. -->
 
+## An SVG shape turns about its own centre, an edge takes the press on its stroke, and a drag keeps the finger
+
+Three new props, and three that take more values. Everything below was checked in Chrome, Firefox and Safari's engine.
+
+- **`transformOrigin` and `transformBox`.** An SVG shape measures its origin against the whole viewBox, so `rotate={45}` on its own swings it round the corner. With `transformBox="fill-box"` and `transformOrigin="center"` it turns about its own centre. `transformOrigin` takes a keyword (`'center'`, `'top left'`), a fraction or a percentage, a number on the ÷4 scale, or two or three positions as CSS writes them (`'48px 48px'`).
+- **`touchAction`**: `auto`, `none`, `manipulation`, `pan-x`, `pan-y`, `pinch-zoom` and their combinations. Without `touchAction="none"`, a finger dragging an element pans the page instead of moving the element.
+- **`pointerEvents` takes the SVG keywords**: `visiblePainted`, `visibleFill`, `visibleStroke`, `visible`, `painted`, `fill`, `stroke` and `bounding-box` (Firefox doesn't support `bounding-box` and uses the default). Put `visibleStroke` on a wide, transparent stroke and only the line takes the press, not the area it encloses.
+- **`paintOrder` takes up to three keywords** in the order they paint (`'stroke fill markers'`).
+- **`strokeDasharray="dashed"` and `"dotted"` grow with the line.** `strokeWidth` now also sets `--boxStrokeWidth`, and the two named patterns are multiples of it, so a thicker line keeps the same pattern.
+
+```tsx
+<Svg viewBox="0 0 200 200" width={200}>
+  <G rotate={45} transformBox="fill-box" transformOrigin="center">
+    <Rect x={120} y={120} width={40} height={40} fill="red-500" />
+  </G>
+  <Path d="M20 180 L180 20" stroke="transparent" strokeWidth={16} pointerEvents="visibleStroke" touchAction="none" />
+  <Line x1={0} y1={190} x2={200} y2={190} stroke="slate-500" strokeWidth={2} strokeDasharray="dashed" />
+</Svg>
+```
+
 ## Breaking changes
 
 None.
@@ -17,6 +37,8 @@ None.
 ## Fixes
 
 <!-- One bullet per fix: **What was wrong.** What it does now. -->
+
+- **The SVG geometry props drew nothing in Firefox and Safari.** `cx`, `cy`, `r`, `rx`, `ry`, `x` and `y` were written as bare numbers (`r: 20`), which only Chromium accepts in CSS, so a `ProgressRing` or a `MiniDonut` had no radius there. They are written in `px` now (`r: 20px`), which in SVG is the same user unit, so nothing changes in Chromium.
 
 - **A DataGrid grouped two levels deep numbered its rows wrongly once an inner group was open** — the row-number column repeated and skipped numbers, and every "Select row N" label followed it. The rows are now numbered in the order they appear, group rows included, with inner groups open or shut in any combination; copying a group row's row-number cell copies the number it shows instead of a blank.
 - **Resizing a DataGrid column widened the row number, row selection and row detail columns.** The space a resize freed was shared out to them along with the data columns, so the checkbox column grew with every drag. Those three now keep their own width, and the space goes to the data columns.

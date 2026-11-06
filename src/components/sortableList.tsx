@@ -581,7 +581,7 @@ function SortableHandle<TKey extends keyof ComponentsAndVariants = 'sortableList
       position: 'relative',
       zIndex: 1,
       // The browser's own pan would take the drag away from a finger.
-      css: { touchAction: 'none' },
+      touchAction: 'none',
       ...restProps,
       variant: [variant, { grabbed: item ? sortable?.heldOf(item.value) !== undefined : false }],
       props: { ...handle, ...(item?.disabled ? { disabled: true } : {}), ...tagProps },

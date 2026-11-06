@@ -121,7 +121,7 @@ describe('SSG', () => {
     const result = renderToStaticMarkup(el);
 
     expect(result.styles).includes('.stroke-violet-500{stroke:var(--violet-500,oklch(60.6% .25 292.7))}');
-    expect(result.styles).includes('.strokeWidth-2{stroke-width:2}');
+    expect(result.styles).includes('.strokeWidth-2{--boxStrokeWidth:2px;stroke-width:2}');
     expect(result.styles).includes('.strokeLinecap-round{stroke-linecap:round}');
     expect(result.styles).includes('.strokeDasharray-8_4{stroke-dasharray:8 4}');
     expect(result.styles).includes('.vectorEffect-non-scaling-stroke,.vectorEffect-non-scaling-stroke *{vector-effect:non-scaling-stroke}');
@@ -139,14 +139,14 @@ describe('SSG', () => {
 
     const result = renderToStaticMarkup(el);
 
-    // Geometry is in user units, so the numbers reach CSS exactly as they were written.
-    expect(result.styles).includes('.cx-32{cx:32}');
-    expect(result.styles).includes('.cy-32{cy:32}');
-    expect(result.styles).includes('.r-20{r:20}');
-    expect(result.styles).includes('.x-8{x:8}');
-    expect(result.styles).includes('.y-8{y:8}');
-    expect(result.styles).includes('.rx-4{rx:4}');
-    expect(result.styles).includes('.ry-4{ry:4}');
+    // Geometry is in user units, written as px: Firefox and WebKit drop a bare number here (bug #330).
+    expect(result.styles).includes('.cx-32{cx:32px}');
+    expect(result.styles).includes('.cy-32{cy:32px}');
+    expect(result.styles).includes('.r-20{r:20px}');
+    expect(result.styles).includes('.x-8{x:8px}');
+    expect(result.styles).includes('.y-8{y:8px}');
+    expect(result.styles).includes('.rx-4{rx:4px}');
+    expect(result.styles).includes('.ry-4{ry:4px}');
     expect(result.styles).includes('.textAnchor-middle{text-anchor:middle}');
     expect(result.styles).includes('.dominantBaseline-central,.dominantBaseline-central *{dominant-baseline:central}');
   });

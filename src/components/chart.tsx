@@ -120,8 +120,8 @@ function ProgressRingImpl(props: ProgressRingProps, ref: Ref<SVGSVGElement>) {
     <Svg viewBox={VIEW_BOX} component="progressRing" width="3rem" height="3rem" strokeWidth={thickness} ref={ref} {...svgProps}>
       <Circle component="progressRing.track" cx={ChartUtils.CENTRE} cy={ChartUtils.CENTRE} r={radius} strokeOpacity={trackOpacity} />
       {/*
-       * Turned by the `transform` *attribute*, which carries its own centre: the CSS `rotate` prop turns a
-       * shape around the corner of the viewBox, and there is no `transformOrigin` prop yet (AN1).
+       * Turned by the `transform` attribute, which carries its own centre; `rotate={-90}` would need
+       * `transformBox="fill-box" transformOrigin="center"` beside it, two more classes for the same turn.
        */}
       <Circle
         component="progressRing.arc"

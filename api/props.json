@@ -1,5 +1,5 @@
 {
-  "propCount": 235,
+  "propCount": 238,
   "props": [
     {
       "name": "appearance",
@@ -1787,12 +1787,44 @@
     },
     {
       "name": "pointerEvents",
-      "description": "The pointer-events CSS property sets under what circumstances (if any) a particular graphic element can become the target of pointer events.",
+      "description": "The pointer-events CSS property sets under what circumstances (if any) a particular graphic element can become the target of pointer events. On SVG the keywords say which part takes the press: `visibleStroke` over a wide transparent stroke is an edge's hit area. `bounding-box` is not in Firefox, which falls back to `visiblePainted`.",
       "properties": ["pointer-events"],
       "example": { "value": "none", "css": "pointer-events: none" },
       "numeric": false,
       "open": false,
-      "values": ["none", "auto", "all"]
+      "values": [
+        "none",
+        "auto",
+        "all",
+        "visiblePainted",
+        "visibleFill",
+        "visibleStroke",
+        "visible",
+        "painted",
+        "fill",
+        "stroke",
+        "bounding-box"
+      ]
+    },
+    {
+      "name": "touchAction",
+      "description": "The touch-action CSS property sets which gestures the browser keeps for itself on a touch screen: `none` hands every press to the page, which is what a drag needs, and `pan-y` keeps the vertical scroll while a sideways swipe is the page's.",
+      "properties": ["touch-action"],
+      "example": { "value": "auto", "css": "touch-action: auto" },
+      "numeric": false,
+      "open": false,
+      "values": [
+        "auto",
+        "none",
+        "manipulation",
+        "pan-x",
+        "pan-y",
+        "pinch-zoom",
+        "pan-x pan-y",
+        "pan-x pinch-zoom",
+        "pan-y pinch-zoom",
+        "pan-x pan-y pinch-zoom"
+      ]
     },
     {
       "name": "resize",
@@ -1829,6 +1861,24 @@
       "numeric": true,
       "open": false,
       "values": []
+    },
+    {
+      "name": "transformOrigin",
+      "description": "The point `rotate` and `scale` turn about: a keyword (`'center'`, `'top left'`), a fraction or a percentage, a number on the ÷4 scale, or two or three positions as CSS writes them (`'48px 48px'`, `'1/2 1/4'`).",
+      "properties": ["transform-origin"],
+      "example": { "value": 4, "css": "transform-origin: 1rem" },
+      "numeric": true,
+      "open": true,
+      "values": []
+    },
+    {
+      "name": "transformBox",
+      "description": "The box `transformOrigin` is measured in. An SVG shape's default is `view-box`, so it turns about the viewBox's corner; `transformBox=\"fill-box\"` with `transformOrigin=\"center\"` turns it about its own centre.",
+      "properties": ["transform-box"],
+      "example": { "value": "content-box", "css": "transform-box: content-box" },
+      "numeric": false,
+      "open": false,
+      "values": ["content-box", "border-box", "fill-box", "stroke-box", "view-box"]
     },
     {
       "name": "textAlign",
@@ -2171,9 +2221,9 @@
     },
     {
       "name": "strokeWidth",
-      "description": "The stroke-width CSS property sets the width of an SVG element's stroke, in user units — `strokeWidth={2}` is `stroke-width: 2`, no divider.",
-      "properties": ["stroke-width"],
-      "example": { "value": 4, "css": "stroke-width: 4" },
+      "description": "The stroke-width CSS property sets the width of an SVG element's stroke, in user units — `strokeWidth={2}` is `stroke-width: 2`, no divider. It also sets `--boxStrokeWidth`, which `strokeDasharray=\"dashed\"` scales with. Firefox drops a unitless one inside `calc()`, hence the `px`.",
+      "properties": ["--boxStrokeWidth", "stroke-width"],
+      "example": { "value": 4, "css": "--boxStrokeWidth: 4px; stroke-width: 4" },
       "numeric": true,
       "open": false,
       "values": []
@@ -2207,12 +2257,12 @@
     },
     {
       "name": "strokeDasharray",
-      "description": "The stroke-dasharray CSS property turns an SVG stroke into dashes: a single number is the dash and the gap alike, a string is the full pattern (`'8 4'`). Lengths are user units.",
+      "description": "The stroke-dasharray CSS property turns an SVG stroke into dashes: a single number is the dash and the gap alike, a string is the full pattern (`'8 4'`). Lengths are user units. `dashed` (four widths on, two off) and `dotted` (one on, one off) follow the `strokeWidth` prop, so a thicker line keeps its pattern.",
       "properties": ["stroke-dasharray"],
       "example": { "value": 4, "css": "stroke-dasharray: 4" },
       "numeric": true,
       "open": true,
-      "values": []
+      "values": ["dashed", "dotted"]
     },
     {
       "name": "strokeDashoffset",
@@ -2225,12 +2275,29 @@
     },
     {
       "name": "paintOrder",
-      "description": "The paint-order CSS property sets what is painted first. `paintOrder=\"stroke\"` puts the stroke behind the fill, which is how outlined SVG text stays legible.",
+      "description": "The paint-order CSS property sets what is painted first. `paintOrder=\"stroke\"` puts the stroke behind the fill, which is how outlined SVG text stays legible. Up to three keywords in the order they paint (`'stroke fill markers'`); the ones left out follow in their usual order.",
       "properties": ["paint-order"],
       "example": { "value": "normal", "css": "paint-order: normal" },
       "numeric": false,
       "open": false,
-      "values": ["normal", "fill", "stroke", "markers"]
+      "values": [
+        "normal",
+        "fill",
+        "stroke",
+        "markers",
+        "fill stroke",
+        "fill markers",
+        "stroke fill",
+        "stroke markers",
+        "markers fill",
+        "markers stroke",
+        "fill stroke markers",
+        "fill markers stroke",
+        "stroke fill markers",
+        "stroke markers fill",
+        "markers fill stroke",
+        "markers stroke fill"
+      ]
     },
     {
       "name": "vectorEffect",
@@ -2270,9 +2337,9 @@
     },
     {
       "name": "cx",
-      "description": "The centre of a `<circle>` or `<ellipse>`, horizontally, in user units. Real CSS, so unlike the attribute it transitions — moving a point on hover is one prop and no JavaScript.",
+      "description": "The centre of a `<circle>` or `<ellipse>`, horizontally, in user units. Real CSS, so unlike the attribute it transitions — moving a point on hover is one prop and no JavaScript. Written in `px`, which is a user unit: Firefox and Safari drop a bare number here, and so does every geometry prop (bug #330).",
       "properties": ["cx"],
-      "example": { "value": 4, "css": "cx: 4" },
+      "example": { "value": 4, "css": "cx: 4px" },
       "numeric": true,
       "open": true,
       "values": []
@@ -2281,7 +2348,7 @@
       "name": "cy",
       "description": "The cy CSS property positions the centre of a `<circle>` or an `<ellipse>` vertically, in user units. Transitions like `cx`.",
       "properties": ["cy"],
-      "example": { "value": 4, "css": "cy: 4" },
+      "example": { "value": 4, "css": "cy: 4px" },
       "numeric": true,
       "open": true,
       "values": []
@@ -2290,7 +2357,7 @@
       "name": "r",
       "description": "The r CSS property sets the radius of a `<circle>`, in user units. Transition it and the circle grows; a percentage is of the viewport's diagonal.",
       "properties": ["r"],
-      "example": { "value": 4, "css": "r: 4" },
+      "example": { "value": 4, "css": "r: 4px" },
       "numeric": true,
       "open": true,
       "values": []
@@ -2299,7 +2366,7 @@
       "name": "rx",
       "description": "The horizontal radius of an `<ellipse>` or corner radius of a `<rect>` — `borderRadius` for SVG, in user units rather than on the spacing scale. `auto` takes the radius from `ry`.",
       "properties": ["rx"],
-      "example": { "value": 4, "css": "rx: 4" },
+      "example": { "value": 4, "css": "rx: 4px" },
       "numeric": true,
       "open": true,
       "values": ["auto"]
@@ -2308,16 +2375,16 @@
       "name": "ry",
       "description": "The ry CSS property sets the vertical radius of an `<ellipse>` or the vertical corner radius of a `<rect>`, in user units. `auto` takes it from `rx`.",
       "properties": ["ry"],
-      "example": { "value": 4, "css": "ry: 4" },
+      "example": { "value": 4, "css": "ry: 4px" },
       "numeric": true,
       "open": true,
       "values": ["auto"]
     },
     {
       "name": "x",
-      "description": "Positions a `<rect>`, `<image>`, `<use>`, `<foreignObject>` or nested `<svg>` horizontally, in user units. Not `<text>`, whose `x` takes a list of positions and stays an attribute — pass it in `props`.",
+      "description": "Positions a `<rect>`, `<image>`, `<use>`, `<foreignObject>` or nested `<svg>` horizontally, in user units. Not `<text>`, whose `x` takes a list of positions: `<SvgText x={4}>` writes it as the attribute.",
       "properties": ["x"],
-      "example": { "value": 4, "css": "x: 4" },
+      "example": { "value": 4, "css": "x: 4px" },
       "numeric": true,
       "open": true,
       "values": []
@@ -2326,7 +2393,7 @@
       "name": "y",
       "description": "The y CSS property positions a `<rect>`, `<image>`, `<use>`, `<foreignObject>` or a nested `<svg>` vertically, in user units. Not for `<text>` — see `x`.",
       "properties": ["y"],
-      "example": { "value": 4, "css": "y: 4" },
+      "example": { "value": 4, "css": "y: 4px" },
       "numeric": true,
       "open": true,
       "values": []
