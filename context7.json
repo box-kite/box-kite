@@ -1,7 +1,7 @@
 {
   "$schema": "https://context7.com/schema/context7.json",
   "projectTitle": "Box Kite",
-  "description": "A React runtime CSS-in-JS library: one Box component with 238 typed CSS props that writes its own CSS, plus accessible components built on the platform.",
+  "description": "A React runtime CSS-in-JS library: one Box component that takes CSS properties as typed props and writes its own CSS, plus accessible components built on the platform.",
   "excludeFolders": [
     "node_modules",
     "dist",

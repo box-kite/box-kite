@@ -15,7 +15,7 @@ Read `.claude/rules/box-kite-rules.md` — the shortest complete answer — befo
 
 ## Project Overview
 
-@box-kite/react is a React runtime CSS-in-JS library. The core `Box` component accepts 238 CSS props and generates CSS classes at runtime — no CSS files needed. Same prop values across components share a single CSS class.
+@box-kite/react is a React runtime CSS-in-JS library. The core `Box` component accepts CSS properties as typed props and generates CSS classes at runtime — no CSS files needed. Same prop values across components share a single CSS class.
 
 ## Commands
 
@@ -66,7 +66,7 @@ Node version: v26 (pinned in .nvmrc).
 - `src/date.ts` — Dates, times and zones (`@box-kite/react/date`), **no React and no engine**: every value is an ISO string whose shape is its kind (`2026-10-19` a date, `14:30:00` a time, `2026-10-19T14:30:00` a zone-free wall clock, `…+03:00`/`…Z` an instant), conversions named by their target (`toUtc`, `toLocal`, `toZone`, `toPlainDate`), `format`/`parse` per locale, Temporal's DST `disambiguation`, arithmetic and `details()` — every reading at once. The sources are framework-free under `src/utils/date/**` (`calendar.ts` the Gregorian arithmetic with no `Date`, `zones.ts` the offset of an IANA zone read off a cached `Intl` formatter, `iso.ts` the strings, `value.ts` the one `convert`, `dateTime.ts` the public operations, `fieldModel.ts`/`calendarModel.ts` the models the controls render), chunked three ways (`dates`, `date-math`, `date-input`) so a component that only writes a date out loads no parser. `'local'` is the reader: on a server `configureDates({ timeZone })` or a `DateProvider`, while `systemZone()` is the runtime's. The React half is `src/react/date/` (`useDateEnvironment` renders the fallback `UTC`/`en-US` on a server and while hydrating, then the reader's, so a date can never be a hydration error). See `src/BOX_KITE_AI_CONTEXT.md`, "Dates and times"
 - `src/core.ts` — The engine with no React at all, **published as its own package, `@box-kite/core`** (built by `vite.core.config.ts` into `dist-core/`): `createStyleEngine()`, `engine.classNames(props)`, `createThemeController()`, `getDefaultEngine()`, `BoxExtends`, `mergeDeep`. `examples/vanilla` is a whole page built on it. It is also the **only** module the React side may cross the boundary through — the build rewrites `./core` and `./types` to package specifiers, so a deep import into `src/core/**` from `src/react/**` would inline a second engine. Both the sources it reaches and the chunks it imports are checked for React
 - `src/types.ts` — Ships with the engine as `@box-kite/core/types`, and is the **`Box.extend()` augmentation target**: `declare module` merges into whichever package owns the file, and a re-export cannot forward it, so the types live with the prop registry they are derived from
-- `src/core/boxStyles.ts` — All CSS property definitions (238 props). Types auto-generate from these definitions
+- `src/core/boxStyles.ts` — All CSS property definitions. Types auto-generate from these definitions
 - `src/core/boxStylesFormatters.ts` — Value formatters that convert prop values to CSS (rem, px, fractions, etc.)
 - `src/core/engine/styleEngine.ts` — `createStyleEngine()`: all engine state (class-name cache, rule registry, identity factory, variables, prop and component registries) on an instance; generates class names and rules
 - `src/core/diagnostics.ts` — What the engine says in development about the three mistakes that are otherwise silent: a value no definition accepts (`rejected`, with the nearest literal), an HTML attribute at the top level (`attribute`), and a valid number in a unit it almost certainly did not mean (`misread` — the divider footgun). The engine `console.warn`s each once per value unless `NODE_ENV` is `production` or `Box.configure({ warnings: false })`; `check_styles` in the MCP reports the same verdicts, and the axe sweep fails a fixture that triggers any of them. A message is a prompt: what rendered, then the line to write instead
@@ -217,8 +217,7 @@ CI runs the test suite against React 18 and React 19 — both are in the support
 1. Define in `src/core/boxStyles.ts` with JSDoc comment — the prose, not the example
 2. Add formatter in `src/core/boxStylesFormatters.ts` if needed
 3. Types auto-generate — no manual type changes needed
-4. Bump `PROP_COUNT` in `src/core/boxStyles.test.ts` and the hand-written copies it checks (the generated ones follow `npm run docs:agents`)
-5. `npm run docs:props` — writes the prop's `@example` from the CSS the engine actually emits, and `api/props.json` with it.
+4. `npm run docs:props` — writes the prop's `@example` from the CSS the engine actually emits, and `api/props.json` with it.
    **Never write or edit an `@example` by hand**: it is generated, `npm run check:props` fails when it drifts, and a changed
    divider changes forty-five of them at once
 

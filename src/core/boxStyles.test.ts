@@ -261,43 +261,34 @@ const definitions = Object.entries(cssStyles).flatMap(([prop, defs]) =>
 );
 
 describe('every declared prop value produces a rule', () => {
-  // This number used to be one more hand-written copy of the figure, which is how C5 raised it here and
-  // left the npm description claiming 165 (bug #114) — the first drift being bug #71's '~144' against a
-  // registry of 117. The copies are read out of the files now, so adding a prop fails until they agree.
-  const PROP_COUNT = 238;
+  const propCount = Object.keys(cssStyles).length;
+  const readJson = (file: string) => JSON.parse(readFileSync(resolve(process.cwd(), file), 'utf8')) as { propCount: number };
 
-  // A file that stops quoting the figure fails too, so a rewording is noticed rather than silently exempt.
-  const quotingFiles = [
+  // The count is generated, never typed: it was once quoted in ten files and drifted twice (bugs #71, #114).
+  it('is counted only where `npm run docs:props` writes it', () => {
+    expect(readJson('api/props.json').propCount).toBe(propCount);
+    expect(readJson('api/propCount.json').propCount).toBe(propCount);
+    expect(definitions.length).toBeGreaterThan(propCount);
+  });
+
+  // `N typed CSS props`, `N CSS properties`, `**N** props`: the figure, any emphasis, then the noun.
+  const quotedCount = new RegExp(`\\b${propCount}\\**\\s+(?:typed\\s+)?(?:CSS\\s+)?(?:propert(?:y|ies)|props?)\\b`);
+
+  it.each([
     'README.md',
     'AGENTS.md',
     'CONTRIBUTING.md',
     'ARTICLE.md',
     'package.json',
+    'context7.json',
     'src/BOX_KITE_AI_CONTEXT.md',
+    '.claude/rules/box-kite-rules.md',
     '.claude/skills/box-kite/SKILL.md',
-    // Generated (from `api/props.json` and from the manifest's own description), so neither can drift
-    // by hand — they are here to fail if a generator stops stating the figure at all.
     '.cursor/rules/box-kite.mdc',
     '.claude-plugin/marketplace.json',
     'pages/site/site.ts',
-  ];
-  // The docs site's own pages are not in that list: they read the figure from `pages/pages/home.ts`,
-  // which `home.test.ts` pins to `api/props.json` — a derived count cannot drift, so guarding the
-  // prose around it would only forbid rewording it.
-
-  // `186 typed CSS props`, `186 CSS properties`, `**186** props`: the number, any emphasis, then the noun.
-  const quotedCount = /(\d{2,4})\**\s+(?:typed\s+)?(?:CSS\s+)?(?:propert(?:y|ies)|props?)\b/g;
-
-  it('holds exactly the number of props the docs claim', () => {
-    expect(Object.keys(cssStyles).length).toBe(PROP_COUNT);
-    expect(definitions.length).toBeGreaterThan(PROP_COUNT);
-  });
-
-  it.each(quotingFiles)('%s quotes the count the registry holds', (file) => {
-    const quoted = [...readFileSync(resolve(process.cwd(), file), 'utf8').matchAll(quotedCount)].map((match) => Number(match[1]));
-
-    expect(quoted.length).toBeGreaterThan(0);
-    expect([...new Set(quoted)]).toEqual([PROP_COUNT]);
+  ])('%s does not quote the count', (file) => {
+    expect(readFileSync(resolve(process.cwd(), file), 'utf8')).not.toMatch(quotedCount);
   });
 
   it('declares at least one value definition for every prop', () => {

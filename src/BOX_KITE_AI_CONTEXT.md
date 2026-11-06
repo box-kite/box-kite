@@ -1,6 +1,6 @@
 # @box-kite/react - AI Assistant Context
 
-Runtime CSS-in-JS library. `Box` component accepts 238 CSS props and generates CSS classes at runtime. Same prop values share a single class.
+Runtime CSS-in-JS library. `Box` component accepts CSS properties as typed props and generates CSS classes at runtime. Same prop values share a single class.
 
 ---
 
@@ -3833,7 +3833,7 @@ allowed.tokens; // the colours, the @keyframes names and the style-tree nodes a 
   `DataGrid`'s `def` (required — the columns and the grid-wide flags) and `data`, `DashboardGrid`'s
   `layout`/`defaultLayout`/`columns`, `Widget`'s `empty`, `ChartContainer`'s `series`. A column's nested
   `columns`, and `dataSource`/`onCellEdit`/`rowDetail`/`treeData`, stay out — they are the app's to pass.
-- **The allow-list is the app's.** `catalog()` with no options is all 78 components and all 238 props —
+- **The allow-list is the app's.** `catalog()` with no options is every component and every prop —
   ~4.6 MB serialized. `include`, `exclude` and `styleProps` are how an app narrows it.
 
 Full reference: `docs/catalog.md`.
