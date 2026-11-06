@@ -180,11 +180,16 @@ const catalogManifest: CatalogManifest = {
     overflowY: "The overflow-y CSS property sets what shows when content overflows a block-level element's top and bottom edges.",
     pointerEvents:
       'The pointer-events CSS property sets under what circumstances (if any) a particular graphic element can become the target of pointer events.',
+    touchAction:
+      "The touch-action CSS property sets which gestures the browser keeps for itself on a touch screen: `none` hands every press to the page, which is what a drag needs, and `pan-y` keeps the vertical scroll while a sideways swipe is the page's.",
     resize: 'The resize CSS property sets whether an element is resizable, and if so, in which directions.',
     rotate: 'The rotate CSS property allows you to specify rotation transforms individually and independently of the transform property.',
     flip: 'Mirrors the element: `xAxis` flips it left to right, `yAxis` top to bottom.',
     scale:
       'The scale CSS property lets you specify scale transforms individually and independently of the transform property: `scale={1.05}` is 105% in both axes.',
+    transformOrigin:
+      "The point `rotate` and `scale` turn about: a keyword (`'center'`, `'top left'`), a fraction or a percentage, a number on the ÷4 scale, or two or three positions as CSS writes them (`'48px 48px'`, `'1/2 1/4'`).",
+    transformBox: 'The box `transformOrigin` is measured in.',
     textAlign:
       'The text-align CSS property sets the horizontal alignment of the inline-level content inside a block element or table-cell box.',
     textDecoration: 'The text-decoration shorthand CSS property sets the appearance of decorative lines on text.',

@@ -168,7 +168,7 @@ describe('Icon', () => {
 
       expect(svg).toHaveAttribute('stroke-width', '2');
       expect(styles()).toContain('stroke-width:1.5');
-      expect(styles()).toContain(':hover{stroke-width:3}');
+      expect(styles()).toContain(':hover{--boxStrokeWidth:3px;stroke-width:3}');
     });
 
     it('resolves themes and pseudo-classes the same way every other Box prop does', () => {

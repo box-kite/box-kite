@@ -3,12 +3,16 @@
  * `@example` that no longer matches the CSS the engine writes for it, or an `api/props.json` older than
  * the registry. The examples are *generated* — a divider changed here changes 45 comments, so the fix is
  * `npm run docs:props`, never an edit by hand. Run: npm run check:props
+ *
+ * It also writes `api/propCount.json`, the count alone, for a page that cannot afford the whole reference
+ * (the homepage) — so no file a person edits ever states the figure.
  */
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { API_FILE, REGISTRY, buildPropsApi, formatApi } from './propsApi.mjs';
 
 const ROOT = join(import.meta.dirname, '..');
+const COUNT_FILE = 'api/propCount.json';
 const fix = process.argv.includes('--fix');
 
 /** One `@example` line in a JSDoc block, at the entry's own indentation. */
@@ -52,15 +56,21 @@ for (const prop of api.props) {
   edits.push({ ...comment.span, text: rewriteComment(api.text.slice(comment.span.pos, comment.span.end), comment.span.indent, prop.text) });
 }
 
-const document = await formatApi(api);
-const file = join(ROOT, API_FILE);
-const current = (() => {
+/** A generated file as it stands on disk, or undefined when there is none yet. */
+function onDisk(path) {
   try {
-    return readFileSync(file, 'utf8');
+    return readFileSync(path, 'utf8');
   } catch {
     return undefined;
   }
-})();
+}
+
+const document = await formatApi(api);
+const file = join(ROOT, API_FILE);
+const current = onDisk(file);
+const countDocument = `${JSON.stringify({ propCount: api.propCount }, null, 2)}\n`;
+const countFile = join(ROOT, COUNT_FILE);
+const countCurrent = onDisk(countFile);
 
 if (fix) {
   // Back to front, so an earlier comment's replacement cannot move a later one's span.
@@ -75,6 +85,8 @@ if (fix) {
     writeFileSync(file, document);
   }
 
+  if (countDocument !== countCurrent) writeFileSync(countFile, countDocument);
+
   console.log(
     `✔ ${api.propCount} props: ${stale.length} example(s) written, ${API_FILE} ${document === current ? 'unchanged' : 'updated'}`,
   );
@@ -84,7 +96,7 @@ if (fix) {
     console.error(`  ${undocumented.join(', ')}\n`);
     process.exit(1);
   }
-} else if (undocumented.length || stale.length || document !== current) {
+} else if (undocumented.length || stale.length || document !== current || countDocument !== countCurrent) {
   console.error(`\n✖ The prop reference is out of date:\n`);
 
   if (undocumented.length) console.error(`  ${undocumented.length} prop(s) with no JSDoc to hover: ${undocumented.join(', ')}\n`);
@@ -95,6 +107,7 @@ if (fix) {
   }
 
   if (document !== current) console.error(`  ${API_FILE} is ${current === undefined ? 'missing' : 'not what the registry generates'}\n`);
+  if (countDocument !== countCurrent) console.error(`  ${COUNT_FILE} does not hold the registry's count\n`);
   console.error('Run npm run docs:props to write the examples and the reference; prose is yours to write.\n');
   process.exit(1);
 } else {

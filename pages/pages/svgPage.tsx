@@ -320,7 +320,8 @@ export default function SvgPage() {
             <Box>
               SVG 2 made the geometry attributes real CSS properties, so <Mono>cx</Mono>, <Mono>cy</Mono>, <Mono>r</Mono>, <Mono>rx</Mono>,{' '}
               <Mono>ry</Mono>, <Mono>x</Mono> and <Mono>y</Mono> are Box props here. They are user units like every other SVG length on this
-              page — <Mono>r={'{20}'}</Mono> is <Mono>r: 20</Mono> — and a percentage is of the viewport the <Mono>viewBox</Mono> describes.
+              page — <Mono>r={'{20}'}</Mono> is <Mono>r: 20px</Mono>, a pixel being a user unit in SVG — and a percentage is of the viewport
+              the <Mono>viewBox</Mono> describes.
             </Box>
             <Box mt={4}>
               Which one applies to which element is the SVG spec&apos;s answer, not this library&apos;s. <Mono>cx</Mono> and <Mono>cy</Mono>{' '}

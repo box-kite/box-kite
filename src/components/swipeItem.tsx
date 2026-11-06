@@ -373,7 +373,7 @@ function SwipeRow({ size, wrap, dragging, translate, handlers, children }: Swipe
     ...(wrap ? { flexWrap: 'wrap' } : {}),
     position: 'relative',
     // The page keeps the vertical pan; the sideways one is the swipe's.
-    css: { touchAction: 'pan-y' },
+    touchAction: 'pan-y',
     variant: { dragging },
     style: translate ? { translate } : undefined,
     props: handlers,

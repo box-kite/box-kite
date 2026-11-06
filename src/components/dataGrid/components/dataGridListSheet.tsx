@@ -91,7 +91,7 @@ export default function DataGridListSheet<TRow>(props: Props<TRow>) {
         <Flex
           d="column"
           flexShrink={0}
-          css={{ touchAction: 'none' }}
+          touchAction="none"
           props={{ onPointerDown, onPointerMove, onPointerUp, onPointerCancel: onPointerUp }}
         >
           <Box
@@ -126,7 +126,8 @@ export default function DataGridListSheet<TRow>(props: Props<TRow>) {
           overflowY="auto"
           px={4}
           py={2}
-          css={{ overscrollBehavior: 'contain', touchAction: 'pan-y' }}
+          touchAction="pan-y"
+          css={{ overscrollBehavior: 'contain' }}
           props={bodyProps}
         >
           {children}

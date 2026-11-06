@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { priorFacts as agentFacts } from '../../scripts/agentSources.mjs';
+import { cssStyles } from '../../src/core/boxStyles';
 import { acceptedValues, component, components, packageName, priorFacts, prop, props, rules } from './data';
 
 describe('the corpora', () => {
   it('holds every style prop the reference measured', () => {
-    expect(props).toHaveLength(235);
+    expect(props).toHaveLength(Object.keys(cssStyles).length);
     expect(prop('fontSize')?.example.css).toBe('font-size: 0.875rem');
   });
 

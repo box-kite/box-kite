@@ -298,7 +298,13 @@ export const propertyGroups: ParityGroup[] = [
         note: 'CSS longhands, so they compose instead of overwriting one transform',
       },
       { tailwind: 'will-change', props: ['willChange'], status: 'has' },
-      { tailwind: 'skew / transform-origin', props: [], status: 'none', note: notYet },
+      {
+        tailwind: 'transform-origin',
+        props: ['transformOrigin', 'transformBox'],
+        status: 'has',
+        note: 'transform-box too, which is what turns an SVG shape about its own centre',
+      },
+      { tailwind: 'skew', props: [], status: 'none', note: notYet },
       { tailwind: 'perspective / transform-style / backface-visibility', props: [], status: 'none', note: '3D transforms' },
     ],
   },
@@ -325,7 +331,7 @@ export const propertyGroups: ParityGroup[] = [
       },
       { tailwind: 'scrollbar', props: ['scrollbarWidth', 'scrollbarColor', 'scrollbarGutter'], status: 'has', note: 'no Tailwind utility' },
       { tailwind: 'scroll-behavior / scroll-margin / scroll-padding / scroll-snap-*', props: [], status: 'none', note: notYet },
-      { tailwind: 'touch-action', props: [], status: 'none', note: notYet },
+      { tailwind: 'touch-action', props: ['touchAction'], status: 'has' },
     ],
   },
   {

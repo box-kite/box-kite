@@ -678,8 +678,8 @@ const baseComponents = {
       // Taller than the track, so the thumb has somewhere to be and the press target is a finger's worth.
       height: 5,
       cursor: 'pointer',
-      // A drag on a touch screen must not also scroll the page. No prop for it, and one element wants it.
-      css: { touchAction: 'none' },
+      // A drag on a touch screen must not also scroll the page.
+      touchAction: 'none',
       // A drag that highlights the label beside it reads as broken; the press is cancelled too, and this
       // covers the pointer that arrives already down.
       userSelect: 'none',
@@ -3750,7 +3750,7 @@ const baseComponents = {
     variants: {
       // While a widget is held: a drag must not select the text under the pointer, and on a touch screen
       // it must not scroll the page out from under the widget instead of moving it.
-      dragging: { userSelect: 'none', css: { touchAction: 'none' } },
+      dragging: { userSelect: 'none', touchAction: 'none' },
     },
     children: {
       // Where the held widget will land, drawn in its snapped cell while the widget itself follows the

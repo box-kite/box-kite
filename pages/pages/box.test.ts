@@ -93,7 +93,7 @@ describe('the scale table', () => {
     expect(declarationsFor('fontSize', 4)).toBe('font-size: 0.25rem');
     expect(declarationsFor('lineHeight', 4)).toBe('line-height: 4px');
     expect(declarationsFor('b', 4)).toBe('border-width: 4px');
-    expect(declarationsFor('strokeWidth', 4)).toBe('stroke-width: 4');
+    expect(declarationsFor('strokeWidth', 4)).toBe('--boxStrokeWidth: 4px; stroke-width: 4');
     expect(declarationsFor('transitionDuration', 4)).toBe('transition-duration: 4ms');
   });
 

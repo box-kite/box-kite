@@ -91,9 +91,9 @@ function dividerRow(props, [name, what]) {
 }
 
 /** The frontmatter every client reads. Only the Agent Skills fields, so the skill packages anywhere. */
-function frontmatter(propCount) {
+function frontmatter() {
   const description =
-    `${PACKAGE_NAME} (Box Kite) expert — the runtime CSS-in-JS library whose Box component takes ${propCount} typed CSS` +
+    `${PACKAGE_NAME} (Box Kite) expert — the runtime CSS-in-JS library whose Box component takes CSS properties as typed` +
     ` props and writes the CSS itself. Use for any work with Box props, the Flex/Grid/Button/Textbox/Dropdown/DataGrid` +
     ` components, themes, Box.extend() or Box.components() — and read it before writing props, because the prop names` +
     ` collide with Tailwind's and Chakra's while the numbers mean different things. Also covers installing and updating` +
@@ -104,14 +104,13 @@ function frontmatter(propCount) {
 }
 
 /** What the package ships beside the skill, and what the site answers with — the same facts, two addresses. */
-function whereElse(propCount, homepage) {
+function whereElse(homepage) {
   return [
     table(
       ['Read', 'When the question is'],
       [
         ...REFERENCES.map(([file, when]) => `| [\`references/${file}\`](references/${file}) — ${referenceTitle(file)} | ${when} |`),
-        `| \`node_modules/${PACKAGE_NAME}/docs/props.md\` | one prop exactly: all ${propCount}, the CSS each writes,` +
-          ` one measured example |`,
+        `| \`node_modules/${PACKAGE_NAME}/docs/props.md\` | one prop exactly: every one, the CSS each writes,` + ` one measured example |`,
         `| \`node_modules/${PACKAGE_NAME}/BOX_KITE_AI_CONTEXT.md\` | the long-form reference, when a reference above is` + ' not enough |',
       ],
     ),
@@ -122,13 +121,13 @@ function whereElse(propCount, homepage) {
 
 /** The skill: the facts, the rules, the numbers, where to look next, and how to install the package. */
 export function skillMarkdown() {
-  const { propCount, props } = JSON.parse(read(API_FILE));
+  const { props } = JSON.parse(read(API_FILE));
   const { homepage } = manifest();
 
   return [
-    frontmatter(propCount),
+    frontmatter(),
     `# ${PACKAGE_NAME}`,
-    `Runtime CSS-in-JS. \`Box\` takes ${propCount} typed CSS props and generates the CSS for them at runtime — no` +
+    `Runtime CSS-in-JS. \`Box\` takes CSS properties as typed props and generates the CSS for them at runtime — no` +
       ' stylesheet, no class name to invent, and two elements written with the same value share one class.',
     '## This library is not in your training data',
     'It was renamed at 1.0.0 (September 2026) and its prop surface nearly doubled on the way, so a plausible-looking' +
@@ -146,7 +145,7 @@ export function skillMarkdown() {
       DIVIDERS.map((divider) => dividerRow(props, divider)),
     ),
     '## Read this next',
-    whereElse(propCount, homepage),
+    whereElse(homepage),
     '## Installing and updating',
     'Detect the package manager from the lock file rather than asking:',
     table(
@@ -170,11 +169,10 @@ export function skillMarkdown() {
  * something.
  */
 export function cursorRules() {
-  const { propCount } = JSON.parse(read(API_FILE));
   const { homepage } = manifest();
 
   const description =
-    `${PACKAGE_NAME} (Box Kite): the runtime CSS-in-JS library whose Box component takes ${propCount} typed CSS props.` +
+    `${PACKAGE_NAME} (Box Kite): the runtime CSS-in-JS library whose Box component takes CSS properties as typed props.` +
     ' Read before writing Box props, a component, a theme or an extension — the prop names collide with Tailwind and' +
     ' Chakra while the numbers mean different things.';
 

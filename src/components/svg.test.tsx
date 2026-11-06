@@ -139,7 +139,7 @@ describe('SVG element components', () => {
 
       const css = styles();
       expect(css).toContain('stroke-width:2');
-      expect(css).toContain('.hover-r-22:hover{r:22}');
+      expect(css).toContain('.hover-r-22:hover{r:22px}');
       expect(svg.querySelector('circle')!.getAttribute('class')).toContain('strokeWidth-2');
     });
 

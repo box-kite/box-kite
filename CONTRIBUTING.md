@@ -57,7 +57,7 @@ box-kite/
 │   ├── ssg.ts                    # Server-side rendering support (entry point)
 │   │
 │   ├── core/                     # Core styling engine — ZERO react imports (enforced)
-│   │   ├── boxStyles.ts          # CSS property definitions (235 props)
+│   │   ├── boxStyles.ts          # CSS property definitions
 │   │   ├── boxStylesFormatters.ts # Value formatters (px, rem, etc.)
 │   │   ├── variables.ts          # Where a value becomes a variable: the registry, bgImages, shadows
 │   │   ├── palette.ts            # Tailwind's OKLCH palette (26 families) + the `token/alpha` grammar
@@ -1006,13 +1006,13 @@ namespace Variables {
 }
 ```
 
-### Step 5: Update the Prop Count
+### Step 5: Leave the Prop Count Alone
 
-The registry's size is quoted in ten hand-written places — this file, the README, AGENTS.md, ARTICLE.md, the npm
-description, `src/BOX_KITE_AI_CONTEXT.md`, both skill files, and two on the docs site. `src/core/boxStyles.test.ts` reads all
-ten and fails until they agree with the registry, so a new prop means bumping `PROP_COUNT` there and the ten copies. It
-is checked because it drifted twice on its own: once to `~144` against a registry of 117 (bug #71), and once with the
-npm description left at 165 while everything else said 186 (bug #114).
+No file a person edits states how many props there are. The figure is generated: `npm run docs:props` writes it into
+`api/props.json` and `api/propCount.json` (the second for the homepage, which cannot afford the first), and the docs
+site, the MCP server and the files packed into the tarball read it from there. `src/core/boxStyles.test.ts` fails if a
+hand-written file quotes the count again — it was once quoted in ten places and drifted twice on its own (bugs #71
+and #114).
 
 ### Step 6: Generate the Prop Reference
 

@@ -11,6 +11,7 @@ import Palette from './palette';
 import Shadows from './shadows';
 import Sizes from './sizes';
 import Timelines from './timelines';
+import Transforms from './transforms';
 import Variables from './variables';
 
 /** The opacity scale shared by `opacity`, `fillOpacity` and `strokeOpacity`. */
@@ -2317,12 +2318,47 @@ export const cssStyles = {
   ],
   /**
    * The pointer-events CSS property sets under what circumstances (if any) a particular graphic element can become the target of pointer events.
+   * On SVG the keywords say which part takes the press: `visibleStroke` over a wide transparent stroke is an edge's hit area. `bounding-box` is not in Firefox, which falls back to `visiblePainted`.
    * @example pointerEvents="none" → pointer-events: none
    */
   pointerEvents: [
     {
       styleName: 'pointer-events',
-      values: ['none', 'auto', 'all'] as const,
+      values: [
+        'none',
+        'auto',
+        'all',
+        'visiblePainted',
+        'visibleFill',
+        'visibleStroke',
+        'visible',
+        'painted',
+        'fill',
+        'stroke',
+        'bounding-box',
+      ] as const,
+    },
+  ],
+  /**
+   * The touch-action CSS property sets which gestures the browser keeps for itself on a touch screen: `none` hands every
+   * press to the page, which is what a drag needs, and `pan-y` keeps the vertical scroll while a sideways swipe is the page's.
+   * @example touchAction="auto" → touch-action: auto
+   */
+  touchAction: [
+    {
+      styleName: 'touch-action',
+      values: [
+        'auto',
+        'none',
+        'manipulation',
+        'pan-x',
+        'pan-y',
+        'pinch-zoom',
+        'pan-x pan-y',
+        'pan-x pinch-zoom',
+        'pan-y pinch-zoom',
+        'pan-x pan-y pinch-zoom',
+      ] as const,
     },
   ],
   /**
@@ -2364,6 +2400,35 @@ export const cssStyles = {
   scale: [
     {
       values: 0,
+    },
+  ],
+  /**
+   * The point `rotate` and `scale` turn about: a keyword (`'center'`, `'top left'`), a fraction or a percentage, a
+   * number on the ÷4 scale, or two or three positions as CSS writes them (`'48px 48px'`, `'1/2 1/4'`).
+   * @example transformOrigin={4} → transform-origin: 1rem
+   */
+  transformOrigin: [
+    {
+      values: '' as Transforms.Origin,
+      match: Transforms.isOrigin,
+      styleName: 'transform-origin',
+      valueFormat: (value: string) => Transforms.origin(value),
+    },
+    {
+      values: 0,
+      styleName: 'transform-origin',
+      valueFormat: BoxStylesFormatters.Value.rem,
+    },
+  ],
+  /**
+   * The box `transformOrigin` is measured in. An SVG shape's default is `view-box`, so it turns about the
+   * viewBox's corner; `transformBox="fill-box"` with `transformOrigin="center"` turns it about its own centre.
+   * @example transformBox="content-box" → transform-box: content-box
+   */
+  transformBox: [
+    {
+      values: ['content-box', 'border-box', 'fill-box', 'stroke-box', 'view-box'] as const,
+      styleName: 'transform-box',
     },
   ],
   /**
@@ -2831,12 +2896,13 @@ export const cssStyles = {
   ],
   /**
    * The stroke-width CSS property sets the width of an SVG element's stroke, in user units — `strokeWidth={2}` is `stroke-width: 2`, no divider.
-   * @example strokeWidth={4} → stroke-width: 4
+   * It also sets `--boxStrokeWidth`, which `strokeDasharray="dashed"` scales with. Firefox drops a unitless one inside `calc()`, hence the `px`.
+   * @example strokeWidth={4} → --boxStrokeWidth: 4px; stroke-width: 4
    */
   strokeWidth: [
     {
       values: 0,
-      styleName: 'stroke-width',
+      declarations: (value) => `--boxStrokeWidth:${value}px;stroke-width:${value}`,
     },
   ],
   /**
@@ -2871,12 +2937,21 @@ export const cssStyles = {
   ],
   /**
    * The stroke-dasharray CSS property turns an SVG stroke into dashes: a single number is the dash and the gap alike, a string is the full pattern (`'8 4'`). Lengths are user units.
+   * `dashed` (four widths on, two off) and `dotted` (one on, one off) follow the `strokeWidth` prop, so a thicker line keeps its pattern.
    * @example strokeDasharray={4} → stroke-dasharray: 4
    */
   strokeDasharray: [
     {
       values: 0,
       styleName: 'stroke-dasharray',
+    },
+    {
+      values: ['dashed', 'dotted'] as const,
+      styleName: 'stroke-dasharray',
+      valueFormat: (value: string) => {
+        const width = 'var(--boxStrokeWidth, 1px)';
+        return value === 'dashed' ? `calc(${width} * 4) calc(${width} * 2)` : `${width} ${width}`;
+      },
     },
     {
       values: '' as string,
@@ -2902,11 +2977,29 @@ export const cssStyles = {
   ],
   /**
    * The paint-order CSS property sets what is painted first. `paintOrder="stroke"` puts the stroke behind the fill, which is how outlined SVG text stays legible.
+   * Up to three keywords in the order they paint (`'stroke fill markers'`); the ones left out follow in their usual order.
    * @example paintOrder="normal" → paint-order: normal
    */
   paintOrder: [
     {
-      values: ['normal', 'fill', 'stroke', 'markers'] as const,
+      values: [
+        'normal',
+        'fill',
+        'stroke',
+        'markers',
+        'fill stroke',
+        'fill markers',
+        'stroke fill',
+        'stroke markers',
+        'markers fill',
+        'markers stroke',
+        'fill stroke markers',
+        'fill markers stroke',
+        'stroke fill markers',
+        'stroke markers fill',
+        'markers fill stroke',
+        'markers stroke fill',
+      ] as const,
       styleName: 'paint-order',
     },
   ],
@@ -2959,11 +3052,13 @@ export const cssStyles = {
   /**
    * The centre of a `<circle>` or `<ellipse>`, horizontally, in user units. Real CSS, so unlike the
    * attribute it transitions — moving a point on hover is one prop and no JavaScript.
-   * @example cx={4} → cx: 4
+   * Written in `px`, which is a user unit: Firefox and Safari drop a bare number here, and so does every geometry prop (bug #330).
+   * @example cx={4} → cx: 4px
    */
   cx: [
     {
       values: 0,
+      valueFormat: BoxStylesFormatters.Value.px,
     },
     {
       ...percentValue,
@@ -2971,11 +3066,12 @@ export const cssStyles = {
   ],
   /**
    * The cy CSS property positions the centre of a `<circle>` or an `<ellipse>` vertically, in user units. Transitions like `cx`.
-   * @example cy={4} → cy: 4
+   * @example cy={4} → cy: 4px
    */
   cy: [
     {
       values: 0,
+      valueFormat: BoxStylesFormatters.Value.px,
     },
     {
       ...percentValue,
@@ -2983,11 +3079,12 @@ export const cssStyles = {
   ],
   /**
    * The r CSS property sets the radius of a `<circle>`, in user units. Transition it and the circle grows; a percentage is of the viewport's diagonal.
-   * @example r={4} → r: 4
+   * @example r={4} → r: 4px
    */
   r: [
     {
       values: 0,
+      valueFormat: BoxStylesFormatters.Value.px,
     },
     {
       ...percentValue,
@@ -2996,11 +3093,12 @@ export const cssStyles = {
   /**
    * The horizontal radius of an `<ellipse>` or corner radius of a `<rect>` — `borderRadius` for SVG, in
    * user units rather than on the spacing scale. `auto` takes the radius from `ry`.
-   * @example rx={4} → rx: 4
+   * @example rx={4} → rx: 4px
    */
   rx: [
     {
       values: 0,
+      valueFormat: BoxStylesFormatters.Value.px,
     },
     {
       values: ['auto'] as const,
@@ -3011,11 +3109,12 @@ export const cssStyles = {
   ],
   /**
    * The ry CSS property sets the vertical radius of an `<ellipse>` or the vertical corner radius of a `<rect>`, in user units. `auto` takes it from `rx`.
-   * @example ry={4} → ry: 4
+   * @example ry={4} → ry: 4px
    */
   ry: [
     {
       values: 0,
+      valueFormat: BoxStylesFormatters.Value.px,
     },
     {
       values: ['auto'] as const,
@@ -3026,12 +3125,13 @@ export const cssStyles = {
   ],
   /**
    * Positions a `<rect>`, `<image>`, `<use>`, `<foreignObject>` or nested `<svg>` horizontally, in user
-   * units. Not `<text>`, whose `x` takes a list of positions and stays an attribute — pass it in `props`.
-   * @example x={4} → x: 4
+   * units. Not `<text>`, whose `x` takes a list of positions: `<SvgText x={4}>` writes it as the attribute.
+   * @example x={4} → x: 4px
    */
   x: [
     {
       values: 0,
+      valueFormat: BoxStylesFormatters.Value.px,
     },
     {
       ...percentValue,
@@ -3039,11 +3139,12 @@ export const cssStyles = {
   ],
   /**
    * The y CSS property positions a `<rect>`, `<image>`, `<use>`, `<foreignObject>` or a nested `<svg>` vertically, in user units. Not for `<text>` — see `x`.
-   * @example y={4} → y: 4
+   * @example y={4} → y: 4px
    */
   y: [
     {
       values: 0,
+      valueFormat: BoxStylesFormatters.Value.px,
     },
     {
       ...percentValue,

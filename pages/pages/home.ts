@@ -6,18 +6,19 @@
  * number that can quietly stop being true, which on this page of all pages is the one thing that must
  * not happen.
  *
- * The counts are written out rather than imported: `api/props.json` is 120 KB and the generated component
- * references are thirty-eight files, and neither belongs in the chunk the site's most-visited page fetches.
- * The test reads all of them and fails on a digit.
+ * The prop count comes from `api/propCount.json`, which `npm run docs:props` writes beside the 120 KB
+ * reference so this chunk need not carry it. The rest are written out — the component references are
+ * thirty-eight files — and the test reads all of them and fails on a digit.
  */
+import { propCount } from '../../api/propCount.json';
 
 /**
- * The numbers the page prints about itself. `props` is `api/props.json`'s own count; the three a11y ones
+ * The numbers the page prints about itself. `props` is the registry's own count; the three a11y ones
  * are the whole axe sweep, not just the ten rows below. `knownViolations` is the one worth printing — the
  * ledger fails both ways, so a listed violation that stopped firing is a failure too, and an empty ledger
  * means empty.
  */
-export const totals = { props: 235, components: 48, keyboardRows: 135, fixtures: 64, knownViolations: 0 } as const;
+export const totals = { props: propCount, components: 48, keyboardRows: 135, fixtures: 64, knownViolations: 0 } as const;
 
 /** The four pillars, in the order the page tells them. The `id` is the anchor its card jumps to. */
 export interface Pillar {
