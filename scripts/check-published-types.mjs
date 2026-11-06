@@ -138,8 +138,54 @@ writeFileSync(
       skipLibCheck: false,
       noEmit: true,
     },
-    include: ['consumer.tsx'],
+    include: ['*.ts', '*.tsx'],
   }),
+);
+
+// The app's extensions and the augmentation built from them, as the docs write them: the types have to
+// come through ExtractBoxStyles and ExtractComponentsAndVariants, not a hand-written interface.
+writeFileSync(
+  join(app, 'boxExtends.ts'),
+  `import Box from '@box-kite/react';
+
+export const { extendedProps, extendedPropTypes } = Box.extend(
+  { 'ui-primary': 'oklch(55% .2 260)', 'text-display': '2.25rem' },
+  {
+    textStyle: [{ values: ['display'] as const, styleName: 'font-size', valueFormat: (value, getVariable) => getVariable('text-' + value) }],
+  },
+  {
+    bgColor: [{ values: ['ui-primary'] as const, styleName: 'background-color', valueFormat: (value, getVariable) => getVariable(value) }],
+  },
+);
+`,
+);
+
+writeFileSync(
+  join(app, 'boxComponents.ts'),
+  `import Box from '@box-kite/react';
+
+export const components = Box.components({
+  card: { styles: { p: 4, borderRadius: 2 }, variants: { flat: { shadow: 'none' } } },
+  button: { styles: { theme: { dark: { bgColor: 'violet-500', hover: { bgColor: 'violet-400' } } } } },
+});
+`,
+);
+
+writeFileSync(
+  join(app, 'box.d.ts'),
+  `import '@box-kite/core/types';
+import type { ExtractBoxStyles, ExtractComponentsAndVariants } from '@box-kite/core/types';
+import type { components } from './boxComponents';
+import type { extendedProps, extendedPropTypes } from './boxExtends';
+
+declare module '@box-kite/core/types' {
+  namespace Augmented {
+    interface BoxProps extends ExtractBoxStyles<typeof extendedProps> {}
+    interface BoxPropTypes extends ExtractBoxStyles<typeof extendedPropTypes> {}
+    interface ComponentsTypes extends ExtractComponentsAndVariants<typeof components> {}
+  }
+}
+`,
 );
 
 // Each `@ts-expect-error` is a promise the types make; with the declarations missing, all of them pass.
@@ -152,11 +198,6 @@ import Box from '@box-kite/react';
 import Button from '@box-kite/react/components/button';
 
 Box.components({
-  card: { styles: { p: 4, borderRadius: 2 }, variants: { flat: { shadow: 'none' } } },
-  button: { styles: { theme: { dark: { bgColor: 'violet-500', hover: { bgColor: 'violet-400' } } } } },
-});
-
-Box.components({
   button: {
     // @ts-expect-error a value no prop takes, inside a theme entry
     styles: { theme: { dark: { bgColor: 'bleu-500' } } },
@@ -166,27 +207,29 @@ Box.components({
 export const valid = (
   <>
     <Box component="button" variant="secondary" p={4} />
+    <Box component="card" variant="flat" />
     <Button variant="ghost">Save</Button>
+    <Box textStyle="display" />
+    <Box bgColor="ui-primary" />
+    {/* An app's own colour takes the opacity modifier, the way a palette colour does (bug #335). */}
+    <Box bgColor="ui-primary/35" />
   </>
 );
 
-// An app's own colour takes the opacity modifier, the way a palette colour does (bug #335).
-declare module '@box-kite/core/types' {
-  namespace Augmented {
-    interface BoxPropTypes {
-      bgColor: 'ui-primary';
-    }
-  }
-}
-export const appAlpha = <Box bgColor="ui-primary/35" />;
 // @ts-expect-error a misspelt app colour, modifier or not
 export const appTypo = <Box bgColor="ui-primry/35" />;
+
+// @ts-expect-error a value the app's own prop does not take
+export const appPropTypo = <Box textStyle="displey" />;
 
 // @ts-expect-error unknown component
 export const unknownComponent = <Box component="cardd" />;
 
 // @ts-expect-error unknown variant
 export const unknownVariant = <Box component="button" variant="nonsense" />;
+
+// @ts-expect-error a variant the app's component does not declare
+export const unknownAppVariant = <Box component="card" variant="raised" />;
 `,
 );
 
