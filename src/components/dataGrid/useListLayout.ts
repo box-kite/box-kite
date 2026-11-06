@@ -23,7 +23,7 @@ if (matchMedia('(max-width: 36rem)')?.matches) void loadListLayout();
 
 /**
  * The list layout's component once it has arrived, or `undefined` while the grid should go on drawing its
- * table. No `React.lazy`: a Suspense boundary is the one thing a React 16 or 17 server cannot render.
+ * table. No `React.lazy`: a boundary that suspends while hydrating throws the server's HTML away.
  */
 export default function useListLayout(active: boolean): ListLayout | undefined {
   const [layout, setLayout] = useState(() => loaded);

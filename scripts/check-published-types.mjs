@@ -194,4 +194,69 @@ if (tsc.status === 0) {
 
 rmSync(app, { recursive: true, force: true });
 
+// 3. The engine alone, in an app with no React and so no csstype from @types/react: the core package has to
+// carry every type it names (bug #332 — its `css` types pointed at a csstype nothing installed).
+const vanilla = mkdtempSync(join(tmpdir(), 'box-kite-core-types-'));
+const coreOut = published
+  ? npm(['pack', `@box-kite/core@${published}`, '--json', '--pack-destination', vanilla], vanilla)
+  : npm(['pack', '--json', '--pack-destination', vanilla], join(root, PACKAGES['@box-kite/core']));
+renameSync(join(vanilla, JSON.parse(coreOut.slice(coreOut.indexOf('[')))[0].filename), join(vanilla, 'core.tgz'));
+
+writeFileSync(
+  join(vanilla, 'package.json'),
+  JSON.stringify({ name: 'box-kite-core-consumer', private: true, type: 'module', dependencies: { '@box-kite/core': 'file:./core.tgz' } }),
+);
+npm(['install', '--no-audit', '--no-fund', '--no-package-lock', '--prefer-offline', '--loglevel=error'], vanilla);
+
+writeFileSync(
+  join(vanilla, 'tsconfig.json'),
+  JSON.stringify({
+    compilerOptions: {
+      target: 'ES2022',
+      lib: ['ES2022', 'DOM', 'DOM.Iterable'],
+      module: 'ESNext',
+      moduleResolution: 'bundler',
+      strict: true,
+      skipLibCheck: false,
+      noEmit: true,
+      types: [],
+    },
+    include: ['consumer.ts'],
+  }),
+);
+
+writeFileSync(
+  join(vanilla, 'consumer.ts'),
+  `import type * as types from '@box-kite/core/types';
+import { createStyleEngine } from '@box-kite/core';
+
+export type Types = typeof types;
+const engine = createStyleEngine();
+
+export const valid = engine.classNames({ p: 4, css: { mixBlendMode: 'multiply' } });
+
+// @ts-expect-error a misspelt property in the css escape hatch
+export const typo = engine.classNames({ css: { mixBlendMod: 'multiply' } });
+`,
+);
+
+const vanillaTsc = spawnSync(process.execPath, [join(root, 'node_modules', 'typescript', 'bin', 'tsc'), '-p', vanilla], {
+  cwd: vanilla,
+  encoding: 'utf8',
+});
+const reactFree = !existsSync(join(vanilla, 'node_modules', 'react')) && !existsSync(join(vanilla, 'node_modules', '@types', 'react'));
+
+if (vanillaTsc.status === 0 && reactFree) {
+  console.log('✔ @box-kite/core alone type-checks with skipLibCheck: false in an app with no React, and its css types are real');
+} else {
+  failed = true;
+  console.error(
+    reactFree
+      ? `✖ @box-kite/core alone does not type-check:\n${vanillaTsc.stdout.trim()}`
+      : '✖ the React-free consumer has React installed, so it proves nothing',
+  );
+}
+
+rmSync(vanilla, { recursive: true, force: true });
+
 if (failed) process.exit(1);

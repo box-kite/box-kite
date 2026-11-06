@@ -1,5 +1,5 @@
-import type { Properties } from 'csstype';
 import Variables from './variables';
+import type { Properties } from './vendor/csstype';
 
 /**
  * The grammar behind `css`, the escape hatch: a style object for the properties this library has no prop

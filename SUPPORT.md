@@ -16,7 +16,7 @@ We aim for **at least one release every month**. Every release has generated not
 
 ## Supported environments
 
-- **React** 16.14 – 19 (see `peerDependencies` for the authoritative range)
+- **React** 18 and newer (see `peerDependencies` for the authoritative range)
 - **TypeScript**: current and previous major, `moduleResolution: bundler` or `node10`. (`node16`/`nodenext` type resolution has known gaps that are on the roadmap.)
 - ESM and CJS builds are both published.
 

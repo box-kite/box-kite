@@ -555,8 +555,8 @@ from the engine, which is why it nests, dedupes and renders on a server like any
 about it are deliberate. It is the **last** key in `cssStyles`, so its rule sorts after every typed
 prop's and wins the property both name on one element. Its value grammar is `vars`'
 (`Variables.isUsableValue`, `Variables.colorValue`), so there is one rule for a value that reaches a
-rule unformatted, and a colour token stays themed. And its types are `csstype`'s `Properties` — the
-one dependency `src/core` carries, types only, nothing at runtime — so a misspelt property is a
+rule unformatted, and a colour token stays themed. And its types are `csstype`'s `Properties`, as a
+generated copy in `src/core/vendor/` (`npm run docs:csstype`) so the package installs nothing for them — so a misspelt property is a
 compile error and `width: 100` is refused where `zIndex: 3` is not, because a number is written out as
 it stands.
 
@@ -594,13 +594,13 @@ a variable read through `Box.getVariableValue()`), so no caller can leave CSS un
 `flushSync()` always writes on the spot. The coordinator coalesces: any number of `scheduleFlush()`
 calls in one turn produce a single flush.
 
-| Adapter                                        | Policy                                                                                   |
-| ---------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| React (`useStyles`)                            | `flushSync()` from `useInsertionEffect` (falls back to `useLayoutEffect` on React 16/17) |
-| Vanilla DOM, no commit phase                   | the default `microtaskScheduler` — nothing can paint before the microtask queue drains   |
-| A framework without concurrent rendering (Vue) | `syncScheduler`                                                                          |
-| Server rendering                               | no scheduler arrives in time; `getStyles()` flushes itself                               |
-| Tests wanting full control                     | `manualScheduler` + `flushSync()`                                                        |
+| Adapter                                        | Policy                                                                                 |
+| ---------------------------------------------- | -------------------------------------------------------------------------------------- |
+| React (`useStyles`)                            | `flushSync()` from `useInsertionEffect`                                                |
+| Vanilla DOM, no commit phase                   | the default `microtaskScheduler` — nothing can paint before the microtask queue drains |
+| A framework without concurrent rendering (Vue) | `syncScheduler`                                                                        |
+| Server rendering                               | no scheduler arrives in time; `getStyles()` flushes itself                             |
+| Tests wanting full control                     | `manualScheduler` + `flushSync()`                                                      |
 
 React's insertion effects run during the commit ahead of _every_ layout effect in it, which is why
 the React binding uses them (React's own recommendation for CSS-in-JS): a component that measures

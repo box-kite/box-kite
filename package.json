@@ -104,6 +104,8 @@
     "docs:components": "node scripts/check-components-api.mjs --fix",
     "check:catalog": "node scripts/check-catalog-api.mjs",
     "docs:catalog": "node scripts/check-catalog-api.mjs --fix",
+    "check:csstype": "node scripts/check-csstype.mjs",
+    "docs:csstype": "node scripts/check-csstype.mjs --fix",
     "check:create": "node scripts/check-create-templates.mjs",
     "docs:create": "node scripts/check-create-templates.mjs --fix",
     "check:conventions": "node scripts/check-component-conventions.mjs",
@@ -650,12 +652,8 @@
   "homepage": "https://www.box-kite.dev",
   "description": "One React component that takes CSS properties as typed props and generates atomic CSS at runtime — no CSS files, no build step, renders in a Server Component.",
   "peerDependencies": {
-    "react": "^16.14.0 || ^17.0.0 || ^18.0.0 || ^19.0.0",
-    "react-dom": "^16.14.0 || ^17.0.0 || ^18.0.0 || ^19.0.0"
-  },
-  "dependencies": {
-    "csstype": "^3.2.3",
-    "use-sync-external-store": "^1.6.0"
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.5",
@@ -685,13 +683,13 @@
     "@types/node": "^26.1.2",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
-    "@types/use-sync-external-store": "^1.5.0",
     "@vitejs/plugin-react": "^6.0.5",
     "@vitest/coverage-v8": "^4.1.11",
     "ag-grid-community": "^36.2.0",
     "ag-grid-react": "^36.2.0",
     "axe-core": "^4.13.0",
     "create-vite": "^9.3.0",
+    "csstype": "^3.2.3",
     "eslint": "^10.8.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-import-x": "^4.17.1",

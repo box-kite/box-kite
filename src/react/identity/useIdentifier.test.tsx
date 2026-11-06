@@ -1,5 +1,5 @@
 import { cleanup, render, renderHook, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import useIdentifier from './useIdentifier';
 
 describe('useIdentifier', () => {
@@ -47,33 +47,6 @@ describe('useIdentifier', () => {
     // React's own ids are `:r1:` (18) or `«r1»` (19), neither of which survives
     // `querySelector('#…')` — the punctuation is stripped for exactly this.
     expect(result.current).toMatch(/^[\w-]+$/);
-  });
-
-  /**
-   * The peer range starts at React 16.14, which has no `useId` — and CI runs the suite against 18
-   * and 19 only, so this is the one place the fallback is exercised at all.
-   */
-  it('falls back to a counter on a React without useId', async () => {
-    vi.resetModules();
-    vi.doMock('react', async () => {
-      const actual = await vi.importActual<typeof import('react')>('react');
-
-      return { ...actual, default: { ...actual, useId: undefined }, useId: undefined };
-    });
-
-    try {
-      const legacy = (await import('./useIdentifier')).default;
-      const { renderHook: renderLegacy } = await import('@testing-library/react');
-
-      const first = renderLegacy(() => legacy('field'));
-      const second = renderLegacy(() => legacy('field'));
-
-      expect(first.result.current).toMatch(/^field-\d+$/);
-      expect(second.result.current).not.toBe(first.result.current);
-    } finally {
-      vi.doUnmock('react');
-      vi.resetModules();
-    }
   });
 
   it('wires one element to another', () => {

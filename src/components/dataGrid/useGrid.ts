@@ -1,7 +1,4 @@
-import { useState } from 'react';
-// Shim delegates to React's native useSyncExternalStore on 18+, and provides a correct
-// userland implementation on React 16.14–17, so the DataGrid works across React 17–19.
-import { useSyncExternalStore } from 'use-sync-external-store/shim';
+import { useState, useSyncExternalStore } from 'react';
 import useIdentifier from '../../react/identity/useIdentifier';
 import { DataGridProps } from './contracts/dataGridContract';
 import GridModel from './models/gridModel';
