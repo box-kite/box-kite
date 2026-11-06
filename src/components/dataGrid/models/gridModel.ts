@@ -545,7 +545,31 @@ export default class GridModel<TRow> {
     }
     if (!this.hasRowFilters) return this.data;
 
-    return this.data.filter((row) => this.rowMatchesFilters(row));
+    const { filters, def } = this.props;
+    // By value: the list is rebuilt with the columns, and what matters is which columns it names.
+    const searched = JSON.stringify(this.globalFilterColumns.value);
+    const inputs = [this.data, filters, !!def.globalFilter, this.globalFilterValue, searched, this.columnFilters];
+
+    return GridModel.reuse(this._filtered, inputs, () => this.data.filter((row) => this.rowMatchesFilters(row)));
+  }
+
+  /**
+   * Filtering and sorting are kept on the values they read rather than on the column models: an inline `def` is
+   * a new object every parent render, which rebuilt the columns and re-sorted 100,000 rows in 47ms each time.
+   */
+  private readonly _filtered: { inputs?: unknown[]; value?: TRow[] } = {};
+  private readonly _sorted: { inputs?: unknown[]; value?: TRow[] } = {};
+  private readonly _rowModels: { inputs?: unknown[]; value?: RowModel<TRow>[] } = {};
+
+  private static reuse<T>(slot: { inputs?: unknown[]; value?: T }, inputs: unknown[], compute: () => T): T {
+    if (slot.inputs && slot.inputs.length === inputs.length && slot.inputs.every((input, index) => Object.is(input, inputs[index]))) {
+      return slot.value as T;
+    }
+
+    slot.inputs = inputs;
+    slot.value = compute();
+
+    return slot.value;
   }
 
   /** What the grid tells `Box.onInteraction` about a change no host callback carries; `content` names what a person typed. */
@@ -768,7 +792,11 @@ export default class GridModel<TRow> {
       let data = this.filteredData;
 
       if (this._sortColumn && !this.isPaginated) {
-        data = ArrayUtils.sortBy(data, (x) => x[this._sortColumn as keyof TRow], this._sortDirection);
+        const filtered = data;
+        const column = this._sortColumn as keyof TRow;
+        data = GridModel.reuse(this._sorted, [filtered, column, this._sortDirection], () =>
+          ArrayUtils.sortBy(filtered, (x) => x[column], this._sortDirection),
+        );
       }
 
       if (this.groupColumns.size > 0) {
@@ -795,7 +823,11 @@ export default class GridModel<TRow> {
         return getRowsGroup(data, new Set(this.groupColumns));
       }
 
-      return data.map((dataRow, rowIndex) => new RowModel(this, dataRow, rowIndex));
+      // `rowKey` too: a model keeps the key it resolved, and a new way of naming rows needs new models.
+      const rows = data;
+      return GridModel.reuse(this._rowModels, [rows, this.props.def.rowKey], () =>
+        rows.map((dataRow, rowIndex) => new RowModel(this, dataRow, rowIndex)),
+      );
     },
     () => [this.columns],
   );

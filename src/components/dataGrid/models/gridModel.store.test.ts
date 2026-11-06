@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { ignoreLogs } from '../../../../dev/tests';
+import ArrayUtils from '../../../utils/array/arrayUtils';
 import { DataGridProps, GridDefinition } from '../contracts/dataGridContract';
 import GridModel from './gridModel';
 
@@ -111,5 +112,51 @@ describe('GridModel store', () => {
       grid.setProps({ data: [{ firstName: 'C', lastName: 'Z' }], def });
       expect(listener).not.toHaveBeenCalled();
     });
+  });
+});
+
+describe('an inline def costs no re-sort (E11)', () => {
+  ignoreLogs();
+
+  const people: Person[] = [
+    { firstName: 'C', lastName: 'Z' },
+    { firstName: 'A', lastName: 'X' },
+    { firstName: 'B', lastName: 'Y' },
+  ];
+
+  it('a def that is a new object with the same content keeps the sorted, searched row models', () => {
+    const grid = new GridModel<Person>({ data: people, def: { ...def, globalFilter: true } });
+    grid.setSortColumn('firstName');
+    grid.filter.setGlobalFilter('a');
+    const rows = grid.rows.value;
+    const matches = vi.spyOn(grid, 'rowMatchesFilters');
+    const sortBy = vi.spyOn(ArrayUtils, 'sortBy');
+
+    grid.setProps({ data: people, def: { ...def, globalFilter: true } });
+
+    expect(grid.rows.value).toBe(rows);
+    expect(matches).not.toHaveBeenCalled();
+    expect(sortBy).not.toHaveBeenCalled();
+    sortBy.mockRestore();
+  });
+
+  it('still answers what it reads: a new search, a new sort and a new rowKey', () => {
+    const grid = new GridModel<Person>({ data: people, def: { ...def, globalFilter: true } });
+    const names = () => grid.rows.value.map((row) => (row as { data: Person }).data.firstName);
+    grid.setSortColumn('firstName');
+    expect(names()).toEqual(['A', 'B', 'C']);
+
+    grid.setProps({ data: people, def: { ...def, globalFilter: true } });
+    grid.filter.setGlobalFilter('b');
+    expect(names()).toEqual(['B']);
+
+    grid.filter.setGlobalFilter('');
+    grid.setSortColumn('firstName', 'DESC');
+    expect(names()).toEqual(['C', 'B', 'A']);
+
+    const keys = grid.rows.value.map((row) => row.key);
+    grid.setProps({ data: people, def: { ...def, globalFilter: true, rowKey: 'lastName' } });
+    expect(grid.rows.value.map((row) => row.key)).not.toEqual(keys);
+    expect(grid.rows.value.map((row) => row.key)).toEqual(['Z', 'Y', 'X']);
   });
 });
