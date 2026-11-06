@@ -170,6 +170,18 @@ export const valid = (
   </>
 );
 
+// An app's own colour takes the opacity modifier, the way a palette colour does (bug #335).
+declare module '@box-kite/core/types' {
+  namespace Augmented {
+    interface BoxPropTypes {
+      bgColor: 'ui-primary';
+    }
+  }
+}
+export const appAlpha = <Box bgColor="ui-primary/35" />;
+// @ts-expect-error a misspelt app colour, modifier or not
+export const appTypo = <Box bgColor="ui-primry/35" />;
+
 // @ts-expect-error unknown component
 export const unknownComponent = <Box component="cardd" />;
 

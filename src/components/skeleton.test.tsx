@@ -45,4 +45,17 @@ describe('Skeleton', () => {
 
     expect(bars(container)).toHaveLength(1);
   });
+
+  // Bug #337: the bar kept its one-line height however tall the skeleton was told to be.
+  it('fills the skeleton with its one bar, so a height makes it a block', () => {
+    const { container } = render(<Skeleton height={40} />);
+
+    expect(getComputedStyle(bars(container)[0].parentElement!).flexGrow).toBe('1');
+  });
+
+  it('keeps every bar one line tall when there are several', () => {
+    const { container } = render(<Skeleton height={40} lines={2} />);
+
+    expect([...bars(container)].map((gloss) => getComputedStyle(gloss.parentElement!).flexGrow)).not.toContain('1');
+  });
 });

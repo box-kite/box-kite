@@ -55,7 +55,7 @@ interface BaseProps<TRow, TKey extends keyof ComponentsAndVariants = 'combobox'>
   name?: string;
   /** Not editable and not openable, but still read out. The real attribute, on the field itself. */
   disabled?: boolean;
-  /** Attributes for the `<input>` that *is* the combobox — an `aria-label`, an `inputMode`, an `id`. */
+  /** Attributes for the `<input>` that *is* the combobox — an `aria-label`, an `inputMode`. Its `id` is the top-level prop. */
   props?: Record<string, unknown>;
   /** Styles for the popup (`combobox.items`). */
   itemsProps?: BoxStyleProps;
@@ -224,7 +224,8 @@ function ComboboxImpl<TRow>(props: Props<TRow>, ref: Ref<HTMLInputElement>): Rea
   } = props as ResolvedProps<TRow>;
 
   const identifier = useIdentifier('combobox');
-  const fieldId = restProps.id ?? `${identifier}-field`;
+  // `props.id` too: the type lets it through, and dropping it left an app's own `<label htmlFor>` naming nothing.
+  const fieldId = restProps.id ?? (tagProps?.id as string | undefined) ?? `${identifier}-field`;
   const listboxId = `${identifier}-listbox`;
   const labelId = `${identifier}-label`;
   const hasLabel = label !== undefined && label !== null && label !== false;
@@ -344,6 +345,20 @@ function ComboboxImpl<TRow>(props: Props<TRow>, ref: Ref<HTMLInputElement>): Rea
     activeItem()?.scrollIntoView?.({ block: 'nearest' });
   }, [open, activeIndex, activeItem]);
 
+  // The listbox repeats the field's name. Labelled *by* the field it read out what was typed (bug #334),
+  // so an app's own `<label htmlFor>` is read off the field once the popup is there to carry it.
+  const labelledBy = hasLabel ? labelId : (tagProps?.['aria-labelledby'] as string | undefined);
+  const ariaLabel = tagProps?.['aria-label'] as string | undefined;
+  const [outsideLabel, setOutsideLabel] = useState<string>();
+  useIsomorphicLayoutEffect(() => {
+    if (!open || labelledBy || ariaLabel) return;
+
+    const labels = Array.from(fieldRef.current?.labels ?? [], (element) => element.textContent?.trim() ?? '');
+    const text = labels.filter(Boolean).join(' ') || undefined;
+    if (text !== outsideLabel) setOutsideLabel(text);
+  }, [open, labelledBy, ariaLabel, outsideLabel]);
+  const listboxName = labelledBy ? { 'aria-labelledby': labelledBy } : { 'aria-label': ariaLabel ?? outsideLabel };
+
   /**
    * Open with the highlight on the selected row — APG, whichever key opened it — falling back to the end
    * the key implied. `none` is Alt+Down, which opens without moving the highlight at all.
@@ -461,7 +476,7 @@ function ComboboxImpl<TRow>(props: Props<TRow>, ref: Ref<HTMLInputElement>): Rea
         'aria-expanded': open,
         'aria-controls': open && hasPopup ? listboxId : undefined,
         'aria-activedescendant': activeOptionId,
-        'aria-labelledby': hasLabel ? labelId : (tagProps?.['aria-labelledby'] as string | undefined),
+        'aria-labelledby': labelledBy,
         // The browser's own autofill list would cover the listbox this input controls.
         autoComplete: 'off',
         spellCheck: false,
@@ -510,7 +525,7 @@ function ComboboxImpl<TRow>(props: Props<TRow>, ref: Ref<HTMLInputElement>): Rea
           anchorRef={shellRef}
           popupRef={popupRef}
           listboxId={listboxId}
-          labelledBy={hasLabel ? labelId : fieldId}
+          name={listboxName}
           loading={loading}
           loadingText={loadingText}
           emptyText={emptyText}

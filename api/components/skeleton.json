@@ -10,7 +10,7 @@
       "type": "number",
       "required": false,
       "default": "1",
-      "description": "How many bars to draw. Default `1`; past that the last one is short, the way a paragraph's last line is."
+      "description": "How many bars to draw. Default `1`, which fills the skeleton: `height={40}` is a block. Past that the last bar is short, the way a paragraph's last line is."
     },
     {
       "name": "circle",
@@ -33,7 +33,7 @@
   "axe": { "fixtures": ["Skeleton"], "knownViolations": [] },
   "styleTree": [
     { "path": "skeleton", "depth": 0, "extends": null, "variants": [] },
-    { "path": "skeleton.bar", "depth": 1, "extends": null, "variants": ["short", "circle"] },
+    { "path": "skeleton.bar", "depth": 1, "extends": null, "variants": ["short", "fill", "circle"] },
     { "path": "skeleton.gloss", "depth": 1, "extends": null, "variants": [] }
   ]
 }

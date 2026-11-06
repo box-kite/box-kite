@@ -17,7 +17,7 @@
       "type": "TextboxTagProps",
       "required": false,
       "default": null,
-      "description": "Attributes for the `<input>` itself — an `id`, an `aria-label`, `inputMode`, `autoComplete`."
+      "description": "Attributes for the `<input>` itself — an `aria-label`, `inputMode`, `autoComplete`. Its `id` is the top-level prop."
     },
     {
       "name": "onInput",

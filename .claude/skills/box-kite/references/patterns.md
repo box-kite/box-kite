@@ -7,7 +7,7 @@ The recipes, plus the parts of the library that are not props: server rendering,
 ```tsx
 <Flex d="column" gap={4} ai="center" jc="between">{children}</Flex>
 <Flex d="column" gap={2} md={{ d: 'row', gap: 4 }}>{children}</Flex>
-<Grid gridCols={3} gap={4}>{items}</Grid>
+<Grid gridTemplateColumns={3} gap={4}>{items}</Grid>
 <Box p={4} bgColor="white" borderRadius={8} shadow="medium" />
 <Box overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap" />
 ```

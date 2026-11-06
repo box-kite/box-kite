@@ -1263,7 +1263,7 @@ import Textbox from '@box-kite/react/components/textbox';
 <Flex d="column" gap={2} md={{ d: 'row', gap: 4 }}>{children}</Flex>
 
 // Grid
-<Grid gridCols={3} gap={4}>{items.map(i => <Box key={i.id}>{i.content}</Box>)}</Grid>
+<Grid gridTemplateColumns={3} gap={4}>{items.map(i => <Box key={i.id}>{i.content}</Box>)}</Grid>
 
 // Card
 <Box p={4} bgColor="white" borderRadius={8} shadow="medium">{content}</Box>
@@ -1521,16 +1521,16 @@ the association needs no `htmlFor`/`id` pair and the whole row is a click target
 nothing wraps the input — the markup is what it always was. `labelProps` styles that `<label>`;
 every other Box prop styles the control itself.
 
-| Component    | Prop                     | What it does                                                                                 |
-| ------------ | ------------------------ | -------------------------------------------------------------------------------------------- |
-| all three    | `label` / `labelProps`   | The wrapping `<label>` and its styles.                                                       |
-| `Checkbox`   | `indeterminate`          | Sets the DOM property **and** `aria-checked="mixed"`, which is what is announced.            |
-| `Switch`     | —                        | `role="switch"` over the same input; Space **and** Enter toggle, Enter does not submit.      |
-| `RadioGroup` | `label`                  | `role="radiogroup"` named by it — a set of radios with nothing over it is a flat list.       |
-| `RadioGroup` | `name`                   | The field every item submits under. Generated when left out.                                 |
-| `RadioGroup` | `value` / `defaultValue` | The selected item's value (a string — the platform's own model for a radio).                 |
-| `RadioGroup` | `onValueChange`          | `(value, { reason, event })` — `click` or `keyboard`. `onChange` is the deprecated spelling. |
-| `RadioGroup` | `orientation`            | `vertical` (default) or `horizontal`. Both arrow pairs navigate either way.                  |
+| Component    | Prop                     | What it does                                                                                                                                       |
+| ------------ | ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| all three    | `label` / `labelProps`   | The wrapping `<label>` and its styles.                                                                                                             |
+| `Checkbox`   | `indeterminate`          | Sets the DOM property **and** `aria-checked="mixed"`, which is what is announced.                                                                  |
+| `Switch`     | —                        | `role="switch"` over the same input; Space **and** Enter toggle, Enter does not submit.                                                            |
+| `RadioGroup` | `label`                  | `role="radiogroup"` named by it — a set of radios with nothing over it is a flat list.                                                             |
+| `RadioGroup` | `name`                   | The field every item submits under. Generated when left out.                                                                                       |
+| `RadioGroup` | `value` / `defaultValue` | The selected item's value (a string — the platform's own model for a radio).                                                                       |
+| `RadioGroup` | `onValueChange`          | `(value, { reason, event })` — `click` or `keyboard`. `onChange` is the deprecated spelling.                                                       |
+| `RadioGroup` | `orientation`            | `vertical` (default) or `horizontal`, which wraps and keeps the label on a line of its own above the radios. Both arrow pairs navigate either way. |
 
 Arrow keys move **and select** inside a group, wrapping at both ends and skipping disabled items;
 Tab enters the group once and leaves it once, because a native radio set is already a single tab
@@ -2790,27 +2790,27 @@ named ones carry the reason.
 
 ### ColumnType
 
-| Prop                     | Type                                                                            | Default   | Description                                                                                                                                     |
-| ------------------------ | ------------------------------------------------------------------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| `key`                    | `Key`                                                                           | required  | Column identifier (maps to TRow property)                                                                                                       |
-| `header`                 | `string`                                                                        | —         | Header text                                                                                                                                     |
-| `width`                  | `number`                                                                        | `200`     | Base width in px                                                                                                                                |
-| `align`                  | `'start' \| 'end' \| 'center' \| 'left' \| 'right'`                             | `'left'`  | Cell alignment. `start`/`end` follow the reading order; `left`/`right` stay on the screen side they name                                        |
-| `pin`                    | `'START' \| 'END'` (also `'LEFT'`/`'RIGHT'`)                                    | —         | Pin to an edge of the **inline axis** (sticky on scroll), so it holds under either `dir`. `LEFT`/`RIGHT` are the older spelling of the same two |
-| `columns`                | `ColumnType[]`                                                                  | —         | Nested columns (grouped header)                                                                                                                 |
-| `Cell`                   | `({ cell }) => ReactNode`                                                       | —         | Custom renderer. `cell`: `{ value, row, column, grid }`. It redraws when its row changes or the grid does — not when another row is selected    |
-| `sortable` / `resizable` | `boolean`                                                                       | inherits  | Override grid-level setting                                                                                                                     |
-| `flexible`               | `boolean`                                                                       | `true`    | Participate in flex width distribution                                                                                                          |
-| `filterable`             | `boolean \| FilterConfig`                                                       | —         | `true` (text), `{ type: 'number', min?, max? }`, `{ type: 'multiselect', options? }`                                                            |
-| `contextMenu`            | `boolean \| ContextMenuConfig`                                                  | inherits  | Override grid-level context menu. `false` hides entirely. `{ sort?, pin?, group? }` controls sections                                           |
-| `aggregate`              | `AggregateName \| (values, rows) => value`                                      | —         | Total this column over each group row, and over the footer. See below                                                                           |
-| `AggregateCell`          | `({ cell }) => ReactNode`                                                       | —         | Renders the aggregate. `cell`: `{ value, column, rows, scope }`, `scope` being `'group'` or `'footer'`                                          |
-| `editable`               | `boolean \| (row) => boolean`                                                   | inherits  | Whether this column’s cells can be edited — every row, or the rows a predicate says                                                             |
-| `editor`                 | `CellEditorType \| CellEditorConfig`                                            | inferred  | `text`/`number`/`checkbox`/`select`. Without one it is read off the value in the cell                                                           |
-| `EditCell`               | `({ cell }) => ReactNode`                                                       | —         | An editor of your own, bound to `cell.draft` with `cell.commitEdit()`/`cell.cancelEdit()`                                                       |
-| `exportValue`            | `(row: TRow) => value`                                                          | the field | What this column writes to an exported file — an export runs no React, so a `Cell` renderer needs it                                            |
-| `list`                   | `'title' \| 'kicker' \| 'subtitle' \| 'end' \| 'field' \| 'detail' \| 'hidden'` | inferred  | Where the column goes in a list item, on a phone                                                                                                |
-| `exportFormat`           | `string`                                                                        | —         | The number format its cells wear in a workbook, `'#,##0.00'` or `'yyyy-mm-dd'`                                                                  |
+| Prop                     | Type                                                                            | Default   | Description                                                                                                                                                                                                                                                                   |
+| ------------------------ | ------------------------------------------------------------------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `key`                    | `Key`                                                                           | required  | Column identifier (maps to TRow property)                                                                                                                                                                                                                                     |
+| `header`                 | `string`                                                                        | —         | Header text                                                                                                                                                                                                                                                                   |
+| `width`                  | `number`                                                                        | `200`     | Base width in px                                                                                                                                                                                                                                                              |
+| `align`                  | `'start' \| 'end' \| 'center' \| 'left' \| 'right'`                             | `'left'`  | Cell alignment. `start`/`end` follow the reading order; `left`/`right` stay on the screen side they name                                                                                                                                                                      |
+| `pin`                    | `'START' \| 'END'` (also `'LEFT'`/`'RIGHT'`)                                    | —         | Pin to an edge of the **inline axis** (sticky on scroll), so it holds under either `dir`. `LEFT`/`RIGHT` are the older spelling of the same two                                                                                                                               |
+| `columns`                | `ColumnType[]`                                                                  | —         | Nested columns (grouped header)                                                                                                                                                                                                                                               |
+| `Cell`                   | `({ cell }) => ReactNode`                                                       | —         | Custom renderer. `cell`: `{ value, row, column, grid }`. It fills the cell **edge to edge, with no padding** — the built-in text pads itself `px={3}`, so text of your own does the same. It redraws when its row changes or the grid does — not when another row is selected |
+| `sortable` / `resizable` | `boolean`                                                                       | inherits  | Override grid-level setting                                                                                                                                                                                                                                                   |
+| `flexible`               | `boolean`                                                                       | `true`    | Participate in flex width distribution                                                                                                                                                                                                                                        |
+| `filterable`             | `boolean \| FilterConfig`                                                       | —         | `true` (text), `{ type: 'number', min?, max? }`, `{ type: 'multiselect', options? }`                                                                                                                                                                                          |
+| `contextMenu`            | `boolean \| ContextMenuConfig`                                                  | inherits  | Override grid-level context menu. `false` hides entirely. `{ sort?, pin?, group? }` controls sections                                                                                                                                                                         |
+| `aggregate`              | `AggregateName \| (values, rows) => value`                                      | —         | Total this column over each group row, and over the footer. See below                                                                                                                                                                                                         |
+| `AggregateCell`          | `({ cell }) => ReactNode`                                                       | —         | Renders the aggregate. `cell`: `{ value, column, rows, scope }`, `scope` being `'group'` or `'footer'`                                                                                                                                                                        |
+| `editable`               | `boolean \| (row) => boolean`                                                   | inherits  | Whether this column’s cells can be edited — every row, or the rows a predicate says                                                                                                                                                                                           |
+| `editor`                 | `CellEditorType \| CellEditorConfig`                                            | inferred  | `text`/`number`/`checkbox`/`select`. Without one it is read off the value in the cell                                                                                                                                                                                         |
+| `EditCell`               | `({ cell }) => ReactNode`                                                       | —         | An editor of your own, bound to `cell.draft` with `cell.commitEdit()`/`cell.cancelEdit()`                                                                                                                                                                                     |
+| `exportValue`            | `(row: TRow) => value`                                                          | the field | What this column writes to an exported file — an export runs no React, so a `Cell` renderer needs it                                                                                                                                                                          |
+| `list`                   | `'title' \| 'kicker' \| 'subtitle' \| 'end' \| 'field' \| 'detail' \| 'hidden'` | inferred  | Where the column goes in a list item, on a phone                                                                                                                                                                                                                              |
+| `exportFormat`           | `string`                                                                        | —         | The number format its cells wear in a workbook, `'#,##0.00'` or `'yyyy-mm-dd'`                                                                                                                                                                                                |
 
 ### Aggregation
 
@@ -3786,15 +3786,16 @@ with `language` and `code`, `rule`, `image`, `tableWrap`, `table`, `row`, `cell`
 
 Where content will be, while it is being fetched.
 
-| Prop     | Type        | What it does                                                                 |
-| -------- | ----------- | ---------------------------------------------------------------------------- |
-| `lines`  | `number`    | How many bars. Default 1; past that the last one is short.                   |
-| `circle` | `boolean`   | One round bar — an avatar. `width` sets its size and the height follows.     |
-| `label`  | `ReactNode` | Makes it a `role="status"` naming what is on its way. Absent: `aria-hidden`. |
+| Prop     | Type        | What it does                                                                         |
+| -------- | ----------- | ------------------------------------------------------------------------------------ |
+| `lines`  | `number`    | How many bars. Default 1, which fills the skeleton; past that the last one is short. |
+| `circle` | `boolean`   | One round bar — an avatar. `width` sets its size and the height follows.             |
+| `label`  | `ReactNode` | Makes it a `role="status"` naming what is on its way. Absent: `aria-hidden`.         |
 
 ```tsx
 <Skeleton lines={3} label="Loading orders" />
 <Skeleton circle width={10} />
+<Skeleton height={40} /> {/* one bar fills it: an image or a chart placeholder */}
 ```
 
 A `label` belongs on the one skeleton standing for a region and not on each bar — a screen of
@@ -3802,7 +3803,7 @@ placeholders each announcing itself is a screen nobody can listen to, and a regi
 with its text is not reliably announced anyway, so what it really buys is words for somebody who lands
 there. The gloss is a named duration in milliseconds, so it sits outside what `--transitionTime` zeroes
 and stops itself under `prefers-reduced-motion`. It renders on a server. Tree: `skeleton` (+ `bar` with
-`short` and `circle` variants, `gloss`).
+`short`, `circle` and `fill` variants, `gloss`).
 
 ## The catalog (`@box-kite/react/catalog`)
 

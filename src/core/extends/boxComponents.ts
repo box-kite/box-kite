@@ -1383,7 +1383,8 @@ const baseComponents = {
     styles: { d: 'column', gap: 2 },
     variants: {
       ...SIZES,
-      horizontal: { d: 'row' },
+      // Wrapping, with the label a line of its own: in the row it read as the first option (bug #338).
+      horizontal: { d: 'row', flexWrap: 'wrap' },
     },
     children: {
       // The same label as a `Combobox`'s, which is the one a form control in this library wears.
@@ -1393,6 +1394,7 @@ const baseComponents = {
           color: 'base-700',
           theme: { dark: { color: 'base-300' } },
         },
+        variants: { horizontal: { width: 'fit' } },
       },
     },
   },
@@ -4380,6 +4382,8 @@ const baseComponents = {
         variants: {
           // A paragraph's last line stops short of the margin, and bars of one length read as a table.
           short: { width: '3/5' },
+          // A lone bar fills the skeleton, so `height` makes it a block rather than one line in a tall box (bug #337).
+          fill: { flexGrow: 1 },
           // Far past any avatar, so one radius rounds every size the caller gives.
           circle: { width: 10, height: 'auto', aspectRatio: 'square', borderRadius: 100 },
         },

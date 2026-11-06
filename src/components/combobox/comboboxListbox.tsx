@@ -40,7 +40,8 @@ export interface ComboboxListboxProps<TRow> {
   /** The layer element — what the dismissal hook treats as *inside* the popup. */
   popupRef: React.Ref<HTMLDivElement>;
   listboxId: string;
-  labelledBy: string;
+  /** The listbox's `aria-labelledby` or `aria-label`: whatever names the field, never the field itself. */
+  name: Record<string, string | undefined>;
   /** Options are on their way. Says so rather than claiming the list is empty. */
   loading?: boolean;
   loadingText: React.ReactNode;
@@ -58,12 +59,12 @@ export interface ComboboxListboxProps<TRow> {
  * announced rather than offered as something to choose, which is why the role changes rather than an
  * unselectable option standing in for it.
  */
-function rolesFor(hasOptions: boolean, multiple: boolean, loading: boolean, labelledBy: string): Record<string, unknown> {
+function rolesFor(hasOptions: boolean, multiple: boolean, loading: boolean, name: Record<string, unknown>): Record<string, unknown> {
   if (!hasOptions) return { role: 'status' };
 
   return {
     role: 'listbox',
-    'aria-labelledby': labelledBy,
+    ...name,
     // Only when true: `false` is the default, and saying it on every single-select listbox is noise.
     ...(multiple ? { 'aria-multiselectable': true } : {}),
     // The list on screen is about to be replaced, which is worth knowing before reading it out.
@@ -73,7 +74,7 @@ function rolesFor(hasOptions: boolean, multiple: boolean, loading: boolean, labe
 
 export default function ComboboxListbox<TRow>(props: ComboboxListboxProps<TRow>) {
   const { presence, rows, def, display, selection, multiple, activeIndex, optionId, rowRef, onSelect } = props;
-  const { anchorRef, popupRef, listboxId, labelledBy, loading, loadingText, emptyText, createLabel, variant, itemsProps } = props;
+  const { anchorRef, popupRef, listboxId, name, loading, loadingText, emptyText, createLabel, variant, itemsProps } = props;
   const { virtualize } = props;
   const { present, ref: contentRef, props: presenceProps } = presence;
   const keyFor = (row: TRow) => ComboboxUtils.keyOf(def, row);
@@ -160,7 +161,7 @@ export default function ComboboxListbox<TRow>(props: ComboboxListboxProps<TRow>)
         variant={[variant, { closed: !present && !openUp, closedUp: !present && openUp }] as never}
         id={listboxId}
         props={{
-          ...rolesFor(rows.length > 0, multiple, loading === true, labelledBy),
+          ...rolesFor(rows.length > 0, multiple, loading === true, name),
           ...presenceProps,
           ...(virtualized ? { onScroll } : {}),
         }}

@@ -138,11 +138,13 @@ function Theme(props: ThemeProps) {
   // The stored design the effect below just queued a render for: writing the default first would flip a root
   // a pre-paint script already set, the same full restyle the theme avoids (bug #204).
   const designResolvingRef = useRef<string | null>(null);
+  const committedDesignRef = useRef(designName);
 
   /* eslint-disable react-hooks/set-state-in-effect */
   useLayoutEffect(() => {
     const stored = designStorageKey ? readStoredTheme(designStorageKey) : null;
-    if (!stored) return;
+    // A no-op set would be replayed over the next `design` prop change, as the theme's was (bug #333).
+    if (!stored || stored === committedDesignRef.current) return;
 
     designResolvingRef.current = stored;
     setDesignName(stored);
@@ -150,6 +152,7 @@ function Theme(props: ThemeProps) {
   /* eslint-enable react-hooks/set-state-in-effect */
 
   useLayoutEffect(() => {
+    committedDesignRef.current = designName;
     if (designResolvingRef.current !== null && designResolvingRef.current !== designName) return;
     designResolvingRef.current = null;
 
@@ -187,8 +190,12 @@ function Theme(props: ThemeProps) {
     const stored = storageKey ? readStoredTheme(storageKey) : null;
     const resolved = stored ?? getSystemTheme();
     // Only a change queues the re-render that consumes it; one left behind would skip the next apply.
-    if (resolved !== committedRef.current) resolvingRef.current = resolved;
-    setThemeName(resolved);
+    // Never a no-op set: React keeps it queued and replays it after the next render-phase prop sync,
+    // so `theme` going from undefined to 'dark' was overwritten by the stale 'light' (bug #333).
+    if (resolved !== committedRef.current) {
+      resolvingRef.current = resolved;
+      setThemeName(resolved);
+    }
     if (stored) {
       setIsUserOverride(true);
       return;

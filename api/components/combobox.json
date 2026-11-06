@@ -59,7 +59,7 @@
       "type": "Record<string, unknown>",
       "required": false,
       "default": null,
-      "description": "Attributes for the `<input>` that *is* the combobox — an `aria-label`, an `inputMode`, an `id`."
+      "description": "Attributes for the `<input>` that *is* the combobox — an `aria-label`, an `inputMode`. Its `id` is the top-level prop."
     },
     {
       "name": "itemsProps",

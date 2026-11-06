@@ -130,6 +130,6 @@
   "axe": { "fixtures": ["RadioGroup"], "knownViolations": [] },
   "styleTree": [
     { "path": "radioGroup", "depth": 0, "extends": null, "variants": ["horizontal"] },
-    { "path": "radioGroup.label", "depth": 1, "extends": null, "variants": [] }
+    { "path": "radioGroup.label", "depth": 1, "extends": null, "variants": ["horizontal"] }
   ]
 }

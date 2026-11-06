@@ -587,6 +587,7 @@ export interface ColumnType<TRow> {
   columns?: ColumnType<TRow>[];
   /** `start`/`end` follow the reading order; `left`/`right` stay on the screen side they name. */
   align?: 'start' | 'end' | 'center' | 'left' | 'right';
+  /** Renders the cell's content, edge to edge: the built-in text pads itself `px={3}`, so text of your own should too. */
   Cell?: React.ComponentType<{ cell: CellModel<TRow> }>;
   /**
    * Aggregate this column over the rows under each group row, and over the whole grid when `def.footer`
@@ -600,7 +601,7 @@ export interface ColumnType<TRow> {
   exportValue?: (row: TRow) => string | number | boolean | Date | null;
   /** The number format its values are written with in a spreadsheet, `'#,##0.00'` or `'yyyy-mm-dd'`. */
   exportFormat?: string;
-  /** Renders this column's aggregate wherever one appears. Without it the value is rendered as it is. */
+  /** Renders this column's aggregate wherever one appears, edge to edge like `Cell`. Without it the value is rendered as it is. */
   AggregateCell?: React.ComponentType<{ cell: AggregateCellModel<TRow> }>;
   /**
    * Whether this column's cells can be edited — every row of it, or the rows a predicate says. Without

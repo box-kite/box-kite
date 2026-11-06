@@ -4,7 +4,7 @@ import { ComponentsAndVariants } from '../types';
 import VisuallyHidden from './visuallyHidden';
 
 export interface SkeletonProps<TKey extends keyof ComponentsAndVariants = 'skeleton'> extends BoxProps<'div', TKey> {
-  /** How many bars to draw. Default `1`; past that the last one is short, the way a paragraph's last line is. */
+  /** How many bars to draw. Default `1`, which fills the skeleton: `height={40}` is a block. Past that the last bar is short, the way a paragraph's last line is. */
   lines?: number;
   /** A round placeholder — an avatar, a thumbnail. `width` sets its size and the height follows. */
   circle?: boolean;
@@ -46,7 +46,11 @@ export default function Skeleton<TKey extends keyof ComponentsAndVariants = 'ske
       props={{ ...(label === undefined ? { 'aria-hidden': true } : { role: 'status' }), ...tagProps }}
     >
       {Array.from({ length: count }, (_, index) => (
-        <Box key={index} component="skeleton.bar" variant={{ circle, short: !circle && count > 1 && index === count - 1 }}>
+        <Box
+          key={index}
+          component="skeleton.bar"
+          variant={{ circle, short: !circle && count > 1 && index === count - 1, fill: !circle && count === 1 }}
+        >
           <Box component="skeleton.gloss" />
         </Box>
       ))}
