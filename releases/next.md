@@ -10,6 +10,12 @@ _Unreleased. A PR that changes what a consumer sees adds its section here — se
 
 <!-- One `##` per change, above Breaking changes: a sentence for the heading, a paragraph on what and why, an example if it helps. -->
 
+## Box Kite now needs React 18 or newer
+
+The peer range was React 16.14 and newer, but the DataGrid, the date controls, `Popover`, `Dialog`, `Menu` and `Toaster` already needed React 18, and CI only ever tested 18 and 19. The peer range is now `>=18.0.0`, which is what was really supported. No API changed, so this is not a major. But an app on React 16 or 17 that used only `Box` and the simpler components did work before, and npm will now refuse to install this version alongside it.
+
+**On React 16 or 17:** stay on 2.3.x, or upgrade React to 18 or newer first.
+
 ## Box Kite installs no third-party packages
 
 `@box-kite/react` now depends on `@box-kite/core` and nothing else. The `css` prop's types used to come from the `csstype` package; they are now a generated copy inside `@box-kite/core`, so `css={{ … }}` is typed exactly as before and nothing extra is installed. The `use-sync-external-store` shim is gone too: the components use React's own `useSyncExternalStore`.
@@ -33,7 +39,7 @@ If you copied the Cursor rule or installed the skill, copy or install it again t
 
 ## Breaking changes
 
-- **React 18 or newer is required.** The peer range was React 16.14 and newer, but the DataGrid, the date controls, `Popover`, `Dialog`, `Menu` and `Toaster` already needed React 18, and CI only ever tested 18 and 19. The peer range is now `>=18.0.0`, which is what was really supported. On React 16 or 17, stay on 2.3.x or upgrade React.
+None.
 
 ## Fixes
 
