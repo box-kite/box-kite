@@ -160,3 +160,38 @@ describe('an inline def costs no re-sort (E11)', () => {
     expect(grid.rows.value.map((row) => row.key)).toEqual(['Z', 'Y', 'X']);
   });
 });
+
+describe('a width change redraws the header and no row (E11)', () => {
+  ignoreLogs();
+
+  const versions = (grid: GridModel<Person>) => grid.flatRows.value.map((row, index) => grid.rowVersion(row, index));
+
+  it('the grid growing wider', () => {
+    const grid = getGrid();
+    grid.setContainerWidth(600);
+    const rows = versions(grid);
+    const { headerVersion } = grid;
+    const listener = vi.fn();
+    grid.subscribe(listener);
+
+    grid.setContainerWidth(900);
+
+    expect(listener).toHaveBeenCalledTimes(1);
+    expect(versions(grid)).toEqual(rows);
+    expect(grid.headerVersion).not.toBe(headerVersion);
+  });
+
+  it('a column resize ending', () => {
+    const grid = getGrid();
+    const rows = versions(grid);
+    const { headerVersion } = grid;
+    const column = ArrayUtils.findOrThrow(grid.columns.value.leafs, (c) => c.key === 'firstName');
+
+    column.beginResize(100);
+    column.applyResize(160);
+    column.endResize();
+
+    expect(versions(grid)).toEqual(rows);
+    expect(grid.headerVersion).not.toBe(headerVersion);
+  });
+});

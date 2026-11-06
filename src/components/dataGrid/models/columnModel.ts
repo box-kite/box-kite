@@ -535,12 +535,12 @@ export default class ColumnModel<TRow> {
   /** Apply the drag and notify subscribers (headless API for non-DOM hosts). */
   public resizeTo = (currentX: number): void => {
     this.applyResize(currentX);
-    this.grid.notify();
+    this.grid.notifyLayout();
   };
 
   /** End a resize drag. */
   public endResize = (): void => {
-    this.grid.notify();
+    this.grid.notifyLayout();
     this.grid.reportInteraction(
       'columnResize',
       this.leafs.reduce((total, leaf) => total + (leaf.inlineWidth ?? leaf.baseWidth), 0),
