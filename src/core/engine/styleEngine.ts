@@ -242,6 +242,9 @@ const placeholderBlocks = queryKeys
 /** The layer the base rules live in — the reset has to lose against every generated rule. */
 const BASE_LAYER = 'rb';
 
+// Phrasing elements that sit in a line of text; media stays block, which avoids the baseline gap under it.
+const INLINE_ELEMENTS = 'span,a,label,time,mark,abbr,code,kbd,samp,var,em,strong,small,b,i,u,s,sub,sup,q,cite,dfn,data,output,bdi,bdo';
+
 /** The layer one rank owns. Base36 keeps it one character, so `rb1` and `rb10` cannot be the same name. */
 function rankLayerName(rank: number): string {
   return `${BASE_LAYER}${rank.toString(36)}`;
@@ -1082,6 +1085,8 @@ export function createStyleEngine(options: StyleEngineOptions = {}): StyleEngine
       `input[type="number"]{-moz-appearance: textfield;}`,
       `input[type="number"]::-webkit-outer-spin-button,input[type="number"]::-webkit-inner-spin-button{-webkit-appearance: none;margin: 0;}`,
       `.${boxClassName}{display: block;border: 0 solid var(--borderColor);outline: 0px solid var(--outlineColor);margin: 0;padding: 0;background-color: initial;${baseTransitionOf('--transitionTime')}box-sizing: border-box;font-family: inherit;font-size: inherit;}`,
+      // An inline element stays in its sentence; `:where()` keeps `._b`'s specificity, so any `display` prop or component wins.
+      `:where(${INLINE_ELEMENTS})._b{display: inline-block;}`,
       `.${svgClassName}{display: block;border: 0 solid var(--borderColor);outline: 0px solid var(--outlineColor);margin: 0;padding: 0;${baseTransitionOf('--svgTransitionTime')}}`,
       // The shapes inside an <svg> transition on their own variable. Listed explicitly rather than `*`, so the
       // rule cannot reach a <foreignObject>'s HTML.

@@ -135,6 +135,9 @@ export type BoxTagProps<
  * `styles` is defined in element mode only, where the CSS travels as `<style href precedence>` elements;
  * elsewhere it is undefined and rendering it costs nothing, so that line is what to write either way.
  * `{ svg: true }` picks the SVG reset — `Icon` is this hook plus that flag.
+ *
+ * The class carries the base reset: `display: block`, or `inline-block` on an `<a>`, `<span>`, `<label>`… so a
+ * router link styled this way stays in its sentence.
  */
 export function useClassNames<TKey extends keyof ComponentsAndVariants = never>(
   props: BoxClassNameProps<TKey>,

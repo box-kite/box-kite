@@ -32,7 +32,7 @@
   "a11y": ["`aria-hidden` unless `label` is given, and then `role=\"status\"` naming what is on its way."],
   "axe": { "fixtures": ["Skeleton"], "knownViolations": [] },
   "styleTree": [
-    { "path": "skeleton", "depth": 0, "extends": null, "variants": [] },
+    { "path": "skeleton", "depth": 0, "extends": null, "variants": ["circle"] },
     { "path": "skeleton.bar", "depth": 1, "extends": null, "variants": ["short", "fill", "circle"] },
     { "path": "skeleton.gloss", "depth": 1, "extends": null, "variants": [] }
   ]

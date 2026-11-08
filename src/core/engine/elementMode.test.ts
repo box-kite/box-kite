@@ -44,6 +44,17 @@ describe('element mode', () => {
     expect(base.css).toContain('._b{display: block;');
   });
 
+  it('layers the inline-element rule with the reset, right after the base class', () => {
+    const { base } = elementsOf(makeEngine('elements-inline', { sink: 'element' }), { p: 4 });
+    const layered = base.css.slice(base.css.indexOf('@layer rb{'));
+
+    // In the base layer, so every generated layer outranks it whatever its specificity.
+    const reset = layered.indexOf('._b{display: block;');
+    const inline = layered.indexOf(')._b{display: inline-block;}');
+    expect(reset).toBeGreaterThan(0);
+    expect(layered.slice(layered.indexOf('}', reset) + 1, inline)).toMatch(/^:where\(span,a,label,[a-z,]+$/);
+  });
+
   it('hands back one element per rule, in cascade order', () => {
     const { rules } = elementsOf(makeEngine('elements-rules', { sink: 'element' }), { px: 2, p: 4 });
 
