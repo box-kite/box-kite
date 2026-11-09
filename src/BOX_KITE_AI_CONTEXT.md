@@ -2718,6 +2718,8 @@ function Canvas() {
 
 - **Eight roles**, each a custom property a custom node can read: `--flow-surface`, `--flow-panel`, `--flow-text`, `--flow-border`,
   `--flow-grid`, `--flow-edge`, `--flow-selection`, `--flow-handle`. Defaults are `base`/`accent`, so `Box.palette()` reaches them.
+- **The defaults are the `flowContainer` style node**, so one override repaints every canvas in an app:
+  `Box.components({ flowContainer: { styles: { vars: { 'flow-selection': 'emerald-500' } } } })`; `tokens` is the per-canvas answer.
 - **One `--xy-*` variable is `vars`** (`vars={{ 'xy-edge-stroke-width': '2' }}`); a prop on `<MiniMap>`/`<Background>` still wins.
 - **`colorMode={flowColorMode(theme)}`** keeps React Flow's own `.dark` class in step with the page. A canvas in another theme sits
   in `<Box.Theme use="local">`; never `colorMode="light"` under a dark page — `.light` is no theme boundary, so the two mix.

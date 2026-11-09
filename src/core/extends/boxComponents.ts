@@ -1,5 +1,6 @@
 import { BoxComponentStyles } from '../../types';
 import { DARK_PALETTE, PALETTE, paletteVariables } from '../../utils/chart/chartPalette';
+import { DARK, LIGHT, roleEntries } from '../../utils/flow/flowPalette';
 import Sizes from '../sizes';
 
 export interface BoxComponent {
@@ -4496,6 +4497,14 @@ const baseComponents = {
     styles: {
       vars: paletteVariables(PALETTE),
       theme: { dark: { vars: paletteVariables(DARK_PALETTE) } },
+    },
+  },
+  // A React Flow canvas's eight roles in both themes; the `--xy-*` variables that read them are the component's,
+  // so overriding one role here repaints every canvas an app has.
+  flowContainer: {
+    styles: {
+      vars: roleEntries(LIGHT),
+      theme: { dark: { vars: roleEntries(DARK) } },
     },
   },
 } satisfies Components;

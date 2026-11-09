@@ -1,44 +1,21 @@
+import * as FlowPalette from './flowPalette';
+
 /**
  * The model behind `<FlowContainer>`: React Flow's public CSS variables written in terms of eight roles, and the
  * roles in palette tokens for each theme. No React and no xyflow import — the contract is CSS, so it is data here.
  */
 namespace FlowUtils {
-  /** What a canvas is painted from. Every `--xy-*` variable the container declares reads one of these. */
-  export const ROLES = ['surface', 'panel', 'text', 'border', 'grid', 'edge', 'selection', 'handle'] as const;
+  export const ROLES = FlowPalette.ROLES;
 
-  export type Role = (typeof ROLES)[number];
+  export type Role = FlowPalette.Role;
 
-  /** A role's paint in one theme: a palette token, an alias like `accent-500`, or one with an alpha. */
-  export type RoleTokens = Readonly<Record<Role, string>>;
+  export type RoleTokens = FlowPalette.RoleTokens;
 
-  /** The roles on a light page. `accent`/`base` rather than named families, so `Box.palette()` reaches the canvas. */
-  export const LIGHT: RoleTokens = {
-    surface: 'white',
-    panel: 'white',
-    text: 'base-900',
-    border: 'base-300',
-    grid: 'base-300',
-    edge: 'base-400',
-    selection: 'accent-500',
-    handle: 'base-700',
-  };
+  export const LIGHT = FlowPalette.LIGHT;
 
-  /** The same roles on a dark page. */
-  export const DARK: RoleTokens = {
-    surface: 'base-950',
-    panel: 'base-900',
-    text: 'base-100',
-    border: 'base-700',
-    grid: 'base-700',
-    edge: 'base-500',
-    selection: 'accent-400',
-    handle: 'base-300',
-  };
+  export const DARK = FlowPalette.DARK;
 
-  /** A role's own custom property — what an override or a custom node reads. */
-  export function roleVariable(role: Role): string {
-    return `--flow-${role}`;
-  }
+  export const roleVariable = FlowPalette.roleVariable;
 
   const read = (role: Role) => `var(${roleVariable(role)})`;
   const mix = (role: Role, percent: number, over = 'transparent') => `color-mix(in oklab, ${read(role)} ${percent}%, ${over})`;
@@ -100,16 +77,21 @@ namespace FlowUtils {
 
   /** The role variables for one theme, with the caller's overrides over the defaults. Unknown keys are dropped. */
   export function roleVariables(theme: 'light' | 'dark', tokens: Tokens = {}): Record<string, string> {
-    const defaults = theme === 'dark' ? DARK : LIGHT;
+    return { ...FlowPalette.roleEntries(theme === 'dark' ? DARK : LIGHT), ...overrideVariables(theme, tokens) };
+  }
 
-    return ROLES.reduce<Record<string, string>>((acc, role) => {
+  /** Only the roles the caller repaints in one theme — the defaults are the `flowContainer` style node's. */
+  export function overrideVariables(theme: 'light' | 'dark', tokens: Tokens = {}): Record<string, string> {
+    const picked: Partial<Record<Role, string>> = {};
+
+    for (const role of ROLES) {
       const override = tokens[role];
       const value = typeof override === 'string' ? override : override?.[theme];
 
-      acc[roleVariable(role).slice(2)] = value ?? defaults[role];
+      if (value !== undefined) picked[role] = value;
+    }
 
-      return acc;
-    }, {});
+    return FlowPalette.roleEntries(picked);
   }
 
   /**

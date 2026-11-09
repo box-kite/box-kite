@@ -326,6 +326,7 @@ const CONFIG = [
     file: 'src/components/flow.tsx',
     props: 'FlowContainerProps',
     doc: 'FlowContainerImpl',
+    styles: 'flowContainer',
   },
   {
     name: 'ChartContainer',

@@ -45,6 +45,21 @@ describe('FlowContainer', () => {
     expect(css.match(/--flow-selection:var\(--sky-500,/g)?.length).toBe(2);
   });
 
+  // The roles are the `flowContainer` style node, so a design repaints every canvas without a prop.
+  it('takes its roles from the flowContainer style node', () => {
+    const emerald = Box.createComponents({ flowContainer: { styles: { vars: { 'flow-selection': 'emerald-500' } } } });
+
+    render(
+      <Box.Components value={emerald}>
+        <FlowContainer />
+      </Box.Components>,
+    );
+
+    const css = styles();
+    expect(css).toContain('--flow-selection:var(--emerald-500,');
+    expect(css).toContain('--flow-surface:var(--white,#fff)');
+  });
+
   it("keeps the caller's vars and theme beside its own", () => {
     const { container } = render(<FlowContainer vars={{ 'xy-edge-stroke-width': '2' }} theme={{ dark: { p: 2 } }} />);
 

@@ -43,17 +43,20 @@ function FlowContainerImpl<TTag extends keyof React.JSX.IntrinsicElements = 'div
   const { tokens, motion, vars, theme, ...boxProps } = props;
   const roles = tokens as FlowUtils.Tokens | undefined;
 
+  // The role defaults are the `flowContainer` style node, merged underneath; only a repainted role is declared here.
   // The caller's `vars` last, so one `--xy-*` variable is overridden with no prop of its own.
   const light = {
     ...FlowUtils.VARIABLES,
     ...FlowUtils.OUTLINE,
-    ...FlowUtils.roleVariables('light', roles),
+    ...FlowUtils.overrideVariables('light', roles),
     ...(motion === 'static' ? FlowUtils.STATIC_MOTION : {}),
     ...vars,
   };
-  const dark: NonNullable<typeof theme> = { dark: { vars: FlowUtils.roleVariables('dark', roles) } };
+  const darkRoles = FlowUtils.overrideVariables('dark', roles);
+  const dark: NonNullable<typeof theme> | undefined = Object.keys(darkRoles).length ? { dark: { vars: darkRoles } } : undefined;
+  const themed = dark && theme ? mergeDeep(dark, theme) : (dark ?? theme);
 
-  return <Box ref={ref} vars={light} theme={theme ? mergeDeep(dark, theme) : dark} {...(boxProps as BoxProps<TTag>)} />;
+  return <Box ref={ref} component="flowContainer" vars={light} theme={themed} {...(boxProps as BoxProps<TTag>)} />;
 }
 
 const FlowContainerComponent = forwardRef(FlowContainerImpl);
@@ -61,7 +64,7 @@ FlowContainerComponent.displayName = 'FlowContainer';
 
 /**
  * A React Flow canvas themed by the palette: `<FlowContainer height={120}><ReactFlow colorMode={flowColorMode(theme)} …/></FlowContainer>`.
- * Server-safe, and no `--xy-*` value is written outside this module, so a page without a canvas pays nothing for it.
+ * Server-safe; its role defaults are the `flowContainer` style node, so `Box.components()` repaints every canvas at once.
  */
 export const FlowContainer = FlowContainerComponent as <
   TTag extends keyof React.JSX.IntrinsicElements = 'div',

@@ -26,5 +26,5 @@
     "A `<div>` with variables on it: no role, no name. React Flow owns the canvas's accessibility; a custom node or edge gets a visible focus from `flowNodeStyles`/`flowEdgeStyles`."
   ],
   "axe": { "fixtures": ["FlowContainer"], "knownViolations": [] },
-  "styleTree": []
+  "styleTree": [{ "path": "flowContainer", "depth": 0, "extends": null, "variants": [] }]
 }
