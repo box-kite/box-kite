@@ -5,18 +5,21 @@ import { ExtractElementFromTag } from '../react/reactTypes';
 import { ComponentsAndVariants } from '../types';
 import StringUtils from '../utils/string/stringUtils';
 
-type SemanticComponentType<TTag extends keyof React.JSX.IntrinsicElements, TKey extends keyof ComponentsAndVariants = never> = (
-  props: Omit<BoxProps<TTag, TKey>, 'tag'> & RefAttributes<ExtractElementFromTag<TTag>>,
-) => React.ReactNode;
+// Generic per call, as Box is: a key fixed at the factory was emitted as a literal union no augmentation could extend.
+interface SemanticComponentType<TTag extends keyof React.JSX.IntrinsicElements> {
+  <TKey extends keyof ComponentsAndVariants = never>(
+    props: Omit<BoxProps<TTag, TKey>, 'tag'> & RefAttributes<ExtractElementFromTag<TTag>>,
+  ): React.ReactNode;
+}
 
-function semantic<TTag extends keyof React.JSX.IntrinsicElements, TKey extends keyof ComponentsAndVariants>(
+function semantic<TTag extends keyof React.JSX.IntrinsicElements, TKey extends keyof ComponentsAndVariants = never>(
   tagName: TTag,
-): SemanticComponentType<TTag, TKey> {
+): SemanticComponentType<TTag> {
   return boxComponent(
     (props: Omit<BoxProps<TTag, TKey>, 'tag'>, ref: Ref<ExtractElementFromTag<TTag>>) =>
       useBoxElement({ tag: tagName, component: tagName as unknown as TKey, ...props } as BoxProps<TTag, TKey>, ref),
     StringUtils.capitalize(tagName),
-  ) as unknown as SemanticComponentType<TTag, TKey>;
+  ) as unknown as SemanticComponentType<TTag>;
 }
 
 export const Label = semantic('label');

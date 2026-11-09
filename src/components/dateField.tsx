@@ -411,7 +411,7 @@ function DateFieldImpl<TKey extends keyof ComponentsAndVariants = 'dateField'>(p
         css={{ fontVariantNumeric: 'tabular-nums', unicodeBidi: 'isolate' }}
         {...(restProps as DateFieldBoxProps<TKey>)}
         variant={[restProps.variant, { disabled, invalid }] as never}
-        id={id}
+        id={restProps.id ?? id}
         props={{
           role: 'group',
           'aria-labelledby': [labelId, labelledBy].filter(Boolean).join(' ') || undefined,

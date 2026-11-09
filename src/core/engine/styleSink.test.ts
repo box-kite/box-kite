@@ -105,7 +105,8 @@ describe('style sinks', () => {
       engine.resolveClassNames({ m: 4 }, false);
 
       const css = engine.getStyles();
-      const boxRule = /\._b\s*\{/g;
+      // The reset itself, not the `:where(…)._b` inline-element rule beside it.
+      const boxRule = /(?<!\))\._b\s*\{/g;
 
       expect(css.search(boxRule), mode).toBeLessThan(css.search(/\.p-4\s*\{/));
       expect(css.match(boxRule), mode).toHaveLength(1);

@@ -240,4 +240,16 @@ describe('createStyleEngine', () => {
       expect(css).toContain('.p-4{padding:1rem}');
     });
   });
+
+  it('makes an inline element inline-block at the base class specificity', () => {
+    const engine = makeEngine('engine-inline');
+
+    renderStyles(engine, { p: 4 });
+
+    const css = rulesOf(engine);
+    expect(css).toContain(':where(span,a,label,time,mark,');
+    expect(css).toContain(')._b{display: inline-block;}');
+    // Media stays block, so no baseline gap opens under an image.
+    expect(css.slice(css.indexOf(':where('), css.indexOf(')._b{display: inline-block;}')).split(',')).not.toContain('img');
+  });
 });

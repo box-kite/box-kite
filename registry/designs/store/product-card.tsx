@@ -47,6 +47,8 @@ export default function ProductCard({ product, level = 'h3' }: ProductCardProps)
         <Heading fontSize={15} fontWeight={500}>
           <Link
             props={{ href: links.product(product.slug) }}
+            // Inline, not the default inline-block: a two-line name would hand the price row its last line's baseline.
+            display="inline"
             color="currentColor"
             textDecoration="none"
             // The link's box stretched over the card, so the whole card is one target and still one tab stop.

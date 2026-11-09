@@ -1088,6 +1088,7 @@ export const cssStyles = {
   ],
   /**
    * The `display` CSS property sets whether an element is treated as a block or inline box and the layout used for its children, such as flow layout, grid or flex.
+   * Every Box is `block` until told otherwise, so margin and padding always apply, except an inline phrasing element (`a`, `span`, `label`, `time`, `mark`, `code`…), which is `inline-block` so it stays in its sentence. A prose link that must wrap with its sentence sets `display="inline"`.
    * @example display="none" → display: none
    */
   display: [

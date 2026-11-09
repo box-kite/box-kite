@@ -196,6 +196,7 @@ export type EveryEntry = [${subpaths.map((_, index) => `typeof entry${index}`).j
 
 import Box from '@box-kite/react';
 import Button from '@box-kite/react/components/button';
+import { H1, P, Span } from '@box-kite/react/components/semantics';
 
 Box.components({
   button: {
@@ -208,6 +209,10 @@ export const valid = (
   <>
     <Box component="button" variant="secondary" p={4} />
     <Box component="card" variant="flat" />
+    {/* A semantic component takes the app's own names too, not only the built-in ones it was built with. */}
+    <P component="card">Text</P>
+    <Span component="card" variant="flat" />
+    <H1 component="button" variant="secondary">Title</H1>
     <Button variant="ghost">Save</Button>
     <Box textStyle="display" />
     <Box bgColor="ui-primary" />
@@ -230,6 +235,12 @@ export const unknownVariant = <Box component="button" variant="nonsense" />;
 
 // @ts-expect-error a variant the app's component does not declare
 export const unknownAppVariant = <Box component="card" variant="raised" />;
+
+// @ts-expect-error unknown component on a semantic element
+export const unknownSemantic = <P component="nope" />;
+
+// @ts-expect-error a variant the app's component does not declare, on a semantic element
+export const unknownSemanticVariant = <Span component="card" variant="raised" />;
 `,
 );
 

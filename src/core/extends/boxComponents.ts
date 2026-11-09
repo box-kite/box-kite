@@ -110,6 +110,13 @@ const BAR_BUTTON: BoxComponentStyles = {
   },
 };
 
+/** A field whose value was refused. The states too, or the equally specific hover and focus borders would hide it. */
+const INVALID: BoxComponentStyles = {
+  borderColor: 'red-500',
+  hover: { borderColor: 'red-500' },
+  focus: { borderColor: 'red-500', outlineColor: 'red-500/30' },
+};
+
 /** The size standard as variants: each writes its size's two variables, so the element and all inside it follow. */
 const SIZES = {
   compact: { vars: Sizes.choose('compact') },
@@ -142,9 +149,6 @@ const baseComponents = {
   },
   h6: {
     styles: { fontSize: 14 * 1 },
-  },
-  span: {
-    styles: { display: 'inline-block' },
   },
   // The `<dialog>` element, `role="dialog"` and `role="alertdialog"` alike — one node, because an alert
   // dialog looks like a dialog and differs only in what it does. Deliberately says almost **nothing about
@@ -1155,8 +1159,10 @@ const baseComponents = {
         color: 'base-400',
         borderColor: 'base-200',
       },
+      ariaAttr: { invalid: INVALID },
       theme: {
         dark: {
+          ariaAttr: { invalid: INVALID },
           bgColor: 'base-800',
           color: 'base-100',
           borderColor: 'base-700',
@@ -1208,8 +1214,10 @@ const baseComponents = {
         borderColor: 'base-200',
         resize: 'none',
       },
+      ariaAttr: { invalid: INVALID },
       theme: {
         dark: {
+          ariaAttr: { invalid: INVALID },
           bgColor: 'base-800',
           color: 'base-100',
           borderColor: 'base-700',
@@ -1560,8 +1568,11 @@ const baseComponents = {
         color: 'base-400',
         borderColor: 'base-300',
       },
+      // `aria-invalid` is on the field inside, and the border is the shell's.
+      has: { '[aria-invalid="true"]': INVALID },
       theme: {
         dark: {
+          has: { '[aria-invalid="true"]': INVALID },
           bgColor: 'base-800',
           color: 'base-100',
           borderColor: 'base-700',
@@ -1860,8 +1871,10 @@ const baseComponents = {
         color: 'base-400',
         borderColor: 'base-300',
       },
+      ariaAttr: { invalid: INVALID },
       theme: {
         dark: {
+          ariaAttr: { invalid: INVALID },
           bgColor: 'base-800',
           color: 'base-100',
           borderColor: 'base-700',
@@ -4369,6 +4382,8 @@ const baseComponents = {
   // it travels inside has to clip it.
   skeleton: {
     styles: { display: 'flex', d: 'column', gap: 2, width: 'fit' },
+    // An avatar's default size, on the skeleton so a `width` prop replaces it; the bar fills it and the height follows.
+    variants: { circle: { width: 10, flexShrink: 0 } },
     children: {
       bar: {
         styles: {
@@ -4385,7 +4400,7 @@ const baseComponents = {
           // A lone bar fills the skeleton, so `height` makes it a block rather than one line in a tall box (bug #337).
           fill: { flexGrow: 1 },
           // Far past any avatar, so one radius rounds every size the caller gives.
-          circle: { width: 10, height: 'auto', aspectRatio: 'square', borderRadius: 100 },
+          circle: { width: 'fit', height: 'auto', aspectRatio: 'square', borderRadius: 100 },
         },
       },
       // A named duration is outside what `--transitionTime` zeroes, so the sweep has to stop itself.
@@ -4622,7 +4637,7 @@ const dateComponents = {
       compact: { ...SIZES.compact, px: 2 },
       normal: SIZES.normal,
       large: SIZES.large,
-      invalid: { borderColor: 'red-500', hover: { borderColor: 'red-500' }, focus: { borderColor: 'red-500', outlineColor: 'red-500/30' } },
+      invalid: INVALID,
       disabled: { cursor: 'not-allowed', opacity: 0.6 },
     },
     children: {

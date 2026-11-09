@@ -1670,7 +1670,10 @@ const catalogManifest: CatalogManifest = {
         placeholder: { type: 'string', description: "The field's placeholder." },
         name: { type: 'string', description: 'What the zone posts under in a form.' },
         disabled: { type: 'boolean', description: 'Not editable and not openable, but still read out.' },
-        props: { type: 'object', description: 'Attributes for the `<input>` itself — an `aria-label`, an `id`.' },
+        props: {
+          type: 'object',
+          description: 'Attributes for the `<input>` itself — an `aria-label`, or the `id` a `<label htmlFor>` of your own points at.',
+        },
       },
       required: [],
       styled: true,
@@ -1694,10 +1697,7 @@ const catalogManifest: CatalogManifest = {
         placeholder: { type: 'string', description: "The field's placeholder." },
         name: { type: 'string', description: 'What the selection submits under: one hidden input per selected row, carrying its key.' },
         disabled: { type: 'boolean', description: 'Not editable and not openable, but still read out.' },
-        props: {
-          type: 'object',
-          description: 'Attributes for the `<input>` that *is* the combobox — an `aria-label`, an `inputMode`, an `id`.',
-        },
+        props: { type: 'object', description: 'Attributes for the `<input>` that *is* the combobox — an `aria-label`, an `inputMode`.' },
         hideIcon: { type: 'boolean', description: 'Drop the chevron.' },
         loading: { type: 'boolean', description: 'Rows are on their way.' },
         query: { type: 'string', description: 'The typed text.' },

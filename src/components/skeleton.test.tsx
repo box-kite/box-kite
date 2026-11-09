@@ -40,6 +40,20 @@ describe('Skeleton', () => {
     expect(bars(container)).toHaveLength(1);
   });
 
+  // The circle bar was a fixed `width: 10`, so `<Skeleton circle width={6} />` drew 40px inside a 24px skeleton.
+  it('sizes a circle by its width, and by an avatar without one', () => {
+    const sized = render(<Skeleton circle width={6} />).container;
+    const bar = bars(sized)[0].parentElement!;
+
+    expect(getComputedStyle(bar.parentElement!).width).toBe('24px');
+    expect(getComputedStyle(bar).width).toBe('100%');
+    expect(getComputedStyle(bar).aspectRatio).toBe('1 / 1');
+    cleanup();
+
+    const plain = render(<Skeleton circle />).container;
+    expect(getComputedStyle(bars(plain)[0].parentElement!.parentElement!).width).toBe('40px');
+  });
+
   it('never draws less than a bar', () => {
     const { container } = render(<Skeleton lines={0} />);
 

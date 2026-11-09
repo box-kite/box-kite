@@ -186,7 +186,7 @@
         "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "64.50 kB"
+      "limit": "64.57 kB"
     },
     {
       "name": "Spec renderer (spec entry)",
@@ -275,7 +275,7 @@
         "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "47.67 kB"
+      "limit": "47.80 kB"
     },
     {
       "name": "Menu",

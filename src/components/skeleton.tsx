@@ -43,6 +43,7 @@ export default function Skeleton<TKey extends keyof ComponentsAndVariants = 'ske
     <Box
       component={'skeleton' as TKey}
       {...(restProps as BoxProps<'div', TKey>)}
+      variant={[restProps.variant, { circle }] as never}
       props={{ ...(label === undefined ? { 'aria-hidden': true } : { role: 'status' }), ...tagProps }}
     >
       {Array.from({ length: count }, (_, index) => (

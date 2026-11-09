@@ -662,6 +662,12 @@ const wobble = Box.spring({ stiffness: 120, damping: 8 });
 - **`Box.configure({ transition })`** changes what the base class transitions for the whole engine:
   a group name, or `false` to declare nothing at all and leave transitions entirely to the props.
   Call it before the first render.
+- **An inline phrasing element is `inline-block`**, where every other Box is `block`: `a`, `span`, `label`, `time`, `mark`, `abbr`, `code`, `kbd`, `samp`, `var`, `em`,
+  `strong`, `small`, `b`, `i`, `u`, `s`, `sub`, `sup`, `q`, `cite`, `dfn`, `data`, `output`, `bdi`, `bdo`. It is
+  selected on the rendered element at the base class's specificity, so `<Link>`, `<Box tag="a">` and a
+  `useClassNames` class on a router's `<a>` all stay in their sentence, margin and padding still apply, and a
+  `display` prop or component still wins. Media (`img`, `svg`, `video`, `canvas`, `iframe`) stays block. An `inline-block` never breaks across lines, so a
+  prose link or `<Mark>` that has to wrap with the text sets `display="inline"`.
 
 ---
 
@@ -1320,6 +1326,9 @@ undefined and rendering it costs nothing, so write the line either way. Pass `{ 
 second argument for an element inside an `<svg>`. `<Icon>` is this hook plus that flag — reach for
 `Icon` for an icon and this only for everything else.
 
+The class carries the base reset, which is `display: block` except on an `<a>`, `<span>`, `<label>` and the
+other phrasing elements, which are `inline-block`: a `NavLink` styled this way stays in its sentence.
+
 ### Group and Peer
 
 ```tsx
@@ -1455,6 +1464,19 @@ useFocusReturn({ enabled: open, returnTo: triggerRef });
 Full reference: `docs/a11y-primitives.md`.
 
 ---
+
+## Field ids, external labels and the invalid state
+
+- **A top-level `id` lands on the control, once.** `<Combobox id="owner">` puts it on the `<input role="combobox">`
+  and nowhere else, as `Textbox`, `Textarea`, `Select` (its button), `Checkbox`, `Switch`, `RadioButton` and
+  `TimeZoneSelect` do, so `<label htmlFor="owner">` names the control. `DateField`, `DatePicker`, `Slider` and
+  `RadioGroup` are groups no `<label>` can name: the `id` goes on the group, and `labelledBy` points it at an
+  external label.
+- **`aria-invalid` draws the error border on every field.** `props={{ 'aria-invalid': true }}` turns the frame of a
+  `Textbox`, `Textarea`, `Select` or `Combobox` `red-500`, through hover and focus, in both themes. A combobox's
+  attribute is on its input and its border on the shell, so the shell matches `:has([aria-invalid="true"])` —
+  restyle it as `combobox: { styles: { has: { '[aria-invalid="true"]': { … } } } }`, the others with
+  `ariaAttr: { invalid: { … } }`. `DateField` and `DatePicker` take an `invalid` prop that does both.
 
 ## Sizes: compact, normal, large
 
@@ -3786,11 +3808,11 @@ with `language` and `code`, `rule`, `image`, `tableWrap`, `table`, `row`, `cell`
 
 Where content will be, while it is being fetched.
 
-| Prop     | Type        | What it does                                                                         |
-| -------- | ----------- | ------------------------------------------------------------------------------------ |
-| `lines`  | `number`    | How many bars. Default 1, which fills the skeleton; past that the last one is short. |
-| `circle` | `boolean`   | One round bar — an avatar. `width` sets its size and the height follows.             |
-| `label`  | `ReactNode` | Makes it a `role="status"` naming what is on its way. Absent: `aria-hidden`.         |
+| Prop     | Type        | What it does                                                                             |
+| -------- | ----------- | ---------------------------------------------------------------------------------------- |
+| `lines`  | `number`    | How many bars. Default 1, which fills the skeleton; past that the last one is short.     |
+| `circle` | `boolean`   | One round bar — an avatar. `width` sets its size (40px without one), the height follows. |
+| `label`  | `ReactNode` | Makes it a `role="status"` naming what is on its way. Absent: `aria-hidden`.             |
 
 ```tsx
 <Skeleton lines={3} label="Loading orders" />

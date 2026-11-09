@@ -220,12 +220,13 @@ function ComboboxImpl<TRow>(props: Props<TRow>, ref: Ref<HTMLInputElement>): Rea
     value,
     defaultValue,
     onValueChange,
+    id: idProp,
     ...restProps
   } = props as ResolvedProps<TRow>;
 
   const identifier = useIdentifier('combobox');
-  // `props.id` too: the type lets it through, and dropping it left an app's own `<label htmlFor>` naming nothing.
-  const fieldId = restProps.id ?? (tagProps?.id as string | undefined) ?? `${identifier}-field`;
+  // The `id` is the input's alone (`props.id` too): on the shell as well, an app's `<label htmlFor>` found the div first.
+  const fieldId = idProp ?? (tagProps?.id as string | undefined) ?? `${identifier}-field`;
   const listboxId = `${identifier}-listbox`;
   const labelId = `${identifier}-label`;
   const hasLabel = label !== undefined && label !== null && label !== false;

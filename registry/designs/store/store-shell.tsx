@@ -127,6 +127,8 @@ function Wordmark({ href }: { href: string }) {
   return (
     <Link
       props={{ href }}
+      // A line of its own in the footer: inline-block would add the surrounding line box's strut to its height.
+      display="block"
       fontSize={15}
       fontWeight={600}
       letterSpacing={5}

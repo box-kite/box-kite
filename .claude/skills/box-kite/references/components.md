@@ -270,6 +270,12 @@ import Select from '@box-kite/react/components/select';
 **SelectDef**: `valueKey` (required), `displayKey`, `display` (`(row) => ReactNode`), `selectedDisplay` (`(rows, isOpen) => ReactNode`), `placeholder`, `selectAllText`, `emptyText`.
 Also: `data`, `label`/`labelProps`, `value`/`defaultValue`, `multiple`, `isSearchable`, `searchPlaceholder`, `showCheckbox`, `hideIcon`, `name`, `onValueChange` (and the deprecated `onChange`), `itemsProps`, `iconProps`, `variant`, BoxProps. Same combobox pattern as Dropdown — including needing a name, and `isSearchable` switching it to the editable one.
 
+## Form fields: ids, labels and the invalid state
+
+**A top-level `id` lands on the control itself, once**: the `<input>` of `Textbox`, `Combobox` and `TimeZoneSelect`, the `<textarea>`, the `Select` button, the input of `Checkbox`, `Switch` and `RadioButton` — so an app's own `<label htmlFor>` names it, with no `aria-labelledby` needed. `DateField`, `DatePicker`, `Slider` and `RadioGroup` are groups of spinbuttons, thumbs or radios, which no `<label>` can name: the `id` goes on the group, and an external label names it through `labelledBy` (or use their own `label`).
+
+**`aria-invalid` is the invalid state, on every field**: `props={{ 'aria-invalid': true }}` on `Textbox`, `Textarea`, `Select` or `Combobox` draws the frame's border in `red-500`, hover and focus included. On a `Combobox` the attribute is on the input and the border is the shell's, so the shell reads it with `:has([aria-invalid="true"])`; restyle it through `combobox`'s `has` key, the others through `ariaAttr={{ invalid: … }}`. `DateField` and `DatePicker` take an `invalid` prop instead.
+
 ## DataGrid
 
 ```tsx
