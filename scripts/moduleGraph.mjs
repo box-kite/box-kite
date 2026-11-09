@@ -30,6 +30,7 @@ export const SERVER_SAFE_COMPONENTS = [
   'button',
   'chart',
   'flex',
+  'flow',
   'grid',
   'icon',
   'list',

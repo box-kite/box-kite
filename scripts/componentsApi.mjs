@@ -321,6 +321,13 @@ const CONFIG = [
     styles: 'miniDonut',
   },
   {
+    name: 'FlowContainer',
+    route: '/diagrams',
+    file: 'src/components/flow.tsx',
+    props: 'FlowContainerProps',
+    doc: 'FlowContainerImpl',
+  },
+  {
     name: 'ChartContainer',
     route: '/charts',
     file: 'src/components/chart.tsx',

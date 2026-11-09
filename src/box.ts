@@ -137,13 +137,14 @@ export type BoxTagProps<
  * `{ svg: true }` picks the SVG reset — `Icon` is this hook plus that flag.
  *
  * The class carries the base reset: `display: block`, or `inline-block` on an `<a>`, `<span>`, `<label>`… so a
- * router link styled this way stays in its sentence.
+ * router link styled this way stays in its sentence. `{ base: false }` leaves it out, for a library's own root
+ * (`<ReactFlow>`, `<MiniMap>`) whose margin, display and transitions are its own (bug #231).
  */
 export function useClassNames<TKey extends keyof ComponentsAndVariants = never>(
   props: BoxClassNameProps<TKey>,
-  options?: { svg?: boolean },
+  options?: { svg?: boolean; base?: boolean },
 ): BoxClassNames {
-  return boxClassNames(useStyles(props, options?.svg === true), props.className);
+  return boxClassNames(useStyles(props, options?.svg === true), props.className, options?.base);
 }
 
 export { useVisibility };

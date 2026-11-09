@@ -95,7 +95,7 @@
     "test:watch": "vitest",
     "test:a11y": "vitest run a11y",
     "lint": "eslint .",
-    "check:boundaries": "node scripts/check-core-boundary.mjs && node scripts/check-rsc-boundary.mjs",
+    "check:boundaries": "node scripts/check-core-boundary.mjs && node scripts/check-rsc-boundary.mjs && node scripts/check-dependencies.mjs",
     "check:brand": "node scripts/check-brand.mjs",
     "check:docs": "node scripts/check-docs-snippets.mjs",
     "check:props": "node scripts/check-props-api.mjs",
@@ -186,7 +186,7 @@
         "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "64.57 kB"
+      "limit": "67.01 kB"
     },
     {
       "name": "Spec renderer (spec entry)",
@@ -262,7 +262,7 @@
         "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "46.14 kB"
+      "limit": "48.21 kB"
     },
     {
       "name": "Popover",
@@ -275,7 +275,7 @@
         "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "47.80 kB"
+      "limit": "49.89 kB"
     },
     {
       "name": "Menu",
@@ -288,7 +288,7 @@
         "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "49.98 kB"
+      "limit": "51.99 kB"
     },
     {
       "name": "Accordion",
@@ -380,6 +380,19 @@
       ],
       "gzip": true,
       "limit": "47.49 kB"
+    },
+    {
+      "name": "FlowContainer",
+      "path": "dist/components/flow.mjs",
+      "ignore": [
+        "react",
+        "react-dom",
+        "./diagnostics-*",
+        "./themeReveal-*",
+        "./interactionListening.mjs"
+      ],
+      "gzip": true,
+      "limit": "45.86 kB"
     },
     {
       "name": "Skeleton",
@@ -483,7 +496,7 @@
         "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "65.70 kB"
+      "limit": "67.73 kB"
     },
     {
       "name": "DateTime",
@@ -509,7 +522,7 @@
         "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "54.68 kB"
+      "limit": "56.75 kB"
     },
     {
       "name": "Combobox",
@@ -522,7 +535,7 @@
         "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "52.66 kB"
+      "limit": "54.72 kB"
     },
     {
       "name": "Dashboard",
@@ -616,7 +629,7 @@
         "./interactionListening.mjs"
       ],
       "gzip": true,
-      "limit": "170.45 kB"
+      "limit": "173.38 kB"
     }
   ],
   "repository": {
@@ -685,6 +698,7 @@
     "@types/react-dom": "^19.2.4",
     "@vitejs/plugin-react": "^6.0.5",
     "@vitest/coverage-v8": "^4.1.11",
+    "@xyflow/react": "^12.12.1",
     "ag-grid-community": "^36.2.0",
     "ag-grid-react": "^36.2.0",
     "axe-core": "^4.13.0",

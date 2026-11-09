@@ -28,6 +28,24 @@ Every Box was `display: block`, so margin and padding always apply, and a `<Link
 <Combobox label="Owner" data={users} def={{ key: 'id', label: 'name' }} props={{ 'aria-invalid': true }} />
 ```
 
+## A React Flow canvas follows the page's theme
+
+`<FlowContainer>` (`@box-kite/react/components/flow`) is `ChartContainer`'s move for diagrams: a Box around `<ReactFlow>` that declares the `--xy-*` variables React Flow reads, from the palette, in both themes. The background, pattern, edges, handles, built-in nodes, minimap, controls and selection box name no colour and switch with the page; `tokens` repaints one of eight roles (`{ selection: 'emerald-500' }`), and one variable is plain `vars`. It imports nothing from xyflow and renders on a server, and it costs nothing outside its own entry.
+
+xyflow removes every node's focus outline and gives one back only to its built-in types, so a custom node is invisible to the keyboard. Spread `flowNodeStyles` on its root for a focus outline, `flowNodeSelectedStyles` when it is selected, and `flowEdgeStyles` on a custom edge. `motion="static"` stops Box transitions inside a canvas whose nodes move every frame. See [Diagrams](https://www.box-kite.dev/diagrams/).
+
+```tsx
+const [theme] = Box.useTheme();
+
+<FlowContainer height={120}>
+  <ReactFlow nodes={nodes} edges={edges} colorMode={flowColorMode(theme)} fitView />
+</FlowContainer>;
+```
+
+## `useClassNames` can leave the reset out
+
+`useClassNames(props, { base: false })` returns only your props' classes, without Box's base reset (`margin: 0`, `display: block`, the base transition). Use it on a library's own root, such as `<ReactFlow>` or `<MiniMap>`, whose margin and transitions are its own.
+
 ## Breaking changes
 
 - **A link, label or other phrasing element styled by Box is `inline-block`, not `block`.** In a flex or grid parent nothing changes. In ordinary flow it no longer fills the row: two sibling links that stacked now share a line, and a link no longer takes the width of its parent. A link that wraps onto two lines inside a heading in an `ai="baseline"` row now aligns its neighbours with its last line, not its first, because an `inline-block`'s baseline is its last line. Where block was the layout you meant, set `display="block"` on the element (or on its component in `Box.components()`), and on a link that wraps inside a heading, `display="inline"`.
@@ -36,6 +54,7 @@ Every Box was `display: block`, so margin and padding always apply, and a `<Link
 
 <!-- One bullet per fix: **What was wrong.** What it does now. -->
 
+- **`Box.configure({ transition })` wrote any string into the stylesheet.** It takes a transition group, a comma list of groups and CSS property names (`'colors, opacity'`), or `false`; anything else transitions `all` and warns in development.
 - **A `Combobox` gave its `id` to two elements.** The wrapper and the input both carried it, so a `<label htmlFor>` of your own found the wrapper, named nothing, and the browser named the field after its placeholder. The `id` is on the input only now. `TimeZoneSelect` had the same fault.
 - **`DateField` and `DatePicker` dropped their `id`.** A generated one replaced it. It lands on the field's group now; name it from an external label with `labelledBy`.
 - **`<Skeleton circle width={6} />` drew a 40px circle in a 24px box.** The circle had a fixed size of its own. It follows the skeleton's `width` now, and is still 40px when there is none.

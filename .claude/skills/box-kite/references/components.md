@@ -30,6 +30,7 @@ Which component replaces which `<Box tag>`, and the three that carry a pattern o
 | a lucide/Tabler icon, styled         | `<Icon>`                               | `components/icon`                                                |
 | a sparkline, ring, gauge or donut    | `<Sparkline>`/`<ProgressRing>`/…       | `components/chart`                                               |
 | a themed Recharts (or any) chart     | `<ChartContainer>`                     | `components/chart`                                               |
+| a themed React Flow canvas           | `<FlowContainer>`                      | `components/flow`                                                |
 
 Also: `Mark`, `Figure`, `Figcaption`, `Details`, `Summary`, `MenuList` (the semantic `<menu>`; the menu **button** is `Menu` from `components/menu`), `Time`. All from `@box-kite/react/components/...`.
 

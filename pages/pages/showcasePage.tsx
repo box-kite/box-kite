@@ -16,6 +16,7 @@ import DateTime from '../../src/components/dateTime';
 import Dialog, { AlertDialog } from '../../src/components/dialog';
 import Dropdown from '../../src/components/dropdown';
 import Flex from '../../src/components/flex';
+import { FlowContainer } from '../../src/components/flow';
 import Grid from '../../src/components/grid';
 import Icon from '../../src/components/icon';
 import List from '../../src/components/list';
@@ -30,7 +31,7 @@ import { H2 } from '../../src/components/semantics';
 import Skeleton from '../../src/components/skeleton';
 import Slider from '../../src/components/slider';
 import SortableList from '../../src/components/sortableList';
-import { G, Rect, Svg } from '../../src/components/svg';
+import { G, Path, Rect, Svg } from '../../src/components/svg';
 import SwipeItem from '../../src/components/swipeItem';
 import Switch from '../../src/components/switch';
 import Tabs from '../../src/components/tabs';
@@ -585,6 +586,17 @@ const demos: Record<ShowcaseName, (scope: string) => ReactNode> = {
         ))}
       </Svg>
     </ChartContainer>
+  ),
+
+  // A canvas in miniature, painted only from the variables React Flow reads — the container declares them.
+  FlowContainer: () => (
+    <FlowContainer borderRadius={2} css={{ backgroundColor: 'var(--xy-background-color)' }}>
+      <Svg viewBox="0 0 100 40" width="100%" height="3rem" label="Two steps joined by an edge">
+        <Path d="M34 20H66" stroke="var(--xy-edge-stroke)" strokeWidth={1} />
+        <Rect x={4} y={12} width={30} height={16} rx={2} fill="var(--xy-node-background-color)" stroke="var(--flow-border)" />
+        <Rect x={66} y={12} width={30} height={16} rx={2} fill="var(--xy-node-background-color)" stroke="var(--flow-selection)" />
+      </Svg>
+    </FlowContainer>
   ),
 
   ToolCallCard: () => (

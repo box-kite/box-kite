@@ -8,8 +8,10 @@ import type {
   GridDefinition,
   PinPositionInput,
 } from '../../components/dataGrid/contracts/dataGridContract';
+import type { FlowContainerProps } from '../../components/flow';
 import type { CatalogContract, CatalogSchema } from '../../core';
 import { LAYOUT_SCHEMA } from '../dashboard/dashboardSchema';
+import type FlowUtils from '../flow/flowUtils';
 
 /**
  * The props that are a *shape* rather than a value — a grid's columns, a dashboard's layout — as the JSON
@@ -21,6 +23,14 @@ import { LAYOUT_SCHEMA } from '../dashboard/dashboardSchema';
  * Every key is typed against the interface it mirrors, so a prop renamed in the component is a compile
  * error here rather than a constraint that silently stops matching anything.
  */
+/** One canvas role: a token for both themes, or one per theme. */
+const FLOW_TOKEN: CatalogSchema = {
+  anyOf: [
+    { type: 'string' },
+    { type: 'object', properties: { light: { type: 'string' }, dark: { type: 'string' } }, additionalProperties: false },
+  ],
+};
+
 namespace CatalogContracts {
   /** A subset of one interface's props: a key this file names and the component does not is an error. */
   type Properties<T> = Partial<Record<keyof T & string, CatalogSchema>>;
@@ -149,6 +159,26 @@ namespace CatalogContracts {
             'The series drawn inside, and what colour each of them is: a list of names takes the palette in order, a record maps each name to a colour token the fill prop takes (`{ "revenue": "emerald-600", "cost": "emerald-600/40" }`).',
         },
       } satisfies Properties<ChartContainerProps>,
+    },
+    FlowContainer: {
+      props: {
+        tokens: {
+          type: 'object',
+          properties: {
+            surface: FLOW_TOKEN,
+            panel: FLOW_TOKEN,
+            text: FLOW_TOKEN,
+            border: FLOW_TOKEN,
+            grid: FLOW_TOKEN,
+            edge: FLOW_TOKEN,
+            selection: FLOW_TOKEN,
+            handle: FLOW_TOKEN,
+          } satisfies Record<FlowUtils.Role, CatalogSchema>,
+          additionalProperties: false,
+          description:
+            'The roles a React Flow canvas is painted from, each a colour token for both themes or one per theme: `{ "selection": "sky-500", "surface": { "light": "base-50", "dark": "base-950" } }`.',
+        },
+      } satisfies Properties<FlowContainerProps>,
     },
   };
 }

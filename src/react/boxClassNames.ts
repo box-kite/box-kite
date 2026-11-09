@@ -19,8 +19,14 @@ export interface BoxClassNames {
 /**
  * The resolved styles as a class attribute. Hook-free, so the client entry and the Server-Component
  * one give `useClassNames` the same shape — the only difference between them is whether resolving
- * the styles scheduled a flush effect.
+ * the styles scheduled a flush effect. `base: false` drops the reset class, which the engine always puts first.
  */
-export default function boxClassNames({ classNames: styleClasses, styleElements }: ResolvedBoxStyles, userClassName?: ClassNameType) {
-  return { className: classNames(styleClasses, userClassName).join(' '), styles: styleElements } satisfies BoxClassNames;
+export default function boxClassNames(
+  { classNames: styleClasses, styleElements }: ResolvedBoxStyles,
+  userClassName?: ClassNameType,
+  base = true,
+) {
+  const engineClasses = base ? styleClasses : styleClasses.slice(1);
+
+  return { className: classNames(engineClasses, userClassName).join(' '), styles: styleElements } satisfies BoxClassNames;
 }

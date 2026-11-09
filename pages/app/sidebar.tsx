@@ -272,6 +272,9 @@ export default function Sidebar({ onClose, onSearch }: SidebarProps) {
           <MenuItem to="/charts" icon={<ChartSpline />}>
             Charts
           </MenuItem>
+          <MenuItem to="/diagrams" icon={<Workflow />}>
+            Diagrams
+          </MenuItem>
           <MenuItem to="/animation" icon={<Sparkles />}>
             Animation
           </MenuItem>

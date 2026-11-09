@@ -1,0 +1,30 @@
+{
+  "name": "FlowContainer",
+  "route": "/diagrams",
+  "import": "import { FlowContainer } from '@box-kite/react/components/flow';",
+  "description": "The theming bridge for a React Flow canvas: a Box around `<ReactFlow>` that declares xyflow's `--xy-*` variables from the palette in both themes, so the canvas names no colour and its dark mode belongs to the page. It imports nothing from xyflow — pass `colorMode={flowColorMode(theme)}` to `<ReactFlow>` so its own `.dark` class agrees.",
+  "pattern": null,
+  "props": [
+    {
+      "name": "tokens",
+      "type": "FlowTokens",
+      "required": false,
+      "default": null,
+      "description": "The canvas's roles — `surface`, `panel`, `text`, `border`, `grid`, `edge`, `selection`, `handle` — each a token for both themes (`{ selection: 'sky-500' }`) or one per theme (`{ surface: { light: 'base-50', dark: 'base-950' } }`). One `--xy-*` variable is plain `vars`, because the container is a Box."
+    },
+    {
+      "name": "motion",
+      "type": "'static'",
+      "required": false,
+      "default": null,
+      "description": "`'static'` zeroes every Box transition inside the canvas, layers' entrances included — for a canvas whose nodes are Boxes moved or resized every frame, which the default `transition: all` would make trail the pointer."
+    }
+  ],
+  "parts": [],
+  "keyboard": [],
+  "a11y": [
+    "A `<div>` with variables on it: no role, no name. React Flow owns the canvas's accessibility; a custom node or edge gets a visible focus from `flowNodeStyles`/`flowEdgeStyles`."
+  ],
+  "axe": { "fixtures": ["FlowContainer"], "knownViolations": [] },
+  "styleTree": []
+}

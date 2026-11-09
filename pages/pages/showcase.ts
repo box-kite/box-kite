@@ -96,6 +96,12 @@ export const entries = [
   { name: 'Gauge', route: '/charts', group: 'charts', note: 'The same arithmetic over a sweep you choose.' },
   { name: 'MiniDonut', route: '/charts', group: 'charts', note: 'The one primitive that needs a list of colours.' },
   { name: 'ChartContainer', route: '/charts', group: 'charts', note: 'Declares --color-<series>, so the chart names no colour at all.' },
+  {
+    name: 'FlowContainer',
+    route: '/diagrams',
+    group: 'charts',
+    note: "Declares React Flow's --xy-* variables, so the canvas follows the page.",
+  },
 
   { name: 'ToolCallCard', route: '/agent', group: 'agent', note: 'Four statuses, each carrying its own word beside the dot.' },
   { name: 'ApprovalCard', route: '/agent', group: 'agent', note: 'A question somebody answers, not a stage a call passes through.' },

@@ -171,6 +171,12 @@ export const siteRoutes = [
       'Sparklines, progress rings, gauges and mini donuts as Boxes — no chart library — plus the container that themes a Recharts chart with the variables it reads.',
   },
   {
+    path: '/diagrams',
+    name: 'Diagrams',
+    description:
+      "A React Flow canvas in the page's theme with no colour written anywhere: one container declares xyflow's variables from the palette, plus focus on custom nodes.",
+  },
+  {
     path: '/motion',
     name: 'Motion Showcase',
     title: 'Motion showcase — six effects, none of them JavaScript',

@@ -120,6 +120,7 @@ export const SNIPPET_SCOPE = {
   Ul: { from: '@box-kite/react/components/semantics', export: 'Ul' },
   // The chart primitives and the theming container, one entry between them.
   ChartContainer: { from: '@box-kite/react/components/chart', export: 'ChartContainer' },
+  FlowContainer: { from: '@box-kite/react/components/flow', export: 'FlowContainer' },
   Gauge: { from: '@box-kite/react/components/chart', export: 'Gauge' },
   MiniDonut: { from: '@box-kite/react/components/chart', export: 'MiniDonut' },
   ProgressRing: { from: '@box-kite/react/components/chart', export: 'ProgressRing' },

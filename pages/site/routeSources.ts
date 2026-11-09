@@ -39,6 +39,7 @@ const files: Record<SiteRoutePath, string> = {
   '/svg': 'svgPage',
   '/icon': 'iconPage',
   '/charts': 'chartsPage',
+  '/diagrams': 'diagramsPage',
   '/animation': 'animationPage',
   '/motion': 'motionPage',
   '/variants': 'variantsPage',
