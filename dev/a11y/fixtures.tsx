@@ -24,6 +24,7 @@ import DateTime from '../../src/components/dateTime';
 import Dialog, { AlertDialog } from '../../src/components/dialog';
 import Dropdown from '../../src/components/dropdown';
 import Flex from '../../src/components/flex';
+import { FlowContainer, flowNodeStyles } from '../../src/components/flow';
 import Form from '../../src/components/form';
 import Grid from '../../src/components/grid';
 import Icon from '../../src/components/icon';
@@ -293,6 +294,17 @@ export const fixtures: A11yFixture[] = [
       <ChartContainer series={['revenue']}>
         <Sparkline data={[3, 8, 5, 11]} stroke="var(--color-revenue)" label="Revenue, last four quarters" />
       </ChartContainer>
+    ),
+  },
+  {
+    // The same claim for a canvas: the container adds nothing, and a custom node's focus styles name nothing either.
+    name: 'FlowContainer',
+    render: () => (
+      <FlowContainer height={20}>
+        <Box {...flowNodeStyles} props={{ tabIndex: 0, role: 'group', 'aria-label': 'Check stock' }}>
+          Check stock
+        </Box>
+      </FlowContainer>
     ),
   },
   {

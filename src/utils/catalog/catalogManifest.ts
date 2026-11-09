@@ -1885,6 +1885,23 @@ const catalogManifest: CatalogManifest = {
       required: ['data'],
       styled: true,
     },
+    FlowContainer: {
+      description:
+        "The theming bridge for a React Flow canvas: a Box around `<ReactFlow>` that declares xyflow's `--xy-*` variables from the palette in both themes, so the canvas names no colour and its dark mode belongs to the page.",
+      import: "import { FlowContainer } from '@box-kite/react/components/flow';",
+      slots: ['default'],
+      events: [],
+      props: {
+        motion: {
+          type: 'string',
+          enum: ['static'],
+          description:
+            "`'static'` zeroes every Box transition inside the canvas, layers' entrances included — for a canvas whose nodes are Boxes moved or resized every frame, which the default `transition: all` would make trail the pointer.",
+        },
+      },
+      required: [],
+      styled: true,
+    },
     ChartContainer: {
       description:
         'The theming bridge for a chart somebody else draws: a Box that declares `--chart-1` … `--chart-6` in both themes plus one `--color-<series>` per series, so a Recharts `<Line stroke="var(--color-revenue)">` names no colour of its own and its dark mode belongs to the page.',

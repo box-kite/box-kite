@@ -73,6 +73,8 @@ const CLIENT_ISLANDS = {
   // The Recharts demo is `React.lazy` on purpose (SV7): 93 KB gz that only this page pays for, and a
   // chart that measures its container has nothing to draw without one.
   '/charts': 1,
+  // The React Flow demo is `React.lazy` for the same reason (DG1): xyflow measures its container before it draws.
+  '/diagrams': 1,
 };
 
 /**

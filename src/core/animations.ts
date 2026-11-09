@@ -89,6 +89,21 @@ namespace Animations {
   export type PropertyGroup = keyof typeof propertyGroups;
 
   export const propertyGroupNames = Object.keys(propertyGroups) as PropertyGroup[];
+
+  const propertyName = /^(?:--[\w-]+|-?[a-z][a-z-]*)$/;
+
+  /**
+   * `Box.configure({ transition })` as the base rule's `transition-property`, or null when it is not one: a group, a
+   * property name, or a comma list of both. The one configured string that lands in rule text, so it is judged (bug #222).
+   */
+  export function baseTransitionProperty(value: string): string | null {
+    const parts = value.split(',').map((part) => part.trim());
+    const properties = parts.map((part) =>
+      Object.hasOwn(propertyGroups, part) ? propertyGroups[part as PropertyGroup] : propertyName.test(part) ? part : null,
+    );
+
+    return properties.includes(null) ? null : properties.join(', ');
+  }
 }
 
 export default Animations;

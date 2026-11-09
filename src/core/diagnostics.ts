@@ -87,6 +87,11 @@ namespace Diagnostics {
     return `${key} is an HTML attribute, not a style prop, so at the top level it was dropped: write props={{ ${/^[A-Za-z]+$/.test(key) ? key : JSON.stringify(key)}: ... }}.`;
   }
 
+  /** `Box.configure({ transition })` that is neither a group nor a list of property names (bug #222). */
+  export function baseTransition(value: string, groups: readonly string[]): string {
+    return `Box.configure({ transition: ${JSON.stringify(value)} }) is not a transition group or a list of CSS property names, so the base class transitions all. Write a group (${groups.join(', ')}), names like 'opacity, transform', or false.`;
+  }
+
   function nearest(value: string, candidates: string[]): string[] {
     const limit = Math.max(1, Math.floor(value.length / 4));
 

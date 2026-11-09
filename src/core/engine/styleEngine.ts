@@ -70,8 +70,8 @@ export interface StylesConfiguration {
    */
   sink?: SinkMode;
   /**
-   * What the base class transitions — `'all'` by default, one of the `transition` prop's groups, or
-   * `false` to declare nothing at all and leave transitions entirely to the props. Changing it after the
+   * What the base class transitions — `'all'` by default, one of the `transition` prop's groups, a comma list of
+   * groups and CSS property names (anything else is ignored with a warning), or `false` to declare nothing at all and leave transitions entirely to the props. Changing it after the
    * first render re-emits every rule, since the base block is written once.
    */
   transition?: string | false;
@@ -1044,9 +1044,12 @@ export function createStyleEngine(options: StyleEngineOptions = {}): StyleEngine
   function baseTransitionOf(time: string): string {
     if (baseTransition === false) return '';
 
-    const property = Animations.propertyGroups[baseTransition as Animations.PropertyGroup] ?? baseTransition;
+    const value = baseTransition;
+    const property = Animations.baseTransitionProperty(value);
 
-    return `transition-property: ${property};transition-duration: var(${time});`;
+    if (property === null) warn(`transition:${value}`, (diagnostics) => diagnostics.baseTransition(value, Animations.propertyGroupNames));
+
+    return `transition-property: ${property ?? 'all'};transition-duration: var(${time});`;
   }
 
   /** The reset + `:root` block every engine writes before its first generated rule. */

@@ -227,6 +227,27 @@ describe('createStyleEngine', () => {
       expect(rulesOf(engine)).not.toContain('transition:');
     });
 
+    it('takes a list of groups and property names', () => {
+      const engine = makeEngine('engine-transition-list', { transition: 'opacity, colors, --ring' });
+
+      renderStyles(engine, { p: 4 });
+
+      expect(rulesOf(engine)).toContain('transition-property: opacity, color, background-color');
+      expect(rulesOf(engine)).toContain('stroke, --ring;');
+    });
+
+    // Bug #222: the one configured string that lands in rule text.
+    it('refuses a value that would end the declaration, and transitions all instead', () => {
+      for (const transition of ['opacity;}body{display:none', 'colors,', 'width 1s']) {
+        const engine = makeEngine(`engine-transition-bad-${transition.length}`, { transition, warnings: false });
+
+        renderStyles(engine, { p: 4 });
+
+        expect(rulesOf(engine), transition).toContain('transition-property: all;');
+        expect(rulesOf(engine), transition).not.toContain('display:none');
+      }
+    });
+
     it('rewrites the base block when configured after the first render', () => {
       const engine = makeEngine('engine-transition-late');
 

@@ -660,7 +660,8 @@ const wobble = Box.spring({ stiffness: 120, damping: 8 });
   the same commit, with nothing to configure. `Tooltip`, the `Dropdown` popup and the DataGrid column
   menu are all built on it, and each expresses its exit as a `closed` variant in its component styles — plus `up`/`closedUp` on `dropdown.items`, since a popup that opened upward has to collapse upward.
 - **`Box.configure({ transition })`** changes what the base class transitions for the whole engine:
-  a group name, or `false` to declare nothing at all and leave transitions entirely to the props.
+  a group name, a comma list of groups and property names (`'colors, opacity'`), or `false` to declare
+  nothing at all and leave transitions entirely to the props. Anything else transitions `all` and warns.
   Call it before the first render.
 - **An inline phrasing element is `inline-block`**, where every other Box is `block`: `a`, `span`, `label`, `time`, `mark`, `abbr`, `code`, `kbd`, `samp`, `var`, `em`,
   `strong`, `small`, `b`, `i`, `u`, `s`, `sub`, `sup`, `q`, `cite`, `dfn`, `data`, `output`, `bdi`, `bdo`. It is
@@ -1328,6 +1329,8 @@ second argument for an element inside an `<svg>`. `<Icon>` is this hook plus tha
 
 The class carries the base reset, which is `display: block` except on an `<a>`, `<span>`, `<label>` and the
 other phrasing elements, which are `inline-block`: a `NavLink` styled this way stays in its sentence.
+`{ base: false }` leaves the reset out — for a library's own root (`<ReactFlow>`, `<MiniMap>`, a `BaseEdge`)
+whose margin, display and transitions are its own.
 
 ### Group and Peer
 
@@ -2682,6 +2685,51 @@ function TrendCell({ cell }: { cell: CellModel<Row> }) {
 <DataGrid data={rows} def={{ rowKey: 'id', columns: [{ key: 'trend', header: 'Last 12 months', width: 180, Cell: TrendCell }] }} />;
 ```
 
+### Theming a React Flow canvas — `FlowContainer`
+
+`ChartContainer`'s move for diagrams. `@box-kite/react/components/flow` (server-safe, imports nothing from xyflow) is a Box
+that declares React Flow's `--xy-*` variables from the palette in both themes, so the canvas — background, pattern, edges,
+handles, built-in nodes, minimap, controls, selection box, edge labels — names no colour and follows the page:
+
+```tsx
+import { Background, Controls, MiniMap, ReactFlow } from '@xyflow/react';
+import '@xyflow/react/dist/style.css';
+import { FlowContainer, flowColorMode } from '@box-kite/react/components/flow';
+
+function Canvas() {
+  const [theme] = Box.useTheme();
+
+  return (
+    <FlowContainer height={120}>
+      <ReactFlow nodes={nodes} edges={edges} colorMode={flowColorMode(theme)} fitView>
+        <Background />
+        <Controls />
+        <MiniMap />
+      </ReactFlow>
+    </FlowContainer>
+  );
+}
+```
+
+| Prop     | What it is                                                                                                                       |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `tokens` | Repaints a role: `{ selection: 'emerald-500' }` for both themes, `{ surface: { light: 'base-50', dark: 'base-950' } }` per theme |
+| `motion` | `'static'` zeroes every Box transition inside the canvas, for nodes moved or resized every frame                                 |
+
+- **Eight roles**, each a custom property a custom node can read: `--flow-surface`, `--flow-panel`, `--flow-text`, `--flow-border`,
+  `--flow-grid`, `--flow-edge`, `--flow-selection`, `--flow-handle`. Defaults are `base`/`accent`, so `Box.palette()` reaches them.
+- **The defaults are the `flowContainer` style node**, so one override repaints every canvas in an app:
+  `Box.components({ flowContainer: { styles: { vars: { 'flow-selection': 'emerald-500' } } } })`; `tokens` is the per-canvas answer.
+- **One `--xy-*` variable is `vars`** (`vars={{ 'xy-edge-stroke-width': '2' }}`); a prop on `<MiniMap>`/`<Background>` still wins.
+- **`colorMode={flowColorMode(theme)}`** keeps React Flow's own `.dark` class in step with the page. A canvas in another theme sits
+  in `<Box.Theme use="local">`; never `colorMode="light"` under a dark page — `.light` is no theme boundary, so the two mix.
+- **A custom node is invisible to the keyboard** — xyflow removes every node's focus outline. Spread `flowNodeStyles` on its
+  root (an outline while xyflow's wrapper is `:focus-visible`) and `flowNodeSelectedStyles` when its `selected` prop is true;
+  both are outlines in the `selection` role, so they survive forced colours. A custom edge on `BaseEdge` takes `flowEdgeStyles`
+  through `useClassNames(flowEdgeStyles, { svg: true, base: false })`.
+- Colour props refuse `var()`, so a custom node reads a role through `css`:
+  `css={{ backgroundColor: 'var(--flow-panel)', borderColor: 'var(--flow-border)', color: 'var(--flow-text)' }}`.
+
 ---
 
 ## Key Reminders for AI Assistants
@@ -2699,7 +2747,7 @@ function TrendCell({ cell }: { cell: CellModel<Row> }) {
 11. **Size shortcuts**: `width="fit"` = 100%, `width="fit-screen"` = 100vw, `width="1/2"` = 50%
 12. **Box is memoized** with `React.memo`, and so are `Flex`, `H1`, `Button` and the rest. A component of your own that is a Box with defaults calls `useBoxElement({ p: 4, ...props }, ref)` from its own `forwardRef` rather than returning `<Box>` — one fiber instead of two
 13. **`style` is top-level only** — never inside breakpoints (`sm={{ style: ... }}`), pseudo-classes, or theme objects. `css` is the one that nests: `sm={{ css: { objectPosition: 'top' } }}` is a rule
-14. **A CSS variable is a prop**: `vars={{ 'color-x': 'sky-500' }}` declares `--color-x` for everything inside — and a third-party chart goes in `<ChartContainer series={['revenue']}>` so it names no colour at all
+14. **A CSS variable is a prop**: `vars={{ 'color-x': 'sky-500' }}` declares `--color-x` for everything inside — and a third-party chart goes in `<ChartContainer series={['revenue']}>` so it names no colour at all, and a React Flow canvas goes in `<FlowContainer>` with `colorMode={flowColorMode(theme)}`
 15. **All sizing props use divider 4** — `width`, `height`, `minWidth`, `maxWidth`, `minHeight`, `maxHeight` are NOT direct pixels. `height={10}` = 2.5rem = 40px
 16. **A state your own code sets is a nested prop too**: `dataAttr={{ 'state=open': { … } }}` → `[data-state="open"]`, `ariaAttr={{ selected: { … } }}` → `[aria-selected="true"]`, `has={{ ':checked': { … } }}`, `not={{ hover: { … } }}`, `nth={{ odd: { … } }}`. The attribute itself still goes in `props`
 17. **Somebody else's state is `group`/`peer`**: `group={{ 'card/hover': { … } }}` → `.card:hover .x`, `peer={{ 'agree/checked': { … } }}` → `.agree:checked ~ .x`. The ancestor or sibling carries the class via `className`; `hoverGroup` and its four siblings are the older spelling

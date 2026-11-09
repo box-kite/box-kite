@@ -95,9 +95,9 @@ RscBox.viewTransition = startViewTransition;
  */
 export function useClassNames<TKey extends keyof ComponentsAndVariants = never>(
   props: BoxClassNameProps<TKey>,
-  options?: { svg?: boolean },
+  options?: { svg?: boolean; base?: boolean },
 ): BoxClassNames {
-  return boxClassNames(resolveStyles(props, options?.svg === true), props.className);
+  return boxClassNames(resolveStyles(props, options?.svg === true), props.className, options?.base);
 }
 
 export default RscBox;

@@ -23,6 +23,7 @@ import * as baseSvg from '../dist/components/baseSvg.mjs';
 import * as button from '../dist/components/button.mjs';
 import * as calendar from '../dist/components/calendar.mjs';
 import * as chart from '../dist/components/chart.mjs';
+import * as flow from '../dist/components/flow.mjs';
 import * as checkbox from '../dist/components/checkbox.mjs';
 import * as dashboard from '../dist/components/dashboard.mjs';
 import * as dataGrid from '../dist/components/dataGrid.mjs';
@@ -84,6 +85,7 @@ console.log(
   dialog,
   dropdown,
   flex,
+  flow,
   form,
   grid,
   icon,
