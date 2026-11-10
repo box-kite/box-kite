@@ -23,3 +23,6 @@ export type {
   RovingFocusReason,
   RovingOrientation,
 } from './react/a11y/useRovingFocus';
+
+export { LayerScope } from './react/a11y/layerScope';
+export type { LayerEvent, LayerScopeProps } from './react/a11y/layerScope';

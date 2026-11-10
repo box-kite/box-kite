@@ -13,8 +13,14 @@ import {
   Position,
   ReactFlow,
 } from '@xyflow/react';
+import { Ellipsis } from 'lucide-react';
+import { LayerScope } from '../../src/a11y';
 import Box, { useClassNames } from '../../src/box';
+import Button from '../../src/components/button';
+import Flex from '../../src/components/flex';
 import { FlowContainer, flowColorMode, flowEdgeStyles, flowNodeSelectedStyles, flowNodeStyles } from '../../src/components/flow';
+import Icon from '../../src/components/icon';
+import Menu from '../../src/components/menu';
 import { Span } from '../../src/components/semantics';
 
 /**
@@ -41,9 +47,26 @@ function StepNode({ data, selected }: NodeProps<Node<StepData, 'step'>>) {
       <Span display="block" fontSize={11} opacity={0.6} textTransform="uppercase">
         {data.kind}
       </Span>
-      <Span display="block" fontSize={14} fontWeight={600}>
-        {data.label}
-      </Span>
+      <Flex ai="center" gap={2}>
+        <Span display="block" fontSize={14} fontWeight={600}>
+          {data.label}
+        </Span>
+        {/* The trigger sits in the node, so it opts out of the drag itself; the menu takes the scope's classes. */}
+        <Menu
+          label={`${data.label} actions`}
+          trigger={(t) => (
+            <Button ref={t.ref} variant="square" className="nodrag" props={{ ...t.props, 'aria-label': `${data.label} actions` }}>
+              <Icon size={4}>
+                <Ellipsis />
+              </Icon>
+            </Button>
+          )}
+        >
+          <Menu.Item>Rename</Menu.Item>
+          <Menu.Item>Duplicate</Menu.Item>
+          <Menu.Item>Delete</Menu.Item>
+        </Menu>
+      </Flex>
       <Handle type="source" position={Position.Right} />
     </Box>
   );
@@ -101,19 +124,22 @@ export default function FlowDemo() {
       theme={{ dark: { borderColor: 'base-800' } }}
       css={{ overflow: 'clip' }}
     >
-      <ReactFlow
-        defaultNodes={nodes}
-        defaultEdges={edges}
-        nodeTypes={nodeTypes}
-        edgeTypes={edgeTypes}
-        colorMode={flowColorMode(theme)}
-        fitView
-        proOptions={{ hideAttribution: true }}
-      >
-        <Background />
-        <Controls showInteractive={false} />
-        <MiniMap pannable zoomable />
-      </ReactFlow>
+      {/* Every layer inside — the node menus here — carries React Flow's opt-outs, and its keys stay in it (bug #232). */}
+      <LayerScope className="nodrag nowheel nokey" isolate={['key']}>
+        <ReactFlow
+          defaultNodes={nodes}
+          defaultEdges={edges}
+          nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
+          colorMode={flowColorMode(theme)}
+          fitView
+          proOptions={{ hideAttribution: true }}
+        >
+          <Background />
+          <Controls showInteractive={false} />
+          <MiniMap pannable zoomable />
+        </ReactFlow>
+      </LayerScope>
     </FlowContainer>
   );
 }

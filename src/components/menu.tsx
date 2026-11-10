@@ -1,6 +1,7 @@
 import { createContext, FunctionComponent, Ref, useCallback, useContext, useMemo, useRef, useState } from 'react';
 import Box, { BoxProps } from '../box';
 import { useEventCallback } from '../react/a11y/callbacks';
+import { useLayerScope } from '../react/a11y/layerScope';
 import useControllableState, { ChangeDetails, ChangeHandler } from '../react/a11y/useControllableState';
 import useAnchorPosition from '../react/anchor/useAnchorPosition';
 import useHeldContent from '../react/animation/useHeldContent';
@@ -496,6 +497,7 @@ function MenuPanel(props: PanelProps) {
     item.focus();
   });
 
+  const scope = useLayerScope();
   const naming = { 'aria-label': label, 'aria-labelledby': labelledBy };
   const panelProps = {
     role: 'menu',
@@ -535,10 +537,11 @@ function MenuPanel(props: PanelProps) {
       ref={setPanel}
       component="menu"
       {...boxProps}
+      className={[boxProps.className, scope.className]}
       variant={[boxProps.variant, { topLayer: true }] as never}
       {...position.layerProps}
       id={id}
-      props={{ popover: 'auto', ...panelProps }}
+      props={scope.merge({ popover: 'auto', ...panelProps })}
     >
       {content}
     </Box>

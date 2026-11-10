@@ -1,6 +1,7 @@
 import { Ref, RefAttributes, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Box, { BoxProps } from '../box';
 import { useEventCallback } from '../react/a11y/callbacks';
+import { useLayerScope } from '../react/a11y/layerScope';
 import { ChangeHandler } from '../react/a11y/useControllableState';
 import useRovingFocus from '../react/a11y/useRovingFocus';
 import useAnchorPosition from '../react/anchor/useAnchorPosition';
@@ -244,6 +245,7 @@ function usePickerLayer(options: LayerOptions) {
 
   const readPanel = useCallback(() => panelElement, [panelElement]);
   const phase = useExitPhase(isOpen, readPanel);
+  const scope = useLayerScope();
 
   const panel = (children: React.ReactNode) => {
     const naming = { role: 'dialog', 'aria-label': options.label, tabIndex: -1 };
@@ -273,11 +275,12 @@ function usePickerLayer(options: LayerOptions) {
       <Box
         ref={setPanel}
         component="popover"
+        className={scope.className}
         variant={[options.variant, { topLayer: true }] as never}
         p={3}
         {...position.layerProps}
         id={id}
-        props={{ popover: 'auto', ...naming }}
+        props={scope.merge({ popover: 'auto', ...naming })}
       >
         {/* Mounted while open and through the exit (bug #314): a closed panel would keep a calendar and a day of times for nothing. */}
         {phase === 'closed' ? null : children}

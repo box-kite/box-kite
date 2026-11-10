@@ -1,6 +1,7 @@
 import { forwardRef, Ref, RefAttributes, useCallback, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Box, { BoxProps } from '../box';
+import { useLayerScope } from '../react/a11y/layerScope';
 import useAnchorPosition from '../react/anchor/useAnchorPosition';
 import { useIsomorphicLayoutEffect } from '../react/effects';
 import usePortalContainer from '../react/hooks/usePortalContainer';
@@ -119,6 +120,7 @@ function OverlayImpl(props: Props, ref: Ref<HTMLDivElement>) {
   const topLayer = useTopLayer();
   const layerElement = useRef<HTMLElement | null>(null);
   const portalContainer = usePortalContainer(!topLayer);
+  const scope = useLayerScope(!topLayer);
 
   const position = useAnchorPosition({
     side,
@@ -183,12 +185,13 @@ function OverlayImpl(props: Props, ref: Ref<HTMLDivElement>) {
     <Box
       {...position.layerProps}
       ref={layerRef}
+      className={scope.className}
       transition="none"
       // The UA's `[popover]` rule makes it a scroller, so content sliding out on its exit showed a scrollbar (bug #315).
       overflow="visible"
       // `popover` rather than the React 19 `popoverTarget` family of props, for the reason `Popover`
       // writes its attributes on: CI runs React 18 too, and it drops the ones it does not know.
-      props={topLayer ? { popover: 'manual' } : { dir: rtl ? 'rtl' : 'ltr' }}
+      props={scope.merge(topLayer ? { popover: 'manual' } : { dir: rtl ? 'rtl' : 'ltr' })}
     >
       <Box ref={contentRef} {...restProps} />
     </Box>
