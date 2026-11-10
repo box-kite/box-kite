@@ -1,6 +1,7 @@
 import { createContext, FunctionComponent, Ref, useCallback, useContext, useMemo, useRef, useState } from 'react';
 import Box, { BoxProps } from '../box';
 import { useEventCallback } from '../react/a11y/callbacks';
+import { useLayerScope } from '../react/a11y/layerScope';
 import { ChangeHandler, SetControllableState } from '../react/a11y/useControllableState';
 import useDismiss from '../react/a11y/useDismiss';
 import useFocusReturn from '../react/a11y/useFocusReturn';
@@ -278,6 +279,7 @@ function DialogBase<TKey extends keyof ComponentsAndVariants>(props: BaseProps<T
   );
 
   const boxProps = restProps as DialogBoxProps<TKey>;
+  const scope = useLayerScope();
 
   return (
     <>
@@ -289,14 +291,15 @@ function DialogBase<TKey extends keyof ComponentsAndVariants>(props: BaseProps<T
           tag="dialog"
           component={'dialog' as TKey}
           {...boxProps}
+          className={[boxProps.className, scope.className]}
           id={dialogId}
-          props={{
+          props={scope.merge({
             role,
             'aria-label': parts.title || labelledBy ? undefined : label,
             'aria-labelledby': labelledBy ?? (parts.title ? context.titleId : undefined),
             'aria-describedby': describedBy ?? (parts.description ? context.descriptionId : undefined),
             ...contentProps,
-          }}
+          })}
         >
           {content}
         </Box>

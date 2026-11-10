@@ -563,7 +563,7 @@
         "../dataGridDateParts.mjs"
       ],
       "gzip": true,
-      "limit": "100.21 kB"
+      "limit": "102.44 kB"
     },
     {
       "name": "Interaction delivery, the chunk the first Box.onInteraction fetches",

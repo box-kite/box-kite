@@ -1435,7 +1435,7 @@ Box.configure({ sink: 'element' }); // React 19 only
 
 ## Behaviour primitives (`@box-kite/react/a11y`)
 
-Five client hooks for building accessible components — the mechanics, not the ARIA. 2.2 KB gzipped
+Five client hooks and `LayerScope` for building accessible components — the mechanics, not the ARIA. 3.1 KB gzipped
 and no styling engine behind them.
 
 ```tsx
@@ -1460,6 +1460,10 @@ useFocusReturn({ enabled: open, returnTo: triggerRef });
   `textOf` is given, Enter/Space to select, disabled items skipped. `focusItems: false` keeps DOM
   focus where it is for an `aria-activedescendant` pattern.
 - `useIdentifier`: React's `useId` without the punctuation, so the id also works as a CSS selector.
+- `<LayerScope className isolate>`: one opt-out for every layer declared inside a surface that owns the gestures
+  (React Flow, a map, a board). Each layer root takes `className`/`props`; `isolate={['pointer', 'wheel', 'key']}` stops
+  those events after the layer handled them, in React's tree and on `document` (not a native listener on a DOM ancestor),
+  and `'key'` cancels a Backspace nothing editable used. An empty `<LayerScope>` clears an outer one.
 - `VisuallyHidden`: screen-reader-only content — clipped, so it stays in the accessibility tree
   (`display: none` would not). It is a Box: `tag`, `component` and every style prop work.
 - The entry is client-only (`'use client'`); `visuallyHidden` renders on a server.
@@ -2729,6 +2733,9 @@ function Canvas() {
   through `useClassNames(flowEdgeStyles, { svg: true, base: false })`.
 - Colour props refuse `var()`, so a custom node reads a role through `css`:
   `css={{ backgroundColor: 'var(--flow-panel)', borderColor: 'var(--flow-border)', color: 'var(--flow-text)' }}`.
+- **A menu, popover or dialog in a node bubbles to the node**: Backspace on a menu item deletes it, an arrow moves it, and
+  Safari takes the Backspace as Back. Wrap the canvas once: `<LayerScope className="nodrag nowheel nokey" isolate={['key']}>`
+  (`@box-kite/react/a11y`) around `<ReactFlow>`, and give the trigger inside the node `className="nodrag"`.
 
 ---
 

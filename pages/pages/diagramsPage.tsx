@@ -166,6 +166,31 @@ function StepEdge(props: EdgeProps) {
 }`}
           />
 
+          <Section id="layers" title="Menus and popovers inside a node">
+            A menu opened from a node is in the top layer, which changes where it paints and not where it sits in the tree: its presses,
+            wheels and keys still bubble to the node, so Backspace on a menu item deletes the node and an arrow key moves it. Wrap the
+            canvas in one <Mono>&lt;LayerScope&gt;</Mono> from <Mono>@box-kite/react/a11y</Mono> and every layer inside carries React Flow's
+            opt-out classes. <Mono>isolate={"{['key']}"}</Mono> also keeps the layer's keys from reaching the page, which is what stops
+            Safari treating a Backspace on a menu item as Back. The trigger itself sits in the node, so it carries <Mono>nodrag</Mono> of
+            its own. Try it on the demo's three task nodes.
+          </Section>
+
+          <Code
+            id="layer-scope"
+            label="One opt-out for every layer in the canvas"
+            language="jsx"
+            code={`import { Edge, Node, ReactFlow } from '@xyflow/react';
+import { LayerScope } from '@box-kite/react/a11y';
+
+function Canvas({ nodes, edges }: { nodes: Node[]; edges: Edge[] }) {
+  return (
+    <LayerScope className="nodrag nowheel nokey" isolate={['key']}>
+      <ReactFlow nodes={nodes} edges={edges} />
+    </LayerScope>
+  );
+}`}
+          />
+
           <Section id="foreign" title="Classing React Flow's own elements">
             <Mono>useClassNames</Mono> puts Box props on an element Box does not render, and by default its class carries Box's reset:{' '}
             <Mono>margin: 0</Mono>, <Mono>display: block</Mono> and the base transition. On <Mono>&lt;ReactFlow&gt;</Mono>,{' '}
@@ -209,6 +234,7 @@ const sidebarLinks = [
   { id: 'nodes', label: 'A custom node' },
   { id: 'focus', label: 'Focus and selection' },
   { id: 'edges', label: 'A custom edge' },
+  { id: 'layers', label: 'Layers inside a node' },
   { id: 'foreign', label: "React Flow's elements" },
   { id: 'motion', label: 'Moving every frame' },
   ...apiSections(flowContainerApi),

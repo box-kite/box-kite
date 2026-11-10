@@ -1,16 +1,16 @@
 # The behaviour primitives (`@box-kite/react/a11y`)
 
-Five hooks and one component: the mechanics every accessible widget needs and none of them can be
+Five hooks and two components: the mechanics every accessible widget needs and none of them can be
 seen in the markup. They are what the library's own components are built from, and they are
 published so a consumer building a pattern this library does not ship — a tree view, a split
 button, a command palette — does not have to write them again.
 
 ```tsx
-import { useControllableState, useDismiss, useFocusReturn, useIdentifier, useRovingFocus } from '@box-kite/react/a11y';
+import { LayerScope, useControllableState, useDismiss, useFocusReturn, useIdentifier, useRovingFocus } from '@box-kite/react/a11y';
 import VisuallyHidden from '@box-kite/react/components/visuallyHidden';
 ```
 
-2.2 KB gzipped for the whole entry, and it pulls in no styling engine: the hooks reach React, two
+3.1 KB gzipped for the whole entry, and it pulls in no styling engine: the hooks reach React, two
 leaf modules of DOM helpers, and each other. They are client hooks — the entry carries a `'use client'` banner, so importing it from a
 Server Component opens a client boundary. `VisuallyHidden` is a component and ships separately,
 where it can still render on a server.
@@ -159,6 +159,36 @@ const id = useIdentifier('select');
 React's `useId` with the punctuation removed: `:r1:` (React 18) and `«r1»` (React 19) are both
 rejected by `querySelector('#…')`, and the part that varies is the word characters. Derive related
 ids from one call rather than calling the hook once per element.
+
+## `LayerScope`
+
+One opt-out for every layer declared inside a surface that owns the gestures: a React Flow canvas,
+a map, a whiteboard, a drag-and-drop board.
+
+```tsx
+import { LayerScope } from '@box-kite/react/a11y';
+
+<LayerScope className="nodrag nowheel nokey" isolate={['key']}>
+  <ReactFlow nodes={nodes} edges={edges} nodeTypes={nodeTypes} />
+</LayerScope>;
+```
+
+The top layer changes where a panel paints, not where it sits in the tree, so a menu opened from a
+node still bubbles its presses, wheels and keys to that node: Backspace on a menu item deletes the
+selected node and an arrow key moves it. Every layer reads the nearest scope (`Overlay`, `Popover`,
+`Menu`, `Dialog`, `Tooltip`, `Dropdown`, `Combobox`, the date pickers, the DataGrid menus), so no
+layer carries the surface's classes by hand.
+
+- `className` and `props` go on each layer's root. The layer's own attributes win.
+- `isolate` takes `'pointer'`, `'wheel'` and `'key'`, and stops those events at the layer's root
+  after the layer has handled them. It stops them in React's tree: a handler on any React ancestor
+  and a listener on `document` or `window` never see them. A native listener on a DOM element
+  between the layer and React's root still does, so a surface that listens that way (React Flow's
+  drag and zoom, most map libraries) also needs its opt-out classes.
+- `'key'` also cancels a Backspace that nothing editable consumed, which Safari would take as Back.
+- `'pointer'` stops only the starters (`pointerdown`, `mousedown`, `touchstart`, `click`,
+  `dblclick`, `contextmenu`), never a move or a release, so a drag that began outside is not stranded.
+- An empty `<LayerScope>` clears an outer one.
 
 ## `VisuallyHidden`
 

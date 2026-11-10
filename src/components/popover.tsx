@@ -1,6 +1,7 @@
 import { Ref, useCallback } from 'react';
 import Box, { BoxProps } from '../box';
 import { useEventCallback } from '../react/a11y/callbacks';
+import { useLayerScope } from '../react/a11y/layerScope';
 import { ChangeHandler } from '../react/a11y/useControllableState';
 import useAnchorPosition from '../react/anchor/useAnchorPosition';
 import useHeldContent from '../react/animation/useHeldContent';
@@ -182,6 +183,7 @@ function PopoverImpl<TKey extends keyof ComponentsAndVariants = 'popover'>(props
 
   const naming = { 'aria-label': label, 'aria-labelledby': labelledBy };
   const boxProps = restProps as PopoverBoxProps<TKey>;
+  const scope = useLayerScope();
 
   if (!platform) {
     return (
@@ -215,10 +217,11 @@ function PopoverImpl<TKey extends keyof ComponentsAndVariants = 'popover'>(props
         ref={setPanel}
         component={'popover' as TKey}
         {...boxProps}
+        className={[boxProps.className, scope.className]}
         variant={[boxProps.variant, { topLayer: true }] as never}
         {...position.layerProps}
         id={popoverId}
-        props={{
+        props={scope.merge({
           popover: 'auto',
           role: 'dialog',
           ...naming,
@@ -226,7 +229,7 @@ function PopoverImpl<TKey extends keyof ComponentsAndVariants = 'popover'>(props
           // tab stops. `autoFocus` lands here when nothing inside claimed it.
           tabIndex: -1,
           ...contentProps,
-        }}
+        })}
       >
         {content}
       </Box>
