@@ -40,6 +40,8 @@ function demoFor(token: Token, demos: MarkdownDemos): ReactNode {
         minHeight={75}
         b={1}
         borderRadius={3}
+        // A demo wider than the column scrolls in its frame, never the page.
+        overflowX="auto"
         theme={{ dark: { borderColor: 'base-800', bgColor: 'base-900' }, light: { borderColor: 'base-200', bgColor: 'base-50' } }}
       >
         <Demo />
