@@ -2,13 +2,7 @@
 
 _Unreleased. A PR that changes what a consumer sees adds its section here — see CONTRIBUTING.md, "Release notes"._
 
-<!-- Intro: one or two sentences on what this release is about. The first one becomes the CHANGELOG line. -->
-
-## Highlights
-
-<!-- One bullet per section below, linking to it: **[Heading](#heading)** — one line on why it matters. -->
-
-<!-- One `##` per change, above Breaking changes: a sentence for the heading, a paragraph on what and why, an example if it helps. -->
+A React Flow canvas now follows the page's theme with `<FlowContainer>`, and a link styled by Box stays inside its sentence instead of breaking onto a line of its own. Every form field shows when it is invalid, and five reported bugs are fixed.
 
 ## A link styled by Box can stay in its sentence
 
@@ -20,13 +14,9 @@ Every Box was `display: block`, so margin and padding always apply, and a `<Link
 </P>
 ```
 
-## Every field shows when it is invalid
+No prop changed, so this is not a major, but a layout can move when you upgrade. In a flex or grid parent nothing changes. In ordinary flow a phrasing element no longer fills the row: two sibling links that stacked now share a line, and a link no longer takes the width of its parent. A link that wraps onto two lines inside a heading in an `ai="baseline"` row now aligns its neighbours with its last line, not its first, because an `inline-block`'s baseline is its last line.
 
-`aria-invalid` now draws the field's border in red on `Textbox`, `Textarea`, `Select` and `Combobox`, through hover and focus and in both themes. None of them styled it before, and a `Combobox` could not be styled with `ariaAttr` at all, because the attribute is on its input and the border is the shell's: the shell reads it with `:has([aria-invalid="true"])`.
-
-```tsx
-<Combobox label="Owner" data={users} def={{ key: 'id', label: 'name' }} props={{ 'aria-invalid': true }} />
-```
+**Where block was the layout you meant:** set `display="block"` on the element (or on its component in `Box.components()`), and on a link that wraps inside a heading, `display="inline"`.
 
 ## A React Flow canvas follows the page's theme
 
@@ -42,13 +32,21 @@ const [theme] = Box.useTheme();
 </FlowContainer>;
 ```
 
+## Every field shows when it is invalid
+
+`aria-invalid` now draws the field's border in red on `Textbox`, `Textarea`, `Select` and `Combobox`, through hover and focus and in both themes. None of them styled it before, and a `Combobox` could not be styled with `ariaAttr` at all, because the attribute is on its input and the border is the shell's: the shell reads it with `:has([aria-invalid="true"])`.
+
+```tsx
+<Combobox label="Owner" data={users} def={{ key: 'id', label: 'name' }} props={{ 'aria-invalid': true }} />
+```
+
 ## `useClassNames` can leave the reset out
 
 `useClassNames(props, { base: false })` returns only your props' classes, without Box's base reset (`margin: 0`, `display: block`, the base transition). Use it on a library's own root, such as `<ReactFlow>` or `<MiniMap>`, whose margin and transitions are its own.
 
 ## Breaking changes
 
-- **A link, label or other phrasing element styled by Box is `inline-block`, not `block`.** In a flex or grid parent nothing changes. In ordinary flow it no longer fills the row: two sibling links that stacked now share a line, and a link no longer takes the width of its parent. A link that wraps onto two lines inside a heading in an `ai="baseline"` row now aligns its neighbours with its last line, not its first, because an `inline-block`'s baseline is its last line. Where block was the layout you meant, set `display="block"` on the element (or on its component in `Box.components()`), and on a link that wraps inside a heading, `display="inline"`.
+None.
 
 ## Fixes
 
