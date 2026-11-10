@@ -182,7 +182,8 @@ export type ComponentsAndVariants = Simplify<MergeUnion<ExtractComponentsAndVari
 export interface ComponentProps<TKey extends keyof ComponentsAndVariants = never> {
   clean?: boolean;
   component?: TKey;
-  variant?: ClassNameType<ComponentsAndVariants[TKey]>;
+  // `NoInfer`: the variants are read off the component, never used to guess it.
+  variant?: ClassNameType<ComponentsAndVariants[NoInfer<TKey>]>;
 }
 
 export type BoxStyleProps<TKey extends keyof ComponentsAndVariants = never> = Simplify<

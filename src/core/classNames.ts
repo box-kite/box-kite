@@ -1,6 +1,7 @@
-export type ClassNameType<T extends string = string> = T extends never
-  ? undefined // Prevents ClassNameType<never>
-  : undefined | T | T[] | Record<T, boolean> | ClassNameType<T>[];
+// Not distributive: over a union it allowed one member per array, so `['square', 'compact']` failed (bug #353).
+export type ClassNameType<T extends string = string> = [T] extends [never]
+  ? undefined
+  : undefined | T | T[] | Partial<Record<T, boolean>> | ClassNameType<T>[];
 
 export function classNames(...classNameRules: ClassNameType[]): string[] {
   return classNameRules.reduce<string[]>((names, classNameRule) => {

@@ -24,6 +24,14 @@ import { LayerScope } from '@box-kite/react/a11y';
 
 See [Menus and popovers inside a node](https://www.box-kite.dev/diagrams/#layers).
 
+## A look and a size combine in one `variant`
+
+`<Button variant={['square', 'compact']}>` was a type error, although it always rendered correctly: the type accepted an array of one variant name, not of several. An array, nested arrays and a record now take any mix of a component's variants, and a name the component does not have is still an error.
+
+```tsx
+<Button variant={['secondary', 'compact']}>Close</Button>
+```
+
 ## Breaking changes
 
 None.
