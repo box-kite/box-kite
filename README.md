@@ -13,6 +13,7 @@
   <a href="#-packages"><img src="https://img.shields.io/badge/dependencies-no%20third--party-10b981" alt="No third-party dependencies" /></a>
   <a href="#-built-for-ai-agents"><img src="https://img.shields.io/badge/AGENTS.md-in%20the%20package-8b5cf6" alt="AGENTS.md ships in the package" /></a>
   <a href="https://www.npmjs.com/package/@box-kite/mcp"><img src="https://img.shields.io/badge/MCP-server-a855f7" alt="MCP server" /></a>
+  <a href="https://glama.ai/mcp/servers/box-kite/box-kite"><img src="https://glama.ai/mcp/servers/box-kite/box-kite/badges/score.svg" alt="box-kite/box-kite MCP server" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/npm/l/@box-kite/react?color=64748b" alt="MIT license" /></a>
 </p>
 

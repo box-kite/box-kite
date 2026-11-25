@@ -1,5 +1,7 @@
 # @box-kite/mcp
 
+[![box-kite/box-kite MCP server](https://glama.ai/mcp/servers/box-kite/box-kite/badges/score.svg)](https://glama.ai/mcp/servers/box-kite/box-kite)
+
 The [Box Kite](https://www.box-kite.dev) MCP server: the retrieval channel for an agent writing Box
 Kite code. Six tools, at capability level — what may I write, what does this component take, and the
 one no documentation mirror can answer: **does this value actually work.**
