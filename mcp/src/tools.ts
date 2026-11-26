@@ -1,6 +1,7 @@
 import {
   ComponentProp,
   ComponentRecord,
+  StyleNode,
   acceptedValues,
   blockInstall,
   blockPage,
@@ -132,6 +133,15 @@ const propRows = (list: readonly ComponentProp[]) =>
 
 const oneLine = (text: string) => text.replace(/\s*\n\s*/g, ' ').replace(/\|/g, '\\|');
 
+const styleNodeLine = (node: StyleNode) =>
+  [
+    `${'  '.repeat(node.depth)}- \`${node.path}\``,
+    node.extends && ` extends \`${node.extends}\``,
+    node.variants.length > 0 && ` — variants: ${node.variants.map((name) => `\`${name}\``).join(', ')}`,
+  ]
+    .filter(Boolean)
+    .join('');
+
 export type ComponentSection = 'props' | 'parts' | 'keyboard' | 'a11y' | 'styles';
 
 /** `get_component` — one component's whole contract: props, parts, the keyboard map and the ARIA. */
@@ -181,7 +191,11 @@ export function getComponent(name: string, include?: ComponentSection[]): string
     wanted('a11y') && record.a11y?.length && section('## Accessibility', record.a11y.map((note) => `- ${note}`).join('\n')),
     wanted('styles') &&
       record.styleTree?.length &&
-      section('## Style tree', `\`Box.components()\` keys: ${record.styleTree.map((key) => `\`${key}\``).join(', ')}`),
+      section(
+        '## Style tree',
+        'Each node is a `Box.components()` key, nested as it is drawn; a variant is restyled under its name.',
+        record.styleTree.map(styleNodeLine).join('\n'),
+      ),
     'Every visual value on it is a Box prop — `check_styles` judges one.',
   );
 }
