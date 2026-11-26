@@ -55,6 +55,14 @@ export interface ComponentKey {
   action: string;
 }
 
+/** One `Box.components()` node, as `scripts/componentsApi.mjs` extracts it (bug #355 read it as a string). */
+export interface StyleNode {
+  path: string;
+  depth: number;
+  extends: string | null;
+  variants: string[];
+}
+
 export interface ComponentRecord {
   name: string;
   route: string;
@@ -65,7 +73,7 @@ export interface ComponentRecord {
   parts?: ComponentPart[];
   keyboard?: ComponentKey[];
   a11y?: string[];
-  styleTree?: string[];
+  styleTree?: StyleNode[];
 }
 
 export interface RuleRecord {

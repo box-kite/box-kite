@@ -39,3 +39,5 @@ None.
 ## Fixes
 
 <!-- One bullet per fix: **What was wrong.** What it does now. -->
+
+- **`get_component` in `@box-kite/mcp` printed `[object Object]` for every node of a component's style tree.** It now lists each `Box.components()` key indented by depth, with what it extends and its variants — `button` lists `secondary`, `ghost`, `compact`, `normal`, `large` and `square`.
